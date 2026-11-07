@@ -49,6 +49,33 @@ export async function installRuntime(record, cache, output, download = fetch) {
         }
       }
     } else await cp(join(root, record.from), target, { recursive: true });
+    if (record.id === "emulatorjs-4.2.3") {
+      // The npm release omits its combined loader assets. Preserve the pinned
+      // loader.js script order and retain the original sources alongside them.
+      const scripts = [
+        "emulator.js",
+        "nipplejs.js",
+        "shaders.js",
+        "storage.js",
+        "gamepad.js",
+        "GameManager.js",
+        "socket.io.min.js",
+        "compression.js",
+      ];
+      const sources = await Promise.all(
+        scripts.map((name) => readFile(join(target, "src", name), "utf8")),
+      );
+      const onlineCheck =
+        'if (this.debug || (window.location && ["localhost", "127.0.0.1"].includes(location.hostname))) this.checkForUpdates();';
+      if (sources[0].split(onlineCheck).length !== 2)
+        throw new Error("Pinned runtime update check changed");
+      sources[0] = sources[0].replace(
+        onlineCheck,
+        "/* Runtime updates are controlled by runtime-lock.json. */",
+      );
+      await writeFile(join(target, "emulator.min.js"), sources.join("\n;\n"));
+      await cp(join(target, "emulator.css"), join(target, "emulator.min.css"));
+    }
     const notices = join(output, "notices", record.id);
     await mkdir(notices, { recursive: true });
     for (const name of await readdir(root)) {

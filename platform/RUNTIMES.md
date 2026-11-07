@@ -10,6 +10,11 @@ The application serves these assets itself; runtime and core versions do not
 follow a CDN's `latest` alias. Cache files, downloaded archives and WASM binaries
 must not be committed. `inventory.json` and upstream notices accompany the assets.
 The current console core archives contain their own complete `license.txt`.
+The npm wrapper omits its combined JavaScript/CSS assets, so the installer joins
+the original scripts in the pinned loader's order. It disables the wrapper's
+automatic CDN update check; updates are reviewed through our lock instead.
+Original sources are retained beside the combined file, and the exact build
+adjustment is recorded in `scripts/runtime-assets.mjs`.
 
 The selected components are js-dos 8.5.3 (with emulators 8.5.2) and EmulatorJS
 4.2.3 with its 4.2.3 FCEUmm, Snes9x, Gambatte and mGBA packages. The wrapper version
@@ -37,3 +42,13 @@ filesystem. The runtime document alone permits dynamic JavaScript evaluation,
 which this Emscripten loader requires; the account/editor document keeps its
 stricter script policy. The same-origin iframe isolates runtime globals/styles,
 not an adversarial JavaScript plugin.
+
+The console adapter uses the pinned `saveDatabaseLoaded` event before ROM startup.
+It replaces the browser's persistent save mount with MEMFS and writes the selected
+native save there. This prevents IndexedDB data from overwriting an
+imported or edited cloud save. Snapshots include native SRAM as well as emulator
+state and are accepted only with an identical release/core/runtime fingerprint.
+The replacement remains a mount so the upstream exit handler can unmount it normally.
+The NES acceptance fixture is an original tiny program: it writes battery SRAM,
+changes its palette on a real keyboard input and restores that volatile palette
+from a snapshot after a fresh boot. No commercial ROM is part of the tests.

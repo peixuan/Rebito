@@ -6,6 +6,7 @@ import { loadConfig } from "../../src/server/config.ts";
 import { createPlatform } from "../../src/server/platform.ts";
 import { registerWeb } from "../../src/server/web.ts";
 import { testDatabase } from "../database.ts";
+import { seedConsoles } from "../library/console-fixture.ts";
 import { seedDos } from "../library/dos-fixture.ts";
 import { seedLibrary } from "../library/fixture.ts";
 
@@ -13,6 +14,7 @@ const fixture = await testDatabase();
 const directory = await mkdtemp(join(tmpdir(), "retro-browser-"));
 await seedLibrary(directory);
 await seedDos(directory);
+await seedConsoles(directory);
 const app = await createPlatform(
   loadConfig({
     APP_ORIGIN: "http://localhost:4317",

@@ -1,9 +1,13 @@
 {
   "runtime.loadFailed": "Could not load emulator resources.",
+  "runtime.consoleSaveType": "This filesystem save cannot be used by the console emulator.",
+  "runtime.nativeSaveRequired": "Import one native game save file.",
+  "runtime.snapshotMissing": "The snapshot is missing its runtime state.",
+  "runtime.consoleResources": "Console emulator resources are incomplete.",
+  "runtime.savePathMismatch": "The emulator save path does not match the supported runtime version.",
   "runtime.dosResources": "DOS emulator resources are incomplete.",
   "runtime.dosConfiguration": "The DOS archive has no valid launch configuration.",
   "runtime.integrity": "Save or game file verification failed.",
   "runtime.releaseMismatch": "The save belongs to another game release.",
-  "runtime.snapshotMismatch": "The snapshot is incompatible with this emulator version. Choose a native game save instead.",
-  "runtime.platformUnavailable": "The emulator for this platform is not available yet."
+  "runtime.snapshotMismatch": "The snapshot is incompatible with this emulator version. Choose a native game save instead."
 }
