@@ -47,3 +47,29 @@ while the service runs. A release ID combines the system and asset SHA-256, so
 changing a title cannot assign progress to different game bytes.
 `GET /api/games` and `GET /api/games/:id/asset` require a session; responses expose
 logical release IDs, never physical storage paths.
+
+## Preparing a DOS bundle
+
+With Node 24+ and `npm ci --ignore-scripts` in `platform/`, create a specification
+outside the game directory. List every required resource explicitly; exclude
+private saves, editors, backup copies and unrelated files. Do not exclude all
+`.dat` files: many games use that extension for required resources.
+
+```json
+{ "configuration": "dosbox.conf", "files": ["PLAY.BAT", "GAME.EXE", "RESOURCE.DAT"] }
+```
+
+`configuration` is relative to this specification file. It names a DOSBox config
+with an `[autoexec]` section that mounts the bundle directory and starts the game.
+File names are relative to the source game directory. The bundler rejects escaped
+paths and duplicate names, fixes archive timestamps for reproducibility, and never
+overwrites output. Keep the output outside the original game directory.
+
+```sh
+node scripts/bundle-dos.mjs /private/original /private/specification.json /private/game.jsdos
+```
+
+Then import the resulting bundle using the command above. A new-user acceptance
+test must confirm the game can create its own save file without a personalized
+save in the shared bundle. Bundle preparation uses development dependencies on
+the operator's workstation; the deployment image only needs the import command.
