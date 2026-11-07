@@ -22,7 +22,7 @@ function catalog(locale: string) {
 }
 const en = catalog("en");
 const zh = catalog("zh-CN");
-const shared: Record<string, string> = {};
+const shared = catalog("shared");
 const parameters = (value: string) =>
   [...new Set([...value.matchAll(/\{([a-zA-Z]\w*)\}/g)].map((match) => match[1]))].sort();
 
