@@ -7,9 +7,11 @@ export interface Session {
 
 export class ApiError extends Error {
   readonly status: number;
-  constructor(code: string, status: number) {
+  readonly detail: DisplayMessage | undefined;
+  constructor(code: string, status: number, detail?: DisplayMessage) {
     super(code);
     this.status = status;
+    this.detail = detail;
   }
 }
 
@@ -28,7 +30,11 @@ export async function api<T>(path: string, body?: unknown): Promise<T> {
   });
   const result = await response.json();
   if (!response.ok)
-    throw new ApiError(result.error ?? result.code ?? "request_failed", response.status);
+    throw new ApiError(
+      result.error ?? result.code ?? "request_failed",
+      response.status,
+      displayMessage(result),
+    );
   return result as T;
 }
 
@@ -36,6 +42,7 @@ export function errorText(error: unknown): DisplayMessage {
   const expected = displayMessage(error);
   if (expected) return expected;
   if (error instanceof ApiError) {
+    if (error.status === 422 && error.detail) return error.detail;
     if (error.status === 429) return message("errors.rateLimit");
     if (error.status === 401) return message("errors.authentication");
     if (error.status === 409) return message("errors.conflict");

@@ -50,3 +50,22 @@ it("shows useful messages without echoing server details", () => {
   }
   expect(errorText(new Error("network"))).toEqual(message("errors.connection"));
 });
+it("shows explicit editor validation messages while retaining the error code", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          error: "invalid_edit",
+          displayMessage: message("koukai2.selectDismissalPort"),
+        }),
+        {
+          status: 422,
+        },
+      ),
+    ),
+  );
+  const error = await api("test").catch((cause: unknown) => cause);
+  expect(error).toMatchObject({ message: "invalid_edit", status: 422 });
+  expect(errorText(error)).toEqual(message("koukai2.selectDismissalPort"));
+});
