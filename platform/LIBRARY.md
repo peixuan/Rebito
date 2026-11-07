@@ -24,6 +24,9 @@ Supported manifest systems are `dos`, `nes`, `snes`, `gb` and `gba`; this is a
 format contract, not a claim that all runtime integrations are already verified.
 DOS uses a js-dos bundle; consoles use an uncompressed ROM. DOS entries may list
 portable relative `saveFiles` and select `editor: "koukai2"` when appropriate.
+At most 127 native paths are allowed; one additional artifact holds the runtime
+filesystem. The `__runtime` directory is reserved, and file/directory collisions
+are rejected before the emulator starts.
 Keep personalized saves out of shared game bundles. The operator supplies assets;
 no game, BIOS or private save is shipped in the repository or application image.
 

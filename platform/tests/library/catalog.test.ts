@@ -87,10 +87,21 @@ describe("verified game library", () => {
     { saveFiles: ["SAVE.DAT"] },
     { editor: "koukai2" },
     { system: "dos", saveFiles: ["SAVE.DAT", "save.dat"] },
+    { system: "dos", saveFiles: ["__RUNTIME/filesystem.zip"] },
+    { system: "dos", saveFiles: ["__runtime"] },
+    { system: "dos", saveFiles: ["SAVE", "save/nested.dat"] },
+    { system: "dos", saveFiles: Array.from({ length: 128 }, (_, i) => `save${i}.dat`) },
     { extra: true },
   ])("rejects unsupported or ambiguous manifest settings: %j", (patch) => {
     expect(catalogSchema.safeParse({ version: 1, games: [{ ...entry, ...patch }] }).success).toBe(
       false,
     );
+  });
+  it("reserves room for a filesystem artifact alongside the maximum native files", () => {
+    const saveFiles = Array.from({ length: 127 }, (_, i) => `save${i}.dat`);
+    expect(
+      catalogSchema.parse({ version: 1, games: [{ ...entry, system: "dos", saveFiles }] }).games[0]
+        ?.saveFiles,
+    ).toHaveLength(127);
   });
 });

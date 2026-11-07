@@ -3,7 +3,7 @@ import { createReadStream } from "node:fs";
 import { readFile, realpath, stat } from "node:fs/promises";
 import { isAbsolute, join, relative, sep } from "node:path";
 import { z } from "zod";
-import { assertArtifactName } from "../domain/artifacts.ts";
+import { assertArtifactName, progressLimits } from "../domain/artifacts.ts";
 
 const portablePath = z.string().refine((value) => {
   try {
@@ -25,13 +25,23 @@ const entrySchema = z
       .int()
       .min(1)
       .max(512 * 1024 * 1024),
-    saveFiles: z.array(portablePath).max(128).default([]),
+    // Reserve one artifact for the DOS filesystem overlay.
+    saveFiles: z
+      .array(portablePath)
+      .max(progressLimits.files - 1)
+      .default([]),
     editor: z.literal("koukai2").optional(),
   })
   .superRefine((entry, context) => {
     const names = entry.saveFiles.map((name) => name.normalize("NFC").toLowerCase());
     if (new Set(names).size !== names.length) {
       context.addIssue({ code: "custom", message: "Duplicate save paths" });
+    }
+    if (names.some((name) => name === "__runtime" || name.startsWith("__runtime/"))) {
+      context.addIssue({ code: "custom", message: "Reserved runtime save path" });
+    }
+    if (names.some((name) => names.some((other) => other.startsWith(`${name}/`)))) {
+      context.addIssue({ code: "custom", message: "Save path is both a file and directory" });
     }
     if (entry.system !== "dos" && (names.length || entry.editor)) {
       context.addIssue({ code: "custom", message: "DOS-specific settings on a console game" });
