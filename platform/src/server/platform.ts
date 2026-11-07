@@ -4,6 +4,8 @@ import { createAuth } from "../identity/auth.ts";
 import { migrateIdentity } from "../identity/migrate.ts";
 import { privateApi } from "../identity/private-api.ts";
 import { registerIdentity } from "../identity/routes.ts";
+import { LocalLibrary } from "../library/catalog.ts";
+import { registerLibrary } from "../library/routes.ts";
 import { registerSaves } from "../saves/routes.ts";
 import { SaveService } from "../saves/service.ts";
 import { LocalBlobStore } from "../storage/blobs.ts";
@@ -18,12 +20,14 @@ export async function createPlatform(config: ServerConfig, database: Pool) {
   await migrateStorage(database);
   const auth = createAuth(config, database);
   const app = createApp();
+  const library = await LocalLibrary.load(join(config.dataDirectory, "library"));
   const saves = new SaveService(
     new RevisionRepository(database),
     new LocalBlobStore(join(config.dataDirectory, "blobs")),
   );
   registerIdentity(app, auth, config);
   privateApi(app, auth, config.origin, async (scope) => {
+    registerLibrary(scope, library);
     await registerSaves(scope, saves);
   });
   app.get("/health/ready", async () => {

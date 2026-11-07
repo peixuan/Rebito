@@ -6,6 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { loadConfig } from "../../src/server/config.ts";
 import { createPlatform } from "../../src/server/platform.ts";
 import { testDatabase } from "../database.ts";
+import { seedLibrary } from "../library/fixture.ts";
 
 describe("authenticated save HTTP API", () => {
   let fixture: Awaited<ReturnType<typeof testDatabase>>;
@@ -13,11 +14,13 @@ describe("authenticated save HTTP API", () => {
   let directory: string;
   let alice: string;
   let bob: string;
+  let game: Awaited<ReturnType<typeof seedLibrary>>;
   const origin = "http://localhost:3000";
   const metadata = { kind: "game-save", releaseId: "test-game", baseRevision: null };
   beforeAll(async () => {
     fixture = await testDatabase();
     directory = await mkdtemp(join(tmpdir(), "retro-api-"));
+    game = await seedLibrary(directory);
     app = await createPlatform(
       loadConfig({
         APP_ORIGIN: origin,
@@ -58,6 +61,24 @@ describe("authenticated save HTTP API", () => {
     expect(response.statusCode).toBe(201);
     return response.json().id as string;
   }
+
+  it("serves verified catalog assets only to signed-in users without exposing disk paths", async () => {
+    expect((await app.inject("/api/games")).statusCode).toBe(401);
+    expect((await app.inject(`/api/games/${game.id}/asset`)).statusCode).toBe(401);
+    const list = await app.inject({ url: "/api/games", headers: { cookie: alice } });
+    expect(list.json()).toMatchObject([{ id: game.id, title: "Test game" }]);
+    expect(list.json()[0]).not.toHaveProperty("file");
+    const asset = await app.inject({
+      url: `/api/games/${game.id}/asset`,
+      headers: { cookie: bob },
+    });
+    expect(asset.rawPayload).toEqual(game.bytes);
+    expect(asset.headers["cache-control"]).toBe("no-store");
+    expect(
+      (await app.inject({ url: "/api/games/unknown/asset", headers: { cookie: alice } }))
+        .statusCode,
+    ).toBe(404);
+  });
   async function upload(
     id: string,
     value: unknown = metadata,

@@ -1,0 +1,109 @@
+import { createHash } from "node:crypto";
+import { createReadStream } from "node:fs";
+import { readFile, realpath, stat } from "node:fs/promises";
+import { isAbsolute, join, relative, sep } from "node:path";
+import { z } from "zod";
+import { assertArtifactName } from "../domain/artifacts.ts";
+
+const portablePath = z.string().refine((value) => {
+  try {
+    assertArtifactName(value);
+    return true;
+  } catch {
+    return false;
+  }
+}, "Expected a portable relative path");
+
+const entrySchema = z
+  .strictObject({
+    title: z.string().trim().min(1).max(120),
+    system: z.enum(["dos", "nes", "snes", "gb", "gba"]),
+    file: portablePath,
+    sha256: z.string().regex(/^[a-f0-9]{64}$/),
+    size: z
+      .number()
+      .int()
+      .min(1)
+      .max(512 * 1024 * 1024),
+    saveFiles: z.array(portablePath).max(128).default([]),
+    editor: z.literal("koukai2").optional(),
+  })
+  .superRefine((entry, context) => {
+    const names = entry.saveFiles.map((name) => name.normalize("NFC").toLowerCase());
+    if (new Set(names).size !== names.length) {
+      context.addIssue({ code: "custom", message: "Duplicate save paths" });
+    }
+    if (entry.system !== "dos" && (names.length || entry.editor)) {
+      context.addIssue({ code: "custom", message: "DOS-specific settings on a console game" });
+    }
+  });
+
+export type LibraryEntry = z.infer<typeof entrySchema>;
+export type Game = Readonly<Omit<LibraryEntry, "file"> & { id: string }>;
+export const catalogSchema = z.strictObject({
+  version: z.literal(1),
+  games: z.array(entrySchema).max(5000),
+});
+
+/** Asset bytes, not an editable display name, identify a game release. */
+export function releaseId(entry: Pick<LibraryEntry, "system" | "sha256">): string {
+  return `${entry.system}-${entry.sha256}`;
+}
+
+export async function fingerprint(path: string): Promise<{ sha256: string; size: number }> {
+  const hash = createHash("sha256");
+  let size = 0;
+  for await (const chunk of createReadStream(path)) {
+    hash.update(chunk);
+    size += chunk.length;
+  }
+  return { sha256: hash.digest("hex"), size };
+}
+
+/** Administrator-managed assets are verified at startup and never mutated by the API. */
+export class LocalLibrary {
+  private readonly entries = new Map<string, { game: Game; path: string }>();
+
+  static async load(directory: string): Promise<LocalLibrary> {
+    const library = new LocalLibrary();
+    let json: string;
+    try {
+      json = await readFile(join(directory, "catalog.json"), "utf8");
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") return library;
+      throw error;
+    }
+    const catalog = catalogSchema.parse(JSON.parse(json));
+    const root = await realpath(directory);
+    for (const entry of catalog.games) {
+      const path = await realpath(join(root, entry.file));
+      const child = relative(root, path);
+      if (!child || child === ".." || child.startsWith(`..${sep}`) || isAbsolute(child)) {
+        throw new Error("Game asset escapes the library directory");
+      }
+      const details = await stat(path);
+      if (!details.isFile() || details.size !== entry.size)
+        throw new Error("Game asset size mismatch");
+      const actual = await fingerprint(path);
+      if (actual.sha256 !== entry.sha256) throw new Error("Game asset checksum mismatch");
+      const id = releaseId(entry);
+      if (library.entries.has(id)) throw new Error("Duplicate game release");
+      const { file: _, ...publicEntry } = entry;
+      library.entries.set(id, { game: Object.freeze({ ...publicEntry, id }), path });
+    }
+    return library;
+  }
+
+  list(): readonly Game[] {
+    return [...this.entries.values()].map(({ game }) => game);
+  }
+
+  get(id: string): Game | undefined {
+    return this.entries.get(id)?.game;
+  }
+
+  stream(id: string) {
+    const entry = this.entries.get(id);
+    return entry ? createReadStream(entry.path) : undefined;
+  }
+}
