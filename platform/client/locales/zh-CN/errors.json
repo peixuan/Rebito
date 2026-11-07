@@ -1,0 +1,8 @@
+{
+  "errors.rateLimit": "操作过于频繁，请稍后再试。",
+  "errors.authentication": "邮箱或密码不正确，或登录已过期。",
+  "errors.conflict": "存档已有新版本，请重新载入后再操作。",
+  "errors.forbidden": "当前操作未获授权。",
+  "errors.request": "操作未完成，请检查输入后重试。",
+  "errors.connection": "暂时无法连接服务，请稍后重试。"
+}

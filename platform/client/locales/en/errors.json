@@ -1,0 +1,8 @@
+{
+  "errors.rateLimit": "Too many requests. Please try again shortly.",
+  "errors.authentication": "Your email or password is incorrect, or your session has expired.",
+  "errors.conflict": "A newer save exists. Reload it before making further changes.",
+  "errors.forbidden": "You are not authorized to perform this action.",
+  "errors.request": "The action could not be completed. Check your input and try again.",
+  "errors.connection": "Cannot connect to the service. Please try again shortly."
+}

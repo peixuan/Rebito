@@ -5,7 +5,7 @@ export default defineConfig({
     include: ["tests/**/*.test.ts"],
     coverage: {
       provider: "v8",
-      include: ["src/**/*.ts"],
+      include: ["src/**/*.ts", "client/api.ts"],
       exclude: ["src/server/main.ts", "src/server/create-account.ts"],
       reporter: ["text", "lcov"],
       thresholds: { lines: 90, statements: 90, functions: 90, branches: 85 },
