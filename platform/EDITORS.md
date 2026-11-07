@@ -34,6 +34,14 @@ nationality and affiliation bytes. The first six people also have titles at
 `0x5c3 + id*14`. Nationality changes write `value | 0x60` as in the legacy editor.
 Person 60's alternate labels depend on the independent marker at `0x11cb`.
 Membership filtering uses the 30-byte roster at `0x2177`, even if status is stale.
+Companion salaries occupy `0x2195..0x21b2` in units of ten coins; empty positions
+keep their existing salary. Recruiting fills the first `255` roster position and
+writes affiliation `(heroFleet, 255, 6)`. Hero fleets are `[0,10,30,50,40,20]`.
+Dismissal requires a selected port 0–99 and writes `(255,port,0)`; hiding writes
+`(254,0,0)`. Both remove the first matching roster entry, reproducing the original
+behavior even for duplicate entries. Actions reject changing the current hero.
+Bulk salary/loyalty copies only to valid members and uses pending edited values.
+
 Synthetic whole-file tests specify expected bytes independently of field metadata.
 Additional modules, legacy regression comparisons and HTTP/UI integration remain
 in progress; this initial module is not complete legacy feature parity.

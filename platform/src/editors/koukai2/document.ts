@@ -1,4 +1,5 @@
 import { MessageError, message } from "../../shared/messages.ts";
+import { companionRecords, personAction, sailorRecords } from "./companions.ts";
 import {
   type Changes,
   type Context,
@@ -20,6 +21,8 @@ export interface Slot {
 export const modules = [
   { id: "main", label: message("koukai2.main"), records: mainRecords },
   { id: "persons", label: message("koukai2.persons"), records: personRecords },
+  { id: "companions", label: message("koukai2.companions"), records: companionRecords },
+  { id: "sailors", label: message("koukai2.affiliation"), records: sailorRecords },
 ];
 
 /** Pure binary model. Unknown bytes and untouched out-of-range values survive. */
@@ -95,5 +98,12 @@ export class KoukaiDocument {
     const result = new Uint8Array(this.bytes);
     for (const { field, after } of preview) writeField(result, field, after);
     return result;
+  }
+  action(slot: number, action: string, record: string, pending: Changes = {}): Changes {
+    const edited = new KoukaiDocument(this.render(slot, pending));
+    const expanded = personAction(edited.context(slot), action, record);
+    const combined = { ...pending, ...expanded };
+    this.preview(slot, combined);
+    return combined;
   }
 }
