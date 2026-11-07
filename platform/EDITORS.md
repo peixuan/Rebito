@@ -42,6 +42,16 @@ Dismissal requires a selected port 0–99 and writes `(255,port,0)`; hiding writ
 behavior even for duplicate entries. Actions reject changing the current hero.
 Bulk salary/loyalty copies only to valid members and uses pending edited values.
 
+Fleet owners map heroes to `[0,1,3,5,4,2]`. Ten 9-byte positions begin at
+`0x21fd + 133*owner*10`, with per-position supplies at `0x4630 + 30*position`.
+Position byte 7 references a 22-byte descriptor at `0x4bfd + 22*id` (IDs 0–64).
+Unknown references and empty descriptors cannot be edited. Duplicate references
+share the first descriptor controls. IDs 40–64 alias template allocations, so
+both views use the same field keys. There are 17 instance fields and twelve
+fields per each of 25 templates. Template stats begin at `0x5184 + 12*type`;
+default allocations at `0x4f5e + 22*type + 17`. Cannon type encodes selection+16.
+Water/food display storage/10; salaries, industry, max crew and prices use ×10.
+
 Synthetic whole-file tests specify expected bytes independently of field metadata.
 Additional modules, legacy regression comparisons and HTTP/UI integration remain
 in progress; this initial module is not complete legacy feature parity.

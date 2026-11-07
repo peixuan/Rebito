@@ -10,6 +10,7 @@ import {
 } from "./fields.ts";
 import { mainRecords } from "./main.ts";
 import { personRecords } from "./persons.ts";
+import { fleetRecords, shipTypeRecords } from "./ships.ts";
 
 export const layout = { header: 0x97, slot: 0x8074, slots: 10, size: 328_991 } as const;
 export interface Slot {
@@ -23,6 +24,8 @@ export const modules = [
   { id: "persons", label: message("koukai2.persons"), records: personRecords },
   { id: "companions", label: message("koukai2.companions"), records: companionRecords },
   { id: "sailors", label: message("koukai2.affiliation"), records: sailorRecords },
+  { id: "fleet", label: message("koukai2.fleet"), records: fleetRecords },
+  { id: "ship_types", label: message("koukai2.shipTypes"), records: shipTypeRecords },
 ];
 
 /** Pure binary model. Unknown bytes and untouched out-of-range values survive. */
