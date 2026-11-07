@@ -1,0 +1,60 @@
+import type { LocalLibrary } from "../library/catalog.ts";
+import type { SaveService } from "../saves/service.ts";
+import { message } from "../shared/messages.ts";
+import { koukaiAdapter } from "./koukai2/adapter.ts";
+import { type EditorAdapter, type EditorDraft, EditorError } from "./types.ts";
+
+const adapters: ReadonlyMap<string, EditorAdapter> = new Map([["koukai2", koukaiAdapter]]);
+export interface EditorQuery extends EditorDraft {
+  file?: string | undefined;
+}
+export interface EditorBatch {
+  file: string;
+  edits: { slot: number; changes: Record<string, number> }[];
+}
+
+/** Release configuration selects the adapter; clients cannot choose a binary parser. */
+export class EditorService {
+  private readonly saves: SaveService;
+  private readonly library: LocalLibrary;
+  constructor(saves: SaveService, library: LocalLibrary) {
+    this.saves = saves;
+    this.library = library;
+  }
+
+  private async open(owner: string, revisionId: string, file?: string) {
+    const revision = await this.saves.revisions.read(owner, revisionId);
+    const game = this.library.get(revision.manifest.releaseId);
+    const adapter = game?.editor ? adapters.get(game.editor) : undefined;
+    if (!adapter || !game || revision.manifest.kind === "snapshot")
+      throw new EditorError("unsupported_editor", message("editor.unsupported"));
+    const paths = new Set(game.saveFiles.map((name) => name.normalize("NFC").toLowerCase()));
+    const files = revision.manifest.artifacts
+      .filter(
+        (artifact) =>
+          artifact.size === adapter.size && paths.has(artifact.name.normalize("NFC").toLowerCase()),
+      )
+      .map((artifact) => artifact.name);
+    const selected = file ?? files[0];
+    if (!selected || !files.includes(selected))
+      throw new EditorError("no_editable_save", message("editor.saveRequired"));
+    return {
+      adapter,
+      files,
+      file: selected,
+      bytes: await this.saves.file(owner, revisionId, selected),
+    };
+  }
+  async preview(owner: string, revisionId: string, query: EditorQuery) {
+    const opened = await this.open(owner, revisionId, query.file);
+    return { file: opened.file, files: opened.files, ...opened.adapter.view(opened.bytes, query) };
+  }
+  async publish(owner: string, revisionId: string, batch: EditorBatch) {
+    const opened = await this.open(owner, revisionId, batch.file);
+    let bytes = opened.bytes;
+    // Transform every slot before publishing anything: a bad later edit is atomic.
+    for (const edit of batch.edits) bytes = opened.adapter.apply(bytes, edit);
+    return this.saves.replaceFile(owner, revisionId, opened.file, bytes);
+  }
+}
+export type EditorResponse = Awaited<ReturnType<EditorService["preview"]>>;

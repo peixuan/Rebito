@@ -35,3 +35,26 @@ relative filenames. Limits are 128 files and 64 MiB total, with two simultaneous
 uploads per process. Hashes are computed by the server. A conflict never replaces
 the newer head; fetch history before choosing how to retry. Restore creates a new
 revision and retains both the original and intervening versions.
+
+## Editors
+
+Both routes require the same session and exact-origin checks as save publication.
+The server selects an adapter from the immutable release configuration.
+
+- `POST /api/revisions/:id/editor/preview` accepts `{}` to choose the first eligible
+  file, active slot and module. Optional `file`, `slot`, `module`, `record` and
+  `changes` select a view with a draft. `action: {id, record}` expands a linked
+  operation against that draft. The response includes slots, modules, sortable
+  record cells, selected fields, available actions, expanded changes and a diff.
+  It never writes data or returns binary offsets.
+- `POST /api/revisions/:id/editor` accepts
+  `{file, edits: [{slot, changes: {money: 1000000}}]}`. One to ten unique slots are
+  transformed before publishing a single `editor` revision. `:id` is the expected
+  head; a newer game upload or another edit produces HTTP 409.
+
+Edits use integer storage values; field metadata describes display multipliers
+and divisors. Unsupported releases, malformed saves and invalid operations return
+HTTP 422 with a stable `error` and a user-readable `message`. Bodies reject unknown
+properties and noninteger values. A slot accepts at most 6000 changed fields;
+preview/publication body limits are 512 KiB/1 MiB. Native files are restricted to
+the release's configured save paths. Snapshots cannot be edited in place.

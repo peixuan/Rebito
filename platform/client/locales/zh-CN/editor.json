@@ -1,4 +1,6 @@
 {
+  "editor.unsupported": "此游戏版本或进度类型尚不支持编辑。",
+  "editor.saveRequired": "请先在游戏内存档并保存到账号，或导入此游戏的原生存档。",
   "editor.invalidSave": "存档格式无效。",
   "editor.invalidEdit": "修改请求无效。",
   "editor.selectModule": "请选择有效编辑模块。",

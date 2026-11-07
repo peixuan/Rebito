@@ -39,7 +39,7 @@ support are separate: a playable game need not have an editor.
 | Game library and personal progress | Implemented | Verified assets; private catalog API; browser import, history, restore and account isolation |
 | DOS browser runtime | Verified with own fixture | Real DOSBox WASM, native files, filesystem overlay, edited-byte precedence |
 | Console browser runtime | Four cores verified with own fixtures | NES/SNES/GB/GBA SRAM import and state restoration; NES keyboard and volatile palette |
-| Koukai2 editor | Eight binary modules verified | Synthetic bounds/aliases/bit checks; 13/13 complete-file matches against original editor; API/UI pending |
+| Koukai2 editor | Core and private API verified | Eight modules; 13/13 legacy whole-file matches; atomic multi-slot edits and ownership; UI pending |
 | Release validation | Pending | Gates, end-to-end flows, deployment and handoff docs pass |
 
 ## Acceptance boundaries

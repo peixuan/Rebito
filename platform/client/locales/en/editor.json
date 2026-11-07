@@ -1,4 +1,6 @@
 {
+  "editor.unsupported": "Editing is not supported for this game release or progress type.",
+  "editor.saveRequired": "Save inside the game and synchronize to your account first, or import a native game save.",
   "editor.invalidSave": "The save format is invalid.",
   "editor.invalidEdit": "The edit request is invalid.",
   "editor.selectModule": "Select a valid editor module.",

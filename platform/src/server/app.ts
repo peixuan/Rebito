@@ -1,5 +1,6 @@
 import helmet from "@fastify/helmet";
 import Fastify from "fastify";
+import { EditorError } from "../editors/types.ts";
 import { ProgressError } from "../storage/revisions.ts";
 import { browserPolicy } from "./browser-policy.ts";
 
@@ -22,6 +23,8 @@ export function createApp() {
   app.get("/health/live", async () => ({ status: "ok" }));
 
   app.setErrorHandler((error, _request, reply) => {
+    if (error instanceof EditorError)
+      return reply.code(422).send({ error: error.code, displayMessage: error.displayMessage });
     if (error instanceof ProgressError) {
       const status = { not_found: 404, conflict: 409, release_mismatch: 400 }[error.code];
       return reply.code(status).send({ error: error.code });

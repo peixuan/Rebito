@@ -1,5 +1,7 @@
 import { join } from "node:path";
 import type { Pool } from "pg";
+import { registerEditors } from "../editors/routes.ts";
+import { EditorService } from "../editors/service.ts";
 import { createAuth } from "../identity/auth.ts";
 import { migrateIdentity } from "../identity/migrate.ts";
 import { privateApi } from "../identity/private-api.ts";
@@ -29,6 +31,7 @@ export async function createPlatform(config: ServerConfig, database: Pool) {
   privateApi(app, auth, config.origin, async (scope) => {
     registerLibrary(scope, library);
     await registerSaves(scope, saves);
+    registerEditors(scope, new EditorService(saves, library));
   });
   app.get("/health/ready", async () => {
     await database.query("SELECT 1");

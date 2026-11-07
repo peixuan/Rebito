@@ -17,11 +17,11 @@ export interface EditorField {
   help?: DisplayText;
 }
 export interface EditorDraft {
-  slot?: number;
-  module?: string;
-  record?: string;
-  changes?: Record<string, number>;
-  action?: { id: string; record: string };
+  slot?: number | undefined;
+  module?: string | undefined;
+  record?: string | undefined;
+  changes?: Record<string, number> | undefined;
+  action?: { id: string; record: string } | undefined;
 }
 export interface EditorView {
   slots: { index: number; label: DisplayText; available: boolean }[];

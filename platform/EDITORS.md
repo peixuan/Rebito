@@ -64,7 +64,13 @@ All eight binary modules are implemented. On 2026-11-07, the TypeScript model
 matched all 13 private golden outputs captured from the original Dk2Edit.exe,
 comparing every byte after each sequential stage. This covers representative
 paths through every module, not every possible real save or game edition.
-HTTP/UI integration and actual in-game acceptance are still required.
+The private editor API previews a selected revision and publishes a batch of slot
+edits as one new revision. Only the owning account can read or edit it. The server
+chooses the adapter from the catalog, restricts editable files to configured native
+paths and rejects snapshots whose memory could undo native edits. Every slot must
+transform successfully before publication. Existing filesystem overlays remain
+immutable; DOS applies changed native files last on restart. Compact UI integration
+and actual in-game acceptance are still required.
 
 Reproduce locally with Node 24 or newer:
 `node scripts/verify-koukai-legacy.mjs PRIVATE_CORPUS_DIRECTORY`.
