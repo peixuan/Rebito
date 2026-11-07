@@ -38,9 +38,10 @@ support are separate: a playable game need not have an editor.
 | Save publication API | Verified locally | Real multipart imports, private downloads, stale writes, history and restore |
 | Browser login shell | Verified in Chrome | Real registration/login/logout, session recovery and narrow-viewport checks |
 | Game library and personal progress | Implemented | Verified assets; private catalog API; browser import, history, restore and account isolation |
+| Operator game preparation/import | Verified locally | Explicit DOS file allowlist; deterministic bundles; atomic catalog publication; source files unchanged |
 | DOS browser runtime | Verified with own fixture | Real DOSBox WASM, native files, filesystem overlay, edited-byte precedence |
 | Console browser runtime | Four cores verified with own fixtures | NES/SNES/GB/GBA SRAM import and state restoration; NES keyboard and volatile palette |
-| Koukai2 editor | Core/API/browser flows verified | Eight modules; 13/13 legacy matches; compact inputs, linked actions, atomic multi-slot edits and conflict recovery; real-game acceptance pending |
+| Koukai2 editor | Real-game round trip verified | Eight modules; 13/13 legacy matches; browser editing/conflict tests; game reads and resaves modified money/leadership |
 | Release validation | Pending | Gates, end-to-end flows, deployment and handoff docs pass |
 
 ## Acceptance boundaries
@@ -55,11 +56,9 @@ support are separate: a playable game need not have an editor.
 
 ## Next work
 
-1. The workspace now plays all five platforms. Complete operator import and
-   real-game acceptance above the original DOS/console test programs.
-2. Verify edited Koukai2 saves in the actual game. Core parity and browser editing
-   are complete; retain the 13 whole-file legacy comparisons and independent tests.
-3. Finish storage operations/limits and rebuild the complete deployment. OIDC is
+1. Finish per-user storage limits, cleanup and backup/restore operations.
+2. Check DOS pointer alignment or relative capture; see [game acceptance](GAME_ACCEPTANCE.md).
+3. Rebuild and verify the complete deployment. OIDC is
    browser-verified; production LDAP federation depends on the operator's provider.
 
 ## Available checks
@@ -71,7 +70,7 @@ remote CI has not run because this work has not been pushed.
 
 `cd platform && npm run check` with the test database: format/lint, TypeScript,
 HTTP/domain/filesystem and real PostgreSQL identity/revision/service tests passed.
-The latest run passed 151 tests with 99.14% Windows line coverage. Linux-only
+The latest run passed 162 tests with 98.68% Windows line coverage. Linux-only
 directory fsync is not exercised by the Windows run. This does not imply coverage
 of pending product features. The process entrypoint and account-provisioning CLI
 are excluded from unit coverage and exercised by the container smoke test.
