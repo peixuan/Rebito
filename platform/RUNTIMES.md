@@ -43,6 +43,13 @@ which this Emscripten loader requires; the account/editor document keeps its
 stricter script policy. The same-origin iframe isolates runtime globals/styles,
 not an adversarial JavaScript plugin.
 
+DOS exposes a relative-mouse switch through the pinned player's
+[`setMouseCapture` API](https://js-dos.com/player-api.html). Click the canvas to
+capture the pointer; Escape releases it. A real-browser check covers both states.
+This is useful for games whose absolute DOS mouse coordinates differ from the
+letterboxed display. The option resets when the runtime stops; pointer handlers
+are removed with that instance.
+
 The console adapter uses the pinned `saveDatabaseLoaded` event before ROM startup.
 It replaces the browser's persistent save mount with MEMFS and writes the selected
 native save there. This prevents IndexedDB data from overwriting an

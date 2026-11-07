@@ -41,7 +41,8 @@ and 13 complete-file legacy comparisons; this real-game check exercises two
 representative fields, not every possible edit or a complete playthrough.
 
 During this check the game's absolute mouse position needed a vertical adjustment
-within its letterboxed display; keyboard menu navigation worked. Assess relative
-mouse capture or per-game input settings before claiming polished mouse behavior.
+within its letterboxed display; keyboard menu navigation worked. The DOS window
+now offers relative mouse capture, with canvas capture and Escape release verified
+in the browser. Absolute pointer alignment remains game-dependent.
 This run used the Windows host service; complete container acceptance is tracked
 separately in [status](STATUS.md).

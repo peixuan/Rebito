@@ -17,6 +17,7 @@ interface CommandInterface {
 }
 interface DosPlayer {
   setNoCloud(value: boolean): void;
+  setMouseCapture(value: boolean): void;
   stop(): Promise<void>;
 }
 type DosFunction = (element: HTMLDivElement, options: Record<string, unknown>) => DosPlayer;
@@ -74,6 +75,7 @@ export async function startDos(
     quickSave: false,
     kiosk: true,
     workerThread: true,
+    mouseCapture: false,
     lang: "en",
     fsChanges: { local: false, pull: async () => null },
     onEvent: (event: string, ci: CommandInterface) => {
@@ -82,9 +84,20 @@ export async function startDos(
   });
   player.setNoCloud(true);
   const ci = await ready;
+  function releasePointer(event: KeyboardEvent) {
+    if (event.key !== "Escape" || !document.pointerLockElement) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    document.exitPointerLock();
+  }
+  window.addEventListener("keydown", releasePointer, true);
   return {
     pause: () => ci.pause(),
     resume: () => ci.resume(),
+    setMouseCapture(enabled) {
+      player.setMouseCapture(enabled);
+      if (!enabled && document.pointerLockElement) document.exitPointerLock();
+    },
     async capture() {
       ci.pause();
       const captured: RuntimeFile[] = [];
@@ -100,6 +113,8 @@ export async function startDos(
         : null;
     },
     async stop() {
+      window.removeEventListener("keydown", releasePointer, true);
+      if (document.pointerLockElement) document.exitPointerLock();
       await player.stop();
     },
   };

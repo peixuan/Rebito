@@ -15,6 +15,17 @@ test("plays DOS in the workspace and publishes bytes through the cloud revision 
   const save = page.getByRole("button", { name: "Save to account" });
   await expect(save).toBeEnabled({ timeout: 30_000 });
   await expect(page.frameLocator("iframe").locator("canvas")).toBeVisible();
+  const runtime = page.frames().find((frame) => frame.url().endsWith("/runtime.html"));
+  if (!runtime) throw new Error("Missing DOS frame");
+  const mouseMode = page.getByRole("button", { name: "Relative mouse", exact: true });
+  await mouseMode.click();
+  await expect(mouseMode).toHaveAttribute("aria-pressed", "true");
+  await runtime.locator("canvas").click();
+  await expect.poll(() => runtime.evaluate(() => Boolean(document.pointerLockElement))).toBe(true);
+  await page.keyboard.press("Escape");
+  await expect.poll(() => runtime.evaluate(() => Boolean(document.pointerLockElement))).toBe(false);
+  await mouseMode.click();
+  await expect(mouseMode).toHaveAttribute("aria-pressed", "false");
   await expect
     .poll(async () => {
       await save.click();

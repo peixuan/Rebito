@@ -23,6 +23,7 @@ const active = ref(false);
 const ready = ref(false);
 const busy = ref(false);
 const paused = ref(false);
+const relativeMouse = ref(false);
 const error = ref<DisplayText>("");
 const notice = ref<DisplayText>("");
 let handle: RuntimeHandle | null = null;
@@ -105,6 +106,7 @@ async function stop() {
   } finally {
     active.value = false;
     paused.value = false;
+    relativeMouse.value = false;
   }
 }
 async function save() {
@@ -143,6 +145,11 @@ function togglePause() {
   if (paused.value) handle.pause();
   else handle.resume();
 }
+function toggleMouse() {
+  if (!handle?.setMouseCapture) return;
+  relativeMouse.value = !relativeMouse.value;
+  handle.setMouseCapture(relativeMouse.value);
+}
 watch(
   () => props.baseRevision,
   (value) => {
@@ -180,6 +187,15 @@ onBeforeUnmount(() => {
           @click="save"
         />
         <Button
+          v-if="game.system === 'dos'"
+          :label="t('player.relativeMouse')"
+          size="small"
+          severity="secondary"
+          :aria-pressed="relativeMouse"
+          :disabled="!ready || busy"
+          @click="toggleMouse"
+        />
+        <Button
           :label="t('player.stop')"
           size="small"
           severity="secondary"
@@ -187,6 +203,7 @@ onBeforeUnmount(() => {
           @click="perform(stop)"
         />
       </template>
+      <span v-if="relativeMouse" class="muted">{{ t("player.mouseHelp") }}</span>
       <span class="muted">{{
         game.system === "dos" ? t("player.manualSaveHelp") : t("player.keyboardHelp")
       }}</span>
