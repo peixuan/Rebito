@@ -40,6 +40,7 @@ export class SaveService {
     };
     assertProgressManifest(manifest);
     await this.preflight(owner, profileId, base, metadata.releaseId);
+    await this.revisions.assertCapacity(owner, manifest);
     for (const [index, file] of files.entries()) {
       const stored = await this.blobs.put(file.bytes);
       const expected = manifest.artifacts[index];
@@ -72,6 +73,7 @@ export class SaveService {
       ),
     };
     assertProgressManifest(manifest);
+    await this.revisions.assertCapacity(owner, manifest);
     const stored = await this.blobs.put(bytes);
     if (stored.sha256 !== replacement.sha256 || stored.size !== replacement.size)
       throw new Error("Save bytes changed during publication");

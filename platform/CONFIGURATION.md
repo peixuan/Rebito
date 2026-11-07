@@ -10,12 +10,22 @@ Configuration is validated before startup. Never commit a real `.env` file.
 | `DATA_DIR`                             | Private storage directory; defaults to `.data`                    |
 | `HOST`, `PORT`                         | Listener; defaults to `127.0.0.1:3000`                            |
 | `ALLOW_REGISTRATION`                   | Explicit `true` or `false`; defaults to closed registration       |
+| `MAX_PROFILES_PER_USER`                | Personal progress profiles per user; default 100, maximum 10,000  |
+| `MAX_REVISIONS_PER_USER`               | Retained revisions per user; default 2,000, maximum 1,000,000     |
+| `MAX_SAVE_BYTES_PER_USER`              | Logical retained bytes per user; default 2 GiB, maximum 1 TiB     |
 | `OIDC_DISCOVERY_URL`                   | Optional provider discovery URL                                   |
 | `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` | Both required when OIDC is configured                             |
 
 Public origins and OIDC discovery require HTTPS; loopback HTTP is allowed for
 local development. All three OIDC settings must be supplied together. LDAP/AD
 integration uses an OIDC provider's directory federation, not application LDAP binds.
+
+Storage limits must be positive integers. Logical usage counts all retained revision
+files, including reused blobs and restored revisions. Exceeding a quota rejects the
+new write with `507 quota_exceeded`; existing progress remains readable. Per-owner
+transactions enforce limits even when concurrent requests target different profiles.
+No history is silently deleted. These are user quotas, not a filesystem reservation:
+monitor physical disk space and remove abandoned blobs during offline maintenance.
 
 ## OIDC and directory integration
 

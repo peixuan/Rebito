@@ -25,7 +25,7 @@ describe("transactional revision publication", () => {
     });
     await migrateIdentity(config, fixture.database);
     await Promise.all([migrateStorage(fixture.database), migrateStorage(fixture.database)]);
-    for (const id of ["alice", "bob"]) {
+    for (const id of ["alice", "bob", "profile-quota", "byte-quota", "revision-quota"]) {
       await fixture.database.query(
         `INSERT INTO "user"(id, name, email, "emailVerified", "createdAt", "updatedAt")
         VALUES ($1, $1, $2, false, now(), now())`,
@@ -129,6 +129,78 @@ describe("transactional revision publication", () => {
       await expect(repository.create("alice", release, name)).rejects.toThrow("Invalid profile");
     }
     await expect(repository.create("missing-user", "test-game", "Name")).rejects.toThrow();
+  });
+
+  it("serializes concurrent profile creation against the owner's profile limit", async () => {
+    const limited = new RevisionRepository(fixture.database, {
+      profiles: 2,
+      revisions: 10,
+      bytes: 10,
+    });
+    const attempts = await Promise.allSettled(
+      [1, 2, 3].map((index) => limited.create("profile-quota", "test-game", `Run ${index}`)),
+    );
+    expect(attempts.filter((result) => result.status === "fulfilled")).toHaveLength(2);
+    expect(attempts.find((result) => result.status === "rejected")).toMatchObject({
+      reason: { code: "quota_exceeded" },
+    });
+    expect((await limited.usage("profile-quota")).used).toEqual({
+      profiles: 2,
+      revisions: 0,
+      bytes: 0,
+    });
+  });
+
+  it("enforces aggregate bytes across simultaneous writes to different profiles", async () => {
+    const limited = new RevisionRepository(fixture.database, {
+      profiles: 10,
+      revisions: 10,
+      bytes: 10,
+    });
+    const profiles = await Promise.all(
+      [1, 2].map((index) => limited.create("byte-quota", "test-game", `Run ${index}`)),
+    );
+    const sixBytes = {
+      ...manifest,
+      artifacts: [{ name: "SAVE.DAT", sha256: "b".repeat(64), size: 6 }],
+    };
+    const results = await Promise.allSettled(
+      profiles.map((profile) => limited.publish("byte-quota", profile.id, null, sixBytes, "game")),
+    );
+    expect(results.filter((result) => result.status === "fulfilled")).toHaveLength(1);
+    expect(results.find((result) => result.status === "rejected")).toMatchObject({
+      reason: { code: "quota_exceeded" },
+    });
+    expect((await limited.usage("byte-quota")).used).toEqual({
+      profiles: 2,
+      revisions: 1,
+      bytes: 6,
+    });
+    expect((await limited.list("byte-quota")).filter((profile) => profile.headId)).toHaveLength(1);
+  });
+
+  it("counts restored/deduplicated revisions while keeping existing progress readable", async () => {
+    const limited = new RevisionRepository(fixture.database, {
+      profiles: 10,
+      revisions: 1,
+      bytes: 10,
+    });
+    const profile = await limited.create("revision-quota", "test-game", "Run");
+    const first = await limited.publish("revision-quota", profile.id, null, manifest, "game");
+    await expect(
+      limited.publish("revision-quota", profile.id, first.id, manifest, "restore"),
+    ).rejects.toMatchObject({ code: "quota_exceeded" });
+    expect(await limited.read("revision-quota", first.id)).toEqual(first);
+    expect((await limited.usage("revision-quota")).used).toEqual({
+      profiles: 1,
+      revisions: 1,
+      bytes: 1,
+    });
+    expect((await limited.usage("missing-user")).used).toEqual({
+      profiles: 0,
+      revisions: 0,
+      bytes: 0,
+    });
   });
 
   it("leaves no partial schema when a required identity table is absent", async () => {

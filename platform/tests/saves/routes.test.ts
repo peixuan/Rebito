@@ -107,6 +107,14 @@ describe("authenticated save HTTP API", () => {
     expect((await upload(id, metadata, ["SAVE.DAT"], bob)).statusCode).toBe(404);
     const first = await upload(id, metadata, ["nested/SAVE.DAT"]);
     expect(first.statusCode).toBe(201);
+    expect((await app.inject("/api/storage")).statusCode).toBe(401);
+    const usage = await app.inject({ url: "/api/storage", headers: { cookie: alice } });
+    expect(usage.json().used).toEqual({ profiles: 1, revisions: 1, bytes: 3 });
+    expect(usage.json().limits.bytes).toBe(2147483648);
+    expect(usage.headers["cache-control"]).toBe("no-store");
+    expect(
+      (await app.inject({ url: "/api/storage", headers: { cookie: bob } })).json().used,
+    ).toEqual({ profiles: 0, revisions: 0, bytes: 0 });
     expect(first.json().manifest).not.toHaveProperty("baseRevision");
     const revisionId = first.json().id;
     const downloaded = await app.inject({

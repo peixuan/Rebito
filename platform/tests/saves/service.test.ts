@@ -66,6 +66,22 @@ describe("save publication service", () => {
     });
   });
 
+  it("rejects quota-exhausted uploads before writing blobs", async () => {
+    const limited = new RevisionRepository(fixture.database, {
+      profiles: 100,
+      revisions: 100,
+      bytes: 1,
+    });
+    const bounded = new SaveService(limited, blobs);
+    const profile = await limited.create("alice", metadata.releaseId, "Quota");
+    const before = await readdir(directory);
+    await expect(
+      bounded.publish("alice", profile.id, null, metadata, files, "game"),
+    ).rejects.toMatchObject({ code: "quota_exceeded" });
+    expect(await readdir(directory)).toEqual(before);
+    expect(await limited.history("alice", profile.id)).toEqual([]);
+  });
+
   it("rejects unauthorized, stale and mismatched uploads before writing blobs", async () => {
     const profile = await repository.create("alice", metadata.releaseId, "Preflight");
     const existing = await service.publish("alice", profile.id, null, metadata, files, "import");

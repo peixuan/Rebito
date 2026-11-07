@@ -10,7 +10,7 @@ no-store`; request limits are per authenticated user. Do not add private routes
 outside the `privateApi` scope or remove the ownership checks in the save service.
 
 Client errors use stable codes: `unauthenticated` (401), `invalid_origin` (403),
-`not_found` (404), `conflict` (409), `release_mismatch` (400), or `invalid_request`
+`not_found` (404), `conflict` (409), `release_mismatch` (400), `quota_exceeded` (507), or `invalid_request`
 for other rejected input. Internal errors return no stack trace or database details.
 Cross-user resources behave as absent.
 
@@ -20,14 +20,15 @@ compatible with these headers; do not disable the policy to use an unpinned CDN.
 
 ## Saves
 
-| Method and path                        | Behavior                                    |
-| -------------------------------------- | ------------------------------------------- |
-| `GET /api/profiles`                    | List this user's profiles                   |
-| `POST /api/profiles`                   | Create with `releaseId` and `name`          |
-| `GET /api/profiles/:id/revisions`      | Read the latest 100 immutable revisions     |
-| `POST /api/profiles/:id/revisions`     | Publish a multipart collection              |
-| `GET /api/revisions/:id/file?name=...` | Download one owned artifact                 |
-| `POST /api/profiles/:id/restore`       | Restore `revisionId` against `baseRevision` |
+| Method and path                        | Behavior                                        |
+| -------------------------------------- | ----------------------------------------------- |
+| `GET /api/profiles`                    | List this user's profiles                       |
+| `GET /api/storage`                     | This user's logical usage and configured limits |
+| `POST /api/profiles`                   | Create with `releaseId` and `name`              |
+| `GET /api/profiles/:id/revisions`      | Read the latest 100 immutable revisions         |
+| `POST /api/profiles/:id/revisions`     | Publish a multipart collection                  |
+| `GET /api/revisions/:id/file?name=...` | Download one owned artifact                     |
+| `POST /api/profiles/:id/restore`       | Restore `revisionId` against `baseRevision`     |
 
 Uploads contain one text field `metadata`: JSON with `kind`, `releaseId`, required
 nullable `baseRevision`, and `runtime` for snapshots. File parts use their portable

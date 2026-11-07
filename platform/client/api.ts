@@ -43,6 +43,7 @@ export function errorText(error: unknown): DisplayMessage {
   if (expected) return expected;
   if (error instanceof ApiError) {
     if (error.status === 422 && error.detail) return error.detail;
+    if (error.message === "quota_exceeded") return message("errors.quota");
     if (error.status === 429) return message("errors.rateLimit");
     if (error.status === 401) return message("errors.authentication");
     if (error.status === 409) return message("errors.conflict");

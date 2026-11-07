@@ -24,7 +24,7 @@ export async function createPlatform(config: ServerConfig, database: Pool) {
   const app = createApp();
   const library = await LocalLibrary.load(join(config.dataDirectory, "library"));
   const saves = new SaveService(
-    new RevisionRepository(database),
+    new RevisionRepository(database, config.storageLimits),
     new LocalBlobStore(join(config.dataDirectory, "blobs")),
   );
   registerIdentity(app, auth, config);

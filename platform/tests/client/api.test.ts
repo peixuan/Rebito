@@ -49,6 +49,7 @@ it("shows useful messages without echoing server details", () => {
     );
   }
   expect(errorText(new Error("network"))).toEqual(message("errors.connection"));
+  expect(errorText(new ApiError("quota_exceeded", 507))).toEqual(message("errors.quota"));
 });
 it("shows explicit editor validation messages while retaining the error code", async () => {
   vi.stubGlobal(

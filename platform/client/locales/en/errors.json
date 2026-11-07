@@ -1,4 +1,5 @@
 {
+  "errors.quota": "Your storage quota is full. Ask an administrator to clean up history or adjust your quota.",
   "errors.rateLimit": "Too many requests. Please try again shortly.",
   "errors.authentication": "Your email or password is incorrect, or your session has expired.",
   "errors.conflict": "A newer save exists. Reload it before making further changes.",

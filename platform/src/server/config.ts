@@ -1,4 +1,5 @@
 import { resolve } from "node:path";
+import { type StorageLimits, storageLimitSchema } from "../storage/limits.ts";
 
 export interface ServerConfig {
   readonly origin: string;
@@ -8,6 +9,7 @@ export interface ServerConfig {
   readonly host: string;
   readonly port: number;
   readonly allowRegistration: boolean;
+  readonly storageLimits: StorageLimits;
   readonly oidc?: {
     readonly discoveryUrl: string;
     readonly clientId: string;
@@ -70,6 +72,11 @@ export function loadConfig(environment: Environment): ServerConfig {
     host: environment.HOST ?? "127.0.0.1",
     port,
     allowRegistration: registration === "true",
+    storageLimits: storageLimitSchema.parse({
+      profiles: Number(environment.MAX_PROFILES_PER_USER ?? 100),
+      revisions: Number(environment.MAX_REVISIONS_PER_USER ?? 2000),
+      bytes: Number(environment.MAX_SAVE_BYTES_PER_USER ?? 2 * 1024 ** 3),
+    }),
     ...(oidc ? { oidc } : {}),
   };
 }

@@ -72,6 +72,7 @@ export async function registerSaves(app: FastifyInstance, service: SaveService):
     },
   });
   app.get("/api/profiles", async (request) => service.revisions.list(request.ownerId));
+  app.get("/api/storage", async (request) => service.revisions.usage(request.ownerId));
   app.post<{ Body: { releaseId: string; name: string } }>(
     "/api/profiles",
     { schema: { body: profileBody } },

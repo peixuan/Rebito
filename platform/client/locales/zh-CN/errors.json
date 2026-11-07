@@ -1,4 +1,5 @@
 {
+  "errors.quota": "个人存储配额已满，请联系管理员清理历史或调整配额。",
   "errors.rateLimit": "操作过于频繁，请稍后再试。",
   "errors.authentication": "邮箱或密码不正确，或登录已过期。",
   "errors.conflict": "存档已有新版本，请重新载入后再操作。",
