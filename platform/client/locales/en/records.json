@@ -1,0 +1,10 @@
+{
+  "records.search": "Search records",
+  "records.columns": "Visible columns",
+  "records.selectedColumns": "{count} columns",
+  "records.companionsOnly": "Companions only",
+  "records.record": "Record",
+  "records.description": "Description",
+  "records.empty": "No matching records.",
+  "records.count": "{visible} / {total} records · Click a column heading to sort"
+}

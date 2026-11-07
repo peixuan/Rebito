@@ -1,0 +1,10 @@
+{
+  "records.search": "搜索记录",
+  "records.columns": "显示列",
+  "records.selectedColumns": "{count}列",
+  "records.companionsOnly": "只看手下",
+  "records.record": "记录",
+  "records.description": "说明",
+  "records.empty": "没有匹配的记录。",
+  "records.count": "{visible} / {total} 条记录 · 点击列标题排序"
+}
