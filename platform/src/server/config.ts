@@ -1,0 +1,75 @@
+import { resolve } from "node:path";
+
+export interface ServerConfig {
+  readonly origin: string;
+  readonly databaseUrl: string;
+  readonly authSecret: string;
+  readonly dataDirectory: string;
+  readonly host: string;
+  readonly port: number;
+  readonly allowRegistration: boolean;
+  readonly oidc?: {
+    readonly discoveryUrl: string;
+    readonly clientId: string;
+    readonly clientSecret: string;
+  };
+}
+
+type Environment = Readonly<Record<string, string | undefined>>;
+
+function required(environment: Environment, key: string): string {
+  const value = environment[key];
+  if (!value?.trim()) throw new Error(`${key} is required`);
+  return value;
+}
+
+/** Only loopback development endpoints may use plaintext HTTP. */
+function webUrl(value: string, label: string): URL {
+  const url = new URL(value);
+  if (
+    url.username ||
+    url.password ||
+    url.hash ||
+    (url.protocol !== "https:" &&
+      !(url.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)))
+  ) {
+    throw new Error(`${label} requires HTTPS (HTTP is allowed on loopback only)`);
+  }
+  return url;
+}
+
+export function loadConfig(environment: Environment): ServerConfig {
+  const origin = webUrl(required(environment, "APP_ORIGIN"), "APP_ORIGIN");
+  if (origin.pathname !== "/" || origin.search) throw new Error("APP_ORIGIN must be an origin");
+  const databaseUrl = required(environment, "DATABASE_URL");
+  if (!["postgres:", "postgresql:"].includes(new URL(databaseUrl).protocol)) {
+    throw new Error("DATABASE_URL must use PostgreSQL");
+  }
+  const authSecret = required(environment, "AUTH_SECRET");
+  if (authSecret.length < 32) throw new Error("AUTH_SECRET needs at least 32 random characters");
+  const port = Number(environment.PORT ?? "3000");
+  if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error("PORT is invalid");
+  const registration = environment.ALLOW_REGISTRATION ?? "false";
+  if (!["true", "false"].includes(registration)) {
+    throw new Error("ALLOW_REGISTRATION must be true or false");
+  }
+
+  const oidcKeys = ["OIDC_DISCOVERY_URL", "OIDC_CLIENT_ID", "OIDC_CLIENT_SECRET"] as const;
+  const oidc = oidcKeys.some((key) => environment[key] !== undefined)
+    ? {
+        discoveryUrl: webUrl(required(environment, oidcKeys[0]), oidcKeys[0]).href,
+        clientId: required(environment, oidcKeys[1]),
+        clientSecret: required(environment, oidcKeys[2]),
+      }
+    : undefined;
+  return {
+    origin: origin.origin,
+    databaseUrl,
+    authSecret,
+    dataDirectory: resolve(environment.DATA_DIR ?? ".data"),
+    host: environment.HOST ?? "127.0.0.1",
+    port,
+    allowRegistration: registration === "true",
+    ...(oidc ? { oidc } : {}),
+  };
+}
