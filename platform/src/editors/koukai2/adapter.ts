@@ -103,8 +103,8 @@ export const koukaiAdapter: EditorAdapter = {
       preview: preview.map(({ field, before, after }) => ({
         key: field.key,
         label: field.label,
-        before,
-        after,
+        before: cell(field, before),
+        after: cell(field, after),
       })),
     };
   },

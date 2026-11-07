@@ -41,7 +41,12 @@ export interface EditorView {
   fields: EditorField[];
   actions: { id: string; label: DisplayText; help?: DisplayText }[];
   changes: Record<string, number>;
-  preview: { key: string; label: DisplayText; before: number; after: number }[];
+  preview: {
+    key: string;
+    label: DisplayText;
+    before: number | DisplayText;
+    after: number | DisplayText;
+  }[];
 }
 export interface EditorAdapter {
   size: number;

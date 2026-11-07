@@ -32,6 +32,12 @@ it("returns a compact UI contract, preserving pending values and omitting binary
     changes: { "companion.0.salary": 123 },
   });
   expect(salary.records[0]?.cells["koukai2.companion/koukai2.salary"]).toBe(1230);
+  expect(salary.preview).toContainEqual({
+    key: "companion.0.salary",
+    label: message("koukai2.salary"),
+    before: 1650,
+    after: 1230,
+  });
 });
 it("expands actions against pending changes and omits bulk bytes from individual controls", () => {
   const bytes = editorFixture();
