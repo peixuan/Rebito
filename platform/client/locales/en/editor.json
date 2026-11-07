@@ -1,3 +1,9 @@
 {
-  "editor.selectRecord": "Select a valid record."
+  "editor.invalidSave": "The save format is invalid.",
+  "editor.invalidEdit": "The edit request is invalid.",
+  "editor.selectModule": "Select a valid editor module.",
+  "editor.selectRecord": "Select a valid record.",
+  "editor.noChanges": "There are no changes to save.",
+  "editor.unknownValue": "Unknown #{value}",
+  "editor.columnLabel": "{group} · {field}"
 }

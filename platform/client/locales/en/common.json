@@ -1,4 +1,6 @@
 {
+  "common.yes": "Yes",
+  "common.no": "No",
   "common.empty": "Empty",
   "common.retry": "Retry",
   "common.refresh": "Refresh"

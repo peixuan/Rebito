@@ -1,3 +1,9 @@
 {
-  "editor.selectRecord": "请选择有效记录。"
+  "editor.invalidSave": "存档格式无效。",
+  "editor.invalidEdit": "修改请求无效。",
+  "editor.selectModule": "请选择有效编辑模块。",
+  "editor.selectRecord": "请选择有效记录。",
+  "editor.noChanges": "没有需要保存的修改。",
+  "editor.unknownValue": "未知 #{value}",
+  "editor.columnLabel": "{group} · {field}"
 }

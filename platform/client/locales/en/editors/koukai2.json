@@ -178,5 +178,7 @@
   "koukai2.sharedTemplate": "Ship record {id} · load shared with the ship type template",
   "koukai2.sharedShip": "Ship record {id} · type and load shared with an earlier record",
   "koukai2.fleetLabel": "{position} · {type}",
-  "koukai2.unknownShip": "Unknown ship type #{id}"
+  "koukai2.unknownShip": "Unknown ship type #{id}",
+  "koukai2.activeSlot": "Save {index} · {name} · {date}",
+  "koukai2.emptySlot": "Save {index} · Empty"
 }

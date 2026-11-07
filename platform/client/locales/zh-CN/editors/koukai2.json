@@ -178,5 +178,7 @@
   "koukai2.sharedTemplate": "舰船记录 {id} · 配载与船型模板共用",
   "koukai2.sharedShip": "舰船记录 {id} · 船型与配载共用前方相同记录",
   "koukai2.fleetLabel": "{position} · {type}",
-  "koukai2.unknownShip": "未知船型 #{id}"
+  "koukai2.unknownShip": "未知船型 #{id}",
+  "koukai2.activeSlot": "存档 {index} · {name} · {date}",
+  "koukai2.emptySlot": "存档 {index} · 空位"
 }

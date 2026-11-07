@@ -1,4 +1,6 @@
 {
+  "common.yes": "是",
+  "common.no": "否",
   "common.empty": "空位",
   "common.retry": "重试",
   "common.refresh": "刷新"
