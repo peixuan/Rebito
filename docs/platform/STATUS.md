@@ -31,7 +31,8 @@ support are separate: a playable game need not have an editor.
 | Private blob storage | Verified on Windows | Exact bytes, concurrency, corruption detection and reopening; Linux fsync awaits container check |
 | Identity API | Verified locally | PostgreSQL migrations; password/session lifecycle; CSRF; closed registration |
 | Container application | Pending | Build, startup, restart and persistence checks |
-| Versioned persistence | Pending | Conflicting writes rejected; restart and restore verified |
+| Revision repository | Verified locally | Real PostgreSQL ownership, concurrent writers, rollback and immutable history |
+| Save publication API | Pending | Blob/revision integration; restart and restore through authenticated endpoints |
 | Browser runtime adapters | Pending | DOS and console runtime save/restore exercised |
 | Koukai2 editor | Pending | Full module parity and whole-file regression comparisons |
 | Release validation | Pending | Gates, end-to-end flows, deployment and handoff docs pass |
@@ -49,7 +50,7 @@ support are separate: a playable game need not have an editor.
 ## Next work
 
 1. Verify the app container and the full save publication service before UI adapters.
-2. Finish transactional revision publication and authenticated save endpoints.
+2. Connect durable blobs and revisions through authenticated save endpoints.
 3. Exercise OIDC against a test provider; the configured provider boundary is not
    yet an end-to-end OIDC/LDAP verification.
 
@@ -61,7 +62,8 @@ The `platform` workflow checks every new commit since the pre-platform baseline;
 remote CI has not run because this work has not been pushed.
 
 `cd platform && npm run check` with the test database: format/lint, TypeScript,
-HTTP/domain/filesystem tests and real PostgreSQL identity tests passed. Linux-only
+62 HTTP/domain/filesystem and real PostgreSQL identity/revision tests passed.
+Measured Windows line coverage is 97.6%. Linux-only
 directory fsync is not exercised by the Windows run. This does not imply coverage
 of pending product features. The tiny process
 entrypoint is excluded from unit coverage and needs container startup verification.
