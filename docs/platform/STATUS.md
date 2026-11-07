@@ -33,7 +33,7 @@ support are separate: a playable game need not have an editor.
 | Container application | Pending | Build, startup, restart and persistence checks |
 | Revision repository | Verified locally | Real PostgreSQL ownership, concurrent writers, rollback and immutable history |
 | Save service | Verified locally | Durable blobs before publication; guarded download; non-destructive restore; storage failures |
-| Save publication API | Pending | Blob/revision integration; restart and restore through authenticated endpoints |
+| Save publication API | Verified locally | Real multipart imports, private downloads, stale writes, history and restore |
 | Browser runtime adapters | Pending | DOS and console runtime save/restore exercised |
 | Koukai2 editor | Pending | Full module parity and whole-file regression comparisons |
 | Release validation | Pending | Gates, end-to-end flows, deployment and handoff docs pass |
@@ -51,7 +51,7 @@ support are separate: a playable game need not have an editor.
 ## Next work
 
 1. Verify the app container and the full save publication service before UI adapters.
-2. Expose the verified save service through authenticated save endpoints.
+2. Add game manifests and browser runtime adapters above the verified save API.
 3. Exercise OIDC against a test provider; the configured provider boundary is not
    yet an end-to-end OIDC/LDAP verification.
 
