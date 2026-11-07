@@ -3,6 +3,17 @@
 Keep this file limited to decisions that affect reproducibility or verification.
 Routine command output belongs in local diagnostics, not in the repository.
 
+## 2026-11-16: Rebito · 晚回舟
+
+The owner selected Rebito (晚回舟) and supplied the bilingual introduction.
+The README presents it from the first platform commit after the retained baseline;
+this is a retrospective editorial change, not a claim about the original naming date.
+Display names, package metadata and original project notices follow that name.
+Compose uses the `rebito` namespace for containers, networks and default volumes;
+earlier deployments must migrate both data stores explicitly. Cookie namespaces
+and identity bindings remain stable so the name does not change accounts.
+The AGPL body and third-party license notices are unchanged.
+
 ## 2026-11-16: AGPL source grant and complete legal text
 
 The owner selected AGPL-3.0-or-later for original project work and source-only
