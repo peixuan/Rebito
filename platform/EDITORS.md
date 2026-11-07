@@ -52,6 +52,23 @@ fields per each of 25 templates. Template stats begin at `0x5184 + 12*type`;
 default allocations at `0x4f5e + 22*type + 17`. Cannon type encodes selection+16.
 Water/food display storage/10; salaries, industry, max crew and prices use ×10.
 
+Twenty inventory bytes begin at `0x21b3`; choices retain all known legacy item
+IDs and `255` for empty. Unknown original IDs survive until explicitly replaced.
+The map action writes 539 bytes of `0xff` and a final `0xc0` at `0x144`; map reward
+is the uint16 `0x8d76` at `0x36c`. One hundred discovery records begin at `0x72ee`,
+stride seven: bits 7,6,5,4 mean disabled, found A, found B, reported. Every other
+bit remains intact, including when composing the three bulk operations.
+
 Synthetic whole-file tests specify expected bytes independently of field metadata.
-Additional modules, legacy regression comparisons and HTTP/UI integration remain
-in progress; this initial module is not complete legacy feature parity.
+All eight binary modules are implemented. On 2026-11-07, the TypeScript model
+matched all 13 private golden outputs captured from the original Dk2Edit.exe,
+comparing every byte after each sequential stage. This covers representative
+paths through every module, not every possible real save or game edition.
+HTTP/UI integration and actual in-game acceptance are still required.
+
+Reproduce locally with Node 24 or newer:
+`node scripts/verify-koukai-legacy.mjs PRIVATE_CORPUS_DIRECTORY`.
+The verifier checks the known baseline/final hashes, reads the corpus and writes
+no save files. The corpus is intentionally excluded from version control. CI uses
+the independently specified synthetic tests, including all physical ship aliases
+and all discovery-byte values/bulk-action combinations.

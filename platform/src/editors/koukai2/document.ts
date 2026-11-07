@@ -11,6 +11,7 @@ import {
 import { mainRecords } from "./main.ts";
 import { personRecords } from "./persons.ts";
 import { fleetRecords, shipTypeRecords } from "./ships.ts";
+import { discoveryRecords, inventoryRecords, worldAction } from "./world.ts";
 
 export const layout = { header: 0x97, slot: 0x8074, slots: 10, size: 328_991 } as const;
 export interface Slot {
@@ -26,6 +27,8 @@ export const modules = [
   { id: "sailors", label: message("koukai2.affiliation"), records: sailorRecords },
   { id: "fleet", label: message("koukai2.fleet"), records: fleetRecords },
   { id: "ship_types", label: message("koukai2.shipTypes"), records: shipTypeRecords },
+  { id: "inventory", label: message("koukai2.inventory"), records: inventoryRecords },
+  { id: "discoveries", label: message("koukai2.discoveries"), records: discoveryRecords },
 ];
 
 /** Pure binary model. Unknown bytes and untouched out-of-range values survive. */
@@ -104,7 +107,10 @@ export class KoukaiDocument {
   }
   action(slot: number, action: string, record: string, pending: Changes = {}): Changes {
     const edited = new KoukaiDocument(this.render(slot, pending));
-    const expanded = personAction(edited.context(slot), action, record);
+    const expanded =
+      action.startsWith("world.") || action.startsWith("inventory.")
+        ? worldAction(action, record)
+        : personAction(edited.context(slot), action, record);
     const combined = { ...pending, ...expanded };
     this.preview(slot, combined);
     return combined;
