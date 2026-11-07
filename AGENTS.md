@@ -50,6 +50,8 @@ because an upstream documentation page lists a feature.
 - Add abstractions only for a demonstrated boundary, not speculative features.
 - Use erasable TypeScript syntax so Node can run server sources directly. Keep
   browser build/type checks separate from the server's compiled output.
+- Review dependency license changes; run `node scripts/dependency-policy.mjs`.
+  See [dependency policy](docs/platform/DEPENDENCIES.md) before upgrading UI/runtimes.
 
 ## Verification
 
