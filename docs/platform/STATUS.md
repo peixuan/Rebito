@@ -40,10 +40,10 @@ support are separate: a playable game need not have an editor.
 | Browser login shell | Verified in Chrome | Real registration/login/logout, session recovery and narrow-viewport checks |
 | Game library and personal progress | Implemented | Verified assets; private catalog API; browser import, history, restore and account isolation |
 | Operator game preparation/import | Verified locally | Explicit DOS file allowlist; deterministic bundles; atomic catalog publication; source files unchanged |
-| DOS browser runtime | Verified with own fixture | Real DOSBox WASM, native files, filesystem overlay, edited-byte precedence |
-| Console browser runtime | Four cores verified with own fixtures | NES/SNES/GB/GBA SRAM import and state restoration; NES keyboard and volatile palette |
+| DOS browser runtime | Fixture and real game verified | DOSBox WASM, native files, filesystem overlay, edited-byte precedence; relative mouse capture/Escape release |
+| Console browser runtime | Four cores verified with own fixtures | NES/SNES/GB/GBA SRAM and states; NES keyboard, volatile palette and no-battery snapshot restoration |
 | Koukai2 editor | Real-game round trip verified | Eight modules; 13/13 legacy matches; browser editing/conflict tests; game reads and resaves modified money/leadership |
-| Release validation | Pending | Gates, end-to-end flows, deployment and handoff docs pass |
+| Local acceptance | Verified | Gates, end-to-end flows, complete container restart and fresh-volume backup recovery pass |
 
 ## Acceptance boundaries
 
@@ -55,41 +55,57 @@ support are separate: a playable game need not have an editor.
   the documented LDAP federation route without requiring an LDAP server for everyone.
 - Do not make supported-system claims from mocked adapters alone.
 
-## Next work
+## Handoff and release boundaries
 
-1. Exercise the documented backup/restore drill against the updated container image.
-2. Check DOS pointer alignment or relative capture; see [game acceptance](GAME_ACCEPTANCE.md).
-3. Rebuild and verify the complete deployment. OIDC is
-   browser-verified; production LDAP federation depends on the operator's provider.
+The requested local implementation and acceptance are complete. Start with
+[deployment](../../platform/DEPLOYMENT.md), [game imports](../../platform/LIBRARY.md)
+and [storage operations](../../platform/OPERATIONS.md). No games, personal saves,
+credentials or downloaded emulator archives are committed.
+
+- No push or remote CI run has occurred; choose the actual destination first.
+- Before publishing a project release, complete the runtime
+  redistribution/source-material obligations in [dependencies](DEPENDENCIES.md)
+  and [runtimes](../../platform/RUNTIMES.md). Noncommercial intent alone does not settle these.
+- Production TLS and the actual identity provider/LDAP directory remain operator
+  configuration. The local OIDC acceptance uses an independent test provider.
+- DOS absolute pointer alignment depends on the game; relative capture and keyboard
+  input are available. Four console cores are exercised with original test programs,
+  not every commercial release. Koukai2 compatibility is tied to the verified format.
+- Save history is retained and quota-limited; automatic pruning and arbitrary
+  third-party editor plugins are not part of this implementation.
 
 ## Available checks
 
-`node --test scripts/commit-policy.test.mjs`: 10 tests passed locally.
+`node --test scripts/*.test.mjs`: 10 tests passed locally.
+`node scripts/dependency-policy.mjs`: 274 locked packages reviewed.
 Enable local hooks with `git config core.hooksPath .githooks`.
 The `platform` workflow checks every new commit since the pre-platform baseline;
 remote CI has not run because this work has not been pushed.
 
 `cd platform && npm run check` with the test database: format/lint, TypeScript,
 HTTP/domain/filesystem and real PostgreSQL identity/revision/service tests passed.
-The last complete run before maintenance passed 171 tests with 98.72% Windows line
-coverage; maintenance adds tests for exclusion, integrity and its CLI. Linux-only
-directory fsync is not exercised by the Windows run. This does not imply coverage
-of pending product features. The process entrypoint and account-provisioning CLI
+The complete run passed 175 tests with 98.19% Windows line coverage, 95.68% branch
+coverage and 99.48% function coverage. Linux-only directory fsync is exercised by
+deployment, not by Windows unit coverage. The process entrypoint and account-provisioning CLI
 are excluded from unit coverage and exercised by the container smoke test.
 
-The complete 16-test browser suite passes, including all four console cores, DOS,
+The complete 17-test browser suite passes, including all four console cores, DOS,
 OIDC and three editor tests: exact multi-slot output bytes, numeric sorting and
 selection retention, clamping/invalid-input handling, narrow layouts, and retaining
 drafts when another upload advances the revision head. Edited cells update without
-reordering the selected row until the next explicit sort.
+reordering the selected row until the next explicit sort. The no-battery NES test
+restores a changed visible palette from a snapshot without a native save file.
+The DOS player checks pointer capture and Escape release in the real runtime.
 
 Container verification used the pinned Node 24/PostgreSQL 18 images in WSL:
 image build, healthy startup, stdin account creation, login/logout, multipart save
 upload/download, full app/database restart, and exact saved-byte recovery passed.
 The app UID is 1000; the database role has no superuser/create-role/create-db rights.
 CI repeats build, startup and persistence smoke, but has not run remotely.
-That deployed image predates the browser runtimes and editor; rebuild and repeat
-the deployment checks before claiming the complete product is container-verified.
+The final image includes the runtimes, editor and relative mouse support. Real
+Koukai2 save editing/playback and backup recovery into separate fresh volumes also
+passed; see [game acceptance](GAME_ACCEPTANCE.md). Production dependency audit
+reported zero known vulnerabilities at the time of this local acceptance.
 
 ## Existing evidence
 

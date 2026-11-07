@@ -1,7 +1,10 @@
 # Rebito
 
-The web platform under development. See [architecture](../docs/platform/ARCHITECTURE.md)
-and [status](../docs/platform/STATUS.md) for scope and verified capabilities.
+Browser gaming with private, versioned cloud saves and server-side game editors.
+See [architecture](../docs/platform/ARCHITECTURE.md) and
+[status](../docs/platform/STATUS.md) for scope and verified capabilities.
+Start with [container deployment](DEPLOYMENT.md) for installation, accounts and
+game imports, or the development setup below.
 
 Requires Node.js 24 or newer (supported LTS recommended) and npm.
 
@@ -20,9 +23,11 @@ logout and session recovery. The UI is built into `dist/client` and served by th
 same application. The game library supports private profiles, file imports,
 downloads and history restoration. See [LIBRARY.md](LIBRARY.md) for game assets.
 DOS, NES, SNES, GB and GBA run on the same page with cloud-save publication and
-revision checks. The Koukai2 editor is still pending; consult status. Console
-snapshots retain both native battery saves and the emulator state. A runtime
-upgrade may require importing the native save instead of loading an old snapshot.
+revision checks. The Koukai2 editor provides eight modules, compact bounded inputs,
+sortable tables and multi-slot edits; see [editor verification](EDITORS.md).
+Console snapshots retain emulator state and native battery saves when available;
+games without battery saves can use snapshots. A runtime upgrade may require
+importing a native save instead of loading an old snapshot. Back up before upgrades.
 
 For browser development run `npm run dev:web` alongside the configured API.
 Set the API's `APP_ORIGIN=http://127.0.0.1:5173` to the browser's Vite origin;

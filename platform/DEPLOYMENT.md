@@ -72,5 +72,6 @@ run inside the same image and data volume; mount their input directory read-only
 - Review [configuration](CONFIGURATION.md) for OIDC. Configure the provider callback
   as `<APP_ORIGIN>/api/auth/callback/oidc`. LDAP/AD stays behind the provider.
 
-This is an in-progress platform. Consult [status](../docs/platform/STATUS.md) for
-features actually verified; container availability does not imply playable games.
+Consult [status](../docs/platform/STATUS.md) for local acceptance and remaining
+release boundaries. The image contains pinned emulator runtimes, not a game
+collection; import your own game releases before starting a player.

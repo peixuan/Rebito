@@ -44,5 +44,29 @@ During this check the game's absolute mouse position needed a vertical adjustmen
 within its letterboxed display; keyboard menu navigation worked. The DOS window
 now offers relative mouse capture, with canvas capture and Escape release verified
 in the browser. Absolute pointer alignment remains game-dependent.
-This run used the Windows host service; complete container acceptance is tracked
-separately in [status](STATUS.md).
+The first round trip used the Windows host service. The following deployment
+check used the Linux container image with the same pinned runtimes.
+
+## Container restart and independent recovery
+
+The application image was built in WSL from pinned dependencies and runtime
+archives. Imported the private game bundle through the operator CLI, logged in
+through the browser, edited money to 87,654,321 and started the WASM player.
+
+Stopped the app, verified storage integrity, captured PostgreSQL with `pg_dump`
+and the complete data volume with `tar`, then resumed the original deployment.
+Restored both captures into a separate Compose project with fresh database/data
+volumes and a separate browser origin. Verification found three retained revisions,
+three referenced blobs and no abandoned blobs. Login, revision IDs and downloaded
+save bytes survived recovery. The restored game displayed 8,765 gold bars and
+4,321 coins after loading slot 1.
+
+Finally rebuilt the original deployment with relative mouse support and fully
+stopped/restarted both app and database. Login and exact-byte recovery passed again.
+The edited 328,991-byte file had SHA-256
+`e701217fa1749ced32b2c881fef459809f6c7c310b34d9d66f7227a05da98a67`
+before backup, after restore and after restart. Running offline maintenance against
+the active deployment correctly failed with `Storage is in use`.
+
+These checks follow [storage operations](../../platform/OPERATIONS.md). Private
+backups, credentials and screenshots remain under `.analysis/`, outside commits.
