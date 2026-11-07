@@ -1,0 +1,5 @@
+{
+  "controls.enterNumber": "请输入数字。",
+  "controls.adjusted": "已按范围或存档精度调整。",
+  "controls.unknownOriginal": "未识别原值 #{value}"
+}

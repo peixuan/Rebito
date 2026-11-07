@@ -1,0 +1,5 @@
+{
+  "controls.enterNumber": "Enter a number.",
+  "controls.adjusted": "Adjusted to the allowed range or save precision.",
+  "controls.unknownOriginal": "Unrecognized original value #{value}"
+}
