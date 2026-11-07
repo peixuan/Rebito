@@ -1,0 +1,51 @@
+name: rebito
+
+services:
+  app:
+    build: .
+    environment:
+      APP_ORIGIN: ${APP_ORIGIN:?Run npm run configure first}
+      AUTH_SECRET: ${AUTH_SECRET:?Run npm run configure first}
+      DATABASE_URL: postgresql://retro:${DATABASE_PASSWORD:?Run npm run configure first}@database:5432/retro
+      ALLOW_REGISTRATION: ${ALLOW_REGISTRATION:-false}
+      OIDC_DISCOVERY_URL: ${OIDC_DISCOVERY_URL:-}
+      OIDC_CLIENT_ID: ${OIDC_CLIENT_ID:-}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:-}
+    volumes:
+      - saves:/data
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${APP_PORT:-3000}:3000"
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 512m
+    restart: unless-stopped
+  database:
+    image: public.ecr.aws/docker/library/postgres:18-bookworm@sha256:f1ea2a1a4fb7b68d4836be1fdcb8a6466a89b072158bf9d97663600538c294c5
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run npm run configure first}
+      APP_DB_PASSWORD: ${DATABASE_PASSWORD:?Run npm run configure first}
+    volumes:
+      - database:/var/lib/postgresql
+      - ./database/init.sh:/docker-entrypoint-initdb.d/10-app.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U retro -d retro"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+volumes:
+  saves:
+  database:

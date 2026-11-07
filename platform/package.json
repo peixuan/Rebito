@@ -8,6 +8,7 @@
     "node": ">=24 <27"
   },
   "scripts": {
+    "configure": "node scripts/configure.mjs",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server/main.js",
     "dev": "node --watch --experimental-strip-types src/server/main.ts",

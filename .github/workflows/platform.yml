@@ -61,3 +61,28 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run check
       - run: npm audit --omit=dev --audit-level=high
+
+  container:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: platform
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - run: node scripts/configure.mjs
+      - run: docker compose up -d --build --wait --wait-timeout 180
+      - name: Provision and verify a disposable account
+        run: |
+          node --input-type=module -e 'import {randomBytes} from "node:crypto"; console.log(JSON.stringify({email:"smoke@example.test",name:"Smoke",password:randomBytes(24).toString("hex")}))' > "$RUNNER_TEMP/retro-account.json"
+          docker compose run --rm -T app node dist/server/create-account.js < "$RUNNER_TEMP/retro-account.json"
+          node scripts/container-smoke.mjs < "$RUNNER_TEMP/retro-account.json"
+          docker compose restart
+          docker compose up -d --wait --wait-timeout 60
+          node scripts/container-smoke.mjs < "$RUNNER_TEMP/retro-account.json"
+      - if: always()
+        run: docker compose down

@@ -16,6 +16,14 @@ describe("server configuration", () => {
     expect(config.port).toBe(3000);
     expect(config.oidc).toBeUndefined();
     expect(isAbsolute(config.dataDirectory)).toBe(true);
+    expect(
+      loadConfig({
+        ...environment,
+        OIDC_DISCOVERY_URL: "",
+        OIDC_CLIENT_ID: "",
+        OIDC_CLIENT_SECRET: "",
+      }).oidc,
+    ).toBeUndefined();
   });
 
   it("accepts explicit deployment and OIDC settings", () => {
@@ -54,7 +62,7 @@ describe("server configuration", () => {
     { ALLOW_REGISTRATION: "yes" },
     { OIDC_DISCOVERY_URL: "https://identity.example.com" },
     { OIDC_CLIENT_ID: "retro" },
-    { OIDC_CLIENT_SECRET: "" },
+    { OIDC_CLIENT_SECRET: "secret-with-missing-settings" },
   ])("rejects incomplete or unsafe configuration %j", (change) => {
     expect(() => loadConfig({ ...environment, ...change })).toThrow();
   });

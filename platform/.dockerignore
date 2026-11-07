@@ -1,0 +1,9 @@
+**
+!package.json
+!package-lock.json
+!LICENSE
+!NOTICE
+!tsconfig.json
+!tsconfig.build.json
+!src/
+!src/**

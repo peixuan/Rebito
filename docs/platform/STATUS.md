@@ -18,7 +18,8 @@ support are separate: a playable game need not have an editor.
 - Original game data: `<operator-game-directory>`; read-only for this project.
 - Private development evidence and upstream checkouts belong in `.analysis/`.
 - Docker Desktop fails locally; an independent WSL Ubuntu Docker Engine now runs
-  the PostgreSQL 18.6 integration service. App-container verification is pending.
+  PostgreSQL 18.6 integration and application containers. Windows Docker Desktop
+  files were not changed to make this work.
 
 ## Milestones
 
@@ -28,9 +29,9 @@ support are separate: a playable game need not have an editor.
 | Upstream reuse decision | Recorded | See [architecture](ARCHITECTURE.md); reuse runtimes/auth libraries |
 | TypeScript service skeleton | Verified locally | Format, lint, types, 9 route tests, coverage and build pass |
 | Progress collection contract | Verified locally | Native saves, snapshots and filesystem collections; portable paths and bounds |
-| Private blob storage | Verified on Windows | Exact bytes, concurrency, corruption detection and reopening; Linux fsync awaits container check |
+| Private blob storage | Verified on Windows/Linux | Exact bytes, concurrency, corruption detection; Linux publication and restart |
 | Identity API | Verified locally | PostgreSQL migrations; password/session lifecycle; CSRF; closed registration |
-| Container application | Pending | Build, startup, restart and persistence checks |
+| Container application | Verified locally | Non-root app; restricted database role; real login and save bytes survive full restart |
 | Revision repository | Verified locally | Real PostgreSQL ownership, concurrent writers, rollback and immutable history |
 | Save service | Verified locally | Durable blobs before publication; guarded download; non-destructive restore; storage failures |
 | Save publication API | Verified locally | Real multipart imports, private downloads, stale writes, history and restore |
@@ -50,8 +51,8 @@ support are separate: a playable game need not have an editor.
 
 ## Next work
 
-1. Verify the app container and the full save publication service before UI adapters.
-2. Add game manifests and browser runtime adapters above the verified save API.
+1. Add game manifests and browser runtime adapters above the verified save API.
+2. Build the compact SPA and backend Koukai2 editor; run real browser/game checks.
 3. Exercise OIDC against a test provider; the configured provider boundary is not
    yet an end-to-end OIDC/LDAP verification.
 
@@ -66,8 +67,14 @@ remote CI has not run because this work has not been pushed.
 HTTP/domain/filesystem and real PostgreSQL identity/revision/service tests passed.
 Measured Windows line coverage is above 97%. Linux-only
 directory fsync is not exercised by the Windows run. This does not imply coverage
-of pending product features. The tiny process
-entrypoint is excluded from unit coverage and needs container startup verification.
+of pending product features. The process entrypoint and account-provisioning CLI
+are excluded from unit coverage and exercised by the container smoke test.
+
+Container verification used the pinned Node 24/PostgreSQL 18 images in WSL:
+image build, healthy startup, stdin account creation, login/logout, multipart save
+upload/download, full app/database restart, and exact saved-byte recovery passed.
+The app UID is 1000; the database role has no superuser/create-role/create-db rights.
+CI repeats build, startup and persistence smoke, but has not run remotely.
 
 ## Existing evidence
 

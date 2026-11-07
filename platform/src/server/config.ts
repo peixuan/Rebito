@@ -55,7 +55,7 @@ export function loadConfig(environment: Environment): ServerConfig {
   }
 
   const oidcKeys = ["OIDC_DISCOVERY_URL", "OIDC_CLIENT_ID", "OIDC_CLIENT_SECRET"] as const;
-  const oidc = oidcKeys.some((key) => environment[key] !== undefined)
+  const oidc = oidcKeys.some((key) => Boolean(environment[key]))
     ? {
         discoveryUrl: webUrl(required(environment, oidcKeys[0]), oidcKeys[0]).href,
         clientId: required(environment, oidcKeys[1]),

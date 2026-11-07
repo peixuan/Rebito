@@ -17,5 +17,10 @@ Public origins and OIDC discovery require HTTPS; loopback HTTP is allowed for
 local development. All three OIDC settings must be supplied together. LDAP/AD
 integration uses an OIDC provider's directory federation, not application LDAP binds.
 
-This document describes the validated configuration contract. Identity wiring and
-deployment commands are tracked in [platform status](../docs/platform/STATUS.md).
+Compose reads `DATABASE_PASSWORD` for the restricted application role and
+`POSTGRES_PASSWORD` for database initialization; neither belongs in source control.
+`npm run configure` creates independent random values. Compose supplies
+`DATABASE_URL` automatically. All-empty OIDC fields disable the optional provider.
+
+See [deployment](DEPLOYMENT.md) for setup, account provisioning and persistence,
+and [platform status](../docs/platform/STATUS.md) for verified capabilities.
