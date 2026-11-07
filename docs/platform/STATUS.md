@@ -26,6 +26,7 @@ support are separate: a playable game need not have an editor.
 | Engineering rules and commit gates | Implemented | Hooks and CI enforce subjects, artifacts and line budgets |
 | Upstream reuse decision | Recorded | See [architecture](ARCHITECTURE.md); reuse runtimes/auth libraries |
 | TypeScript service skeleton | Verified locally | Format, lint, types, 9 route tests, coverage and build pass |
+| Progress collection contract | Verified locally | Native saves, snapshots and filesystem collections; portable paths and bounds |
 | Platform and identity | Pending | Container startup; real login; per-user ownership checks |
 | Versioned persistence | Pending | Conflicting writes rejected; restart and restore verified |
 | Browser runtime adapters | Pending | DOS and console runtime save/restore exercised |
@@ -47,7 +48,8 @@ support are separate: a playable game need not have an editor.
 1. Establish an independent WSL Docker Engine for deployment verification. Desktop
    currently fails on a stale IPC endpoint; its cleanup was blocked by tool policy.
 2. Implement authentication and the shared revision publication path before UI adapters.
-3. Add native-save/snapshot contracts without embedding Koukai2 layout assumptions.
+3. Implement durable blob storage and transactional revision publication using the
+   validated progress collection contract, without Koukai2 layout assumptions.
 
 ## Available checks
 
@@ -56,8 +58,8 @@ Enable local hooks with `git config core.hooksPath .githooks`.
 The `platform` workflow checks every new commit since the pre-platform baseline;
 remote CI has not run because this work has not been pushed.
 
-`cd platform && npm run check`: format/lint, TypeScript, 9 Fastify injection tests
-and compiled build passed. The initial route module has 100% measured coverage;
+`cd platform && npm run check`: format/lint, TypeScript, 29 tests for HTTP and
+progress validation, and compiled build passed. Both modules have 100% measured coverage;
 this does not imply coverage of the pending product features. The tiny process
 entrypoint is excluded from unit coverage and needs container startup verification.
 
