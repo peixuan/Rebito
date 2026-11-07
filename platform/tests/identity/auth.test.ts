@@ -1,5 +1,5 @@
 import { randomBytes, randomUUID } from "node:crypto";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { createAuth, identityOptions } from "../../src/identity/auth.ts";
 import { migrateIdentity } from "../../src/identity/migrate.ts";
 import { privateApi } from "../../src/identity/private-api.ts";
@@ -63,6 +63,23 @@ describe("real identity integration", () => {
     const stored = await fixture.database.query('SELECT password FROM "account"');
     expect(stored.rows[0].password).not.toBe(password);
     expect(stored.rows[0].password.length).toBeGreaterThan(40);
+  });
+
+  it("records fixed identity diagnostic categories without upstream payloads", () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const logger = identityOptions(config, fixture.database).logger;
+      logger.log("error", "Failed to parse state private-state");
+      logger.log("error", 'Provider "oidc": id_token failed verification private-token');
+      logger.log("warn", "private remote error details");
+      const output = JSON.stringify(log.mock.calls);
+      expect(output).not.toContain("private");
+      expect(output).toContain("invalid_oauth_state");
+      expect(output).toContain("invalid_id_token");
+      expect(output).toContain("identity_diagnostic");
+    } finally {
+      log.mockRestore();
+    }
   });
 
   it("returns only the current user's public identity and rejects cross-site logout", async () => {

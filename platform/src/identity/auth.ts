@@ -11,6 +11,18 @@ export function identityOptions(config: ServerConfig, database: Pool) {
     secret: config.authSecret,
     database,
     trustedOrigins: [config.origin],
+    logger: {
+      level: "warn",
+      // Upstream diagnostics may include OAuth state, tokens or user-supplied data.
+      log(level, message) {
+        const event = message.startsWith("Failed to parse state")
+          ? "invalid_oauth_state"
+          : message.includes("id_token failed verification")
+            ? "invalid_id_token"
+            : "identity_diagnostic";
+        console.error(JSON.stringify({ component: "identity", level, event }));
+      },
+    },
     emailAndPassword: {
       enabled: true,
       disableSignUp: !config.allowRegistration,

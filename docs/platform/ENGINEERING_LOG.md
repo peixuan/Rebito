@@ -109,3 +109,12 @@ when checking imports and variables; recommended lint rules remain enabled.
 PrimeVue 5 and PrimeUI themes 3 require a license key and eligibility renewal.
 The project instead pins the MIT-licensed PrimeVue 4.5.5 and themes 1.2.5; do not
 silently upgrade these across the license boundary.
+
+## 2026-11-07: independent OIDC provider for browser tests
+
+The test-only MIT-licensed `oidc-provider` 9.13.3 performs real discovery, PKCE,
+code exchange, signed ID tokens and userinfo in browser integration tests. Its
+generated dependency lock adds 404 lines in a dedicated preparation commit.
+Both the lock update and subsequent integration stay below 500 lines separately.
+The provider's deliberately permissive
+development login binds to loopback and is excluded from the deployment image.

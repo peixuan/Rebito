@@ -11,10 +11,18 @@ export default defineConfig({
     launchOptions: { chromiumSandbox: true },
     ...(process.env.PLAYWRIGHT_CHANNEL ? { channel: process.env.PLAYWRIGHT_CHANNEL } : {}),
   },
-  webServer: {
-    command: "node tests/e2e/server.ts",
-    url: "http://localhost:4317/health/ready",
-    reuseExistingServer: false,
-    timeout: 60_000,
-  },
+  webServer: [
+    {
+      command: "node tests/e2e/server.ts",
+      url: "http://localhost:4317/health/ready",
+      reuseExistingServer: false,
+      timeout: 60_000,
+    },
+    {
+      command: "node tests/e2e/oidc-server.mjs",
+      url: "http://localhost:4320/health/ready",
+      reuseExistingServer: false,
+      timeout: 60_000,
+    },
+  ],
 });

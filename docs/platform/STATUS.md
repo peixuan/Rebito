@@ -31,6 +31,7 @@ support are separate: a playable game need not have an editor.
 | Progress collection contract | Verified locally | Native saves, snapshots and filesystem collections; portable paths and bounds |
 | Private blob storage | Verified on Windows/Linux | Exact bytes, concurrency, corruption detection; Linux publication and restart |
 | Identity API | Verified locally | PostgreSQL migrations; password/session lifecycle; CSRF; closed registration |
+| OIDC integration | Verified in Chrome | Independent provider; code flow/PKCE; isolated users; tampered state/nonce rejected; LDAP federation documented |
 | Container application | Verified locally | Non-root app; restricted database role; real login and save bytes survive full restart |
 | Revision repository | Verified locally | Real PostgreSQL ownership, concurrent writers, rollback and immutable history |
 | Save service | Verified locally | Durable blobs before publication; guarded download; non-destructive restore; storage failures |
@@ -58,8 +59,8 @@ support are separate: a playable game need not have an editor.
    real-game acceptance above the original DOS/console test programs.
 2. Verify edited Koukai2 saves in the actual game. Core parity and browser editing
    are complete; retain the 13 whole-file legacy comparisons and independent tests.
-3. Exercise OIDC against a test provider; the configured provider boundary is not
-   yet an end-to-end OIDC/LDAP verification.
+3. Finish storage operations/limits and rebuild the complete deployment. OIDC is
+   browser-verified; production LDAP federation depends on the operator's provider.
 
 ## Available checks
 

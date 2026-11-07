@@ -5,12 +5,27 @@ import { ProgressError } from "../storage/revisions.ts";
 import { browserPolicy } from "./browser-policy.ts";
 
 /** Compose the HTTP service without opening ports so tests exercise real routes. */
-export function createApp() {
+export function createApp(logStream?: { write(message: string): void }) {
   const app = Fastify({
     bodyLimit: 1024 * 1024,
     requestTimeout: 30_000,
     logger: {
+      ...(logStream ? { stream: logStream } : {}),
       redact: ["req.headers.authorization", "req.headers.cookie", "res.headers.set-cookie"],
+      serializers: {
+        req: (request) => ({
+          method: request.method,
+          url: request.url.split("?")[0] ?? "/",
+          remoteAddress: request.ip,
+        }),
+        // Error messages/causes can contain connection strings or remote responses.
+        err: (error) => ({
+          type: "RequestError",
+          message: "Request failed",
+          stack: "",
+          code: /^[A-Z0-9_]{2,40}$/.test(error.code ?? "") ? error.code : undefined,
+        }),
+      },
     },
   });
   app.register(helmet, {

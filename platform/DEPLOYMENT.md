@@ -64,6 +64,9 @@ run inside the same image and data volume; mount their input directory read-only
 - Back up both volumes consistently with the application stopped; for PostgreSQL,
   use `pg_dump` plus the private save directory. Verify a restore before upgrading.
 - `/health/live` checks the process; `/health/ready` also checks database access.
+- Request logs omit URL queries, headers and raw exception payloads. Identity logs
+  use fixed event categories. Correlate request IDs, status codes and database
+  error codes; do not enable raw OAuth/token logging in a shared deployment.
 - Review [configuration](CONFIGURATION.md) for OIDC. Configure the provider callback
   as `<APP_ORIGIN>/api/auth/callback/oidc`. LDAP/AD stays behind the provider.
 

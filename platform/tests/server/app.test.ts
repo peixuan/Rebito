@@ -46,6 +46,25 @@ describe("HTTP service boundary", () => {
     expect(response.json()).toEqual({ error: "internal_error" });
   });
 
+  it("keeps callback queries, credentials and error payloads out of logs", async () => {
+    const lines: string[] = [];
+    const instance = createApp({ write: (line) => lines.push(line) });
+    applications.push(instance);
+    instance.get("/callback", () => {
+      throw Object.assign(new Error("private database password"), { code: "ECONNREFUSED" });
+    });
+    await instance.inject({
+      url: "/callback?code=private-code&state=private-state",
+      headers: { authorization: "private-bearer", cookie: "private-cookie" },
+    });
+    const output = lines.join("");
+    expect(output).not.toContain("private-");
+    expect(output).not.toContain("password");
+    expect(output).toContain('"url":"/callback"');
+    expect(output).toContain("ECONNREFUSED");
+    expect(output).toContain('"statusCode":500');
+  });
+
   it("keeps client error status without echoing exception details", async () => {
     const instance = app();
     instance.get("/invalid", () => {
