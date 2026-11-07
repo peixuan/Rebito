@@ -8,6 +8,7 @@ for (const [name, count, locales] of [
   ["shipNames", 25, ["en", "zh-CN"]],
   ["cannons", 8, ["en", "zh-CN"]],
   ["figureheads", 11, ["en", "zh-CN"]],
+  ["itemNames", 100, ["en", "zh-CN"]],
 ] as const) {
   it(`provides a label for every format-defined ${name} ID`, () => {
     const keys = Array.from({ length: count }, (_, index) => `koukai2.${name}.${index}`).sort();
