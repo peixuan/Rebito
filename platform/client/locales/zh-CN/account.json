@@ -1,0 +1,13 @@
+{
+  "account.createTitle": "创建你的账号",
+  "account.loginTitle": "登录游戏库",
+  "account.description": "游戏进度保存在你的账号下。",
+  "account.name": "称呼",
+  "account.email": "邮箱",
+  "account.password": "密码",
+  "account.register": "创建账号",
+  "account.login": "登录",
+  "account.oidc": "使用统一身份登录",
+  "account.backToLogin": "已有账号，返回登录",
+  "account.logout": "退出登录"
+}

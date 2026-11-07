@@ -1,6 +1,8 @@
+import { resolve } from "node:path";
 import { Pool } from "pg";
 import { loadConfig } from "./config.ts";
 import { createPlatform } from "./platform.ts";
+import { registerWeb } from "./web.ts";
 
 const config = loadConfig(process.env);
 const database = new Pool({ connectionString: config.databaseUrl, connectionTimeoutMillis: 5000 });
@@ -8,6 +10,7 @@ const app = await createPlatform(config, database).catch(async (error: unknown) 
   await database.end();
   throw error;
 });
+registerWeb(app, resolve("dist/client"));
 app.addHook("onClose", async () => {
   await database.end();
 });

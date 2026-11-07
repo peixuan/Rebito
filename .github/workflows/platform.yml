@@ -29,7 +29,7 @@ jobs:
         run: node scripts/commit-policy.mjs --range a20553aaf4bd0c506c8ddf8066ab74af6f9fdc03..$(git rev-parse HEAD)
 
   application:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: public.ecr.aws/docker/library/postgres:18-bookworm@sha256:f1ea2a1a4fb7b68d4836be1fdcb8a6466a89b072158bf9d97663600538c294c5
@@ -61,6 +61,13 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run check
       - run: npm audit --omit=dev --audit-level=high
+      - if: matrix.node == '24'
+        # Ubuntu's AppArmor profile permits Chrome's sandbox at its system path.
+        run: npx playwright install --with-deps chrome
+      - if: matrix.node == '24'
+        env:
+          PLAYWRIGHT_CHANNEL: chrome
+        run: npm run test:e2e
 
   container:
     runs-on: ubuntu-latest

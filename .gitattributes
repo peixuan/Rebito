@@ -23,3 +23,6 @@
 *.yaml text eol=lf
 *.sh text eol=lf
 Dockerfile text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+.dockerignore text eol=lf

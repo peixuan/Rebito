@@ -1,0 +1,13 @@
+{
+  "account.createTitle": "Create your account",
+  "account.loginTitle": "Sign in to your library",
+  "account.description": "Your game progress is saved to your account.",
+  "account.name": "Name",
+  "account.email": "Email",
+  "account.password": "Password",
+  "account.register": "Create account",
+  "account.login": "Sign in",
+  "account.oidc": "Sign in with your identity provider",
+  "account.backToLogin": "Already have an account? Sign in",
+  "account.logout": "Sign out"
+}

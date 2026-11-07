@@ -3,8 +3,9 @@ FROM ${NODE_IMAGE} AS build
 WORKDIR /app
 COPY package.json package-lock.json LICENSE NOTICE ./
 RUN --mount=type=cache,target=/root/.npm npm ci --ignore-scripts
-COPY tsconfig.json tsconfig.build.json ./
+COPY tsconfig.json tsconfig.build.json tsconfig.client.json vite.config.ts index.html ./
 COPY src ./src
+COPY client ./client
 RUN npm run build
 
 FROM ${NODE_IMAGE} AS runtime

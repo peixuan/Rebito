@@ -15,9 +15,20 @@ run `npm run dev`, or `npm run build && npm start` for the compiled service.
 Startup migrates the authentication schema before accepting requests.
 `/health/live` checks the process; `/health/ready` also checks PostgreSQL.
 
-The identity API supports local registration/login/logout and current-session
-lookup. Registration is disabled by default. Game-library and browser screens
-remain pending; see the status document for the current acceptance boundary.
+The browser login shell supports registration when explicitly enabled, login,
+logout and session recovery. The UI is built into `dist/client` and served by the
+same application. Game-library and runtime screens remain pending; consult status.
+
+For browser development run `npm run dev:web` alongside the configured API.
+Set the API's `APP_ORIGIN=http://127.0.0.1:5173` to the browser's Vite origin;
+the API still listens on port 3000. Use that exact browser URL for CSRF checks.
+`npm run typecheck` checks server TypeScript and Vue templates. `npm run test:e2e`
+uses a disposable database and compiled UI; run `npm run build` first. Install its
+browser with `npx playwright install chromium`, or set `PLAYWRIGHT_CHANNEL=chrome`
+to test an installed Chrome. CI uses Chrome stable on Ubuntu 24.04, installed
+through Playwright at the system path supported by Ubuntu's AppArmor policy.
+Downloaded Chromium builds can fail before any test with `No usable sandbox`;
+see [Chromium's explanation](https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md).
 
 ## Integration database
 

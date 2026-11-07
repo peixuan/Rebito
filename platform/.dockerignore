@@ -5,5 +5,10 @@
 !NOTICE
 !tsconfig.json
 !tsconfig.build.json
+!tsconfig.client.json
+!vite.config.ts
+!index.html
+!client/
+!client/**
 !src/
 !src/**
