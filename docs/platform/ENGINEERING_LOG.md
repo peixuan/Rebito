@@ -3,6 +3,19 @@
 Keep this file limited to decisions that affect reproducibility or verification.
 Routine command output belongs in local diagnostics, not in the repository.
 
+## 2026-11-17: Authorized history replay
+
+The owner requested internationalization in the original feature sequence and
+folding five publication follow-ups into their owning changes. The 2026-11-17
+follow-up restores original source author/committer dates instead of replay dates.
+Unsplit steps retain both dates; each split group retains its source anchor.
+The owner authorized small ordering offsets for additional parts, within neighboring
+source boundaries and with at least three seconds between commits. These offsets
+are ordering metadata, not historical development durations. Licensing, naming
+and internationalization remain retrospective changes, not claims about when those
+decisions were originally made. Keep recovery references private. Any scoped
+publication exception requires immediate protection restoration and verification.
+
 ## 2026-11-16: Rebito · 晚回舟
 
 The owner selected Rebito (晚回舟) and supplied the bilingual introduction.
