@@ -2,6 +2,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createAuth, identityOptions } from "../../src/identity/auth.ts";
 import { migrateIdentity } from "../../src/identity/migrate.ts";
+import { privateApi } from "../../src/identity/private-api.ts";
 import { registerIdentity } from "../../src/identity/routes.ts";
 import { createApp } from "../../src/server/app.ts";
 import { loadConfig } from "../../src/server/config.ts";
@@ -25,6 +26,10 @@ describe("real identity integration", () => {
     await migrateIdentity(config, fixture.database);
     const auth = createAuth(config, fixture.database);
     registerIdentity(app, auth, config);
+    privateApi(app, auth, config.origin, async (scope) => {
+      scope.get("/private", async (request) => ({ owner: request.ownerId }));
+      scope.post("/private", async (request) => ({ owner: request.ownerId }));
+    });
   }, 30_000);
   afterAll(async () => {
     await app.close();
@@ -77,6 +82,22 @@ describe("real identity integration", () => {
       payload: {},
     });
     expect(hostile.statusCode).toBe(403);
+    expect((await app.inject("/private")).statusCode).toBe(401);
+    expect((await app.inject({ url: "/private", headers: { cookie } })).json().owner).toBe(
+      session.json().user.id,
+    );
+    expect(
+      (await app.inject({ method: "POST", url: "/private", headers: { cookie } })).statusCode,
+    ).toBe(403);
+    expect(
+      (
+        await app.inject({
+          method: "POST",
+          url: "/private",
+          headers: { cookie, origin: config.origin },
+        })
+      ).statusCode,
+    ).toBe(200);
   });
 
   it("rejects bad credentials and invalidates a signed-out session", async () => {

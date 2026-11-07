@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { createApp } from "../../src/server/app.ts";
+import { ProgressError } from "../../src/storage/revisions.ts";
 
 describe("HTTP service boundary", () => {
   const applications: ReturnType<typeof createApp>[] = [];
@@ -16,6 +17,23 @@ describe("HTTP service boundary", () => {
     const response = await app().inject("/health/live");
     expect(response.statusCode).toBe(200);
     expect(response.json()).toEqual({ status: "ok" });
+    expect(response.headers["cross-origin-embedder-policy"]).toBe("require-corp");
+    expect(response.headers["content-security-policy"]).toContain("default-src 'self'");
+    expect(response.headers["x-content-type-options"]).toBe("nosniff");
+  });
+
+  it.each([
+    ["not_found", 404],
+    ["conflict", 409],
+    ["release_mismatch", 400],
+  ] as const)("maps domain error %s to a stable client response", async (code, status) => {
+    const instance = app();
+    instance.get("/domain-error", () => {
+      throw new ProgressError(code);
+    });
+    const response = await instance.inject("/domain-error");
+    expect(response.statusCode).toBe(status);
+    expect(response.json()).toEqual({ error: code });
   });
 
   it("does not leak internal error details", async () => {
