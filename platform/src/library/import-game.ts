@@ -1,0 +1,14 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import { importGame } from "./importer.ts";
+
+const [source, metadata, ...extra] = process.argv.slice(2);
+if (!source || !metadata || extra.length) {
+  throw new Error("Usage: import-game GAME_FILE METADATA_JSON");
+}
+const id = await importGame(
+  join(process.env.DATA_DIR ?? ".data", "library"),
+  source,
+  JSON.parse(await readFile(metadata, "utf8")),
+);
+console.log(`Imported ${id}. Restart the application to reload the library.`);

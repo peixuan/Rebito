@@ -11,7 +11,7 @@ export default defineConfig({
         "client/runtime/progress.ts",
         "client/controls/numbers.ts",
       ],
-      exclude: ["src/server/main.ts", "src/server/create-account.ts"],
+      exclude: ["src/server/main.ts", "src/server/create-account.ts", "src/library/import-game.ts"],
       reporter: ["text", "lcov"],
       thresholds: { lines: 90, statements: 90, functions: 90, branches: 85 },
     },

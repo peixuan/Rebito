@@ -1,37 +1,49 @@
-# Operator-managed game library
+# Operator game library
 
-Place `catalog.json` and immutable game assets under `DATA_DIR/library`. A missing
-catalog means an empty library. Startup fails for malformed entries, missing files,
-size/checksum mismatches, duplicate releases and paths escaping the directory.
-Changing an asset requires a new checksum/release and an application restart.
+Game files belong to the deployment operator, outside the source repository. The
+application serves verified assets only to signed-in users. Importing a game never
+uploads it elsewhere. Supply only files you are entitled to use and distribute.
+
+Create a metadata JSON file, for example:
 
 ```json
-{
-  "version": 1,
-  "games": [
-    {
-      "title": "Example homebrew",
-      "system": "nes",
-      "file": "example.nes",
-      "sha256": "REPLACE_WITH_THE_64_CHARACTER_LOWERCASE_SHA256",
-      "size": 12345
-    }
-  ]
-}
+{ "title": "My game", "system": "nes" }
 ```
 
-Supported manifest systems are `dos`, `nes`, `snes`, `gb` and `gba`; this is a
-format contract, not a claim that all runtime integrations are already verified.
-DOS uses a js-dos bundle; consoles use an uncompressed ROM. DOS entries may list
-portable relative `saveFiles` and select `editor: "koukai2"` when appropriate.
-At most 127 native paths are allowed; one additional artifact holds the runtime
-filesystem. The `__runtime` directory is reserved, and file/directory collisions
-are rejected before the emulator starts.
-Keep personalized saves out of shared game bundles. The operator supplies assets;
-no game, BIOS or private save is shipped in the repository or application image.
+Systems are `dos`, `nes`, `snes`, `gb`, `gba`. Console files are uncompressed ROMs;
+DOS files are `.jsdos` ZIP bundles with `.jsdos/dosbox.conf`. DOS metadata also
+accepts `saveFiles` (portable relative file paths) and optional `editor: "koukai2"`.
+Only enable an editor for a verified compatible release. Each imported file is
+limited to 512 MiB. Do not put personalized saves into shared game bundles.
+At most 127 native save paths are allowed; one additional artifact holds the DOS
+filesystem overlay. The `__runtime` namespace and file/directory collisions are
+rejected. No game, BIOS or private save is shipped in the application image.
 
-A release identifier combines the system and asset SHA-256. Titles and storage
-paths can change without assigning old progress to different game bytes. Files
-must remain immutable while the service runs. `GET /api/games` lists logical
-release IDs, not server filesystem paths. `GET /api/games/:id/asset` streams verified
-assets. Both require a session; shared game assets do not contain personal saves.
+```sh
+# From platform/, after building. DATA_DIR defaults to .data.
+node dist/library/import-game.js /private/game.nes /private/game.json
+
+# Containers: mount only the required operator input, read-only.
+docker compose run --rm -T -v /private/import:/import:ro app \
+  node dist/library/import-game.js /import/game.nes /import/game.json
+docker compose restart app
+```
+
+The command copies and hashes the asset, verifies existing catalog assets, then
+atomically publishes the updated catalog. Source files remain untouched. An
+existing release is rejected. The running application keeps its verified catalog
+until restarted. Back up `DATA_DIR/library` with the private save directory.
+
+Imports use an exclusive `.import.lock`. After an interrupted process, stop all
+import commands, inspect `catalog.json` and its referenced assets, then remove the
+stale lock before retrying. Unreferenced `.asset`/`.tmp` files may remain after a
+crash; they are not served. Never delete assets referenced by the catalog.
+
+The generated `catalog.json` has `version: 1` and a `games` array containing the
+metadata plus `file`, `sha256` and `size`. A missing catalog means an empty library.
+Startup rejects malformed entries, missing files, checksum/size mismatches,
+duplicate releases and paths escaping the directory. Assets must stay immutable
+while the service runs. A release ID combines the system and asset SHA-256, so
+changing a title cannot assign progress to different game bytes.
+`GET /api/games` and `GET /api/games/:id/asset` require a session; responses expose
+logical release IDs, never physical storage paths.

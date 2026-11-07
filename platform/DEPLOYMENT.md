@@ -55,6 +55,9 @@ session. It does not enable the public signup endpoint. PowerShell users can pip
 
 ## Persistence and operations
 
+Use the [operator import command](LIBRARY.md) to add game releases. Import commands
+run inside the same image and data volume; mount their input directory read-only.
+
 - `database` stores account and revision metadata; `saves` stores immutable bytes.
 - `docker compose restart` retains both volumes. Do not use `down --volumes` on a
   deployment containing data you want to keep.
