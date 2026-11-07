@@ -7,15 +7,30 @@ Requires Node.js 24 or newer (supported LTS recommended) and npm.
 
 ```sh
 cd platform
-npm ci
-npm run check
-npm run dev
+npm ci --ignore-scripts
 ```
 
-The initial service listens on `http://127.0.0.1:3000`. `/health/live` is a liveness
-probe only, not proof that storage, authentication or a game runtime is ready.
-`npm run build && npm start` runs the compiled server. Configuration is read from
-the environment; never commit a local `.env` file.
+Configure the required variables in [CONFIGURATION.md](CONFIGURATION.md), then
+run `npm run dev`, or `npm run build && npm start` for the compiled service.
+Startup migrates the authentication schema before accepting requests.
+`/health/live` checks the process; `/health/ready` also checks PostgreSQL.
 
-The application currently has no game library or login flow. These are tracked
-milestones, not functionality supplied by this skeleton.
+The identity API supports local registration/login/logout and current-session
+lookup. Registration is disabled by default. Game-library and browser screens
+remain pending; see the status document for the current acceptance boundary.
+
+## Integration database
+
+The full check suite requires a disposable PostgreSQL service. Each integration
+suite creates and drops its own randomly named database; never point `PG_TEST_URL`
+at a production account. The test compose file uses a loopback-only port and
+temporary storage with a deliberately public test password.
+
+```sh
+docker compose -f compose.test.yaml up -d --wait
+export PG_TEST_URL=postgresql://retro_test:integration-test-only@127.0.0.1:55432/retro_test
+npm run check
+docker compose -f compose.test.yaml down
+```
+
+In PowerShell use `$env:PG_TEST_URL = 'postgresql://...'` instead of `export`.

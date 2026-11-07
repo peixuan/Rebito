@@ -17,7 +17,8 @@ support are separate: a playable game need not have an editor.
   uncommitted local work. Preserve them as migration evidence, not new platform commits.
 - Original game data: `<operator-game-directory>`; read-only for this project.
 - Private development evidence and upstream checkouts belong in `.analysis/`.
-- Docker Desktop is installed; engine startup and deployment tests remain to verify.
+- Docker Desktop fails locally; an independent WSL Ubuntu Docker Engine now runs
+  the PostgreSQL 18.6 integration service. App-container verification is pending.
 
 ## Milestones
 
@@ -28,7 +29,8 @@ support are separate: a playable game need not have an editor.
 | TypeScript service skeleton | Verified locally | Format, lint, types, 9 route tests, coverage and build pass |
 | Progress collection contract | Verified locally | Native saves, snapshots and filesystem collections; portable paths and bounds |
 | Private blob storage | Verified on Windows | Exact bytes, concurrency, corruption detection and reopening; Linux fsync awaits container check |
-| Platform and identity | Pending | Container startup; real login; per-user ownership checks |
+| Identity API | Verified locally | PostgreSQL migrations; password/session lifecycle; CSRF; closed registration |
+| Container application | Pending | Build, startup, restart and persistence checks |
 | Versioned persistence | Pending | Conflicting writes rejected; restart and restore verified |
 | Browser runtime adapters | Pending | DOS and console runtime save/restore exercised |
 | Koukai2 editor | Pending | Full module parity and whole-file regression comparisons |
@@ -46,11 +48,10 @@ support are separate: a playable game need not have an editor.
 
 ## Next work
 
-1. Establish an independent WSL Docker Engine for deployment verification. Desktop
-   currently fails on a stale IPC endpoint; its cleanup was blocked by tool policy.
-2. Implement authentication and the shared revision publication path before UI adapters.
-3. Implement durable blob storage and transactional revision publication using the
-   validated progress collection contract, without Koukai2 layout assumptions.
+1. Verify the app container and the full save publication service before UI adapters.
+2. Finish transactional revision publication and authenticated save endpoints.
+3. Exercise OIDC against a test provider; the configured provider boundary is not
+   yet an end-to-end OIDC/LDAP verification.
 
 ## Available checks
 
@@ -59,10 +60,10 @@ Enable local hooks with `git config core.hooksPath .githooks`.
 The `platform` workflow checks every new commit since the pre-platform baseline;
 remote CI has not run because this work has not been pushed.
 
-`cd platform && npm run check`: format/lint, TypeScript, 34 tests for HTTP,
-progress validation and real-filesystem storage, and compiled build passed.
-Measured line coverage is 94.28% on Windows; Linux-only directory fsync is not
-exercised there. This does not imply coverage of pending product features. The tiny process
+`cd platform && npm run check` with the test database: format/lint, TypeScript,
+HTTP/domain/filesystem tests and real PostgreSQL identity tests passed. Linux-only
+directory fsync is not exercised by the Windows run. This does not imply coverage
+of pending product features. The tiny process
 entrypoint is excluded from unit coverage and needs container startup verification.
 
 ## Existing evidence

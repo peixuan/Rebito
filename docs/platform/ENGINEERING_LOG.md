@@ -65,6 +65,14 @@ the service then declares and uses those dependencies. All intermediate npm
 states support `npm ci`. Install scripts are disabled, direct versions are pinned,
 and production dependency audit is a CI gate.
 
+## 2026-11-07: identity dependency lock update
+
+Better Auth 1.7.18, pg 8.23.1 and its type definitions add transitive dependencies
+to the npm lockfile. A dedicated lockfile commit prepares the graph before the
+identity integration declares these dependencies; the preceding manifest remains
+installable. The implementation stays within 500 lines including all other files.
+Installation scripts remain disabled.
+
 ## 2026-11-07: verify the lint preset after configuration migration
 
 Review found that the migrated Biome config selected `none` for the lint preset.
