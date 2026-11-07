@@ -6,7 +6,7 @@ import type { Game } from "../src/library/catalog.ts";
 import { type DisplayText, message } from "../src/shared/messages.ts";
 import type { Profile, Revision } from "../src/storage/revisions.ts";
 import { api, errorText } from "./api.ts";
-import { t, translate } from "./i18n.ts";
+import { formatDate, t, translate } from "./i18n.ts";
 import PlayerPanel from "./PlayerPanel.vue";
 
 const props = defineProps<{ game: Game; profile: Profile }>();
@@ -82,7 +82,6 @@ onMounted(() => perform(refresh));
     <Message v-if="error" severity="error" role="alert">{{ translate(error) }}</Message>
     <Message v-if="notice" severity="success" role="status">{{ translate(notice) }}</Message>
     <PlayerPanel
-      v-if="game.system === 'dos'"
       :game="game"
       :profile-id="profile.id"
       :base-revision="head"
@@ -92,11 +91,12 @@ onMounted(() => perform(refresh));
     <section class="profile-panel">
       <h3>{{ t("saves.import") }}</h3>
       <p class="muted">{{ t("saves.importSingleHelp") }}</p>
+      <p v-if="game.system !== 'dos'" class="muted">{{ t("saves.consoleImportHelp") }}</p>
       <form class="toolbar" @submit.prevent="upload">
         <input
           ref="input"
           type="file"
-          multiple
+          :multiple="game.system === 'dos'"
           :aria-label="t('saves.files')"
           :disabled="busy"
           @change="selectFiles"
@@ -116,7 +116,17 @@ onMounted(() => perform(refresh));
       <article v-for="revision in revisions" :key="revision.id" class="revision-row">
         <div>
           <strong>{{ revision.id === head ? t("saves.current") : t("saves.history") }}</strong>
-          <span class="muted"> · {{ new Date(revision.createdAt).toLocaleString() }}</span>
+          <span>
+            ·
+            {{
+              {
+                snapshot: t("saves.snapshot"),
+                "game-save": t("saves.native"),
+                filesystem: t("library.gameFile"),
+              }[revision.manifest.kind]
+            }}</span
+          >
+          <span class="muted"> · {{ formatDate(revision.createdAt) }}</span>
           <div class="toolbar">
             <a
               v-for="file in revision.manifest.artifacts"

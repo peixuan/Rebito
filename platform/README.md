@@ -19,8 +19,10 @@ The browser login shell supports registration when explicitly enabled, login,
 logout and session recovery. The UI is built into `dist/client` and served by the
 same application. The game library supports private profiles, file imports,
 downloads and history restoration. See [LIBRARY.md](LIBRARY.md) for game assets.
-DOS games now run on the same page with cloud-save publication and revision
-checks. Console adapters and the Koukai2 editor are still pending; consult status.
+DOS, NES, SNES, GB and GBA run on the same page with cloud-save publication and
+revision checks. The Koukai2 editor is still pending; consult status. Console
+snapshots retain both native battery saves and the emulator state. A runtime
+upgrade may require importing the native save instead of loading an old snapshot.
 
 For browser development run `npm run dev:web` alongside the configured API.
 Set the API's `APP_ORIGIN=http://127.0.0.1:5173` to the browser's Vite origin;

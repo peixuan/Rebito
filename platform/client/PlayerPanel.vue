@@ -187,7 +187,9 @@ onBeforeUnmount(() => {
           @click="perform(stop)"
         />
       </template>
-      <span class="muted">{{ t("player.manualSaveHelp") }}</span>
+      <span class="muted">{{
+        game.system === "dos" ? t("player.manualSaveHelp") : t("player.keyboardHelp")
+      }}</span>
     </div>
     <Message v-if="error" severity="error" role="alert">{{ translate(error) }}</Message>
     <Message v-if="notice" severity="success" role="status">{{ translate(notice) }}</Message>

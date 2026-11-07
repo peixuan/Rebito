@@ -13,5 +13,6 @@
   "player.stop": "停止游戏",
   "player.starting": "正在启动模拟器…",
   "player.frame": "游戏模拟器",
-  "player.manualSaveHelp": "先在游戏内存档，再保存到账号。离开前请保存。"
+  "player.manualSaveHelp": "先在游戏内存档，再保存到账号。离开前请保存。",
+  "player.keyboardHelp": "保存到账号会保留即时进度。点击游戏画面后可使用键盘，按键可在控制设置中查看。"
 }

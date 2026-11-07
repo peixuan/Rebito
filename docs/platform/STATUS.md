@@ -39,7 +39,7 @@ support are separate: a playable game need not have an editor.
 | Game library and personal progress | Implemented | Verified assets; private catalog API; browser import, history, restore and account isolation |
 | DOS browser runtime | Verified with own fixture | Real DOSBox WASM, native files, filesystem overlay, edited-byte precedence |
 | Console browser runtime | Four cores verified with own fixtures | NES/SNES/GB/GBA SRAM import and state restoration; NES keyboard and volatile palette |
-| Koukai2 editor | Pending | Full module parity and whole-file regression comparisons |
+| Koukai2 editor | Basic binary model verified | 14 fields, bounds and whole-file preservation; remaining modules/API/UI pending |
 | Release validation | Pending | Gates, end-to-end flows, deployment and handoff docs pass |
 
 ## Acceptance boundaries
@@ -54,9 +54,10 @@ support are separate: a playable game need not have an editor.
 
 ## Next work
 
-1. Finish console runtime adapters and real-game acceptance above the verified DOS path.
-2. Extend the typed Vue/PrimeVue shell with player/editor views and the backend
-   Koukai2 editor; run real browser/game checks. Login is the first browser slice.
+1. The workspace now plays all five platforms. Complete operator import and
+   real-game acceptance above the original DOS/console test programs.
+2. Complete the backend Koukai2 modules and compact editor UI, then compare
+   legacy output and verify edited saves in the actual game.
 3. Exercise OIDC against a test provider; the configured provider boundary is not
    yet an end-to-end OIDC/LDAP verification.
 

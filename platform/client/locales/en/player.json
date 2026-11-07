@@ -13,5 +13,6 @@
   "player.stop": "Stop game",
   "player.starting": "Starting the emulator…",
   "player.frame": "Game emulator",
-  "player.manualSaveHelp": "Save inside the game first, then save to your account before leaving."
+  "player.manualSaveHelp": "Save inside the game first, then save to your account before leaving.",
+  "player.keyboardHelp": "Save to account preserves the current state. Click the game to use the keyboard; see Control Settings for bindings."
 }
