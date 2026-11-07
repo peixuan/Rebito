@@ -14,7 +14,7 @@ in `DD/MMM/YYYY` padded decimal form. The protagonist at slot offset `0x611`
 must be 0–5. These checks do not uniquely identify every historical game edition.
 Only explicitly configured `editor: "koukai2"` releases should use this adapter.
 
-The pure model currently provides the 14 basic fields. Money is a little-endian
+The pure model provides the 14 basic fields. Money is a little-endian
 uint32 at `0x60a`, limited to 600000000. Three uint16 fame values start at
 `0x5b6 + protagonist*14`; six contribution bytes start at `0x5bc + protagonist*14`
 and encode display value + 100. Date bytes at offsets 6–9 encode year−1501,
@@ -28,6 +28,12 @@ not silently normalized. UI clamping improves entry; the server still rejects
 invalid values. Masked changes preserve unrelated bits unless the legacy operation
 explicitly reconstructs a byte, such as nationality.
 
+The persons module covers 120 records at `0x62c + id*50`: eight abilities,
+two levels, two uint16 experience values, age, loyalty, five masked skill bits,
+nationality and affiliation bytes. The first six people also have titles at
+`0x5c3 + id*14`. Nationality changes write `value | 0x60` as in the legacy editor.
+Person 60's alternate labels depend on the independent marker at `0x11cb`.
+Membership filtering uses the 30-byte roster at `0x2177`, even if status is stale.
 Synthetic whole-file tests specify expected bytes independently of field metadata.
 Additional modules, legacy regression comparisons and HTTP/UI integration remain
 in progress; this initial module is not complete legacy feature parity.

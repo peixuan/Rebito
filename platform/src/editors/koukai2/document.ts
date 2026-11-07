@@ -8,6 +8,7 @@ import {
   writeField,
 } from "./fields.ts";
 import { mainRecords } from "./main.ts";
+import { personRecords } from "./persons.ts";
 
 export const layout = { header: 0x97, slot: 0x8074, slots: 10, size: 328_991 } as const;
 export interface Slot {
@@ -16,7 +17,10 @@ export interface Slot {
   date: string;
   hero: number;
 }
-export const modules = [{ id: "main", label: message("koukai2.main"), records: mainRecords }];
+export const modules = [
+  { id: "main", label: message("koukai2.main"), records: mainRecords },
+  { id: "persons", label: message("koukai2.persons"), records: personRecords },
+];
 
 /** Pure binary model. Unknown bytes and untouched out-of-range values survive. */
 export class KoukaiDocument {
