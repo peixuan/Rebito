@@ -63,7 +63,12 @@ function options(field: EditorField) {
           filter
           :disabled="disabled || field.readonly"
           @update:model-value="emit('change', field.key, $event)"
-        />
+        >
+          <template #value>{{
+            translate(field.choices.find((choice) => choice.value === field.value)?.label) ||
+            t("controls.unknownOriginal", { value: field.value })
+          }}</template>
+        </Select>
         <BoundedNumber
           v-else
           :id="`field-${field.key}`"
@@ -84,6 +89,7 @@ function options(field: EditorField) {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 235px), 1fr));
   gap: 10px;
+  align-items: start;
 }
 fieldset {
   margin: 0;

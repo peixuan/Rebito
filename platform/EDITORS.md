@@ -69,8 +69,14 @@ edits as one new revision. Only the owning account can read or edit it. The serv
 chooses the adapter from the catalog, restricts editable files to configured native
 paths and rejects snapshots whose memory could undo native edits. Every slot must
 transform successfully before publication. Existing filesystem overlays remain
-immutable; DOS applies changed native files last on restart. Compact UI integration
-and actual in-game acceptance are still required.
+immutable; DOS applies changed native files last on restart. The compact browser
+editor now retains drafts across modules and slots, exposes all fields without
+advanced foldouts and saves the current file's slot drafts together. Numeric
+inputs normalize edited values on Enter/blur; untouched abnormal values remain.
+The reusable table supports search, sortable columns and a companion filter.
+The browser acceptance test downloads the resulting file and independently checks
+every byte after clamping, person edits, recruitment, map reveal and two-slot save.
+Actual in-game acceptance is still required; the catalog fixture is not a game.
 
 Reproduce locally with Node 24 or newer:
 `node scripts/verify-koukai-legacy.mjs PRIVATE_CORPUS_DIRECTORY`.

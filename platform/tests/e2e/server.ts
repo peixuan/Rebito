@@ -6,6 +6,7 @@ import { loadConfig } from "../../src/server/config.ts";
 import { createPlatform } from "../../src/server/platform.ts";
 import { registerWeb } from "../../src/server/web.ts";
 import { testDatabase } from "../database.ts";
+import { seedEditor } from "../editors/library-fixture.ts";
 import { seedConsoles } from "../library/console-fixture.ts";
 import { seedDos } from "../library/dos-fixture.ts";
 import { seedLibrary } from "../library/fixture.ts";
@@ -15,6 +16,7 @@ const directory = await mkdtemp(join(tmpdir(), "retro-browser-"));
 await seedLibrary(directory);
 await seedDos(directory);
 await seedConsoles(directory);
+await seedEditor(directory);
 const app = await createPlatform(
   loadConfig({
     APP_ORIGIN: "http://localhost:4317",
@@ -32,7 +34,7 @@ app.addHook("onClose", async () => {
   await rm(directory, { recursive: true, force: true });
 });
 const sessions: Record<string, unknown> = {};
-for (const [index, name] of ["dos", "library", "other", "player", "console"].entries()) {
+for (const [index, name] of ["dos", "library", "other", "player", "console", "editor"].entries()) {
   // Fixture setup represents distinct clients; keep the real public rate limits enabled.
   const response = await app.inject({
     method: "POST",

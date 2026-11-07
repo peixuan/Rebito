@@ -6,6 +6,22 @@
   "editor.selectModule": "请选择有效编辑模块。",
   "editor.selectRecord": "请选择有效记录。",
   "editor.noChanges": "没有需要保存的修改。",
+  "editor.title": "存档修改器",
+  "editor.slot": "编辑存档槽",
+  "editor.file": "编辑文件",
+  "editor.discard": "放弃草稿并重新载入",
+  "editor.stale": "存档已有新版本。草稿仍保留，请核对后重新载入。",
+  "editor.modules": "修改模块",
+  "editor.preview": "预览修改",
+  "editor.save": "保存修改",
+  "editor.previewTitle": "当前文件修改预览",
+  "editor.slotColumn": "存档槽",
+  "editor.fieldColumn": "字段",
+  "editor.before": "原值",
+  "editor.after": "新值",
+  "editor.emptyPreview": "没有修改。",
   "editor.unknownValue": "未知 #{value}",
-  "editor.columnLabel": "{group} · {field}"
+  "editor.columnLabel": "{group} · {field}",
+  "editor.savedRestart": "修改已保存为新版本，重新启动游戏即可载入。",
+  "editor.pendingSlotChanges": "{count} 项待保存修改（包含其他存档槽）"
 }

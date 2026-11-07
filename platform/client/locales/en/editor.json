@@ -6,6 +6,22 @@
   "editor.selectModule": "Select a valid editor module.",
   "editor.selectRecord": "Select a valid record.",
   "editor.noChanges": "There are no changes to save.",
+  "editor.title": "Save editor",
+  "editor.slot": "Save slot to edit",
+  "editor.file": "File to edit",
+  "editor.discard": "Discard draft and reload",
+  "editor.stale": "A newer save exists. Your draft is retained. Review it before reloading.",
+  "editor.modules": "Editor modules",
+  "editor.preview": "Preview edits",
+  "editor.save": "Save edits",
+  "editor.previewTitle": "Edits to the current file",
+  "editor.slotColumn": "Save slot",
+  "editor.fieldColumn": "Field",
+  "editor.before": "Before",
+  "editor.after": "After",
+  "editor.emptyPreview": "No edits.",
   "editor.unknownValue": "Unknown #{value}",
-  "editor.columnLabel": "{group} · {field}"
+  "editor.columnLabel": "{group} · {field}",
+  "editor.savedRestart": "Edits were saved as a new revision. Restart the game to load them.",
+  "editor.pendingSlotChanges": "{count} unsaved edit across all slots | {count} unsaved edits across all slots"
 }

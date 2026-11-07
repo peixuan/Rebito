@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import Message from "primevue/message";
-import { onMounted, ref } from "vue";
+import { defineAsyncComponent, onMounted, ref } from "vue";
 import type { Game } from "../src/library/catalog.ts";
 import { type DisplayText, message } from "../src/shared/messages.ts";
 import type { Profile, Revision } from "../src/storage/revisions.ts";
 import { api, errorText } from "./api.ts";
 import { formatDate, t, translate } from "./i18n.ts";
 import PlayerPanel from "./PlayerPanel.vue";
+
+const EditorPanel = defineAsyncComponent(() => import("./EditorPanel.vue"));
 
 const props = defineProps<{ game: Game; profile: Profile }>();
 const emit = defineEmits<{ back: [] }>();
@@ -18,6 +20,7 @@ const input = ref<HTMLInputElement | null>(null);
 const busy = ref(false);
 const error = ref<DisplayText>("");
 const notice = ref<DisplayText>("");
+const editorDirty = ref(false);
 async function refresh() {
   revisions.value = await api<Revision[]>(`profiles/${props.profile.id}/revisions`);
   const profiles = await api<Profile[]>("profiles");
@@ -70,7 +73,12 @@ onMounted(() => perform(refresh));
 <template>
   <section :aria-label="t('saves.workspace')">
     <div class="toolbar">
-      <Button :label="t('library.back')" variant="text" :disabled="busy" @click="emit('back')" />
+      <Button
+        :label="t('library.back')"
+        variant="text"
+        :disabled="busy || editorDirty"
+        @click="emit('back')"
+      />
       <h2>{{ game.title }} · {{ profile.name }}</h2>
       <Button
         :label="t('saves.refresh')"
@@ -87,6 +95,12 @@ onMounted(() => perform(refresh));
       :base-revision="head"
       :revision="revisions.find((revision) => revision.id === head) ?? null"
       @saved="perform(refresh)"
+    />
+    <EditorPanel
+      v-if="game.editor && head"
+      :revision-id="head"
+      @saved="perform(refresh)"
+      @dirty="editorDirty = $event"
     />
     <section class="profile-panel">
       <h3>{{ t("saves.import") }}</h3>

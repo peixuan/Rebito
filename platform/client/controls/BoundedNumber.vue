@@ -58,7 +58,7 @@ function commit() {
       size="small"
       inputmode="decimal"
       maxlength="512"
-      :style="{ width }"
+      :style="{ width: `calc(${width} + 1.5rem)` }"
       :disabled="disabled"
       :invalid="Boolean(error)"
       :aria-invalid="Boolean(error)"
