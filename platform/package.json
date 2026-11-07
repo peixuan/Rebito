@@ -9,7 +9,8 @@
   },
   "scripts": {
     "configure": "node scripts/configure.mjs",
-    "build": "tsc -p tsconfig.build.json && vite build",
+    "build": "npm run runtimes && tsc -p tsconfig.build.json && vite build",
+    "runtimes": "node scripts/runtime-assets.mjs",
     "start": "node dist/server/main.js",
     "dev": "node --watch --experimental-strip-types src/server/main.ts",
     "typecheck": "tsc --noEmit && vue-tsc --noEmit -p tsconfig.client.json",
@@ -41,6 +42,7 @@
     "@types/pg": "8.23.1",
     "@vitejs/plugin-vue": "6.0.10",
     "@vitest/coverage-v8": "5.1.0",
+    "tar": "7.5.22",
     "typescript": "6.0.3",
     "vite": "8.3.6",
     "vitest": "5.1.0",

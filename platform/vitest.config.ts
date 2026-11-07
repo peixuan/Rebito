@@ -2,7 +2,7 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    include: ["tests/**/*.test.ts"],
+    include: ["tests/**/*.test.ts", "scripts/*.test.mjs"],
     coverage: {
       provider: "v8",
       include: ["src/**/*.ts", "client/api.ts"],

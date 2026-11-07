@@ -12,3 +12,6 @@
 !client/**
 !src/
 !src/**
+!scripts/
+!scripts/runtime-assets.mjs
+!runtime-lock.json

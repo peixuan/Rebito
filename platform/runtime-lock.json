@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "packages": [
+    {
+      "id": "jsdos-8.5.3",
+      "url": "https://registry.npmjs.org/js-dos/-/js-dos-8.5.3.tgz",
+      "integrity": "sha512-1nZxQqW4wlsAKXIrvw9g6kUbSJECkJlAi+VOf/yD7Y1aRkO6TNixFuuD6uePMiEno8NXQJCGVr/QBvrCd9MNZQ==",
+      "license": "GPL-2.0 (upstream package declaration)",
+      "source": "https://github.com/caiiiycuk/js-dos/tree/506dfd2a99f56bc4e393a716125ae94e58eb3fba",
+      "from": "dist",
+      "target": "jsdos-8.5.3"
+    },
+    {
+      "id": "emulatorjs-4.2.3",
+      "url": "https://registry.npmjs.org/@emulatorjs/emulatorjs/-/emulatorjs-4.2.3.tgz",
+      "integrity": "sha512-7z3qaA4LwyurhuGvdMUDF9xJpEbxC3SNy9+E9tSaOsRo8FCS2QXam/0k/lc9kqHWRFIlLKWahNjPAStyL0rFnw==",
+      "license": "GPL-3.0",
+      "source": "https://github.com/EmulatorJS/EmulatorJS/tree/e150dc0491ae747028919fb82d6598954976ede6",
+      "from": "data",
+      "target": "emulatorjs-4.2.3/data"
+    },
+    {
+      "id": "fceumm-4.2.3",
+      "url": "https://registry.npmjs.org/@emulatorjs/core-fceumm/-/core-fceumm-4.2.3.tgz",
+      "integrity": "sha512-XX9Vv2N/hzp0TstNMCTSppEs+sg+1lpJpPdSDuRqIO/cwdt7dUcF+WjNX1yQJLRbP5+XwcNHZ6K4BKy8CJpndQ==",
+      "license": "GPL-2.0; full text in core archive license.txt",
+      "source": "https://github.com/EmulatorJS/libretro-fceumm",
+      "core": true,
+      "target": "emulatorjs-4.2.3/data/cores"
+    },
+    {
+      "id": "snes9x-4.2.3",
+      "url": "https://registry.npmjs.org/@emulatorjs/core-snes9x/-/core-snes9x-4.2.3.tgz",
+      "integrity": "sha512-JTe9Rv9eOuCkgkG4ILwuCZUqNcVI3m9ju1NHTTjridUlFgJSqL4DUqF/vLKN9olCpsqlJFfcCayAOoikJxefwA==",
+      "license": "Snes9x noncommercial; full text in core archive license.txt",
+      "source": "https://github.com/EmulatorJS/snes9x",
+      "core": true,
+      "target": "emulatorjs-4.2.3/data/cores"
+    },
+    {
+      "id": "gambatte-4.2.3",
+      "url": "https://registry.npmjs.org/@emulatorjs/core-gambatte/-/core-gambatte-4.2.3.tgz",
+      "integrity": "sha512-Oq3AJL9SKnMsNAmtAP2eN934TQts3NHeaAe0z1BO9Lx/L3xDZKLpxL+XwgcSXIrl4Sx1oXxYEUwD7JjPEQ0DGg==",
+      "license": "GPL-2.0; full text in core archive license.txt",
+      "source": "https://github.com/EmulatorJS/gambatte-libretro",
+      "core": true,
+      "target": "emulatorjs-4.2.3/data/cores"
+    },
+    {
+      "id": "mgba-4.2.3",
+      "url": "https://registry.npmjs.org/@emulatorjs/core-mgba/-/core-mgba-4.2.3.tgz",
+      "integrity": "sha512-daiHzZQKEr+P9fra7j5YoEAXiyYUEtBhFQ8EAV/SeCtrkvqtayU7GQ9LYgoSgzkKSwsbNSskApqGuA9EGARYPA==",
+      "license": "MPL-2.0; full text in core archive license.txt",
+      "source": "https://github.com/EmulatorJS/mgba",
+      "core": true,
+      "target": "emulatorjs-4.2.3/data/cores"
+    }
+  ]
+}
