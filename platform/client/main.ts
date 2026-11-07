@@ -3,6 +3,7 @@ import PrimeVue from "primevue/config";
 import { createApp } from "vue";
 import App from "./App.vue";
 import { i18n } from "./i18n.ts";
+import "./style.css";
 
 createApp(App)
   .use(i18n)
