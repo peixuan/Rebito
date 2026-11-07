@@ -27,6 +27,7 @@ support are separate: a playable game need not have an editor.
 | Upstream reuse decision | Recorded | See [architecture](ARCHITECTURE.md); reuse runtimes/auth libraries |
 | TypeScript service skeleton | Verified locally | Format, lint, types, 9 route tests, coverage and build pass |
 | Progress collection contract | Verified locally | Native saves, snapshots and filesystem collections; portable paths and bounds |
+| Private blob storage | Verified on Windows | Exact bytes, concurrency, corruption detection and reopening; Linux fsync awaits container check |
 | Platform and identity | Pending | Container startup; real login; per-user ownership checks |
 | Versioned persistence | Pending | Conflicting writes rejected; restart and restore verified |
 | Browser runtime adapters | Pending | DOS and console runtime save/restore exercised |
@@ -58,9 +59,10 @@ Enable local hooks with `git config core.hooksPath .githooks`.
 The `platform` workflow checks every new commit since the pre-platform baseline;
 remote CI has not run because this work has not been pushed.
 
-`cd platform && npm run check`: format/lint, TypeScript, 29 tests for HTTP and
-progress validation, and compiled build passed. Both modules have 100% measured coverage;
-this does not imply coverage of the pending product features. The tiny process
+`cd platform && npm run check`: format/lint, TypeScript, 34 tests for HTTP,
+progress validation and real-filesystem storage, and compiled build passed.
+Measured line coverage is 94.28% on Windows; Linux-only directory fsync is not
+exercised there. This does not imply coverage of pending product features. The tiny process
 entrypoint is excluded from unit coverage and needs container startup verification.
 
 ## Existing evidence
