@@ -1,0 +1,5 @@
+{
+  "runtime.integrity": "存档或游戏文件校验失败。",
+  "runtime.releaseMismatch": "存档属于另一游戏版本。",
+  "runtime.snapshotMismatch": "即时快照与当前模拟器版本不兼容，请选择游戏自身的存档。"
+}
