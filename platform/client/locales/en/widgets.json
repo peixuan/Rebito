@@ -1,0 +1,22 @@
+{
+  "widgets.noResults": "No results found",
+  "widgets.noOptions": "No available options",
+  "widgets.searchResults": "{count} results available",
+  "widgets.selection": "{count} items selected",
+  "widgets.noSelection": "No item selected",
+  "widgets.close": "Close",
+  "widgets.selectAll": "Select all",
+  "widgets.unselectAll": "Deselect all",
+  "widgets.selectRow": "Select row",
+  "widgets.unselectRow": "Deselect row",
+  "widgets.options": "Options",
+  "widgets.navigation": "Navigation",
+  "widgets.page": "Page {page}",
+  "widgets.firstPage": "First page",
+  "widgets.lastPage": "Last page",
+  "widgets.nextPage": "Next page",
+  "widgets.previousPage": "Previous page",
+  "widgets.rowsPerPage": "Rows per page",
+  "widgets.choosePage": "Choose a page",
+  "widgets.enterPage": "Enter a page number"
+}

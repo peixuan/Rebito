@@ -3,7 +3,22 @@
 Keep this file limited to decisions that affect reproducibility or verification.
 Routine command output belongs in local diagnostics, not in the repository.
 
-## 2026-11-17: Authorized history replay
+## 2026-11-17: Internationalization and authorized history replay
+
+The owner requested English README instructions, English source/comments and
+Chinese application text confined to language resources. Initial interface
+selection follows the browser's first supported language, with English fallback
+and a persisted manual override. Vue I18n provides the maintained formatter;
+pure editors and services exchange stable message descriptors without importing it.
+Language switches preserve drafts, selection, sort state and running emulators.
+
+Vue I18n 11.4.20 and `@intlify/unplugin-vue-i18n` 11.2.8 are exact MIT-licensed
+build inputs. Their installed license files and transitive metadata were reviewed.
+Their complete generated dependency graph is retained in a dedicated lockfile
+commit before the interface integration; other changed files keep the normal limit.
+No existing locked package version changes. Precompiled messages keep the runtime
+compiler out of the browser and preserve the current CSP. The account entry chunk
+is approximately 433 KB uncompressed after editor/library code splitting.
 
 The owner requested internationalization in the original feature sequence and
 folding five publication follow-ups into their owning changes. The 2026-11-17
@@ -81,3 +96,16 @@ The config now explicitly selects `recommended`. Its sole existing finding was
 the intentional rejection of control bytes in portable save paths; a local,
 explained suppression retains that validation. Do not infer active lint rules
 from `linter.enabled` alone when upgrading tooling.
+
+## 2026-11-07: browser toolchain and lock update
+
+The browser uses Vue 3.5.45, PrimeVue 4.5.5, Vite 8.3.6 and Playwright 1.65.0.
+The compiler is aligned first with a small manifest/lock update. The complete
+browser graph then uses a lockfile-only commit before interface integration.
+TypeScript is pinned to 6.0.3 because the Vue checker uses Volar, whose declared
+compiler peer range is `<7`. Both server and Vue type checks pass on this supported
+combination. Biome's HTML/Vue support is enabled explicitly so template uses count
+when checking imports and variables; recommended lint rules remain enabled.
+PrimeVue 5 and PrimeUI themes 3 require a license key and eligibility renewal.
+The project instead pins the MIT-licensed PrimeVue 4.5.5 and themes 1.2.5; do not
+silently upgrade these across the license boundary.

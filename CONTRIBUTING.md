@@ -67,7 +67,11 @@ to accommodate a change; fix the cause or document a narrowly justified exceptio
 
 Write source, comments and contributor instructions in English. The README's
 opening project introduction is bilingual; other README sections are English.
-Keep translated application text in locale resources.
+Place translated application text and verified game names in `client/locales/`,
+using stable message IDs across API and editor boundaries. Language changes must
+preserve input, selected records and running games. Run the catalog checks and
+browser language flows when changing these boundaries; see
+[internationalization](docs/platform/INTERNATIONALIZATION.md).
 
 Keep public docs useful to a new contributor: setup, architecture, invariants,
 commands, current state and next work. Avoid duplicated logs and copied upstream

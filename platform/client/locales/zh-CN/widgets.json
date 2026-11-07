@@ -1,0 +1,22 @@
+{
+  "widgets.noResults": "没有匹配结果",
+  "widgets.noOptions": "没有可选项",
+  "widgets.searchResults": "有 {count} 个匹配结果",
+  "widgets.selection": "已选择 {count} 项",
+  "widgets.noSelection": "尚未选择",
+  "widgets.close": "关闭",
+  "widgets.selectAll": "全选",
+  "widgets.unselectAll": "取消全选",
+  "widgets.selectRow": "选择记录",
+  "widgets.unselectRow": "取消选择记录",
+  "widgets.options": "选项",
+  "widgets.navigation": "翻页导航",
+  "widgets.page": "第 {page} 页",
+  "widgets.firstPage": "首页",
+  "widgets.lastPage": "末页",
+  "widgets.nextPage": "下一页",
+  "widgets.previousPage": "上一页",
+  "widgets.rowsPerPage": "每页记录数",
+  "widgets.choosePage": "选择页码",
+  "widgets.enterPage": "输入页码"
+}

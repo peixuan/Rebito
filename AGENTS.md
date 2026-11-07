@@ -42,6 +42,11 @@ because an upstream documentation page lists a feature.
 - Authorize every private resource on the server and publish revisions atomically.
 - Prefer OIDC integration; LDAP may be federated through an identity provider.
 - Use small cohesive modules, descriptive names and comments explaining invariants.
+- Keep user-facing text in `platform/client/locales`. Use stable message descriptors
+  across server/editor/runtime boundaries; never use translated labels as identifiers.
+  Preserve active games, draft values and table state when the language changes.
+  English is the fallback; browser preference chooses English or Simplified Chinese.
+  See [internationalization](docs/platform/INTERNATIONALIZATION.md).
 - Add abstractions only for a demonstrated boundary, not speculative features.
 - Use erasable TypeScript syntax so Node can run server sources directly. Keep
   browser build/type checks separate from the server's compiled output.
