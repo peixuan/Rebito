@@ -93,6 +93,62 @@ describe("save publication service", () => {
     });
   });
 
+  it("replaces one native file while retaining other immutable artifacts and revision checks", async () => {
+    const profile = await repository.create("alice", metadata.releaseId, "Editor");
+    const original = await service.publish(
+      "alice",
+      profile.id,
+      null,
+      { ...metadata, kind: "filesystem" },
+      [...files, { name: "__runtime/filesystem.zip", bytes: Uint8Array.of(7, 8) }],
+      "game",
+    );
+    const put = vi.spyOn(blobs, "put");
+    await expect(
+      service.replaceFile("bob", original.id, "SAVE.DAT", Uint8Array.of(9)),
+    ).rejects.toMatchObject({ code: "not_found" });
+    await expect(
+      service.replaceFile("alice", original.id, "missing", Uint8Array.of(9)),
+    ).rejects.toMatchObject({ code: "not_found" });
+    expect(put).not.toHaveBeenCalled();
+    const edited = await service.replaceFile("alice", original.id, "SAVE.DAT", Uint8Array.of(9));
+    expect(put).toHaveBeenCalledTimes(1);
+    expect(edited).toMatchObject({
+      source: "editor",
+      parentId: original.id,
+      manifest: { kind: "filesystem" },
+    });
+    expect(edited.manifest.artifacts[1]).toEqual(original.manifest.artifacts[1]);
+    expect(await service.file("alice", edited.id, "SAVE.DAT")).toEqual(Buffer.from([9]));
+    expect(await service.file("alice", original.id, "SAVE.DAT")).toEqual(Buffer.from([1, 2, 3]));
+    await expect(
+      service.replaceFile("alice", original.id, "SAVE.DAT", Uint8Array.of(10)),
+    ).rejects.toMatchObject({ code: "conflict" });
+    put.mockResolvedValueOnce({ sha256: "0".repeat(64), size: 1 });
+    await expect(
+      service.replaceFile("alice", edited.id, "SAVE.DAT", Uint8Array.of(10)),
+    ).rejects.toThrow("changed");
+    expect((await repository.list("alice")).find((entry) => entry.id === profile.id)?.headId).toBe(
+      edited.id,
+    );
+    put.mockRestore();
+    const snapshot = await service.publish(
+      "alice",
+      profile.id,
+      edited.id,
+      {
+        ...metadata,
+        kind: "snapshot",
+        runtime: { adapter: "test", core: "test", version: "test" },
+      },
+      files,
+      "game",
+    );
+    await expect(
+      service.replaceFile("alice", snapshot.id, "SAVE.DAT", Uint8Array.of(9)),
+    ).rejects.toThrow("snapshot");
+  });
+
   it("does not publish partial uploads when storage fails or input changes", async () => {
     const profile = await repository.create("alice", metadata.releaseId, "Failure");
     const put = vi.spyOn(blobs, "put").mockRejectedValueOnce(new Error("disk full"));

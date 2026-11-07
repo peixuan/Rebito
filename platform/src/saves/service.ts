@@ -39,11 +39,7 @@ export class SaveService {
       })),
     };
     assertProgressManifest(manifest);
-    // Reject unauthorized and already stale writes before creating any blobs.
-    const profile = (await this.revisions.list(owner)).find((entry) => entry.id === profileId);
-    if (!profile) throw new ProgressError("not_found");
-    if (profile.headId !== base) throw new ProgressError("conflict");
-    if (profile.releaseId !== metadata.releaseId) throw new ProgressError("release_mismatch");
+    await this.preflight(owner, profileId, base, metadata.releaseId);
     for (const [index, file] of files.entries()) {
       const stored = await this.blobs.put(file.bytes);
       const expected = manifest.artifacts[index];
@@ -53,6 +49,46 @@ export class SaveService {
     }
     // The transaction checks the head again: another request may have won meanwhile.
     return this.revisions.publish(owner, profileId, base, manifest, source);
+  }
+
+  /** Replace a native file without buffering or duplicating the other immutable blobs. */
+  async replaceFile(owner: string, revisionId: string, name: string, bytes: Uint8Array) {
+    const revision = await this.revisions.read(owner, revisionId);
+    if (!revision.manifest.artifacts.some((artifact) => artifact.name === name))
+      throw new ProgressError("not_found");
+    // A stale snapshot would restore old memory over the changed native file.
+    if (revision.manifest.kind === "snapshot")
+      throw new Error("Extract native progress before editing a snapshot");
+    await this.preflight(owner, revision.profileId, revisionId, revision.manifest.releaseId);
+    const replacement = {
+      name,
+      size: bytes.length,
+      sha256: createHash("sha256").update(bytes).digest("hex"),
+    };
+    const manifest = {
+      ...revision.manifest,
+      artifacts: revision.manifest.artifacts.map((artifact) =>
+        artifact.name === name ? replacement : artifact,
+      ),
+    };
+    assertProgressManifest(manifest);
+    const stored = await this.blobs.put(bytes);
+    if (stored.sha256 !== replacement.sha256 || stored.size !== replacement.size)
+      throw new Error("Save bytes changed during publication");
+    return this.revisions.publish(owner, revision.profileId, revisionId, manifest, "editor");
+  }
+
+  private async preflight(
+    owner: string,
+    profileId: string,
+    base: string | null,
+    releaseId: string,
+  ) {
+    // Reject unauthorized and already stale writes before creating any blobs.
+    const profile = (await this.revisions.list(owner)).find((entry) => entry.id === profileId);
+    if (!profile) throw new ProgressError("not_found");
+    if (profile.headId !== base) throw new ProgressError("conflict");
+    if (profile.releaseId !== releaseId) throw new ProgressError("release_mismatch");
   }
 
   async file(owner: string, revisionId: string, name: string): Promise<Uint8Array> {
