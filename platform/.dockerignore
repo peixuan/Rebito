@@ -8,6 +8,7 @@
 !tsconfig.client.json
 !vite.config.ts
 !index.html
+!runtime.html
 !client/
 !client/**
 !src/

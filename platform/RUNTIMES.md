@@ -29,3 +29,11 @@ Runtime adapters must isolate browser persistence by profile and load the chosen
 server revision before play. A server-side edit or history restore requires a
 fresh runtime instance; continuing an old instance would restore stale memory.
 Real game acceptance checks are separate from installer and manifest tests.
+
+js-dos applies plain `initFs` files before extracting archive overlays. The DOS
+adapter therefore supplies edited native files as a final ZIP overlay. A real
+DOSBox test verifies that edited bytes replace the older bytes inside the saved
+filesystem. The runtime document alone permits dynamic JavaScript evaluation,
+which this Emscripten loader requires; the account/editor document keeps its
+stricter script policy. The same-origin iframe isolates runtime globals/styles,
+not an adversarial JavaScript plugin.

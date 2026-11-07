@@ -1,5 +1,9 @@
 {
+  "runtime.loadFailed": "Could not load emulator resources.",
+  "runtime.dosResources": "DOS emulator resources are incomplete.",
+  "runtime.dosConfiguration": "The DOS archive has no valid launch configuration.",
   "runtime.integrity": "Save or game file verification failed.",
   "runtime.releaseMismatch": "The save belongs to another game release.",
-  "runtime.snapshotMismatch": "The snapshot is incompatible with this emulator version. Choose a native game save instead."
+  "runtime.snapshotMismatch": "The snapshot is incompatible with this emulator version. Choose a native game save instead.",
+  "runtime.platformUnavailable": "The emulator for this platform is not available yet."
 }

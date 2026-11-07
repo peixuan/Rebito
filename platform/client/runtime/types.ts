@@ -27,4 +27,4 @@ export interface RuntimeHandle {
 export interface RuntimeHost {
   start(launch: RuntimeLaunch): Promise<RuntimeHandle>;
 }
-export type RuntimeWindow = Window & { retroRuntime: RuntimeHost };
+export type RuntimeWindow = Window & { retroRuntime?: RuntimeHost };

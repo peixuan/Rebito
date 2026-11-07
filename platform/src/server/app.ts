@@ -1,6 +1,7 @@
 import helmet from "@fastify/helmet";
 import Fastify from "fastify";
 import { ProgressError } from "../storage/revisions.ts";
+import { browserPolicy } from "./browser-policy.ts";
 
 /** Compose the HTTP service without opening ports so tests exercise real routes. */
 export function createApp() {
@@ -14,17 +15,7 @@ export function createApp() {
   app.register(helmet, {
     crossOriginEmbedderPolicy: { policy: "require-corp" },
     contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'wasm-unsafe-eval'"],
-        workerSrc: ["'self'", "blob:"],
-        connectSrc: ["'self'"],
-        imgSrc: ["'self'", "data:", "blob:"],
-        mediaSrc: ["'self'", "blob:"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        frameSrc: ["'self'"],
-        upgradeInsecureRequests: null,
-      },
+      directives: browserPolicy(),
     },
   });
 

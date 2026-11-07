@@ -1,5 +1,9 @@
 {
+  "runtime.loadFailed": "模拟器资源加载失败。",
+  "runtime.dosResources": "DOS 模拟器资源不完整。",
+  "runtime.dosConfiguration": "DOS 游戏包缺少有效的启动配置。",
   "runtime.integrity": "存档或游戏文件校验失败。",
   "runtime.releaseMismatch": "存档属于另一游戏版本。",
-  "runtime.snapshotMismatch": "即时快照与当前模拟器版本不兼容，请选择游戏自身的存档。"
+  "runtime.snapshotMismatch": "即时快照与当前模拟器版本不兼容，请选择游戏自身的存档。",
+  "runtime.platformUnavailable": "此平台的模拟器尚未接入。"
 }

@@ -11,8 +11,16 @@ it("serves built HTML without exposing dotfiles or replacing unknown API routes"
   try {
     await writeFile(join(directory, "index.html"), "<!doctype html><title>Rebito</title>");
     await writeFile(join(directory, ".env"), "private fixture");
+    await writeFile(join(directory, "runtime.html"), "<!doctype html><title>Runtime</title>");
     registerWeb(app, directory);
     expect((await app.inject("/")).body).toContain("Rebito");
+    expect((await app.inject("/")).headers["content-security-policy"]).not.toContain(
+      "'unsafe-eval'",
+    );
+    const runtime = await app.inject("/runtime.html");
+    expect(runtime.body).toContain("Runtime");
+    expect(runtime.headers["content-security-policy"]).toContain("'unsafe-eval'");
+    expect(runtime.headers["cross-origin-embedder-policy"]).toBe("require-corp");
     expect((await app.inject("/.env")).statusCode).toBe(403);
     expect((await app.inject("/api/unknown")).statusCode).toBe(404);
   } finally {
