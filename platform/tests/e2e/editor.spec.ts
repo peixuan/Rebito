@@ -1,31 +1,19 @@
 import { expect, test } from "@playwright/test";
 import type { Profile, Revision } from "../../src/storage/revisions.ts";
 import { editorFixture } from "../editors/fixture.ts";
-import { useSession } from "./session.ts";
+import { openEditor } from "./editor-session.ts";
 import { sourcePerson } from "./source-labels.ts";
 
 test("clamps compact fields, preserves cross-module drafts and saves multiple slots", async ({
   page,
 }, info) => {
   test.setTimeout(60_000);
-  await useSession(page.context(), "editor");
-  await page.goto("/");
-  await page.getByRole("button", { name: /Koukai2 editor test/ }).click();
-  await page.getByLabel("Profile name").fill("Editor regression");
-  await page.getByRole("button", { name: "Create profile" }).click();
-  await page.getByRole("button", { name: "Open profile" }).click();
   const bytes = editorFixture();
   bytes.set([21, 10, 10, 24], 0x97 + 6);
   bytes.fill(255, 0x97 + 0x2177, 0x97 + 0x2195);
   bytes.set(new TextEncoder().encode("11/ 11/1522"), 136);
   bytes[0x97 + 9 * 0x8074 + 0x611] = 5;
-  await page.getByLabel("Save files").setInputFiles({
-    name: "KOUKAI2.DAT",
-    mimeType: "application/octet-stream",
-    buffer: Buffer.from(bytes),
-  });
-  await page.getByRole("button", { name: "Upload save" }).click();
-  const editor = page.getByRole("region", { name: "Save editor" });
+  const editor = await openEditor(page, "Editor regression", bytes);
   const money = editor.getByLabel("Money", { exact: true });
   await expect(money).toHaveValue("2779096485");
   const size = await money.boundingBox();

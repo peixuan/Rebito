@@ -39,7 +39,7 @@ support are separate: a playable game need not have an editor.
 | Game library and personal progress | Implemented | Verified assets; private catalog API; browser import, history, restore and account isolation |
 | DOS browser runtime | Verified with own fixture | Real DOSBox WASM, native files, filesystem overlay, edited-byte precedence |
 | Console browser runtime | Four cores verified with own fixtures | NES/SNES/GB/GBA SRAM import and state restoration; NES keyboard and volatile palette |
-| Koukai2 editor | Core/API/initial browser flow verified | Eight modules; 13/13 legacy matches; compact inputs, linked actions and atomic multi-slot edits; real-game acceptance pending |
+| Koukai2 editor | Core/API/browser flows verified | Eight modules; 13/13 legacy matches; compact inputs, linked actions, atomic multi-slot edits and conflict recovery; real-game acceptance pending |
 | Release validation | Pending | Gates, end-to-end flows, deployment and handoff docs pass |
 
 ## Acceptance boundaries
@@ -56,30 +56,37 @@ support are separate: a playable game need not have an editor.
 
 1. The workspace now plays all five platforms. Complete operator import and
    real-game acceptance above the original DOS/console test programs.
-2. Complete the backend Koukai2 modules and compact editor UI, then compare
-   legacy output and verify edited saves in the actual game.
+2. Verify edited Koukai2 saves in the actual game. Core parity and browser editing
+   are complete; retain the 13 whole-file legacy comparisons and independent tests.
 3. Exercise OIDC against a test provider; the configured provider boundary is not
    yet an end-to-end OIDC/LDAP verification.
 
 ## Available checks
 
-`node --test scripts/commit-policy.test.mjs`: 6 tests passed locally.
+`node --test scripts/commit-policy.test.mjs`: 10 tests passed locally.
 Enable local hooks with `git config core.hooksPath .githooks`.
 The `platform` workflow checks every new commit since the pre-platform baseline;
 remote CI has not run because this work has not been pushed.
 
 `cd platform && npm run check` with the test database: format/lint, TypeScript,
 HTTP/domain/filesystem and real PostgreSQL identity/revision/service tests passed.
-Measured Windows line coverage is above 97%. Linux-only
+The latest run passed 151 tests with 99.14% Windows line coverage. Linux-only
 directory fsync is not exercised by the Windows run. This does not imply coverage
 of pending product features. The process entrypoint and account-provisioning CLI
 are excluded from unit coverage and exercised by the container smoke test.
+
+Three editor browser tests pass: exact multi-slot output bytes, numeric sorting and
+selection retention, clamping/invalid-input handling, narrow layouts, and retaining
+drafts when another upload advances the revision head. Edited cells update without
+reordering the selected row until the next explicit sort.
 
 Container verification used the pinned Node 24/PostgreSQL 18 images in WSL:
 image build, healthy startup, stdin account creation, login/logout, multipart save
 upload/download, full app/database restart, and exact saved-byte recovery passed.
 The app UID is 1000; the database role has no superuser/create-role/create-db rights.
 CI repeats build, startup and persistence smoke, but has not run remotely.
+That deployed image predates the browser runtimes and editor; rebuild and repeat
+the deployment checks before claiming the complete product is container-verified.
 
 ## Existing evidence
 

@@ -112,7 +112,19 @@ async function refresh(selection: EditorQuery = {}) {
   selections.set(`${response.file}:${response.slot}:${response.module}`, response.selected);
 }
 function change(key: string, value: number) {
-  if (view.value) draft(view.value.file, view.value.slot)[key] = value;
+  if (!view.value) return;
+  draft(view.value.file, view.value.slot)[key] = value;
+  const field = view.value.fields.find((item) => item.key === key);
+  const row = view.value.records.find((item) => item.id === view.value?.selected);
+  if (field && row)
+    row.cells[field.columnId] = field.choices
+      ? (field.choices.find((choice) => choice.value === value)?.label ??
+        message("editor.unknownValue", { value }))
+      : field.boolean
+        ? value
+          ? message("common.yes")
+          : message("common.no")
+        : (value * (field.multiplier ?? 1)) / (field.divisor ?? 1);
 }
 async function navigate(selection: EditorQuery) {
   await refresh(); // Preserve and validate the previous slot before switching.

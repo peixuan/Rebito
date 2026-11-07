@@ -47,6 +47,13 @@ const columns = computed(() =>
     field: `sortCells.c${index}`,
   })),
 );
+const sortValues = ref(new Map<string, EditorView["records"][number]["cells"]>());
+function captureSort() {
+  sortValues.value = new Map(props.rows.map((row) => [row.id, { ...row.cells }]));
+}
+// Keep order stable while editing a cell. Explicit sorting or loading another
+// record refreshes the sort values; the displayed cells always show the draft.
+watch(() => props.rows, captureSort, { immediate: true });
 const visible = computed(() => {
   const terms = state.value.query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
   return localize(props.rows)
@@ -63,7 +70,10 @@ const visible = computed(() => {
     .map((row) => ({
       ...row,
       sortCells: Object.fromEntries(
-        props.columns.map((column, index) => [`c${index}`, row.cells[column.id] ?? ""]),
+        props.columns.map((column, index) => [
+          `c${index}`,
+          localize(sortValues.value.get(row.id)?.[column.id] ?? ""),
+        ]),
       ),
     }));
 });
@@ -111,6 +121,7 @@ const visible = computed(() => {
       :sort-order="state.order"
       @row-select="!disabled && emit('select', $event.data.id)"
       @sort="
+        captureSort();
         state.sort = typeof $event.sortField === 'string' ? $event.sortField : '';
         state.order = $event.sortOrder === -1 ? -1 : 1;
       "
@@ -123,7 +134,9 @@ const visible = computed(() => {
         :field="column.field"
         :header="column.label"
         sortable
-      />
+      >
+        <template #body="{ data }">{{ data.cells[column.id] }}</template>
+      </Column>
       <template #empty>{{ t("records.empty") }}</template>
     </DataTable>
     <small>{{ t("records.count", { visible: visible.length, total: rows.length }) }}</small>
