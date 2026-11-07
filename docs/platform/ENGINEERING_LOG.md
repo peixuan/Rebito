@@ -56,3 +56,20 @@ single Conventional Commits subject. Only the approved complete legal texts or
 The small Git policy script implements project-specific limits without adding a
 runtime dependency. It is not a replacement for formatting, lint, type, test or
 dependency-security tooling. These gates are introduced with the application.
+
+## 2026-11-07: initial application dependency lock
+
+A minimal package and lock establish an installable npm workspace first. The
+complete generated dependency graph follows in its own lockfile-only commit;
+the service then declares and uses those dependencies. All intermediate npm
+states support `npm ci`. Install scripts are disabled, direct versions are pinned,
+and production dependency audit is a CI gate.
+
+## 2026-11-07: verify the lint preset after configuration migration
+
+Review found that the migrated Biome config selected `none` for the lint preset.
+Formatting, types and tests had run, but recommended lint rules were not active.
+The config now explicitly selects `recommended`. Its sole existing finding was
+the intentional rejection of control bytes in portable save paths; a local,
+explained suppression retains that validation. Do not infer active lint rules
+from `linter.enabled` alone when upgrading tooling.

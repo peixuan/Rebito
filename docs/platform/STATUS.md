@@ -25,6 +25,7 @@ support are separate: a playable game need not have an editor.
 | --- | --- | --- |
 | Engineering rules and commit gates | Implemented | Hooks and CI enforce subjects, artifacts and line budgets |
 | Upstream reuse decision | Recorded | See [architecture](ARCHITECTURE.md); reuse runtimes/auth libraries |
+| TypeScript service skeleton | Verified locally | Format, lint, types, 9 route tests, coverage and build pass |
 | Platform and identity | Pending | Container startup; real login; per-user ownership checks |
 | Versioned persistence | Pending | Conflicting writes rejected; restart and restore verified |
 | Browser runtime adapters | Pending | DOS and console runtime save/restore exercised |
@@ -43,9 +44,10 @@ support are separate: a playable game need not have an editor.
 
 ## Next work
 
-1. Establish the small TypeScript application and format/lint/type/test gates.
-2. Resolve the local Docker engine startup failure before claiming deployment tests.
-3. Implement authentication and the shared revision publication path before UI adapters.
+1. Establish an independent WSL Docker Engine for deployment verification. Desktop
+   currently fails on a stale IPC endpoint; its cleanup was blocked by tool policy.
+2. Implement authentication and the shared revision publication path before UI adapters.
+3. Add native-save/snapshot contracts without embedding Koukai2 layout assumptions.
 
 ## Available checks
 
@@ -53,6 +55,11 @@ support are separate: a playable game need not have an editor.
 Enable local hooks with `git config core.hooksPath .githooks`.
 The `platform` workflow checks every new commit since the pre-platform baseline;
 remote CI has not run because this work has not been pushed.
+
+`cd platform && npm run check`: format/lint, TypeScript, 9 Fastify injection tests
+and compiled build passed. The initial route module has 100% measured coverage;
+this does not imply coverage of the pending product features. The tiny process
+entrypoint is excluded from unit coverage and needs container startup verification.
 
 ## Existing evidence
 
