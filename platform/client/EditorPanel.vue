@@ -299,3 +299,58 @@ onBeforeUnmount(() => {
     </Dialog>
   </section>
 </template>
+
+<style scoped>
+.editor {
+  padding: 14px;
+}
+.editor .toolbar {
+  gap: 8px;
+}
+.editor h3 {
+  margin: 0;
+}
+.editor-tabs,
+.editor-actions,
+.editor-footer {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.editor-tabs {
+  margin: 12px 0;
+}
+.editor-content {
+  display: grid;
+  gap: 12px;
+}
+.editor-content.has-records {
+  grid-template-columns: minmax(250px, 0.85fr) minmax(0, 1.4fr);
+}
+.record-detail {
+  min-width: 0;
+}
+.record-detail h4 {
+  margin: 0 0 8px;
+}
+.editor-actions {
+  margin-top: 10px;
+}
+.editor-footer {
+  position: sticky;
+  bottom: 0;
+  padding: 10px 0 0;
+  margin-top: 12px;
+  background: white;
+  font-size: 12px;
+}
+.editor-footer span {
+  margin-right: auto;
+}
+@media (max-width: 850px) {
+  .editor-content.has-records {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
