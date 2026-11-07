@@ -1,0 +1,17 @@
+{
+  "library.back": "Back to library",
+  "library.platform": "Platform",
+  "library.search": "Search games",
+  "library.profiles": "Personal profiles",
+  "library.title": "Game library",
+  "library.allPlatforms": "All platforms",
+  "library.empty": "The library is empty. Ask an administrator to import games, then refresh.",
+  "library.noMatches": "No matching games.",
+  "library.profileHelp": "Create separate profiles for different playthroughs. Save history is private to your account.",
+  "library.openProfile": "Open profile",
+  "library.profileName": "Profile name",
+  "library.profileExample": "For example, First playthrough",
+  "library.createProfile": "Create profile",
+  "library.profileCount": "{count} personal profile | {count} personal profiles",
+  "library.profileTitle": "{title} · Personal profiles"
+}

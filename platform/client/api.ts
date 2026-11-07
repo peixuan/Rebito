@@ -21,8 +21,9 @@ export async function api<T>(path: string, body?: unknown): Promise<T> {
       ? {}
       : {
           method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(body),
+          ...(body instanceof FormData
+            ? { body }
+            : { headers: { "content-type": "application/json" }, body: JSON.stringify(body) }),
         }),
   });
   const result = await response.json();

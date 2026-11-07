@@ -1,0 +1,14 @@
+{
+  "saves.uploaded": "The save was stored as a new revision.",
+  "saves.restored": "Restored as a new revision. The original history is retained.",
+  "saves.workspace": "Progress workspace",
+  "saves.refresh": "Refresh saves",
+  "saves.import": "Import a game save",
+  "saves.files": "Save files",
+  "saves.upload": "Upload save",
+  "saves.history": "Revision history",
+  "saves.empty": "No saved revisions yet.",
+  "saves.current": "Current revision",
+  "saves.restore": "Restore this revision",
+  "saves.importSingleHelp": "Select the game's native save file. Each upload creates a revision that can be restored later."
+}

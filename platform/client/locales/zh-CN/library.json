@@ -1,0 +1,17 @@
+{
+  "library.back": "返回游戏库",
+  "library.platform": "游戏平台",
+  "library.search": "搜索游戏",
+  "library.profiles": "个人进度",
+  "library.title": "游戏库",
+  "library.allPlatforms": "全部平台",
+  "library.empty": "游戏库还是空的。请管理员导入游戏后刷新。",
+  "library.noMatches": "没有匹配的游戏。",
+  "library.profileHelp": "可以为不同周目分别创建进度，历史存档只属于你的账号。",
+  "library.openProfile": "打开进度",
+  "library.profileName": "进度名称",
+  "library.profileExample": "例如：第一周目",
+  "library.createProfile": "新建进度",
+  "library.profileCount": "{count} 份个人进度",
+  "library.profileTitle": "{title} · 个人进度"
+}

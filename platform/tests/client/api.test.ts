@@ -30,6 +30,18 @@ it.each([{ error: "conflict" }, { code: "INVALID_LOGIN" }, {}])(
   },
 );
 
+it("sends binary form data with the browser-generated multipart boundary", async () => {
+  const fetch = vi.fn().mockResolvedValue(new Response("{}"));
+  vi.stubGlobal("fetch", fetch);
+  const form = new FormData();
+  form.append("file", new Blob([Uint8Array.of(0, 255)]), "save.srm");
+  await api("profiles/test/revisions", form);
+  const options = fetch.mock.calls[0]?.[1];
+  expect(options.body).toBe(form);
+  expect(options).not.toHaveProperty("headers");
+  expect(options).toMatchObject({ method: "POST", credentials: "same-origin", cache: "no-store" });
+});
+
 it("shows useful messages without echoing server details", () => {
   for (const status of [400, 401, 403, 409, 429]) {
     expect(JSON.stringify(errorText(new ApiError("private server details", status)))).not.toContain(

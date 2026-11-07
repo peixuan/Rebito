@@ -36,6 +36,7 @@ support are separate: a playable game need not have an editor.
 | Save service | Verified locally | Durable blobs before publication; guarded download; non-destructive restore; storage failures |
 | Save publication API | Verified locally | Real multipart imports, private downloads, stale writes, history and restore |
 | Browser login shell | Verified in Chrome | Real registration/login/logout, session recovery and narrow-viewport checks |
+| Game library and personal progress | Implemented | Verified assets; private catalog API; browser import, history, restore and account isolation |
 | Browser runtime adapters | Pending | DOS and console runtime save/restore exercised |
 | Koukai2 editor | Pending | Full module parity and whole-file regression comparisons |
 | Release validation | Pending | Gates, end-to-end flows, deployment and handoff docs pass |
@@ -52,7 +53,7 @@ support are separate: a playable game need not have an editor.
 
 ## Next work
 
-1. Add game manifests and browser runtime adapters above the verified save API.
+1. Add browser runtime adapters above the verified library/save APIs.
 2. Extend the typed Vue/PrimeVue shell with player/editor views and the backend
    Koukai2 editor; run real browser/game checks. Login is the first browser slice.
 3. Exercise OIDC against a test provider; the configured provider boundary is not
