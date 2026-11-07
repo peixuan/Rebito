@@ -62,8 +62,8 @@ app.addHook("onClose", async () => {
   await new Promise((resolve, reject) =>
     identityServer.close((error) => (error ? reject(error) : resolve())),
   );
-  await fixture.close();
   await rm(directory, { recursive: true, force: true });
 });
-for (const signal of ["SIGTERM", "SIGINT"]) process.once(signal, () => void app.close());
+for (const signal of ["SIGTERM", "SIGINT"])
+  process.once(signal, () => void app.close().finally(() => fixture.close()));
 await app.listen({ host: "127.0.0.1", port: 4320 });

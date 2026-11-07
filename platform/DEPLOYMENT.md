@@ -63,6 +63,8 @@ run inside the same image and data volume; mount their input directory read-only
   deployment containing data you want to keep.
 - Back up both volumes consistently with the application stopped; for PostgreSQL,
   use `pg_dump` plus the private save directory. Verify a restore before upgrading.
+  Follow [storage operations](OPERATIONS.md) for guarded integrity checks,
+  abandoned-file collection and a restore drill into separate volumes.
 - `/health/live` checks the process; `/health/ready` also checks database access.
 - Request logs omit URL queries, headers and raw exception payloads. Identity logs
   use fixed event categories. Correlate request IDs, status codes and database

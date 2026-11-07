@@ -11,6 +11,7 @@ import { registerLibrary } from "../library/routes.ts";
 import { registerSaves } from "../saves/routes.ts";
 import { SaveService } from "../saves/service.ts";
 import { LocalBlobStore } from "../storage/blobs.ts";
+import { storageLease } from "../storage/maintenance.ts";
 import { RevisionRepository } from "../storage/revisions.ts";
 import { migrateStorage } from "../storage/schema.ts";
 import { createApp } from "./app.ts";
@@ -18,6 +19,18 @@ import type { ServerConfig } from "./config.ts";
 
 /** Compose real services without opening a port; the caller owns the database pool. */
 export async function createPlatform(config: ServerConfig, database: Pool) {
+  const release = await storageLease(database, false);
+  try {
+    const app = await createServices(config, database);
+    app.addHook("onClose", release);
+    return app;
+  } catch (error) {
+    await release();
+    throw error;
+  }
+}
+
+async function createServices(config: ServerConfig, database: Pool) {
   await migrateIdentity(config, database);
   await migrateStorage(database);
   const auth = createAuth(config, database);

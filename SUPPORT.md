@@ -11,6 +11,6 @@ minimal reproduction. Use original synthetic files when possible. Do not attach
 ROMs, BIOS, system images or private saves, even if they would make reproduction
 easier. A game title and hash can identify a compatibility case without distributing
 the game itself. Installation and recovery instructions are in
-[deployment](platform/DEPLOYMENT.md) and storage operations.
+[deployment](platform/DEPLOYMENT.md) and [storage operations](platform/OPERATIONS.md).
 
 Report suspected security vulnerabilities privately according to [SECURITY.md](SECURITY.md).

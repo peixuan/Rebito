@@ -11,14 +11,18 @@ const app = await createPlatform(config, database).catch(async (error: unknown) 
   throw error;
 });
 registerWeb(app, resolve("dist/client"));
-app.addHook("onClose", async () => {
-  await database.end();
-});
+async function close() {
+  try {
+    await app.close();
+  } finally {
+    await database.end();
+  }
+}
 
 for (const signal of ["SIGTERM", "SIGINT"] as const) {
   process.once(signal, () => {
-    app.close().catch((error: unknown) => {
-      app.log.error(error, "Shutdown failed");
+    close().catch(() => {
+      app.log.error("Shutdown failed");
       process.exitCode = 1;
     });
   });
@@ -27,6 +31,6 @@ for (const signal of ["SIGTERM", "SIGINT"] as const) {
 try {
   await app.listen({ port: config.port, host: config.host });
 } catch (error) {
-  await app.close();
+  await close();
   throw error;
 }

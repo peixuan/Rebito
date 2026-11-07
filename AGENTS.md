@@ -40,6 +40,11 @@ because an upstream documentation page lists a feature.
 - Model game saves, emulator snapshots and writable file collections separately.
 - Bind editor support to verified game/format versions; preserve unknown bytes.
 - Authorize every private resource on the server and publish revisions atomically.
+- Keep per-user quotas transactional across profiles. Preserve the application
+  storage lease when adding entrypoints; offline collection must exclude active
+  writers. Read [storage operations](platform/OPERATIONS.md) before maintenance.
+  Callers must await `app.close()` before ending the database pool; ending the pool
+  inside an app close hook can deadlock against its dedicated storage lease.
 - Prefer OIDC integration; LDAP may be federated through an identity provider.
 - Use small cohesive modules, descriptive names and comments explaining invariants.
 - Keep user-facing text in `platform/client/locales`. Use stable message descriptors

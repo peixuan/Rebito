@@ -36,6 +36,7 @@ support are separate: a playable game need not have an editor.
 | Revision repository | Verified locally | Real PostgreSQL ownership, concurrent writers, rollback and immutable history |
 | Save service | Verified locally | Durable blobs before publication; guarded download; non-destructive restore; storage failures |
 | Save publication API | Verified locally | Real multipart imports, private downloads, stale writes, history and restore |
+| Storage bounds and maintenance | Verified locally | Per-owner quotas under concurrent writes; exclusive offline verification/collection; no history deletion |
 | Browser login shell | Verified in Chrome | Real registration/login/logout, session recovery and narrow-viewport checks |
 | Game library and personal progress | Implemented | Verified assets; private catalog API; browser import, history, restore and account isolation |
 | Operator game preparation/import | Verified locally | Explicit DOS file allowlist; deterministic bundles; atomic catalog publication; source files unchanged |
@@ -56,7 +57,7 @@ support are separate: a playable game need not have an editor.
 
 ## Next work
 
-1. Finish per-user storage limits, cleanup and backup/restore operations.
+1. Exercise the documented backup/restore drill against the updated container image.
 2. Check DOS pointer alignment or relative capture; see [game acceptance](GAME_ACCEPTANCE.md).
 3. Rebuild and verify the complete deployment. OIDC is
    browser-verified; production LDAP federation depends on the operator's provider.
@@ -70,12 +71,14 @@ remote CI has not run because this work has not been pushed.
 
 `cd platform && npm run check` with the test database: format/lint, TypeScript,
 HTTP/domain/filesystem and real PostgreSQL identity/revision/service tests passed.
-The latest run passed 162 tests with 98.68% Windows line coverage. Linux-only
+The last complete run before maintenance passed 171 tests with 98.72% Windows line
+coverage; maintenance adds tests for exclusion, integrity and its CLI. Linux-only
 directory fsync is not exercised by the Windows run. This does not imply coverage
 of pending product features. The process entrypoint and account-provisioning CLI
 are excluded from unit coverage and exercised by the container smoke test.
 
-Three editor browser tests pass: exact multi-slot output bytes, numeric sorting and
+The complete 16-test browser suite passes, including all four console cores, DOS,
+OIDC and three editor tests: exact multi-slot output bytes, numeric sorting and
 selection retention, clamping/invalid-input handling, narrow layouts, and retaining
 drafts when another upload advances the revision head. Edited cells update without
 reordering the selected row until the next explicit sort.

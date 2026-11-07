@@ -30,7 +30,6 @@ const app = await createPlatform(
 registerWeb(app, resolve("dist/client"));
 app.addHook("onClose", async () => {
   await rm(".runtime-cache/e2e-sessions.json", { force: true });
-  await fixture.close();
   await rm(directory, { recursive: true, force: true });
 });
 const sessions: Record<string, unknown> = {};
@@ -57,6 +56,6 @@ await mkdir(".runtime-cache", { recursive: true });
 await writeFile(".runtime-cache/e2e-sessions.json", JSON.stringify(sessions), { mode: 0o600 });
 for (const signal of ["SIGTERM", "SIGINT"] as const)
   process.once(signal, () => {
-    void app.close();
+    void app.close().finally(() => fixture.close());
   });
 await app.listen({ host: "127.0.0.1", port: 4317 });
