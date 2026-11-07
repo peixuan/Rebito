@@ -24,7 +24,7 @@ support are separate: a playable game need not have an editor.
 | Milestone | Status | Acceptance |
 | --- | --- | --- |
 | Engineering rules and commit gates | Implemented | Hooks and CI enforce subjects, artifacts and line budgets |
-| Upstream reuse decision | In progress | Inspect RomM player, save and auth integration boundaries |
+| Upstream reuse decision | Recorded | See [architecture](ARCHITECTURE.md); reuse runtimes/auth libraries |
 | Platform and identity | Pending | Container startup; real login; per-user ownership checks |
 | Versioned persistence | Pending | Conflicting writes rejected; restart and restore verified |
 | Browser runtime adapters | Pending | DOS and console runtime save/restore exercised |
@@ -43,9 +43,9 @@ support are separate: a playable game need not have an editor.
 
 ## Next work
 
-1. Inspect upstream save publication and embedded-player extension points, then
-   record a concrete reuse decision before choosing the application skeleton.
-2. Bring up the deployment environment and establish reproducible test commands.
+1. Establish the small TypeScript application and format/lint/type/test gates.
+2. Resolve the local Docker engine startup failure before claiming deployment tests.
+3. Implement authentication and the shared revision publication path before UI adapters.
 
 ## Available checks
 
