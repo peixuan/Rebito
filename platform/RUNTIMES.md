@@ -52,3 +52,6 @@ The replacement remains a mount so the upstream exit handler can unmount it norm
 The NES acceptance fixture is an original tiny program: it writes battery SRAM,
 changes its palette on a real keyboard input and restores that volatile palette
 from a snapshot after a fresh boot. No commercial ROM is part of the tests.
+Original LoROM, MBC1 and ARM fixtures exercise Snes9x, Gambatte and mGBA too.
+Each test imports a changed battery save and then restores a state over deliberately
+different boot SRAM, proving that the state load—not merely a restart—restores data.

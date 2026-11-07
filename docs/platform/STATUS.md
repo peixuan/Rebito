@@ -38,7 +38,7 @@ support are separate: a playable game need not have an editor.
 | Browser login shell | Verified in Chrome | Real registration/login/logout, session recovery and narrow-viewport checks |
 | Game library and personal progress | Implemented | Verified assets; private catalog API; browser import, history, restore and account isolation |
 | DOS browser runtime | Verified with own fixture | Real DOSBox WASM, native files, filesystem overlay, edited-byte precedence |
-| Console browser runtime | NES verified with own fixture | Native SRAM import, real keyboard input and volatile snapshot restoration; SFC/GB/GBA pending |
+| Console browser runtime | Four cores verified with own fixtures | NES/SNES/GB/GBA SRAM import and state restoration; NES keyboard and volatile palette |
 | Koukai2 editor | Pending | Full module parity and whole-file regression comparisons |
 | Release validation | Pending | Gates, end-to-end flows, deployment and handoff docs pass |
 
