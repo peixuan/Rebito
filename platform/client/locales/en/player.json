@@ -1,0 +1,17 @@
+{
+  "player.failed": "The emulator encountered an error.",
+  "player.refreshRequired": "Refresh the save and try again.",
+  "player.notReady": "The emulator window is not ready.",
+  "player.startTimeout": "The emulator took too long to start. Stop it and try again.",
+  "player.saved": "Game progress was saved to your account.",
+  "player.unchanged": "There is no new save data.",
+  "player.window": "Game window",
+  "player.start": "Start game",
+  "player.resume": "Resume game",
+  "player.pause": "Pause game",
+  "player.save": "Save to account",
+  "player.stop": "Stop game",
+  "player.starting": "Starting the emulator…",
+  "player.frame": "Game emulator",
+  "player.manualSaveHelp": "Save inside the game first, then save to your account before leaving."
+}

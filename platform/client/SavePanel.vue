@@ -7,6 +7,7 @@ import { type DisplayText, message } from "../src/shared/messages.ts";
 import type { Profile, Revision } from "../src/storage/revisions.ts";
 import { api, errorText } from "./api.ts";
 import { t, translate } from "./i18n.ts";
+import PlayerPanel from "./PlayerPanel.vue";
 
 const props = defineProps<{ game: Game; profile: Profile }>();
 const emit = defineEmits<{ back: [] }>();
@@ -80,6 +81,14 @@ onMounted(() => perform(refresh));
     </div>
     <Message v-if="error" severity="error" role="alert">{{ translate(error) }}</Message>
     <Message v-if="notice" severity="success" role="status">{{ translate(notice) }}</Message>
+    <PlayerPanel
+      v-if="game.system === 'dos'"
+      :game="game"
+      :profile-id="profile.id"
+      :base-revision="head"
+      :revision="revisions.find((revision) => revision.id === head) ?? null"
+      @saved="perform(refresh)"
+    />
     <section class="profile-panel">
       <h3>{{ t("saves.import") }}</h3>
       <p class="muted">{{ t("saves.importSingleHelp") }}</p>

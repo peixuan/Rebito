@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { loadConfig } from "../../src/server/config.ts";
@@ -25,9 +25,32 @@ const app = await createPlatform(
 );
 registerWeb(app, resolve("dist/client"));
 app.addHook("onClose", async () => {
+  await rm(".runtime-cache/e2e-sessions.json", { force: true });
   await fixture.close();
   await rm(directory, { recursive: true, force: true });
 });
+const sessions: Record<string, unknown> = {};
+for (const [index, name] of ["dos", "library", "other", "player", "console"].entries()) {
+  // Fixture setup represents distinct clients; keep the real public rate limits enabled.
+  const response = await app.inject({
+    method: "POST",
+    url: "/api/auth/sign-up/email",
+    remoteAddress: `127.0.0.${index + 2}`,
+    headers: { origin: "http://localhost:4317" },
+    payload: { email: `${name}@example.test`, name, password: "browser-test-password-123" },
+  });
+  if (response.statusCode !== 200) throw new Error("Could not provision browser fixture");
+  sessions[name] = response.cookies.map(({ name, value }) => ({
+    name,
+    value,
+    url: "http://localhost:4317",
+    httpOnly: true,
+    sameSite: "Lax",
+    secure: false,
+  }));
+}
+await mkdir(".runtime-cache", { recursive: true });
+await writeFile(".runtime-cache/e2e-sessions.json", JSON.stringify(sessions), { mode: 0o600 });
 for (const signal of ["SIGTERM", "SIGINT"] as const)
   process.once(signal, () => {
     void app.close();

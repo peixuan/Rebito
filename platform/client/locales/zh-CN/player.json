@@ -1,0 +1,17 @@
+{
+  "player.failed": "模拟器运行失败。",
+  "player.refreshRequired": "请刷新存档后重试。",
+  "player.notReady": "模拟器窗口尚未就绪。",
+  "player.startTimeout": "模拟器启动超时，请停止后重试。",
+  "player.saved": "游戏进度已保存到账号。",
+  "player.unchanged": "当前没有新的存档数据。",
+  "player.window": "游戏窗口",
+  "player.start": "开始游戏",
+  "player.resume": "继续游戏",
+  "player.pause": "暂停游戏",
+  "player.save": "保存到账号",
+  "player.stop": "停止游戏",
+  "player.starting": "正在启动模拟器…",
+  "player.frame": "游戏模拟器",
+  "player.manualSaveHelp": "先在游戏内存档，再保存到账号。离开前请保存。"
+}

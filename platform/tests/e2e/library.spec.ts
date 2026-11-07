@@ -1,19 +1,11 @@
 import { expect, test } from "@playwright/test";
+import { useSession } from "./session.ts";
 
 test("creates personal progress, imports bytes, restores history and isolates accounts", async ({
   page,
   browser,
 }, info) => {
-  const suffix = Date.now();
-  const signup = await page.request.post("/api/auth/sign-up/email", {
-    headers: { origin: "http://localhost:4317" },
-    data: {
-      email: `library-${suffix}@example.test`,
-      name: "Save test",
-      password: "browser-test-password-123",
-    },
-  });
-  expect(signup.ok()).toBe(true);
+  await useSession(page.context(), "library");
   await page.goto("/");
   await page.getByLabel("Search games").fill("Nonexistent game");
   await expect(page.getByText("No matching games.")).toBeVisible();
@@ -49,14 +41,7 @@ test("creates personal progress, imports bytes, restores history and isolates ac
 
   const second = await browser.newContext({ baseURL: "http://localhost:4317" });
   try {
-    await second.request.post("/api/auth/sign-up/email", {
-      headers: { origin: "http://localhost:4317" },
-      data: {
-        email: `other-${suffix}@example.test`,
-        name: "Another account",
-        password: "browser-test-password-123",
-      },
-    });
+    await useSession(second, "other");
     const other = await second.newPage();
     await other.goto("/");
     await other.getByRole("button", { name: /Test game/ }).click();

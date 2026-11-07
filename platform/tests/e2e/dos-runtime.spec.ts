@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import type { RuntimeHandle, RuntimeWindow } from "../../client/runtime/types.ts";
 import type { Game } from "../../src/library/catalog.ts";
+import { useSession } from "./session.ts";
 
 test("runs real DOSBox WASM and reloads edited native bytes over its filesystem overlay", async ({
   page,
@@ -11,14 +12,7 @@ test("runs real DOSBox WASM and reloads edited native bytes over its filesystem 
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text().slice(0, 800));
   });
-  await page.request.post("/api/auth/sign-up/email", {
-    headers: { origin: "http://localhost:4317" },
-    data: {
-      email: `dos-${Date.now()}@example.test`,
-      name: "DOS",
-      password: "browser-test-password-123",
-    },
-  });
+  await useSession(page.context(), "dos");
   const games: Game[] = await (await page.request.get("/api/games")).json();
   const selected = games.find((entry) => entry.system === "dos");
   if (!selected) throw new Error("Missing DOS fixture");
