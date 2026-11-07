@@ -46,3 +46,13 @@ the complete file hash before allowing the exception. Canonical `LICENSE` files
 and separately counted `NOTICE` grants are used from introduction in the new
 replay. The earlier exact prefixed blob remains recognized for auditing the
 original published history; neither form permits edited or repeated legal text.
+
+## 2026-11-07: commit policy
+
+Commits count all added and deleted lines against a 500-line limit and use a
+single Conventional Commits subject. Only the approved complete legal texts or
+`platform/package-lock.json` may exceed it, each in a dedicated single-file commit.
+
+The small Git policy script implements project-specific limits without adding a
+runtime dependency. It is not a replacement for formatting, lint, type, test or
+dependency-security tooling. These gates are introduced with the application.

@@ -39,6 +39,17 @@ See the dated decision in [the engineering log](docs/platform/ENGINEERING_LOG.md
 Stage named files and inspect `git diff --cached --check` and
 `git diff --cached --stat` before committing. Do not amend unrelated prior commits.
 
+Enable repository-local hooks once after cloning (Node.js 24 or newer):
+
+```sh
+git config core.hooksPath .githooks
+node --test scripts/*.test.mjs
+```
+
+Hooks enforce the staged-file budget and subject. CI repeats history checks so
+local hook installation is not the only enforcement point. Run
+`node scripts/commit-policy.mjs --range BASE_SHA..HEAD_SHA` to inspect a commit range.
+
 ## Quality gates
 
 - Formatting, lint and type checks for production and test code.

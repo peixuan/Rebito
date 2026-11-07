@@ -23,7 +23,7 @@ support are separate: a playable game need not have an editor.
 
 | Milestone | Status | Acceptance |
 | --- | --- | --- |
-| Engineering rules and commit gates | In progress | Small atomic commits; policy enforced locally and in CI |
+| Engineering rules and commit gates | Implemented | Hooks and CI enforce subjects, artifacts and line budgets |
 | Upstream reuse decision | In progress | Inspect RomM player, save and auth integration boundaries |
 | Platform and identity | Pending | Container startup; real login; per-user ownership checks |
 | Versioned persistence | Pending | Conflicting writes rejected; restart and restore verified |
@@ -43,10 +43,16 @@ support are separate: a playable game need not have an editor.
 
 ## Next work
 
-1. Enforce commit subject, line budget and forbidden artifact rules.
-2. Inspect upstream save publication and embedded-player extension points, then
+1. Inspect upstream save publication and embedded-player extension points, then
    record a concrete reuse decision before choosing the application skeleton.
-3. Bring up the deployment environment and establish reproducible test commands.
+2. Bring up the deployment environment and establish reproducible test commands.
+
+## Available checks
+
+`node --test scripts/commit-policy.test.mjs`: 6 tests passed locally.
+Enable local hooks with `git config core.hooksPath .githooks`.
+The `platform` workflow checks every new commit since the pre-platform baseline;
+remote CI has not run because this work has not been pushed.
 
 ## Existing evidence
 
