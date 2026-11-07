@@ -3,10 +3,10 @@ import type { RuntimeHandle, RuntimeWindow } from "../../client/runtime/types.ts
 import type { Game } from "../../src/library/catalog.ts";
 import { useSession } from "./session.ts";
 
-for (const system of ["NES", "SNES", "GB", "GBA"]) {
-  test(`runs the ${system} core and restores native saves and emulator snapshots`, async ({
-    page,
-  }, info) => {
+for (const variant of ["NES", "NES without battery", "SNES", "GB", "GBA"]) {
+  const system = variant.startsWith("NES") ? "NES" : variant;
+  const hasBattery = variant !== "NES without battery";
+  test(`runs ${variant} and restores its available save formats`, async ({ page }, info) => {
     test.setTimeout(60_000);
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.stack || error.message));
@@ -19,15 +19,18 @@ for (const system of ["NES", "SNES", "GB", "GBA"]) {
     async function start(progress: Progress | null) {
       await page.goto("/runtime.html");
       await page.evaluate(
-        async ({ game, progress }) => {
+        async ({ game, progress, hasBattery }) => {
           const host = window as RuntimeWindow & { testHandle?: RuntimeHandle };
           if (!host.retroRuntime) throw new Error("Missing runtime host");
+          const gameBytes = new Uint8Array(
+            await (await fetch(`/api/games/${game.id}/asset`)).arrayBuffer(),
+          );
+          // Use the same homebrew program with the iNES battery flag removed.
+          if (!hasBattery) gameBytes[6] = (gameBytes[6] ?? 0) & ~2;
           host.testHandle = await host.retroRuntime.start({
             game,
             profileId: "console-test",
-            gameBytes: new Uint8Array(
-              await (await fetch(`/api/games/${game.id}/asset`)).arrayBuffer(),
-            ),
+            gameBytes,
             progress: progress
               ? {
                   ...progress,
@@ -39,7 +42,7 @@ for (const system of ["NES", "SNES", "GB", "GBA"]) {
               : null,
           });
         },
-        { game, progress },
+        { game, progress, hasBattery },
       );
     }
     async function capture() {
@@ -79,25 +82,31 @@ for (const system of ["NES", "SNES", "GB", "GBA"]) {
     }
     try {
       await start(null);
-      await expect
-        .poll(
-          async () => (await capture()).files.find((file) => file.name === "save.srm")?.bytes[0],
-        )
-        .toBe(0x42);
+      if (hasBattery) {
+        await expect
+          .poll(
+            async () => (await capture()).files.find((file) => file.name === "save.srm")?.bytes[0],
+          )
+          .toBe(0x42);
+      }
       const initial = await capture();
       expect(initial.kind).toBe("snapshot");
       expect(
         initial.files.find((file) => file.name === "__runtime/state.bin")?.bytes.length,
       ).toBeGreaterThan(100);
       const native = initial.files.find((file) => file.name === "save.srm");
-      if (!native) throw new Error("Missing SRAM");
-      native.bytes[0] = 0x43;
-      await start({ kind: "game-save", files: [native] });
-      await expect
-        .poll(
-          async () => (await capture()).files.find((file) => file.name === "save.srm")?.bytes[0],
-        )
-        .toBe(0x43);
+      if (hasBattery) {
+        if (!native) throw new Error("Missing SRAM");
+        native.bytes[0] = 0x43;
+        await start({ kind: "game-save", files: [native] });
+        await expect
+          .poll(
+            async () => (await capture()).files.find((file) => file.name === "save.srm")?.bytes[0],
+          )
+          .toBe(0x43);
+      } else {
+        expect(initial.files.map((file) => file.name)).toEqual(["__runtime/state.bin"]);
+      }
       if (system === "NES") {
         await expect
           .poll(async () => {
@@ -117,7 +126,7 @@ for (const system of ["NES", "SNES", "GB", "GBA"]) {
       }
       const snapshot = await capture();
       if (system === "NES") {
-        await start({ kind: "game-save", files: [native] });
+        await start(native ? { kind: "game-save", files: [native] } : null);
         await expect
           .poll(async () => {
             const color = await pixel();
@@ -127,8 +136,8 @@ for (const system of ["NES", "SNES", "GB", "GBA"]) {
       }
       // Boot with different SRAM: $43 must come from the state, not the save file.
       const snapshotSave = snapshot.files.find((file) => file.name === "save.srm");
-      if (!snapshotSave) throw new Error("Missing snapshot SRAM");
-      snapshotSave.bytes[0] = 0x42;
+      if (hasBattery && !snapshotSave) throw new Error("Missing snapshot SRAM");
+      if (snapshotSave) snapshotSave.bytes[0] = 0x42;
       await start({ kind: "snapshot", files: snapshot.files });
       if (system === "NES") {
         await expect
@@ -142,7 +151,7 @@ for (const system of ["NES", "SNES", "GB", "GBA"]) {
         .poll(
           async () => (await capture()).files.find((file) => file.name === "save.srm")?.bytes[0],
         )
-        .toBe(0x43);
+        .toBe(hasBattery ? 0x43 : undefined);
       await page.screenshot({ path: info.outputPath("console.png"), animations: "disabled" });
       expect(errors).toEqual([]);
     } finally {
