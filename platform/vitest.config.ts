@@ -8,6 +8,10 @@ export default defineConfig({
       include: [
         "src/**/*.ts",
         "client/api.ts",
+        "client/library-archive.ts",
+        "client/locale-preference.ts",
+        "client/runtime/console-locale.ts",
+        "client/runtime/console-controls.ts",
         "client/runtime/progress.ts",
         "client/runtime/save-files.ts",
         "client/runtime/live-edit.ts",

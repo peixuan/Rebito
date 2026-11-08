@@ -1,4 +1,7 @@
 {
+  "library.previewSize": "The game archive must not exceed 64 MiB.",
+  "library.archiveCount": "The archive contains too many files.",
+  "library.previewExpandedSize": "The expanded game archive must not exceed 256 MiB.",
   "library.romExtension": "The extension does not match the platform. Upload an uncompressed ROM.",
   "library.gameFormat": "The game file format is invalid.",
   "library.dosArchive": "Upload a ZIP or jsdos archive for DOS games.",

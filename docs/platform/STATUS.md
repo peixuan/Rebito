@@ -21,6 +21,8 @@ Updated: 2026-11-08 (Asia/Shanghai).
   bytes, duplicate/concurrent uploads, size limits, quota failures and staging cleanup.
   Offline collection now includes abandoned game-upload staging under its exclusive
   lease; published games are excluded. Full local component gates pass.
+  Browser ZIP metadata inspection supplies launch suggestions without inflating
+  uploaded files; 27 archive/browser-helper tests and type checks pass.
 
 - Capacity review: blob writes now leave a configurable 1 GiB free-space margin,
   count this process's pending writes, and return a distinct recoverable 507 error.

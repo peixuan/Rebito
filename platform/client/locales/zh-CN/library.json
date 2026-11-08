@@ -1,4 +1,7 @@
 {
+  "library.previewSize": "游戏文件不能超过 64 MiB。",
+  "library.archiveCount": "压缩包文件过多。",
+  "library.previewExpandedSize": "游戏包展开后不能超过 256 MiB。",
   "library.romExtension": "文件扩展名与游戏平台不匹配，请上传未压缩的 ROM。",
   "library.gameFormat": "游戏文件格式不正确。",
   "library.dosArchive": "DOS 游戏请上传 ZIP 或 jsdos 游戏包。",

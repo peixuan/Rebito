@@ -1,12 +1,9 @@
 import { z } from "zod";
+import { dosExecutablePattern } from "../domain/game-import.ts";
 import { type DisplayMessage, MessageError } from "../shared/messages.ts";
 import { catalogSchema } from "./catalog.ts";
 
-export const gameUploadLimits = {
-  bytes: 64 * 1024 ** 2,
-  expanded: 256 * 1024 ** 2,
-  files: 5000,
-} as const;
+export { gameUploadLimits } from "../domain/game-import.ts";
 export const defaultLibraryBytes = 10 * 1024 ** 3;
 const shape = catalogSchema.shape.games.element.shape;
 export const gameUploadSchema = z
@@ -36,7 +33,7 @@ export const gameUploadSchema = z
     });
     const launch =
       value.system === "dos"
-        ? /^(?:[a-zA-Z0-9_~-]+\/)*[a-zA-Z0-9_~-]+\.(exe|com|bat)$/i.test(value.executable)
+        ? dosExecutablePattern.test(value.executable)
         : !value.executable && !value.arguments && value.cycles === "auto";
     if (!entry.success || !launch)
       context.addIssue({ code: "custom", message: "Invalid game launch or save settings" });
