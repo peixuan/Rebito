@@ -28,6 +28,6 @@ export async function prepareLiveEdit(files: RuntimeFileAccess, original: Revisi
       `/api/revisions/${revision.id}/file?name=${encodeURIComponent(name)}`,
       target,
     );
-    await files.replace(name, previous, bytes);
+    await files.replace([{ name, previous, bytes }]);
   };
 }

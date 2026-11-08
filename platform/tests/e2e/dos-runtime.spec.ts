@@ -73,8 +73,15 @@ test("runs real DOSBox WASM and reloads edited native bytes over its filesystem 
       const handle = (window as Window & { testHandle?: RuntimeHandle }).testHandle;
       if (!handle?.files) throw new Error("Missing live file access");
       handle.pause();
-      const previous = await handle.files.read("SAVE.DAT");
-      await handle.files.replace("SAVE.DAT", previous, new TextEncoder().encode("LIVE\r\n"));
+      const updates = [];
+      for (const name of ["SAVE.DAT", "slots/INDEX.DAT"]) {
+        updates.push({
+          name,
+          previous: await handle.files.read(name),
+          bytes: new TextEncoder().encode("LIVE\r\n"),
+        });
+      }
+      await handle.files.replace(updates);
       handle.resume();
     });
     // A DOS command must read the replacement too, not only the host FS API.
@@ -88,12 +95,14 @@ test("runs real DOSBox WASM and reloads edited native bytes over its filesystem 
         );
         if (!overlay) return null;
         const files = unzipSync(new Uint8Array(overlay.bytes));
-        const copied = Object.entries(files).find(
-          ([name]) => name.toLowerCase() === "check.dat",
-        )?.[1];
-        return copied ? new TextDecoder().decode(copied) : null;
+        return ["check.dat", "checkidx.dat"].map((expected) => {
+          const copied = Object.entries(files).find(
+            ([name]) => name.toLowerCase() === expected,
+          )?.[1];
+          return copied ? new TextDecoder().decode(copied) : null;
+        });
       })
-      .toBe("LIVE\r\n");
+      .toEqual(["LIVE\r\n", "LIVE\r\n"]);
     const files =
       saved?.files.map((file) =>
         file.name === "SAVE.DAT"
@@ -108,6 +117,9 @@ test("runs real DOSBox WASM and reloads edited native bytes over its filesystem 
     await expect
       .poll(async () => (await capture())?.files.find((file) => file.name === "SAVE.DAT")?.bytes)
       .toEqual([...Buffer.from("SECOND\r\n")]);
+    expect((await capture())?.files.find((file) => file.name === "slots/INDEX.DAT")?.bytes).toEqual(
+      [...Buffer.from("INDEX FIRST\r\n")],
+    );
     await page.evaluate(() =>
       (window as Window & { testHandle?: RuntimeHandle }).testHandle?.stop(),
     );

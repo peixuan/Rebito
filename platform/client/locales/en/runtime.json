@@ -8,6 +8,7 @@
   "runtime.dosResources": "DOS emulator resources are incomplete.",
   "runtime.dosConfiguration": "The DOS archive has no valid launch configuration.",
   "runtime.dosCanvas": "The DOS emulator display is not ready.",
+  "runtime.invalidFileGroup": "The save file group is empty or contains duplicate names.",
   "runtime.baseFileMissing": "This save file is missing from the current revision.",
   "runtime.editConflict": "The in-game save has changed. Synchronize and refresh before editing again; your draft has been retained.",
   "runtime.editRevisionMismatch": "The edited revision does not match. No files were written to the game.",
@@ -21,5 +22,5 @@
   "runtime.writeVerification": "Writeback verification failed.",
   "runtime.restoreVerification": "Restoration verification failed.",
   "runtime.restoreFailed": "The in-game files could not be restored. The cloud revision remains available. Reload the game.",
-  "runtime.writebackRolledBack": "Writeback failed and the original file was restored. You can retry edit synchronization."
+  "runtime.writeRolledBack": "Writeback failed. All original files were restored. You can retry synchronizing the edit."
 }

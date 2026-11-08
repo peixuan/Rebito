@@ -48,7 +48,9 @@ test("downloads only the edited file and retains previous bytes for guarded repl
   await apply(edited);
   expect(download).toHaveBeenCalledTimes(1);
   expect(download.mock.calls[0]?.[0]).toBe("/api/revisions/after/file?name=SAVE.DAT");
-  expect(files.replace).toHaveBeenCalledWith("SAVE.DAT", before, after);
+  expect(files.replace).toHaveBeenCalledWith([
+    { name: "SAVE.DAT", previous: before, bytes: after },
+  ]);
 });
 
 test("rejects missing or unsynchronized local files before publication", async () => {
@@ -87,5 +89,7 @@ test("does not write corrupt downloads and allows a later verified retry", async
   await expect(apply(edited)).rejects.toThrow("runtime.integrity");
   expect(files.replace).not.toHaveBeenCalled();
   await apply(edited);
-  expect(files.replace).toHaveBeenCalledExactlyOnceWith("SAVE.DAT", before, after);
+  expect(files.replace).toHaveBeenCalledExactlyOnceWith([
+    { name: "SAVE.DAT", previous: before, bytes: after },
+  ]);
 });

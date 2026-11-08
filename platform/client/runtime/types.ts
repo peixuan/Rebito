@@ -20,12 +20,11 @@ export interface RuntimeLaunch {
 }
 export interface RuntimeFileAccess {
   read(name: string): Promise<Uint8Array<ArrayBuffer>>;
-  /** Caller pauses the runtime; reject changed bytes and roll back a failed write. */
-  replace(
-    name: string,
-    previous: Uint8Array<ArrayBuffer>,
-    bytes: Uint8Array<ArrayBuffer>,
-  ): Promise<void>;
+  /** Caller keeps the runtime paused until the whole batch succeeds or rolls back. */
+  replace(files: readonly RuntimeReplacement[]): Promise<void>;
+}
+export interface RuntimeReplacement extends RuntimeFile {
+  previous: Uint8Array<ArrayBuffer>;
 }
 export interface RuntimeHandle {
   pause(): void;

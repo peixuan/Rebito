@@ -24,7 +24,10 @@ export async function seedDos(dataDirectory: string) {
     "fixture.bat": strToU8(
       "@echo off\r\nif exist SAVE.DAT goto display\r\necho FIRST>SAVE.DAT\r\n:display\r\ntype SAVE.DAT\r\necho RETRO PORTAL DOS TEST\r\n",
     ),
-    "verify.bat": strToU8("@copy /y SAVE.DAT CHECK.DAT\r\n"),
+    "slots/INDEX.DAT": strToU8("INDEX FIRST\r\n"),
+    "verify.bat": strToU8(
+      "@copy /y SAVE.DAT CHECK.DAT\r\n@copy /y SLOTS\\INDEX.DAT CHECKIDX.DAT\r\n",
+    ),
   });
   const directory = join(dataDirectory, "library");
   const catalogPath = join(directory, "catalog.json");
@@ -35,7 +38,7 @@ export async function seedDos(dataDirectory: string) {
     file: "dos.fixture",
     size: bytes.length,
     sha256: createHash("sha256").update(bytes).digest("hex"),
-    saveFiles: ["SAVE.DAT"],
+    saveFiles: ["SAVE.DAT", "slots/INDEX.DAT"],
   };
   catalog.games.push(entry);
   await writeFile(join(directory, entry.file), bytes);

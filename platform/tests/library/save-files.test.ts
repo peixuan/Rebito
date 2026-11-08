@@ -1,7 +1,7 @@
 import { expect, test, vi } from "vitest";
 import { saveFileAccess } from "../../client/runtime/save-files.ts";
 
-function fixture() {
+function fixture(allowed = ["SAVE.DAT"]) {
   const original = Uint8Array.of(1, 2, 3);
   const disk = new Map([
     ["Save.DAT", original],
@@ -10,7 +10,7 @@ function fixture() {
   const write = vi.fn(async (path: string, bytes: Uint8Array<ArrayBuffer>) => {
     disk.set(path, new Uint8Array(bytes));
   });
-  const access = saveFileAccess(["SAVE.DAT"], {
+  const access = saveFileAccess(allowed, {
     list: async () => [...disk.keys()],
     read: async (path) => disk.get(path) as Uint8Array<ArrayBuffer>,
     write,
@@ -23,7 +23,7 @@ test("replaces one declared save using its real case and preserves other files",
   const before = await access.read("save.dat");
   before[0] = 0;
   expect(disk.get("Save.DAT")).toEqual(original);
-  await access.replace("SAVE.DAT", original, Uint8Array.of(4, 5));
+  await access.replace([{ name: "SAVE.DAT", previous: original, bytes: Uint8Array.of(4, 5) }]);
   expect(write).toHaveBeenCalledWith("Save.DAT", Uint8Array.of(4, 5));
   expect(disk.get("OTHER.DAT")).toEqual(Uint8Array.of(9));
 });
@@ -31,13 +31,13 @@ test("replaces one declared save using its real case and preserves other files",
 test("rejects undeclared paths, runtime archives and ambiguous names before writing", async () => {
   const { access, original, disk, write } = fixture();
   for (const name of ["OTHER.DAT", "../Save.DAT", "__runtime/filesystem.zip"])
-    await expect(access.replace(name, original, original)).rejects.toThrow(
+    await expect(access.replace([{ name, previous: original, bytes: original }])).rejects.toThrow(
       "runtime.undeclaredFile",
     );
   disk.set("SAVE.DAT", original);
-  await expect(access.replace("SAVE.DAT", original, original)).rejects.toThrow(
-    "runtime.ambiguousFile",
-  );
+  await expect(
+    access.replace([{ name: "SAVE.DAT", previous: original, bytes: original }]),
+  ).rejects.toThrow("runtime.ambiguousFile");
   disk.delete("SAVE.DAT");
   disk.delete("Save.DAT");
   await expect(access.read("SAVE.DAT")).rejects.toThrow("runtime.ambiguousFile");
@@ -47,9 +47,9 @@ test("rejects undeclared paths, runtime archives and ambiguous names before writ
 test("does not overwrite a newer game-side write", async () => {
   const { access, original, disk, write } = fixture();
   disk.set("Save.DAT", Uint8Array.of(7));
-  await expect(access.replace("SAVE.DAT", original, Uint8Array.of(8))).rejects.toThrow(
-    "runtime.writeConflict",
-  );
+  await expect(
+    access.replace([{ name: "SAVE.DAT", previous: original, bytes: Uint8Array.of(8) }]),
+  ).rejects.toThrow("runtime.writeConflict");
   expect(write).not.toHaveBeenCalled();
   expect(disk.get("Save.DAT")).toEqual(Uint8Array.of(7));
 });
@@ -60,7 +60,7 @@ test("retains verification and backup bytes when the worker transfers its input 
     disk.set(path, structuredClone(bytes, { transfer: [bytes.buffer] }));
   });
   const replacement = Uint8Array.of(4, 5);
-  await access.replace("SAVE.DAT", original, replacement);
+  await access.replace([{ name: "SAVE.DAT", previous: original, bytes: replacement }]);
   expect(replacement).toEqual(Uint8Array.of(4, 5));
   expect(original).toEqual(Uint8Array.of(1, 2, 3));
   expect(disk.get("Save.DAT")).toEqual(replacement);
@@ -72,9 +72,9 @@ test.each(["partial failure", "silent corruption"])("rolls back %s", async (fail
     disk.set(path, Uint8Array.of(0));
     if (failure === "partial failure") throw new Error("I/O unavailable");
   });
-  await expect(access.replace("SAVE.DAT", original, Uint8Array.of(8))).rejects.toThrow(
-    "runtime.writebackRolledBack",
-  );
+  await expect(
+    access.replace([{ name: "SAVE.DAT", previous: original, bytes: Uint8Array.of(8) }]),
+  ).rejects.toThrow("runtime.writeRolledBack");
   expect(disk.get("Save.DAT")).toEqual(original);
   expect(disk.get("OTHER.DAT")).toEqual(Uint8Array.of(9));
 });
@@ -82,7 +82,45 @@ test.each(["partial failure", "silent corruption"])("rolls back %s", async (fail
 test("reports an unverified rollback instead of claiming the file is restored", async () => {
   const { access, original, write } = fixture();
   write.mockRejectedValue(new Error("I/O unavailable"));
-  await expect(access.replace("SAVE.DAT", original, Uint8Array.of(8))).rejects.toThrow(
-    "runtime.restoreFailed",
-  );
+  await expect(
+    access.replace([{ name: "SAVE.DAT", previous: original, bytes: Uint8Array.of(8) }]),
+  ).rejects.toThrow("runtime.restoreFailed");
 });
+
+test("preflights the entire file group and rejects duplicate members before writing", async () => {
+  const { access, original, disk, write } = fixture(["SAVE.DAT", "OTHER.DAT"]);
+  const first = { name: "SAVE.DAT", previous: original, bytes: Uint8Array.of(4) };
+  const second = { name: "OTHER.DAT", previous: Uint8Array.of(8), bytes: Uint8Array.of(5) };
+  await expect(access.replace([first, second])).rejects.toThrow("runtime.writeConflict");
+  await expect(access.replace([first, { ...first, name: "save.dat" }])).rejects.toThrow(
+    "runtime.invalidFileGroup",
+  );
+  await expect(access.replace([])).rejects.toThrow("runtime.invalidFileGroup");
+  expect(write).not.toHaveBeenCalled();
+  expect(disk.get("Save.DAT")).toEqual(original);
+});
+
+test.each([false, true])(
+  "recovers earlier files even if the last rollback fails: %s",
+  async (rollbackFails) => {
+    const { access, original, disk, write } = fixture(["SAVE.DAT", "OTHER.DAT"]);
+    let writes = 0;
+    write.mockImplementation(async (path, bytes) => {
+      writes++;
+      if (writes === 2 || (rollbackFails && writes === 3)) {
+        disk.set(path, Uint8Array.of(0));
+        throw new Error("I/O unavailable");
+      }
+      disk.set(path, new Uint8Array(bytes));
+    });
+    await expect(
+      access.replace([
+        { name: "SAVE.DAT", previous: original, bytes: Uint8Array.of(4) },
+        { name: "OTHER.DAT", previous: Uint8Array.of(9), bytes: Uint8Array.of(5) },
+      ]),
+    ).rejects.toThrow(rollbackFails ? "runtime.restoreFailed" : "runtime.writeRolledBack");
+    expect(disk.get("Save.DAT")).toEqual(original);
+    expect(disk.get("OTHER.DAT")).toEqual(Uint8Array.of(rollbackFails ? 0 : 9));
+    expect(write).toHaveBeenCalledTimes(4);
+  },
+);
