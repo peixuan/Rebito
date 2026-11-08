@@ -86,3 +86,11 @@ file, and exercises unrelated-file preservation, an already-paused runtime, fail
 download/retry without duplicate publication, and rejecting unsynchronized game
 saves before publication. These checks verify live file replacement, not automatic
 mutation of game RAM: users must load the save inside the game.
+
+The subsequent multi-file/automatic-sync image also passed healthy container
+startup. Real Koukai2 ran for 51 seconds with an unchanged cloud head, confirming
+that unchanged native data did not create an automatic revision. Explicit Stop
+published the full collection and preserved every native byte. The browser suite
+now additionally checks two-file UI publication, automatic DOS upload, guarded
+navigation/logout and genuine concurrent-writer conflict recovery, including a
+committed backup whose success response was lost.

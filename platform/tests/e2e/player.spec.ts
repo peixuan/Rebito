@@ -73,6 +73,13 @@ test("plays DOS in the workspace and publishes bytes through the cloud revision 
     buffer: Buffer.from("SECOND\r\n"),
   });
   await page.getByRole("button", { name: "Upload save" }).click();
+  await expect(
+    page.getByRole("region", { name: "Game window", exact: true }).getByRole("alert"),
+  ).toContainText("The local game is paused and retained");
+  expect(runtime.isDetached()).toBe(false);
+  await expect(save).toBeDisabled();
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Discard local progress", exact: true }).click();
   await expect(page.getByRole("button", { name: "Start game" })).toBeVisible();
   await page.getByRole("button", { name: "Start game" }).click();
   await expect(save).toBeEnabled();

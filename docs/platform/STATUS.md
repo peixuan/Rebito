@@ -20,15 +20,15 @@ Updated: 2026-11-08 (Asia/Shanghai).
   including a lost publication response. Forced termination still risks the latest
   unsynced work; see [synchronization](../../platform/SYNCHRONIZATION.md).
 - Chromium sandboxing is now explicitly enabled for manual validation and E2E.
-  All 19 browser checks pass, including a launch check that rejects
+  All 23 browser checks pass, including a launch check that rejects
   sandbox-disabling arguments. The visible Windows Chrome process and
   its renderer/GPU processes were checked without `--no-sandbox`.
-- Live DOS editor writeback now replaces only the selected native file without
+- Live DOS editor writeback now replaces only the edited native file group without
   restarting the emulator. Preflight rejects unsynchronized game saves before
   publication; verified writes preserve other files and the previous pause state.
   Failed writeback stays paused and retries the existing revision, blocking stale
-  uploads. Seven file-I/O unit checks and four coordinator checks cover guards,
-  corruption and rollback; worker writes receive copies because transfer detaches buffers.
+  uploads. File-I/O and coordinator checks cover group guards, corruption and
+  rollback; worker writes receive copies because transfer detaches buffers.
   Real DOS readback and browser checks cover exact bytes, pause state and retry.
   Real Koukai2 on the updated container retained its runtime across consecutive
   edits, with complete native/cloud bytes restored afterward. Load the save inside
@@ -45,12 +45,15 @@ Updated: 2026-11-08 (Asia/Shanghai).
 - Primary controls now use neutral slate tones with blue links instead of green.
   Lint, types and the container build pass; the deployed theme was inspected in
   Chrome. The real Koukai2 canvas was verified at 640 × 480 source/display pixels.
-- All 19 browser checks pass after these changes. The DOS synchronization test
+- All 23 browser checks pass after these changes. The DOS synchronization test
   observes the real filesystem read-only and waits for the complete expected file
   before clicking refresh, avoiding a race with the emulator's keyboard queue.
   After editor saves it waits for completed writeback before observation: js-dos
   rejects concurrent reads of the same file, including reads by test instrumentation.
   The updated image is deployed locally; no remote push or CI run was performed.
+  On that image, real Koukai2 remained running for 51 seconds without publishing
+  unchanged native data; Stop then published a complete revision with identical
+  native bytes. External imports now require explicit conflict resolution.
 
 ## Target
 
@@ -134,12 +137,12 @@ remote CI has not run because this work has not been pushed.
 
 `cd platform && npm run check` with the test database: format/lint, TypeScript,
 HTTP/domain/filesystem and real PostgreSQL identity/revision/service tests passed.
-The complete run passed 186 tests with 98.26% Windows line coverage, 95.67% branch
-coverage and 99.51% function coverage. Linux-only directory fsync is exercised by
+The complete run passed 197 tests with 98.40% Windows line coverage, 95.69% branch
+coverage and 99.55% function coverage. Linux-only directory fsync is exercised by
 deployment, not by Windows unit coverage. The process entrypoint and account-provisioning CLI
 are excluded from unit coverage and exercised by the container smoke test.
 
-The complete 19-test browser suite passes, including all four console cores, DOS,
+The complete 23-test browser suite passes, including all four console cores, DOS,
 OIDC and three editor tests: exact multi-slot output bytes, numeric sorting and
 selection retention, clamping/invalid-input handling, narrow layouts, and retaining
 drafts when another upload advances the revision head. Edited cells update without
