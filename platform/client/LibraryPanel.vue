@@ -78,11 +78,12 @@ onMounted(refresh);
 <template>
   <section class="library" :aria-label="t('library.title')">
     <div class="toolbar">
-      <h2>{{ t("library.title") }}</h2>
+      <h1>{{ t("library.title") }}<span class="library-count">{{ visibleGames.length }}</span></h1>
       <InputText
         v-model="query"
         :aria-label="t('library.search')"
         :placeholder="t('library.search')"
+        size="small"
       />
       <Select
         v-model="system"
@@ -92,6 +93,7 @@ onMounted(refresh);
         show-clear
         :placeholder="t('library.allPlatforms')"
         :aria-label="t('library.platform')"
+        size="small"
       />
       <Button :label="t('common.refresh')" variant="text" :loading="busy" @click="refresh" />
     </div>
