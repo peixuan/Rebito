@@ -35,7 +35,13 @@ export function registerIdentity(app: FastifyInstance, auth: Identity, config: S
     reply.header("cache-control", "no-store");
     const session = await auth.api.getSession({ headers: fromNodeHeaders(request.headers) });
     return {
-      user: session ? { id: session.user.id, name: session.user.name } : null,
+      user: session
+        ? {
+            id: session.user.id,
+            name: session.user.name,
+            admin: config.adminUserIds.includes(session.user.id),
+          }
+        : null,
       allowRegistration: config.allowRegistration,
       oidc: Boolean(config.oidc),
     };

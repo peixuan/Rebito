@@ -1,5 +1,6 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { requireAdministrator } from "../../src/identity/administrator.ts";
 import { createAuth, identityOptions } from "../../src/identity/auth.ts";
 import { migrateIdentity } from "../../src/identity/migrate.ts";
 import { privateApi } from "../../src/identity/private-api.ts";
@@ -11,12 +12,16 @@ import { testDatabase } from "../database.ts";
 describe("real identity integration", () => {
   let fixture: Awaited<ReturnType<typeof testDatabase>>;
   const app = createApp();
-  const config = loadConfig({
-    APP_ORIGIN: "http://localhost:3000",
-    DATABASE_URL: "postgresql://unused/unused",
-    AUTH_SECRET: randomBytes(32).toString("hex"),
-    ALLOW_REGISTRATION: "true",
-  });
+  const adminUserIds: string[] = [];
+  const config = {
+    ...loadConfig({
+      APP_ORIGIN: "http://localhost:3000",
+      DATABASE_URL: "postgresql://unused/unused",
+      AUTH_SECRET: randomBytes(32).toString("hex"),
+      ALLOW_REGISTRATION: "true",
+    }),
+    adminUserIds,
+  };
   const password = "test-password-for-player";
   let nextAddress = 10;
 
@@ -29,6 +34,7 @@ describe("real identity integration", () => {
     privateApi(app, auth, config.origin, async (scope) => {
       scope.get("/private", async (request) => ({ owner: request.ownerId }));
       scope.post("/private", async (request) => ({ owner: request.ownerId }));
+      scope.post("/admin", { onRequest: requireAdministrator(config) }, async () => ({ ok: true }));
     });
   }, 30_000);
   afterAll(async () => {
@@ -87,7 +93,7 @@ describe("real identity integration", () => {
     const anonymous = await app.inject("/api/session");
     expect(anonymous.json().user).toBeNull();
     const session = await app.inject({ url: "/api/session", headers: { cookie } });
-    expect(session.json().user).toEqual({ id: expect.any(String), name: "Player" });
+    expect(session.json().user).toEqual({ id: expect.any(String), name: "Player", admin: false });
     expect(session.headers["cache-control"]).toBe("no-store");
     expect(
       (await app.inject({ url: "/api/auth/get-session", headers: { cookie } })).statusCode,
@@ -115,6 +121,30 @@ describe("real identity integration", () => {
         })
       ).statusCode,
     ).toBe(200);
+  });
+
+  it("requires an operator-listed identity, ignoring submitted admin flags and forged headers", async () => {
+    const { cookie, response } = await register();
+    const request = {
+      method: "POST",
+      url: "/admin",
+      headers: { cookie, origin: config.origin, "x-admin": "true" },
+      payload: { admin: true, role: "admin" },
+    } as const;
+    expect((await app.inject({ method: "POST", url: "/admin" })).statusCode).toBe(401);
+    expect((await app.inject(request)).statusCode).toBe(403);
+    const id = response.json().user.id;
+    adminUserIds.push(id);
+    expect((await app.inject(request)).statusCode).toBe(200);
+    expect((await app.inject({ url: "/api/session", headers: { cookie } })).json().user.admin).toBe(
+      true,
+    );
+    expect(
+      (await app.inject({ ...request, headers: { cookie, origin: "https://elsewhere.test" } }))
+        .statusCode,
+    ).toBe(403);
+    adminUserIds.splice(0);
+    expect((await app.inject(request)).statusCode).toBe(403);
   });
 
   it("rejects bad credentials and invalidates a signed-out session", async () => {

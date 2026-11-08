@@ -4,6 +4,11 @@ Updated: 2026-11-08 (Asia/Shanghai).
 
 ## User verification follow-up
 
+- Administrator game management is in progress. Stable account-ID allowlisting is
+  implemented with default-deny server checks and a session capability flag.
+  Types and 34 identity/configuration checks pass, including ordinary users,
+  forged flags, cross-origin requests and revocation. Upload/UI work follows.
+
 - Capacity review: blob writes now leave a configurable 1 GiB free-space margin,
   count this process's pending writes, and return a distinct recoverable 507 error.
   Full local checks pass (210 tests); actual filesystem probes plus PostgreSQL

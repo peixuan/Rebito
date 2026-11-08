@@ -1,4 +1,5 @@
 import { resolve } from "node:path";
+import { z } from "zod";
 import { type StorageLimits, storageLimitSchema } from "../storage/limits.ts";
 
 export interface ServerConfig {
@@ -11,6 +12,7 @@ export interface ServerConfig {
   readonly allowRegistration: boolean;
   readonly storageLimits: StorageLimits;
   readonly minimumFreeBytes: number;
+  readonly adminUserIds: readonly string[];
   readonly oidc?: {
     readonly discoveryUrl: string;
     readonly clientId: string;
@@ -77,6 +79,15 @@ export function loadConfig(environment: Environment): ServerConfig {
     port,
     allowRegistration: registration === "true",
     minimumFreeBytes,
+    adminUserIds: z
+      .array(z.string().regex(/^[a-zA-Z0-9_-]{1,128}$/))
+      .max(100)
+      .parse(
+        (environment.ADMIN_USER_IDS ?? "")
+          .split(",")
+          .map((id) => id.trim())
+          .filter(Boolean),
+      ),
     storageLimits: storageLimitSchema.parse({
       profiles: Number(environment.MAX_PROFILES_PER_USER ?? 100),
       revisions: Number(environment.MAX_REVISIONS_PER_USER ?? 2000),

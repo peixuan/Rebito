@@ -1,6 +1,6 @@
 import { type DisplayMessage, displayMessage, message } from "../src/shared/messages.ts";
 export interface Session {
-  user: { id: string; name: string } | null;
+  user: { id: string; name: string; admin: boolean } | null;
   allowRegistration: boolean;
   oidc: boolean;
 }

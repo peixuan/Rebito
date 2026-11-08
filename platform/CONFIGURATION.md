@@ -35,6 +35,15 @@ This is an early stop, not an OS-enforced reservation: other processes/replicas,
 database growth, backups and host disks backing virtual disks need separate monitoring.
 Filesystem probe failures reject writes rather than bypassing the check.
 
+## Administrator access
+
+`ADMIN_USER_IDS` is an optional comma-separated list of authenticated account IDs
+allowed to manage the shared game library. It is empty by default. Use stable IDs
+from `/api/session`, not email addresses, display names or provider group names.
+An operator sets this once in deployment configuration; normal signups and OIDC
+logins never grant administrator privileges. Restart the app after changing it.
+Every management request checks the list server-side, before reading uploads.
+
 ## OIDC and directory integration
 
 Create a confidential OIDC client with authorization-code flow and PKCE S256.
