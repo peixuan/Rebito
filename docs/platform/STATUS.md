@@ -16,6 +16,10 @@ Updated: 2026-11-08 (Asia/Shanghai).
 - Primary controls now use neutral slate tones with blue links instead of green.
   Lint, types and the container build pass; the deployed theme was inspected in
   Chrome. The real Koukai2 canvas was verified at 640 × 480 source/display pixels.
+- All 18 browser checks pass after these changes. The DOS synchronization test
+  observes the real filesystem read-only and waits for the complete expected file
+  before clicking refresh, avoiding a race with the emulator's keyboard queue.
+  The updated image is deployed locally; no remote push or CI run was performed.
 
 ## Target
 
@@ -104,7 +108,7 @@ coverage and 99.48% function coverage. Linux-only directory fsync is exercised b
 deployment, not by Windows unit coverage. The process entrypoint and account-provisioning CLI
 are excluded from unit coverage and exercised by the container smoke test.
 
-The complete 17-test browser suite passes, including all four console cores, DOS,
+The complete 18-test browser suite passes, including all four console cores, DOS,
 OIDC and three editor tests: exact multi-slot output bytes, numeric sorting and
 selection retention, clamping/invalid-input handling, narrow layouts, and retaining
 drafts when another upload advances the revision head. Edited cells update without

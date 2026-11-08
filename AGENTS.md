@@ -38,6 +38,8 @@ because an upstream documentation page lists a feature.
 - Separate platform services, emulator adapters, game manifests and editor modules.
 - Keep save transformation independent of HTTP, UI, storage and authentication.
 - Model game saves, emulator snapshots and writable file collections separately.
+- Workspace synchronization must capture the running game before reloading server
+  history. Keep its runtime alive if synchronization fails during an explicit stop.
 - Bind editor support to verified game/format versions; preserve unknown bytes.
 - Authorize every private resource on the server and publish revisions atomically.
 - Keep per-user quotas transactional across profiles. Preserve the application

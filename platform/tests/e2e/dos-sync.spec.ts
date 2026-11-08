@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { expect, test } from "@playwright/test";
 import { dosEditorSave } from "../library/dos-editor-fixture.ts";
 import { useSession } from "./session.ts";
@@ -6,6 +7,30 @@ test("refresh captures live DOS writes, updates the editor and preserves dirty d
   page,
 }) => {
   test.setTimeout(60_000);
+  await page.setViewportSize({ width: 1280, height: 1100 });
+  // Observe the real filesystem read-only so synchronization starts after DOS
+  // finishes its write, rather than racing the emulator's keyboard queue.
+  await page.addInitScript(() => {
+    type Ci = { fsReadFile(name: string): Promise<Uint8Array<ArrayBuffer>> };
+    type Options = Record<string, unknown> & { onEvent?: (event: string, ci: Ci) => void };
+    type Dos = (element: HTMLElement, options: Options) => unknown;
+    const host = window as Window & { testDosFiles?: Ci };
+    let dos: Dos;
+    Object.defineProperty(window, "Dos", {
+      configurable: true,
+      get: () => dos,
+      set(start: Dos) {
+        dos = (element, options) =>
+          start(element, {
+            ...options,
+            onEvent(event: string, ci: Ci) {
+              if (event === "ci-ready") host.testDosFiles = ci;
+              options.onEvent?.(event, ci);
+            },
+          });
+      },
+    });
+  });
   await useSession(page.context(), "player");
   await page.goto("/");
   await page.getByRole("button", { name: /DOS live edit test/ }).click();
@@ -25,10 +50,27 @@ test("refresh captures live DOS writes, updates the editor and preserves dirty d
   const refresh = page.getByRole("button", { name: "Synchronize and refresh", exact: true });
   await expect(refresh).toBeEnabled({ timeout: 30_000 });
   const game = page.getByRole("region", { name: "Game window", exact: true });
-  async function saveInsideDos(source: string) {
+  async function saveInsideDos(source: string, amount: number) {
     await page.frameLocator("iframe").locator("canvas").click();
     await page.keyboard.type(`copy /y ${source}.DAT KOUKAI2.DAT`, { delay: 25 });
     await page.keyboard.press("Enter", { delay: 150 });
+    const runtime = page.frames().find((frame) => frame.url().endsWith("/runtime.html"));
+    if (!runtime) throw new Error("Missing DOS frame");
+    await expect
+      .poll(() =>
+        runtime.evaluate(async () => {
+          const host = window as Window & {
+            testDosFiles?: { fsReadFile(name: string): Promise<Uint8Array<ArrayBuffer>> };
+          };
+          const bytes = await host.testDosFiles?.fsReadFile("KOUKAI2.DAT");
+          if (!bytes) return null;
+          const digest = await crypto.subtle.digest("SHA-256", bytes);
+          return [...new Uint8Array(digest)]
+            .map((value) => value.toString(16).padStart(2, "0"))
+            .join("");
+        }),
+      )
+      .toBe(createHash("sha256").update(dosEditorSave(amount)).digest("hex"));
   }
   async function downloaded() {
     const url = await page
@@ -38,7 +80,7 @@ test("refresh captures live DOS writes, updates the editor and preserves dirty d
     if (!url) throw new Error("Missing native save download");
     return (await page.request.get(url)).body();
   }
-  await saveInsideDos("NEXT");
+  await saveInsideDos("NEXT", 456);
   await expect(money).toHaveValue("123"); // Still the server version before synchronization.
   await refresh.click();
   await expect(money).toHaveValue("456");
@@ -47,7 +89,7 @@ test("refresh captures live DOS writes, updates the editor and preserves dirty d
 
   await money.fill("999");
   await money.press("Tab");
-  await saveInsideDos("FIRST");
+  await saveInsideDos("FIRST", 123);
   await refresh.click();
   await expect(editor.getByRole("alert")).toContainText("A newer save exists");
   await expect(money).toHaveValue("999");
