@@ -54,7 +54,7 @@ export class EditorService {
     let bytes = opened.bytes;
     // Transform every slot before publishing anything: a bad later edit is atomic.
     for (const edit of batch.edits) bytes = opened.adapter.apply(bytes, edit);
-    return this.saves.replaceFile(owner, revisionId, opened.file, bytes);
+    return this.saves.replaceFiles(owner, revisionId, [{ name: opened.file, bytes }]);
   }
 }
 export type EditorResponse = Awaited<ReturnType<EditorService["preview"]>>;

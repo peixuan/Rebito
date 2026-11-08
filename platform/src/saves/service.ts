@@ -52,31 +52,41 @@ export class SaveService {
     return this.revisions.publish(owner, profileId, base, manifest, source);
   }
 
-  /** Replace a native file without buffering or duplicating the other immutable blobs. */
-  async replaceFile(owner: string, revisionId: string, name: string, bytes: Uint8Array) {
+  /** Publish a whole edit group once, reusing all unchanged immutable blobs. */
+  async replaceFiles(owner: string, revisionId: string, files: readonly SaveFile[]) {
     const revision = await this.revisions.read(owner, revisionId);
-    if (!revision.manifest.artifacts.some((artifact) => artifact.name === name))
+    if (!files.length || new Set(files.map((file) => file.name)).size !== files.length)
+      throw new Error("Empty or duplicate replacement files");
+    if (
+      files.some(
+        (file) => !revision.manifest.artifacts.some((artifact) => artifact.name === file.name),
+      )
+    )
       throw new ProgressError("not_found");
     // A stale snapshot would restore old memory over the changed native file.
     if (revision.manifest.kind === "snapshot")
       throw new Error("Extract native progress before editing a snapshot");
     await this.preflight(owner, revision.profileId, revisionId, revision.manifest.releaseId);
-    const replacement = {
+    const replacements = files.map(({ name, bytes }) => ({
       name,
       size: bytes.length,
       sha256: createHash("sha256").update(bytes).digest("hex"),
-    };
+    }));
     const manifest = {
       ...revision.manifest,
-      artifacts: revision.manifest.artifacts.map((artifact) =>
-        artifact.name === name ? replacement : artifact,
+      artifacts: revision.manifest.artifacts.map(
+        (artifact) =>
+          replacements.find((replacement) => replacement.name === artifact.name) ?? artifact,
       ),
     };
     assertProgressManifest(manifest);
     await this.revisions.assertCapacity(owner, manifest);
-    const stored = await this.blobs.put(bytes);
-    if (stored.sha256 !== replacement.sha256 || stored.size !== replacement.size)
-      throw new Error("Save bytes changed during publication");
+    for (const [index, file] of files.entries()) {
+      const stored = await this.blobs.put(file.bytes);
+      const expected = replacements[index];
+      if (stored.sha256 !== expected?.sha256 || stored.size !== expected.size)
+        throw new Error("Save bytes changed during publication");
+    }
     return this.revisions.publish(owner, revision.profileId, revisionId, manifest, "editor");
   }
 

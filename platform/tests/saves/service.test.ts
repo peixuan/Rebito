@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -121,13 +121,15 @@ describe("save publication service", () => {
     );
     const put = vi.spyOn(blobs, "put");
     await expect(
-      service.replaceFile("bob", original.id, "SAVE.DAT", Uint8Array.of(9)),
+      service.replaceFiles("bob", original.id, [{ name: "SAVE.DAT", bytes: Uint8Array.of(9) }]),
     ).rejects.toMatchObject({ code: "not_found" });
     await expect(
-      service.replaceFile("alice", original.id, "missing", Uint8Array.of(9)),
+      service.replaceFiles("alice", original.id, [{ name: "missing", bytes: Uint8Array.of(9) }]),
     ).rejects.toMatchObject({ code: "not_found" });
     expect(put).not.toHaveBeenCalled();
-    const edited = await service.replaceFile("alice", original.id, "SAVE.DAT", Uint8Array.of(9));
+    const edited = await service.replaceFiles("alice", original.id, [
+      { name: "SAVE.DAT", bytes: Uint8Array.of(9) },
+    ]);
     expect(put).toHaveBeenCalledTimes(1);
     expect(edited).toMatchObject({
       source: "editor",
@@ -138,11 +140,11 @@ describe("save publication service", () => {
     expect(await service.file("alice", edited.id, "SAVE.DAT")).toEqual(Buffer.from([9]));
     expect(await service.file("alice", original.id, "SAVE.DAT")).toEqual(Buffer.from([1, 2, 3]));
     await expect(
-      service.replaceFile("alice", original.id, "SAVE.DAT", Uint8Array.of(10)),
+      service.replaceFiles("alice", original.id, [{ name: "SAVE.DAT", bytes: Uint8Array.of(10) }]),
     ).rejects.toMatchObject({ code: "conflict" });
     put.mockResolvedValueOnce({ sha256: "0".repeat(64), size: 1 });
     await expect(
-      service.replaceFile("alice", edited.id, "SAVE.DAT", Uint8Array.of(10)),
+      service.replaceFiles("alice", edited.id, [{ name: "SAVE.DAT", bytes: Uint8Array.of(10) }]),
     ).rejects.toThrow("changed");
     expect((await repository.list("alice")).find((entry) => entry.id === profile.id)?.headId).toBe(
       edited.id,
@@ -161,7 +163,7 @@ describe("save publication service", () => {
       "game",
     );
     await expect(
-      service.replaceFile("alice", snapshot.id, "SAVE.DAT", Uint8Array.of(9)),
+      service.replaceFiles("alice", snapshot.id, [{ name: "SAVE.DAT", bytes: Uint8Array.of(9) }]),
     ).rejects.toThrow("snapshot");
   });
 
@@ -177,6 +179,56 @@ describe("save publication service", () => {
     ).rejects.toThrow("changed");
     put.mockRestore();
     expect(await repository.history("alice", profile.id)).toEqual([]);
+  });
+
+  it("publishes related files together and leaves the head intact on a later blob failure", async () => {
+    const profile = await repository.create("alice", metadata.releaseId, "Multiple files");
+    const original = await service.publish(
+      "alice",
+      profile.id,
+      null,
+      metadata,
+      [
+        ...files,
+        { name: "slots/index.dat", bytes: Uint8Array.of(4) },
+        { name: "config.dat", bytes: Uint8Array.of(5) },
+      ],
+      "game",
+    );
+    const replacements = [
+      { name: "SAVE.DAT", bytes: Uint8Array.of(8) },
+      { name: "slots/index.dat", bytes: Uint8Array.of(9) },
+    ];
+    const put = vi.spyOn(blobs, "put");
+    await expect(service.replaceFiles("alice", original.id, [])).rejects.toThrow("Empty");
+    await expect(service.replaceFiles("alice", original.id, [...files, ...files])).rejects.toThrow(
+      "duplicate",
+    );
+    expect(put).not.toHaveBeenCalled();
+    put.mockResolvedValueOnce({
+      sha256: createHash("sha256").update(Uint8Array.of(8)).digest("hex"),
+      size: 1,
+    });
+    put.mockRejectedValueOnce(new Error("disk full"));
+    await expect(service.replaceFiles("alice", original.id, replacements)).rejects.toThrow(
+      "disk full",
+    );
+    expect(await repository.history("alice", profile.id)).toHaveLength(1);
+    expect(await service.file("alice", original.id, "SAVE.DAT")).toEqual(Buffer.from([1, 2, 3]));
+    put.mockRestore();
+    const attempts = await Promise.allSettled([
+      service.replaceFiles("alice", original.id, replacements),
+      service.replaceFiles("alice", original.id, replacements),
+    ]);
+    expect(attempts.filter((attempt) => attempt.status === "fulfilled")).toHaveLength(1);
+    expect(attempts.filter((attempt) => attempt.status === "rejected")).toHaveLength(1);
+    const history = await repository.history("alice", profile.id);
+    expect(history).toHaveLength(2);
+    const edited = history[0];
+    if (!edited) throw new Error("Missing edited revision");
+    expect(edited.manifest.artifacts[2]).toEqual(original.manifest.artifacts[2]);
+    for (const file of replacements)
+      expect(await service.file("alice", edited.id, file.name)).toEqual(Buffer.from(file.bytes));
   });
 
   it("refuses to restore a corrupt blob without changing the profile head", async () => {
