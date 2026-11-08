@@ -46,6 +46,11 @@ to test an installed Chrome. CI uses Chrome stable on Ubuntu 24.04, installed
 through Playwright at the system path supported by Ubuntu's AppArmor policy.
 Downloaded Chromium builds can fail before any test with `No usable sandbox`;
 see [Chromium's explanation](https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md).
+Browser tests explicitly enable Chromium's sandbox and check the actual launch
+arguments. Manual Playwright sessions must also use `chromiumSandbox: true`;
+ordinary browser launches should use the browser's default sandbox. Do not add
+`--no-sandbox` to make a feature or test work. Test hosts must support sandboxed
+Chromium execution; fix their configuration if startup fails.
 
 ## Integration database
 

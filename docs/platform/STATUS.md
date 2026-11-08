@@ -4,6 +4,12 @@ Updated: 2026-11-08 (Asia/Shanghai).
 
 ## User verification follow-up
 
+- Chromium sandboxing is now explicitly enabled for manual validation and E2E.
+  All 18 feature checks passed with it enabled; a separate browser launch check
+  rejects sandbox-disabling arguments. The visible Windows Chrome process and
+  its renderer/GPU processes were checked without `--no-sandbox`.
+- Live editor writeback is being implemented so a supported DOS save can be
+  updated in place without restarting the emulator; keep runtime and file state distinct.
 - DOS defaults to integer device-pixel scaling, with a fit-to-window toggle and
   nearest-neighbor sampling. The real DOS browser checks cover non-integer window
   sizes, toggling, palette preservation and pointer capture. Lint/types and both
