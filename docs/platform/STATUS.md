@@ -16,6 +16,11 @@ Updated: 2026-11-08 (Asia/Shanghai).
   Shared game assets now have a separate default 10 GiB catalog quota, enforced
   under the publication lock by CLI and web import callers. The 36 importer/config
   checks and type checks pass; save quotas remain independent.
+  The administrator upload API now streams and publishes DOS/console games live.
+  Five API checks cover auth/origin enforcement, cross-instance refresh, exact ROM
+  bytes, duplicate/concurrent uploads, size limits, quota failures and staging cleanup.
+  Offline collection now includes abandoned game-upload staging under its exclusive
+  lease; published games are excluded. Full local component gates pass.
 
 - Capacity review: blob writes now leave a configurable 1 GiB free-space margin,
   count this process's pending writes, and return a distinct recoverable 507 error.

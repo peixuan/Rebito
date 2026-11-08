@@ -105,6 +105,27 @@ it("runs the offline CLI against the disposable database", async () => {
   await expect(run(process.execPath, [cli, "invalid"])).rejects.toMatchObject({ code: 1 });
 });
 
+it("collects abandoned game staging only with the exclusive lease, preserving published assets", async () => {
+  const staging = join(directory, "library", ".uploads");
+  await mkdir(staging, { recursive: true });
+  const temporary = join(staging, "00000000-0000-4000-8000-000000000001.tmp");
+  const asset = join(directory, "library", "keep.asset");
+  await writeFile(temporary, "interrupted upload");
+  await writeFile(asset, "published asset");
+  const active = await createPlatform(config, fixture.database);
+  try {
+    await expect(maintainStorage(fixture.database, directory, true)).rejects.toThrow(
+      "Storage is in use",
+    );
+  } finally {
+    await active.close();
+  }
+  expect((await maintainStorage(fixture.database, directory)).orphanFiles).toBe(1);
+  expect(await readFile(temporary, "utf8")).toBe("interrupted upload");
+  expect((await maintainStorage(fixture.database, directory, true)).removed).toBe(1);
+  expect(await readFile(asset, "utf8")).toBe("published asset");
+});
+
 it("releases the app lease before the caller closes its database pool", async () => {
   const name = (await fixture.database.query("SELECT current_database() AS name")).rows[0].name;
   const url = new URL(process.env.PG_TEST_URL ?? "");

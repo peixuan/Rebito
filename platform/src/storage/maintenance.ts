@@ -45,23 +45,28 @@ export async function maintainStorage(database: Pool, directory: string, collect
     const root = join(directory, "blobs");
     const store = new LocalBlobStore(root);
     for (const [sha256, size] of references) await store.read({ sha256, size });
-    let names: string[];
-    try {
-      names = await readdir(root);
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-      names = [];
-    }
     const candidates: string[] = [];
     let orphanBytes = 0;
-    for (const name of names) {
-      if (references.has(name) || !/^(?:[a-f0-9]{64}|[a-f0-9-]{36}\.tmp)$/.test(name)) continue;
-      const info = await lstat(join(root, name));
-      if (!info.isFile()) throw new Error("Unexpected non-file in blob storage");
-      candidates.push(name);
-      orphanBytes += info.size;
+    for (const location of [root, join(directory, "library", ".uploads")]) {
+      let names: string[];
+      try {
+        names = await readdir(location);
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+        names = [];
+      }
+      for (const name of names) {
+        const temporary = /^[a-f0-9-]{36}\.tmp$/.test(name);
+        const orphan = location === root && /^[a-f0-9]{64}$/.test(name) && !references.has(name);
+        if (!temporary && !orphan) continue;
+        const path = join(location, name);
+        const info = await lstat(path);
+        if (!info.isFile()) throw new Error("Unexpected non-file in storage cleanup");
+        candidates.push(path);
+        orphanBytes += info.size;
+      }
     }
-    if (collect) for (const name of candidates) await rm(join(root, name));
+    if (collect) for (const path of candidates) await rm(path);
     return {
       revisions: revisions.rowCount,
       referencedBlobs: references.size,

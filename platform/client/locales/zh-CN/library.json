@@ -1,4 +1,9 @@
 {
+  "library.romExtension": "文件扩展名与游戏平台不匹配，请上传未压缩的 ROM。",
+  "library.gameFormat": "游戏文件格式不正确。",
+  "library.dosArchive": "DOS 游戏请上传 ZIP 或 jsdos 游戏包。",
+  "library.duplicateRelease": "相同游戏版本已存在，请刷新游戏库查看。",
+  "library.busy": "游戏库正在更新，请稍后重试。",
   "library.unreadableZip": "无法读取 ZIP 游戏包。",
   "library.tooManyFiles": "游戏包文件过多。",
   "library.specialFiles": "游戏包不能包含加密文件、链接或特殊文件。",
@@ -26,6 +31,10 @@
   "library.createProfile": "新建进度",
   "library.profileCount": "{count} 份个人进度",
   "library.profileTitle": "{title} · 个人进度",
+  "library.selectUpload": "请选择有效的游戏文件。",
   "library.expandedSizeLegacy": "游戏包展开后超过 256 MiB。",
-  "library.duplicateRelease": "相同游戏版本已存在，请刷新游戏库查看。"
+  "library.uploadSizeLegacy": "上传文件超过 64 MiB。",
+  "library.launchSettingsLegacy": "启动程序、参数或同步文件配置无效。",
+  "library.uploadOrderLegacy": "请先提交配置，再上传一个游戏文件。",
+  "library.uploadSettingsLegacy": "上传配置无效。"
 }

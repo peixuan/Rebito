@@ -6,6 +6,7 @@ import { createAuth } from "../identity/auth.ts";
 import { migrateIdentity } from "../identity/migrate.ts";
 import { privateApi } from "../identity/private-api.ts";
 import { registerIdentity } from "../identity/routes.ts";
+import { registerGameAdministration } from "../library/admin-routes.ts";
 import { LocalLibrary } from "../library/catalog.ts";
 import { registerLibrary } from "../library/routes.ts";
 import { registerSaves } from "../saves/routes.ts";
@@ -44,6 +45,7 @@ async function createServices(config: ServerConfig, database: Pool) {
   privateApi(app, auth, config.origin, async (scope) => {
     registerLibrary(scope, library);
     await registerSaves(scope, saves);
+    registerGameAdministration(scope, config, library);
     registerEditors(scope, new EditorService(saves, library));
   });
   app.get("/health/ready", async () => {

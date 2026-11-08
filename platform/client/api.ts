@@ -43,6 +43,9 @@ export function errorText(error: unknown): DisplayMessage {
   if (expected) return expected;
   if (error instanceof ApiError) {
     if (error.status === 422 && error.detail) return error.detail;
+    if (error.message === "library_error" && error.detail) return error.detail;
+    if (error.message === "upload_busy") return message("errors.uploadBusyLegacy");
+    if (error.status === 413) return message("errors.uploadSize");
     if (error.message === "quota_exceeded") return message("errors.quota");
     if (error.message === "disk_space_low") return message("errors.diskSpace");
     if (error.status === 429) return message("errors.rateLimit");

@@ -1,4 +1,5 @@
 {
+  "errors.uploadSize": "The upload exceeds the allowed size.",
   "errors.quota": "Your storage quota is full. Ask an administrator to clean up history or adjust your quota.",
   "errors.diskSpace": "The server has insufficient disk space. Your progress has not been saved. Keep this page open and ask an administrator to free space before retrying.",
   "errors.rateLimit": "Too many requests. Please try again shortly.",
@@ -6,5 +7,6 @@
   "errors.conflict": "A newer save exists. Reload it before making further changes.",
   "errors.forbidden": "You are not authorized to perform this action.",
   "errors.request": "The action could not be completed. Check your input and try again.",
-  "errors.connection": "Cannot connect to the service. Please try again shortly."
+  "errors.connection": "Cannot connect to the service. Please try again shortly.",
+  "errors.uploadBusyLegacy": "Another upload is being processed. Please try again shortly."
 }

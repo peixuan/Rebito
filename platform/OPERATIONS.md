@@ -48,6 +48,12 @@ those abandoned files. It never deletes a revision or changes a profile head.
 Corrupt/missing referenced data aborts collection; recover from a known good backup.
 Unknown filenames are left alone. Stop all app replicas before either operation.
 
+Game-management uploads use `library/.uploads/<uuid>.tmp` under the same application
+storage lease. Completed and rejected requests remove their staging files; an
+interrupted process can leave them behind. Offline `verify` reports these files
+and `collect` removes them under the exclusive lease. Published library assets and
+the catalog are never removed by this collector.
+
 Applications hold a shared PostgreSQL storage lease for their lifetime. Maintenance
 requires an exclusive lease, so it fails while an app is active; apps likewise
 refuse to start during maintenance. The lease uses one dedicated database connection

@@ -48,7 +48,19 @@ changing a title cannot assign progress to different game bytes.
 `GET /api/games` and `GET /api/games/:id/asset` require a session; responses expose
 logical release IDs, never physical storage paths.
 
-## Preparing a DOS bundle
+## Browser administration
+
+Administrators can also publish through `POST /api/admin/games` using a multipart
+`metadata` JSON field followed by one `file` (maximum 64 MiB). The server accepts
+uncompressed console ROMs, or DOS ZIP/jsdos packages and an executable path,
+arguments, cycles and explicit save paths. DOS archives are streamed, limited to
+5,000 entries and 256 MiB expanded, and repackaged with generated configuration.
+Existing `.jsdos` settings are replaced; declared save files are omitted. Each
+changed DOS launch/sync configuration produces a new immutable release; existing
+profiles and editor bindings are not reassigned. Arbitrary uploads cannot enable
+the Koukai2 editor. Successful publication appears without restarting the server.
+
+## Preparing a DOS bundle with the CLI
 
 With Node 24+ and `npm ci --ignore-scripts` in `platform/`, create a specification
 outside the game directory. List every required resource explicitly; exclude

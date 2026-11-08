@@ -1,6 +1,7 @@
 import helmet from "@fastify/helmet";
 import Fastify from "fastify";
 import { EditorError } from "../editors/types.ts";
+import { LibraryError } from "../library/upload-settings.ts";
 import { DiskSpaceError } from "../storage/capacity.ts";
 import { ProgressError } from "../storage/revisions.ts";
 import { browserPolicy } from "./browser-policy.ts";
@@ -39,6 +40,10 @@ export function createApp(logStream?: { write(message: string): void }) {
   app.get("/health/live", async () => ({ status: "ok" }));
 
   app.setErrorHandler((error, _request, reply) => {
+    if (error instanceof LibraryError)
+      return reply
+        .code(error.statusCode)
+        .send({ error: "library_error", displayMessage: error.displayMessage });
     if (error instanceof DiskSpaceError) return reply.code(507).send({ error: "disk_space_low" });
     if (error instanceof EditorError)
       return reply.code(422).send({ error: error.code, displayMessage: error.displayMessage });

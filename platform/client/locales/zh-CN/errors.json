@@ -1,4 +1,5 @@
 {
+  "errors.uploadSize": "上传文件超过允许的大小。",
   "errors.quota": "个人存储配额已满，请联系管理员清理历史或调整配额。",
   "errors.diskSpace": "服务器剩余空间不足，本次保存未完成。请保留当前页面，联系管理员释放空间后重试。",
   "errors.rateLimit": "操作过于频繁，请稍后再试。",
@@ -6,5 +7,6 @@
   "errors.conflict": "存档已有新版本，请重新载入后再操作。",
   "errors.forbidden": "当前操作未获授权。",
   "errors.request": "操作未完成，请检查输入后重试。",
-  "errors.connection": "暂时无法连接服务，请稍后重试。"
+  "errors.connection": "暂时无法连接服务，请稍后重试。",
+  "errors.uploadBusyLegacy": "另一个上传正在处理，请稍后重试。"
 }

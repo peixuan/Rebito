@@ -1,4 +1,9 @@
 {
+  "library.romExtension": "The extension does not match the platform. Upload an uncompressed ROM.",
+  "library.gameFormat": "The game file format is invalid.",
+  "library.dosArchive": "Upload a ZIP or jsdos archive for DOS games.",
+  "library.duplicateRelease": "This game release already exists. Refresh the library to view it.",
+  "library.busy": "The library is being updated. Please try again shortly.",
   "library.unreadableZip": "The ZIP game archive could not be read.",
   "library.tooManyFiles": "The game archive contains too many files.",
   "library.specialFiles": "Game archives cannot contain encrypted files, links or special files.",
@@ -26,6 +31,10 @@
   "library.createProfile": "Create profile",
   "library.profileCount": "{count} personal profile | {count} personal profiles",
   "library.profileTitle": "{title} · Personal profiles",
+  "library.selectUpload": "Select a valid game file.",
   "library.expandedSizeLegacy": "The expanded game archive exceeds 256 MiB.",
-  "library.duplicateRelease": "This game release already exists. Refresh the library to view it."
+  "library.uploadSizeLegacy": "The upload exceeds 64 MiB.",
+  "library.launchSettingsLegacy": "The launch executable, arguments or save file settings are invalid.",
+  "library.uploadOrderLegacy": "Submit configuration before uploading one game file.",
+  "library.uploadSettingsLegacy": "The upload configuration is invalid."
 }
