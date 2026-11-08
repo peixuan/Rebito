@@ -13,6 +13,9 @@ Updated: 2026-11-08 (Asia/Shanghai).
   a failed upload keeps the paused runtime available for retry. Dirty editor drafts
   survive publication and require explicit reloading. Real DOS shell writes verify
   exact downloaded bytes, updated fields, retained drafts and failed-stop recovery.
+- Primary controls now use neutral slate tones with blue links instead of green.
+  Lint, types and the container build pass; the deployed theme was inspected in
+  Chrome. The real Koukai2 canvas was verified at 640 × 480 source/display pixels.
 
 ## Target
 

@@ -47,6 +47,8 @@ because an upstream documentation page lists a feature.
   inside an app close hook can deadlock against its dedicated storage lease.
 - Prefer OIDC integration; LDAP may be federated through an identity provider.
 - Use small cohesive modules, descriptive names and comments explaining invariants.
+- Keep the UI compact with neutral slate/blue accents; the user dislikes green
+  primary themes. Prefer shared theme tokens over per-control color overrides.
 - Keep user-facing text in `platform/client/locales`. Use stable message descriptors
   across server/editor/runtime boundaries; never use translated labels as identifiers.
   Preserve active games, draft values and table state when the language changes.
