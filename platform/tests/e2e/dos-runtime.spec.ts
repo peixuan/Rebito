@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { unzipSync } from "fflate";
 import type { RuntimeHandle, RuntimeWindow } from "../../client/runtime/types.ts";
 import type { Game } from "../../src/library/catalog.ts";
 import { useSession } from "./session.ts";
@@ -68,6 +69,31 @@ test("runs real DOSBox WASM and reloads edited native bytes over its filesystem 
     const saved = await capture();
     expect(saved?.kind).toBe("filesystem");
     expect(saved?.files.some((file) => file.name === "__runtime/filesystem.zip")).toBe(true);
+    await page.evaluate(async () => {
+      const handle = (window as Window & { testHandle?: RuntimeHandle }).testHandle;
+      if (!handle?.files) throw new Error("Missing live file access");
+      handle.pause();
+      const previous = await handle.files.read("SAVE.DAT");
+      await handle.files.replace("SAVE.DAT", previous, new TextEncoder().encode("LIVE\r\n"));
+      handle.resume();
+    });
+    // A DOS command must read the replacement too, not only the host FS API.
+    await page.locator("canvas").click();
+    await page.keyboard.type("verify", { delay: 60 });
+    await page.keyboard.press("Enter", { delay: 150 });
+    await expect
+      .poll(async () => {
+        const overlay = (await capture())?.files.find(
+          (file) => file.name === "__runtime/filesystem.zip",
+        );
+        if (!overlay) return null;
+        const files = unzipSync(new Uint8Array(overlay.bytes));
+        const copied = Object.entries(files).find(
+          ([name]) => name.toLowerCase() === "check.dat",
+        )?.[1];
+        return copied ? new TextDecoder().decode(copied) : null;
+      })
+      .toBe("LIVE\r\n");
     const files =
       saved?.files.map((file) =>
         file.name === "SAVE.DAT"

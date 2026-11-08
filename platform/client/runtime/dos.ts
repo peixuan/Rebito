@@ -3,6 +3,7 @@ import { MessageError, message } from "../../src/shared/messages.ts";
 import { loadScript, loadStyle } from "./assets.ts";
 import { runtimeIdentity } from "./identity.ts";
 import { pixelScale } from "./pixel-scale.ts";
+import { saveFileAccess } from "./save-files.ts";
 import type { RuntimeFile, RuntimeHandle, RuntimeLaunch } from "./types.ts";
 
 interface FsNode {
@@ -15,6 +16,7 @@ interface CommandInterface {
   persist(onlyChanges: boolean): Promise<Uint8Array<ArrayBuffer> | null>;
   fsTree(): Promise<FsNode>;
   fsReadFile(path: string): Promise<Uint8Array<ArrayBuffer>>;
+  fsWriteFile(path: string, bytes: Uint8Array<ArrayBuffer>): Promise<void>;
 }
 interface DosPlayer {
   setNoCloud(value: boolean): void;
@@ -99,6 +101,11 @@ export async function startDos(
   }
   window.addEventListener("keydown", releasePointer, true);
   return {
+    files: saveFileAccess(launch.game.saveFiles, {
+      list: async () => paths((await ci.fsTree()).nodes ?? []),
+      read: (path) => ci.fsReadFile(path),
+      write: (path, bytes) => ci.fsWriteFile(path, bytes),
+    }),
     pause: () => ci.pause(),
     resume: () => ci.resume(),
     setIntegerScaling: (enabled) => scaling.setEnabled(enabled),

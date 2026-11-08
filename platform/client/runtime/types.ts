@@ -18,6 +18,15 @@ export interface RuntimeLaunch {
   gameBytes: Uint8Array<ArrayBuffer>;
   progress: RuntimeProgress | null;
 }
+export interface RuntimeFileAccess {
+  read(name: string): Promise<Uint8Array<ArrayBuffer>>;
+  /** Caller pauses the runtime; reject changed bytes and roll back a failed write. */
+  replace(
+    name: string,
+    previous: Uint8Array<ArrayBuffer>,
+    bytes: Uint8Array<ArrayBuffer>,
+  ): Promise<void>;
+}
 export interface RuntimeHandle {
   pause(): void;
   resume(): void;
@@ -25,6 +34,7 @@ export interface RuntimeHandle {
   stop(): Promise<void>;
   setMouseCapture?(enabled: boolean): void;
   setIntegerScaling?(enabled: boolean): void;
+  files?: RuntimeFileAccess;
 }
 export interface RuntimeHost {
   start(launch: RuntimeLaunch): Promise<RuntimeHandle>;

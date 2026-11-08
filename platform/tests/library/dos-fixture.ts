@@ -24,6 +24,7 @@ export async function seedDos(dataDirectory: string) {
     "fixture.bat": strToU8(
       "@echo off\r\nif exist SAVE.DAT goto display\r\necho FIRST>SAVE.DAT\r\n:display\r\ntype SAVE.DAT\r\necho RETRO PORTAL DOS TEST\r\n",
     ),
+    "verify.bat": strToU8("@copy /y SAVE.DAT CHECK.DAT\r\n"),
   });
   const directory = join(dataDirectory, "library");
   const catalogPath = join(directory, "catalog.json");

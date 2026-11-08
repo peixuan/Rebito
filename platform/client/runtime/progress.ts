@@ -13,11 +13,18 @@ export async function downloadVerified(
   const response = await fetch(path, { credentials: "same-origin", cache: "no-store" });
   if (!response.ok) throw new ApiError("download_failed", response.status);
   const bytes = new Uint8Array(await response.arrayBuffer());
+  await verifyBytes(bytes, expected);
+  return bytes;
+}
+
+export async function verifyBytes(
+  bytes: Uint8Array<ArrayBuffer>,
+  expected: Pick<ArtifactRef, "size" | "sha256">,
+) {
   const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", bytes));
   const hash = [...digest].map((value) => value.toString(16).padStart(2, "0")).join("");
   if (bytes.length !== expected.size || hash !== expected.sha256)
     throw new MessageError(message("runtime.integrity"));
-  return bytes;
 }
 
 export function assertCompatible(game: Game, revision: Revision, runtime: RuntimeIdentity): void {

@@ -10,6 +10,9 @@ Updated: 2026-11-08 (Asia/Shanghai).
   its renderer/GPU processes were checked without `--no-sandbox`.
 - Live editor writeback is being implemented so a supported DOS save can be
   updated in place without restarting the emulator; keep runtime and file state distinct.
+  Guarded native-file I/O now passes seven unit checks and a real DOS readback
+  test. It preserves unrelated files, detects stale bytes, verifies replacements
+  and rolls back failures. Worker writes receive copies because transfer detaches buffers.
 - DOS defaults to integer device-pixel scaling, with a fit-to-window toggle and
   nearest-neighbor sampling. The real DOS browser checks cover non-integer window
   sizes, toggling, palette preservation and pointer capture. Lint/types and both

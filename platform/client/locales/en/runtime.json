@@ -10,5 +10,12 @@
   "runtime.dosCanvas": "The DOS emulator display is not ready.",
   "runtime.integrity": "Save or game file verification failed.",
   "runtime.releaseMismatch": "The save belongs to another game release.",
-  "runtime.snapshotMismatch": "The snapshot is incompatible with this emulator version. Choose a native game save instead."
+  "runtime.snapshotMismatch": "The snapshot is incompatible with this emulator version. Choose a native game save instead.",
+  "runtime.undeclaredFile": "This file is not declared for synchronization with the running game.",
+  "runtime.ambiguousFile": "The in-game save file is missing or its name is ambiguous.",
+  "runtime.writeConflict": "The in-game save has changed and has not been overwritten. Synchronize and refresh before editing again.",
+  "runtime.writeVerification": "Writeback verification failed.",
+  "runtime.restoreVerification": "Restoration verification failed.",
+  "runtime.restoreFailed": "The in-game files could not be restored. The cloud revision remains available. Reload the game.",
+  "runtime.writebackRolledBack": "Writeback failed and the original file was restored. You can retry edit synchronization."
 }

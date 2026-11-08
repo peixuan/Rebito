@@ -9,6 +9,7 @@ export default defineConfig({
         "src/**/*.ts",
         "client/api.ts",
         "client/runtime/progress.ts",
+        "client/runtime/save-files.ts",
         "client/controls/numbers.ts",
       ],
       exclude: [
