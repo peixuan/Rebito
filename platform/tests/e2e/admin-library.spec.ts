@@ -33,6 +33,10 @@ test("publishes a DOS game from the administrator page and retains a rejected dr
   await page.getByRole("button", { name: "Publish to library", exact: true }).click();
   await expect(page.getByRole("status")).toContainText("Published Browser upload validation");
   await expect(page.getByRole("status")).toContainText("Removed bundled saves: SAVE.DAT");
+  await page.getByLabel("Search published games").fill("Browser upload validation");
+  await expect(
+    page.getByRole("cell", { name: "Browser upload validation", exact: true }),
+  ).toBeVisible();
   await expect(page.getByLabel("Game title", { exact: true })).toHaveValue("");
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);

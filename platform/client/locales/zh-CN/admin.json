@@ -2,6 +2,7 @@
   "admin.title": "游戏管理",
   "admin.unreadableArchive": "无法读取游戏包，请检查 ZIP 格式、路径和大小。",
   "admin.discardConfiguration": "放弃尚未发布的游戏配置？",
+  "admin.refresh": "刷新游戏列表",
   "admin.uploadTitle": "上传游戏",
   "admin.gameTitle": "游戏名称",
   "admin.uploadPlatform": "上传游戏平台",
@@ -16,9 +17,16 @@
   "admin.savePathsHelp": "路径从压缩包根目录开始，子目录用 /，支持多个文件，不支持通配符。包内匹配的存档会被移除；上传前请移除其它个人存档和无关文件。 留空时不会自动识别存档变化，仍可手动保存。",
   "admin.consoleSaveHelp": "主机游戏的原生存档和即时快照由模拟器适配器管理，无需填写文件路径。",
   "admin.publish": "发布到游戏库",
+  "admin.publishedGames": "已发布游戏",
+  "admin.search": "搜索已发布游戏",
+  "admin.noMatches": "还没有匹配的游戏。",
+  "admin.syncFiles": "同步文件",
+  "admin.automatic": "自动管理",
   "admin.published": "已发布「{title}」，现在可以返回游戏库游玩。{removed}",
   "admin.removedSaves": "已移除随包存档：{files}。",
+  "admin.usage": "{count} 个版本 · {used} / {maximum}",
   "admin.processingUpload": "游戏正在上传或发布，请等待完成。",
   "admin.uploading": "正在上传并发布…",
-  "admin.uploadIntroduction": "发布后立即进入共享游戏库。已有游戏和个人进度保持原样。"
+  "admin.uploadIntroduction": "发布后立即进入共享游戏库。已有游戏和个人进度保持原样。",
+  "admin.immutableLaunchHelp": "启动配置和同步规则按版本保留；调整时重新上传并发布，旧进度不会被迁移或覆盖。修改器仅对已验证的游戏版本开放。"
 }

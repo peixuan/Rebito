@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import Button from "primevue/button";
+import Column from "primevue/column";
+import DataTable from "primevue/datatable";
 import InputText from "primevue/inputtext";
 import Message from "primevue/message";
 import Select from "primevue/select";
@@ -20,6 +22,7 @@ const systems = [
   { label: "GB", value: "gb" },
   { label: "GBA", value: "gba" },
 ];
+const catalog = ref<{ games: Game[]; usedBytes: number; maximumBytes: number } | null>(null);
 const title = ref("");
 const system = ref("dos");
 const executable = ref("");
@@ -32,6 +35,7 @@ const programs = ref<string[]>([]);
 const busy = ref(false);
 const error = ref<DisplayText>("");
 const notice = ref<DisplayText>("");
+const query = ref("");
 const dirty = computed(() =>
   Boolean(
     file.value ||
@@ -42,10 +46,26 @@ const dirty = computed(() =>
       cycles.value !== "auto",
   ),
 );
+const games = computed(
+  () =>
+    catalog.value?.games.filter((game) =>
+      game.title.toLocaleLowerCase().includes(query.value.trim().toLocaleLowerCase()),
+    ) ?? [],
+);
 const accept = computed(
   () =>
     ({ dos: ".zip,.jsdos", nes: ".nes", snes: ".sfc,.smc", gb: ".gb", gba: ".gba" })[system.value],
 );
+function size(bytes: number) {
+  return `${(bytes / 1024 ** 2).toFixed(1)} MiB`;
+}
+async function refresh() {
+  try {
+    catalog.value = await api("admin/games");
+  } catch (cause) {
+    error.value = errorText(cause);
+  }
+}
 async function selectFile(event: Event) {
   const selected = (event.target as HTMLInputElement).files?.[0] ?? null;
   file.value = selected;
@@ -113,6 +133,7 @@ async function publish() {
     title.value = args.value = savePaths.value = "";
     cycles.value = "auto";
     resetFile();
+    await refresh();
   } catch (cause) {
     error.value = errorText(cause);
   } finally {
@@ -134,6 +155,7 @@ function beforeUnload(event: BeforeUnloadEvent) {
 }
 defineExpose({ leave });
 onMounted(() => {
+  void refresh();
   window.addEventListener("beforeunload", beforeUnload);
 });
 onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
@@ -144,6 +166,7 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
     <div class="toolbar">
       <Button :label="t('library.back')" variant="text" @click="emit('back')" />
       <h1>{{ t("admin.title") }}</h1>
+      <Button :label="t('admin.refresh')" variant="text" :disabled="busy" @click="refresh" />
     </div>
     <p class="muted">{{ t("admin.uploadIntroduction") }}</p>
     <Message v-if="error" severity="error" role="alert">{{ translate(error) }}</Message>
@@ -248,6 +271,52 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
           :disabled="!file || !title.trim() || (system === 'dos' && !executable)"
         />
       </form>
+      <section class="profile-panel admin-catalog" :aria-label="t('admin.publishedGames')">
+        <div class="toolbar">
+          <h2>{{ t("admin.publishedGames") }}</h2>
+          <InputText
+            v-model="query"
+            :aria-label="t('admin.search')"
+            :placeholder="t('library.search')"
+            size="small"
+          />
+        </div>
+        <p v-if="catalog" class="muted">
+          {{
+            t("admin.usage", {
+              count: catalog.games.length,
+              used: size(catalog.usedBytes),
+              maximum: size(catalog.maximumBytes),
+            })
+          }}
+        </p>
+        <DataTable
+          :value="games"
+          data-key="id"
+          size="small"
+          paginator
+          :rows="8"
+          sort-field="title"
+          :sort-order="1"
+        >
+          <template #empty>{{ t("admin.noMatches") }}</template>
+          <Column field="title" :header="t('library.game')" sortable />
+          <Column field="system" :header="t('common.platform')" sortable />
+          <Column field="size" :header="t('common.size')" sortable
+            ><template #body="{ data }">{{ size(data.size) }}</template></Column
+          >
+          <Column :header="t('admin.syncFiles')"
+            ><template #body="{ data }"
+              ><span class="admin-paths">{{
+                data.system === "dos"
+                  ? data.saveFiles.join("\n") || t("common.unspecified")
+                  : t("admin.automatic")
+              }}</span></template
+            ></Column
+          >
+        </DataTable>
+        <p class="muted">{{ t("admin.immutableLaunchHelp") }}</p>
+      </section>
     </div>
   </section>
 </template>
@@ -258,6 +327,7 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
 }
 .admin-layout {
   display: grid;
+  grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
   gap: 16px;
   align-items: start;
 }
