@@ -31,6 +31,11 @@ services:
     pids_limit: 128
     mem_limit: 512m
     restart: unless-stopped
+    logging:
+      driver: local
+      options:
+        max-size: "10m"
+        max-file: "3"
   database:
     image: public.ecr.aws/docker/library/postgres:18-bookworm@sha256:f1ea2a1a4fb7b68d4836be1fdcb8a6466a89b072158bf9d97663600538c294c5
     environment:
@@ -49,6 +54,11 @@ services:
     security_opt:
       - no-new-privileges:true
     restart: unless-stopped
+    logging:
+      driver: local
+      options:
+        max-size: "10m"
+        max-file: "3"
 volumes:
   saves:
   database:

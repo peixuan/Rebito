@@ -1,5 +1,12 @@
 # Storage maintenance and recovery
 
+## Capacity planning
+
+The app and database use Docker's [local logging driver](https://docs.docker.com/engine/logging/drivers/local/)
+with three 10 MB files each and compression of rotated files. Recreate both services
+with `docker compose up -d --build --wait` to apply changed logging settings. This
+bounds container stdout/stderr logs, not database files or external log collectors.
+
 Use the same application image/configuration as the deployment. All commands below
 run from `platform/` in a POSIX shell. Binary output redirection must preserve bytes;
 on Windows, run these commands in WSL rather than an older PowerShell pipeline.
