@@ -26,13 +26,13 @@ node dist/library/import-game.js /private/game.nes /private/game.json
 # Containers: mount only the required operator input, read-only.
 docker compose run --rm -T -v /private/import:/import:ro app \
   node dist/library/import-game.js /import/game.nes /import/game.json
-docker compose restart app
 ```
 
 The command copies and hashes the asset, verifies existing catalog assets, then
 atomically publishes the updated catalog. Source files remain untouched. An
-existing release is rejected. The running application keeps its verified catalog
-until restarted. Back up `DATA_DIR/library` with the private save directory.
+existing release is rejected. Refreshing the game library loads and verifies the
+new catalog without restarting the server. Existing game assets remain immutable.
+Back up `DATA_DIR/library` with the private save directory.
 
 Imports use an exclusive `.import.lock`. After an interrupted process, stop all
 import commands, inspect `catalog.json` and its referenced assets, then remove the

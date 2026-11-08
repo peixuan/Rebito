@@ -70,21 +70,39 @@ export async function fingerprint(path: string): Promise<{ sha256: string; size:
   return { sha256: hash.digest("hex"), size };
 }
 
-/** Administrator-managed assets are verified at startup and never mutated by the API. */
+/** Assets stay immutable; new catalog snapshots replace the complete verified map. */
 export class LocalLibrary {
-  private readonly entries = new Map<string, { game: Game; path: string }>();
+  private entries = new Map<string, { game: Game; path: string }>();
+  private directory = "";
+  private snapshot = "";
+  private pending: Promise<void> = Promise.resolve();
 
   static async load(directory: string): Promise<LocalLibrary> {
     const library = new LocalLibrary();
+    library.directory = directory;
+    await library.refresh();
+    return library;
+  }
+
+  /** Serialize refreshes so a slower older read cannot replace a newer catalog. */
+  refresh(): Promise<void> {
+    const operation = this.pending.then(() => this.reload());
+    this.pending = operation.catch(() => {});
+    return operation;
+  }
+
+  private async reload(): Promise<void> {
     let json: string;
     try {
-      json = await readFile(join(directory, "catalog.json"), "utf8");
+      json = await readFile(join(this.directory, "catalog.json"), "utf8");
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === "ENOENT") return library;
+      if ((error as NodeJS.ErrnoException).code === "ENOENT" && !this.snapshot) return;
       throw error;
     }
+    if (json === this.snapshot) return;
+    const entries = new Map<string, { game: Game; path: string }>();
     const catalog = catalogSchema.parse(JSON.parse(json));
-    const root = await realpath(directory);
+    const root = await realpath(this.directory);
     for (const entry of catalog.games) {
       const path = await realpath(join(root, entry.file));
       const child = relative(root, path);
@@ -97,11 +115,12 @@ export class LocalLibrary {
       const actual = await fingerprint(path);
       if (actual.sha256 !== entry.sha256) throw new Error("Game asset checksum mismatch");
       const id = releaseId(entry);
-      if (library.entries.has(id)) throw new Error("Duplicate game release");
+      if (entries.has(id)) throw new Error("Duplicate game release");
       const { file: _, ...publicEntry } = entry;
-      library.entries.set(id, { game: Object.freeze({ ...publicEntry, id }), path });
+      entries.set(id, { game: Object.freeze({ ...publicEntry, id }), path });
     }
-    return library;
+    this.entries = entries;
+    this.snapshot = json;
   }
 
   list(): readonly Game[] {

@@ -53,6 +53,25 @@ describe("verified game library", () => {
     await expect(LocalLibrary.load(directory)).rejects.toThrow("size");
   });
 
+  it("refreshes atomically, retains a verified snapshot on failure and recovers", async () => {
+    const library = await LocalLibrary.load(directory);
+    await catalog([entry]);
+    await Promise.all([library.refresh(), library.refresh()]);
+    expect(library.list()).toHaveLength(1);
+    await catalog([
+      { ...entry, title: "Updated title" },
+      { ...entry, file: "missing", sha256: "0".repeat(64) },
+    ]);
+    await expect(library.refresh()).rejects.toThrow();
+    expect(library.list()[0]?.title).toBe("Test");
+    await catalog([{ ...entry, title: "Updated title" }]);
+    await library.refresh();
+    expect(library.list()[0]?.title).toBe("Updated title");
+    await rm(join(directory, "catalog.json"));
+    await expect(library.refresh()).rejects.toMatchObject({ code: "ENOENT" });
+    expect(library.list()).toHaveLength(1);
+  });
+
   it("rejects directory symlinks escaping the library", async () => {
     await mkdir(join(directory, "inside"));
     // Junctions work without Windows developer mode; Linux uses a directory symlink.

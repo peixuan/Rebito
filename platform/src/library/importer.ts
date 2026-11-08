@@ -22,7 +22,7 @@ async function syncDirectory(directory: string): Promise<void> {
   }
 }
 
-/** Operator-only publication. The running server reloads the catalog on restart. */
+/** Publication is atomic; running readers verify the next catalog snapshot on demand. */
 export async function importGame(directory: string, source: string, metadata: unknown) {
   const settings = metadataSchema.parse(metadata);
   const sourceInfo = await stat(source);

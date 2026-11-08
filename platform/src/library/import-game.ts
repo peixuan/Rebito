@@ -11,4 +11,4 @@ const id = await importGame(
   source,
   JSON.parse(await readFile(metadata, "utf8")),
 );
-console.log(`Imported ${id}. Restart the application to reload the library.`);
+console.log(`Imported ${id}. Refresh the game library to see it.`);
