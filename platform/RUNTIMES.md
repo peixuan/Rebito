@@ -50,6 +50,14 @@ This is useful for games whose absolute DOS mouse coordinates differ from the
 letterboxed display. The option resets when the runtime stops; pointer handlers
 are removed with that instance.
 
+DOS display defaults to integer multiples of physical device pixels, centered in
+the available canvas container. The Integer pixels switch restores fit-to-window
+scaling when disabled. Small viewports fit the whole image without cropping.
+The adapter observes video-mode and container-size changes; it does not alter
+DOSBox CPU timing or the game's original resolution. Scoped CSS overrides the
+upstream inline canvas geometry and keeps nearest-neighbor sampling; unsupported
+`crisp-edges` browsers retain the player's `pixelated` fallback.
+
 The console adapter uses the pinned `saveDatabaseLoaded` event before ROM startup.
 It replaces the browser's persistent save mount with MEMFS and writes the selected
 native save there. This prevents IndexedDB data from overwriting an

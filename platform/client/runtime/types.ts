@@ -24,6 +24,7 @@ export interface RuntimeHandle {
   capture(): Promise<RuntimeProgress | null>;
   stop(): Promise<void>;
   setMouseCapture?(enabled: boolean): void;
+  setIntegerScaling?(enabled: boolean): void;
 }
 export interface RuntimeHost {
   start(launch: RuntimeLaunch): Promise<RuntimeHandle>;

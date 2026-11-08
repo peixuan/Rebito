@@ -5,6 +5,7 @@ test("plays DOS in the workspace and publishes bytes through the cloud revision 
   page,
 }, info) => {
   test.setTimeout(60_000);
+  await page.setViewportSize({ width: 1043, height: 900 });
   await useSession(page.context(), "player");
   await page.goto("/");
   await page.getByRole("button", { name: /DOS save test/ }).click();
@@ -17,9 +18,36 @@ test("plays DOS in the workspace and publishes bytes through the cloud revision 
   await expect(page.frameLocator("iframe").locator("canvas")).toBeVisible();
   const runtime = page.frames().find((frame) => frame.url().endsWith("/runtime.html"));
   if (!runtime) throw new Error("Missing DOS frame");
+  async function pixelRatio() {
+    return runtime?.locator("canvas").evaluate((canvas: HTMLCanvasElement) => {
+      const box = canvas.getBoundingClientRect();
+      return (box.width * devicePixelRatio) / canvas.width;
+    });
+  }
+  await expect.poll(pixelRatio).toBe(1);
+  const pixels = page.getByRole("button", { name: "Integer scaling", exact: true });
+  await pixels.click();
+  await expect.poll(pixelRatio).toBeGreaterThan(1.4);
+  await pixels.click();
+  await expect.poll(pixelRatio).toBe(1);
+  // At fractional enlargement, CSS smoothing must not add colors to VGA text.
+  const rendered = await runtime.locator("canvas").screenshot();
+  const channels = await page.evaluate(async (png) => {
+    const bytes = Uint8Array.from(atob(png), (character) => character.charCodeAt(0));
+    const image = await createImageBitmap(new Blob([bytes], { type: "image/png" }));
+    const canvas = new OffscreenCanvas(image.width, image.height);
+    const context = canvas.getContext("2d");
+    if (!context) throw new Error("Missing screenshot decoder");
+    context.drawImage(image, 0, 0);
+    const pixels = context.getImageData(2, 2, image.width - 4, image.height - 4).data;
+    return [...new Set(pixels.filter((_, index) => index % 4 !== 3))];
+  }, rendered.toString("base64"));
+  expect(channels.length).toBeGreaterThan(1);
+  expect(channels.every((value) => [0, 85, 170, 255].includes(value))).toBe(true);
   const mouseMode = page.getByRole("button", { name: "Relative mouse", exact: true });
   await mouseMode.click();
   await expect(mouseMode).toHaveAttribute("aria-pressed", "true");
+  await expect.poll(pixelRatio).toBe(1);
   await runtime.locator("canvas").click();
   await expect.poll(() => runtime.evaluate(() => Boolean(document.pointerLockElement))).toBe(true);
   await page.keyboard.press("Escape");

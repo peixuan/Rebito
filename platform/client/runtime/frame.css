@@ -7,3 +7,16 @@ body,
   background: #111;
   overflow: hidden;
 }
+
+/* biome-ignore-start lint/complexity/noImportantStyles: Override the pinned player's inline canvas styles without forking its renderer. */
+#runtime.dos-runtime canvas {
+  /* Unsupported browsers retain the player's inline pixelated fallback. */
+  image-rendering: crisp-edges !important;
+}
+#runtime.dos-runtime canvas[data-integer-scale] {
+  width: var(--pixel-width) !important;
+  height: var(--pixel-height) !important;
+  left: var(--pixel-left) !important;
+  top: var(--pixel-top) !important;
+}
+/* biome-ignore-end lint/complexity/noImportantStyles: End the upstream canvas overrides. */

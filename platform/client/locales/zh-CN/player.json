@@ -10,6 +10,8 @@
   "player.resume": "继续游戏",
   "player.pause": "暂停游戏",
   "player.save": "保存到账号",
+  "player.integerPixels": "整数像素",
+  "player.integerPixelsHelp": "按整数倍显示像素；关闭后适应窗口大小。",
   "player.relativeMouse": "相对鼠标",
   "player.stop": "停止游戏",
   "player.mouseHelp": "点击游戏画面捕获鼠标，Esc 释放。",

@@ -2,6 +2,7 @@ import { unzipSync, zipSync } from "fflate";
 import { MessageError, message } from "../../src/shared/messages.ts";
 import { loadScript, loadStyle } from "./assets.ts";
 import { runtimeIdentity } from "./identity.ts";
+import { pixelScale } from "./pixel-scale.ts";
 import type { RuntimeFile, RuntimeHandle, RuntimeLaunch } from "./types.ts";
 
 interface FsNode {
@@ -34,6 +35,7 @@ export async function startDos(
   launch: RuntimeLaunch,
 ): Promise<RuntimeHandle> {
   const base = "/runtimes/jsdos-8.5.3/";
+  element.classList.add("dos-runtime");
   loadStyle(`${base}js-dos.css`);
   await loadScript(`${base}js-dos.js`);
   const dos = (window as Window & { Dos?: DosFunction }).Dos;
@@ -76,6 +78,8 @@ export async function startDos(
     kiosk: true,
     workerThread: true,
     mouseCapture: false,
+    imageRendering: "pixelated",
+    renderAspect: "AsIs",
     lang: "en",
     fsChanges: { local: false, pull: async () => null },
     onEvent: (event: string, ci: CommandInterface) => {
@@ -84,6 +88,9 @@ export async function startDos(
   });
   player.setNoCloud(true);
   const ci = await ready;
+  const canvas = element.querySelector("canvas");
+  if (!canvas) throw new MessageError(message("runtime.dosCanvas"));
+  const scaling = pixelScale(canvas);
   function releasePointer(event: KeyboardEvent) {
     if (event.key !== "Escape" || !document.pointerLockElement) return;
     event.preventDefault();
@@ -94,6 +101,7 @@ export async function startDos(
   return {
     pause: () => ci.pause(),
     resume: () => ci.resume(),
+    setIntegerScaling: (enabled) => scaling.setEnabled(enabled),
     setMouseCapture(enabled) {
       player.setMouseCapture(enabled);
       if (!enabled && document.pointerLockElement) document.exitPointerLock();
@@ -113,6 +121,7 @@ export async function startDos(
         : null;
     },
     async stop() {
+      scaling.dispose();
       window.removeEventListener("keydown", releasePointer, true);
       if (document.pointerLockElement) document.exitPointerLock();
       await player.stop();

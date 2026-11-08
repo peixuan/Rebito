@@ -24,6 +24,7 @@ const ready = ref(false);
 const busy = ref(false);
 const paused = ref(false);
 const relativeMouse = ref(false);
+const integerPixels = ref(true);
 const error = ref<DisplayText>("");
 const notice = ref<DisplayText>("");
 let handle: RuntimeHandle | null = null;
@@ -107,6 +108,7 @@ async function stop() {
     active.value = false;
     paused.value = false;
     relativeMouse.value = false;
+    integerPixels.value = true;
   }
 }
 async function save() {
@@ -150,6 +152,11 @@ function toggleMouse() {
   relativeMouse.value = !relativeMouse.value;
   handle.setMouseCapture(relativeMouse.value);
 }
+function togglePixels() {
+  if (!handle?.setIntegerScaling) return;
+  integerPixels.value = !integerPixels.value;
+  handle.setIntegerScaling(integerPixels.value);
+}
 watch(
   () => props.baseRevision,
   (value) => {
@@ -185,6 +192,16 @@ onBeforeUnmount(() => {
           :disabled="!ready"
           :loading="busy"
           @click="save"
+        />
+        <Button
+          v-if="game.system === 'dos'"
+          :label="t('player.integerPixels')"
+          :title="t('player.integerPixelsHelp')"
+          size="small"
+          severity="secondary"
+          :aria-pressed="integerPixels"
+          :disabled="!ready || busy"
+          @click="togglePixels"
         />
         <Button
           v-if="game.system === 'dos'"

@@ -10,6 +10,8 @@
   "player.resume": "Resume game",
   "player.pause": "Pause game",
   "player.save": "Save to account",
+  "player.integerPixels": "Integer scaling",
+  "player.integerPixelsHelp": "Scale pixels by whole numbers. Turn off to fit the window.",
   "player.relativeMouse": "Relative mouse",
   "player.stop": "Stop game",
   "player.mouseHelp": "Click the game to capture the mouse. Press Esc to release it.",

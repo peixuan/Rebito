@@ -1,6 +1,15 @@
 # Platform work status
 
-Updated: 2026-11-07 (Asia/Shanghai).
+Updated: 2026-11-08 (Asia/Shanghai).
+
+## User verification follow-up
+
+- DOS defaults to integer device-pixel scaling, with a fit-to-window toggle and
+  nearest-neighbor sampling. The real DOS browser checks cover non-integer window
+  sizes, toggling, palette preservation and pointer capture. Lint/types and both
+  DOS integration tests pass. This changes display scaling, not game CPU settings.
+- Reported stale saves on workspace refresh are being addressed: the old refresh
+  reloads server history only and does not capture the running emulator filesystem.
 
 ## Target
 
