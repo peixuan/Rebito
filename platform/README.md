@@ -29,6 +29,13 @@ Console snapshots retain emulator state and native battery saves when available;
 games without battery saves can use snapshots. A runtime upgrade may require
 importing a native save instead of loading an old snapshot. Back up before upgrades.
 
+For DOS, save inside the game, then use **Synchronize and refresh** to read the running game's
+files, publish a revision and refresh the editor/history. When no game is running,
+**Refresh saves** reloads server history only. **Stop game** publishes progress before
+closing; a failed synchronization retains the paused runtime for retry. Closing
+the browser or navigating away is not a replacement for synchronization. Pending
+editor drafts survive a new game revision and require an explicit reload.
+
 For browser development run `npm run dev:web` alongside the configured API.
 Set the API's `APP_ORIGIN=http://127.0.0.1:5173` to the browser's Vite origin;
 the API still listens on port 3000. Use that exact browser URL for CSRF checks.

@@ -21,6 +21,7 @@ const busy = ref(false);
 const error = ref<DisplayText>("");
 const notice = ref<DisplayText>("");
 const editorDirty = ref(false);
+const player = ref<InstanceType<typeof PlayerPanel> | null>(null);
 async function refresh() {
   revisions.value = await api<Revision[]>(`profiles/${props.profile.id}/revisions`);
   const profiles = await api<Profile[]>("profiles");
@@ -37,6 +38,11 @@ async function perform(action: () => Promise<void>) {
   } finally {
     busy.value = false;
   }
+}
+async function refreshWorkspace() {
+  // Capture first: reading server history alone cannot see a game's local writes.
+  if (player.value?.active) await player.value.save();
+  else await perform(refresh);
 }
 async function upload() {
   if (!files.value.length) return;
@@ -81,15 +87,18 @@ onMounted(() => perform(refresh));
       />
       <h2>{{ game.title }} · {{ profile.name }}</h2>
       <Button
-        :label="t('saves.refresh')"
+        :label="player?.active ? t('saves.synchronize') : t('saves.refresh')"
+        :title="player?.active ? t('saves.synchronizeHelp') : undefined"
         variant="text"
-        :loading="busy"
-        @click="perform(refresh)"
+        :loading="busy || player?.busy"
+        :disabled="Boolean(player?.active && !player.ready)"
+        @click="refreshWorkspace"
       />
     </div>
     <Message v-if="error" severity="error" role="alert">{{ translate(error) }}</Message>
     <Message v-if="notice" severity="success" role="status">{{ translate(notice) }}</Message>
     <PlayerPanel
+      ref="player"
       :game="game"
       :profile-id="profile.id"
       :base-revision="head"

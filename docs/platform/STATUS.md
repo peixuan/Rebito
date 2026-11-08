@@ -8,8 +8,11 @@ Updated: 2026-11-08 (Asia/Shanghai).
   nearest-neighbor sampling. The real DOS browser checks cover non-integer window
   sizes, toggling, palette preservation and pointer capture. Lint/types and both
   DOS integration tests pass. This changes display scaling, not game CPU settings.
-- Reported stale saves on workspace refresh are being addressed: the old refresh
-  reloads server history only and does not capture the running emulator filesystem.
+- While a game runs, workspace refresh now captures and publishes its live files
+  before refreshing history and the editor. Explicit Stop also publishes first;
+  a failed upload keeps the paused runtime available for retry. Dirty editor drafts
+  survive publication and require explicit reloading. Real DOS shell writes verify
+  exact downloaded bytes, updated fields, retained drafts and failed-stop recovery.
 
 ## Target
 

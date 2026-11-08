@@ -43,8 +43,10 @@ async function perform(action: () => Promise<void>) {
   notice.value = "";
   try {
     await action();
+    return true;
   } catch (cause) {
     error.value = runtimeErrorText(cause);
+    return false;
   } finally {
     busy.value = false;
   }
@@ -113,8 +115,8 @@ async function stop() {
 }
 async function save() {
   const current = handle;
-  if (!current) return;
-  await perform(async () => {
+  if (!current || !ready.value || busy.value) return false;
+  return perform(async () => {
     const resume = !paused.value;
     paused.value = true;
     const progress = await current.capture();
@@ -141,6 +143,9 @@ async function save() {
     }
   });
 }
+async function stopAndSave() {
+  if (!ready.value || (await save())) await perform(stop);
+}
 function togglePause() {
   if (!handle) return;
   paused.value = !paused.value;
@@ -166,6 +171,7 @@ watch(
 onBeforeUnmount(() => {
   void stop();
 });
+defineExpose({ save, active, ready, busy });
 </script>
 
 <template>
@@ -214,15 +220,16 @@ onBeforeUnmount(() => {
         />
         <Button
           :label="t('player.stop')"
+          :title="t('player.stopHelp')"
           size="small"
           severity="secondary"
           :disabled="busy && ready"
-          @click="perform(stop)"
+          @click="stopAndSave"
         />
       </template>
       <span v-if="relativeMouse" class="muted">{{ t("player.mouseHelp") }}</span>
       <span class="muted">{{
-        game.system === "dos" ? t("player.manualSaveHelp") : t("player.keyboardHelp")
+        game.system === "dos" ? t("player.manualSyncHelp") : t("player.keyboardHelp")
       }}</span>
     </div>
     <Message v-if="error" severity="error" role="alert">{{ translate(error) }}</Message>

@@ -8,6 +8,7 @@ import { registerWeb } from "../../src/server/web.ts";
 import { testDatabase } from "../database.ts";
 import { seedEditor } from "../editors/library-fixture.ts";
 import { seedConsoles } from "../library/console-fixture.ts";
+import { seedDosEditor } from "../library/dos-editor-fixture.ts";
 import { seedDos } from "../library/dos-fixture.ts";
 import { seedLibrary } from "../library/fixture.ts";
 
@@ -15,6 +16,7 @@ const fixture = await testDatabase();
 const directory = await mkdtemp(join(tmpdir(), "retro-browser-"));
 await seedLibrary(directory);
 await seedDos(directory);
+await seedDosEditor(directory);
 await seedConsoles(directory);
 await seedEditor(directory);
 const app = await createPlatform(
