@@ -40,6 +40,9 @@ because an upstream documentation page lists a feature.
 - Model game saves, emulator snapshots and writable file collections separately.
 - Workspace synchronization must capture the running game before reloading server
   history. Keep its runtime alive if synchronization fails during an explicit stop.
+- A changed cloud head must pause and preserve the local runtime. Never silently
+  discard it or rebase its upload; offer a separate profile or confirmed discard.
+  See [synchronization](platform/SYNCHRONIZATION.md) for autosave and exit invariants.
 - Live DOS edits replace only the declared native file group after verifying each
   member's base bytes. Keep failed writeback paused and retry the published revision; never
   republish or upload stale runtime bytes. File changes do not update game RAM.

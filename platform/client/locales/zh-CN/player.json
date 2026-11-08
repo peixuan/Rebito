@@ -1,5 +1,6 @@
 {
   "player.failed": "模拟器运行失败。",
+  "player.conflict": "账号中已有较新的进度。本地游戏已保留并暂停，可以另存为新进度，或放弃本地后使用云端版本。",
   "player.refreshRequired": "请刷新存档后重试。",
   "player.notReady": "模拟器窗口尚未就绪。",
   "player.startTimeout": "模拟器启动超时，请停止后重试。",
@@ -8,11 +9,17 @@
   "player.unchanged": "当前没有新的存档数据。",
   "player.editApplied": "修改已写入游戏存档。请在游戏内重新读档；游戏内存中的数值不会自动改变。",
   "player.syncRequired": "请先完成游戏窗口中的同步操作。",
+  "player.noRecovery": "没有可另存的游戏进度。",
+  "player.discardConfirm": "放弃游戏内尚未同步的进度？账号中的历史版本会保留。",
+  "player.cloudRetained": "已保留云端版本，点击开始游戏即可载入。",
   "player.window": "游戏窗口",
   "player.start": "开始游戏",
   "player.resume": "继续游戏",
   "player.pause": "暂停游戏",
   "player.save": "保存到账号",
+  "player.recover": "本地进度另存为新进度",
+  "player.recoverHelp": "请先保存或放弃编辑器草稿，再另存运行中的游戏进度。",
+  "player.discard": "放弃本地进度",
   "player.retryEdit": "重试同步修改",
   "player.integerPixels": "整数像素",
   "player.integerPixelsHelp": "按整数倍显示像素；关闭后适应窗口大小。",
@@ -23,5 +30,6 @@
   "player.dosSyncHelp": "每 30 秒自动同步已变化的游戏存档；停止或离开游戏前也会同步。",
   "player.starting": "正在启动模拟器…",
   "player.frame": "游戏模拟器",
+  "player.backupName": "{game} · 本地备份 {date}",
   "player.keyboardHelp": "保存到账号会保留即时进度。点击游戏画面后可使用键盘，按键可在控制设置中查看。"
 }

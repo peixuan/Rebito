@@ -13,7 +13,7 @@ import PlayerPanel from "./PlayerPanel.vue";
 const EditorPanel = defineAsyncComponent(() => import("./EditorPanel.vue"));
 
 const props = defineProps<{ game: Game; profile: Profile }>();
-const emit = defineEmits<{ back: [] }>();
+const emit = defineEmits<{ back: []; recovered: [profile: Profile] }>();
 const revisions = ref<Revision[]>([]);
 const head = ref(props.profile.headId);
 const files = ref<File[]>([]);
@@ -114,7 +114,9 @@ onMounted(() => perform(refresh));
         :title="player?.active ? t('saves.synchronizeHelp') : undefined"
         variant="text"
         :loading="busy || player?.busy"
-        :disabled="Boolean(player?.active && (!player.ready || player.pendingSync))"
+        :disabled="
+          Boolean(player?.active && (!player.ready || player.pendingSync || player.conflict))
+        "
         @click="refreshWorkspace"
       />
     </div>
@@ -124,9 +126,11 @@ onMounted(() => perform(refresh));
       ref="player"
       :game="game"
       :profile-id="profile.id"
+      :editor-dirty="editorDirty"
       :base-revision="head"
       :revision="revisions.find((revision) => revision.id === head) ?? null"
       @saved="perform(refresh)"
+      @recovered="emit('recovered', $event)"
     />
     <EditorPanel
       v-if="game.editor && head"

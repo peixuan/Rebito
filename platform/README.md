@@ -43,6 +43,8 @@ Returning to the library and signing out synchronize first and stay in the works
 if saving fails. Closing/reloading a running game prompts before leaving. Browser
 timer throttling, forced termination and power loss can still lose work after the
 last successful synchronization; this is not an offline backup guarantee.
+See [synchronization and conflict recovery](SYNCHRONIZATION.md) for multi-file
+consistency, keeping both conflict branches, retries and compatibility boundaries.
 
 Saving an editor change while DOS is running now pauses briefly, replaces only
 the edited native file group and resumes the same instance. **Load that save inside

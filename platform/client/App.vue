@@ -84,6 +84,11 @@ onMounted(refresh);
         :game="workspace.game"
         :profile="workspace.profile"
         @back="workspace = null"
+        @recovered="
+          (profile) => {
+            if (workspace) workspace = { game: workspace.game, profile };
+          }
+        "
       />
       <LibraryPanel v-else @open="(game, profile) => (workspace = { game, profile })" />
     </section>

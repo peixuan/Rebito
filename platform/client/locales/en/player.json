@@ -1,5 +1,6 @@
 {
   "player.failed": "The emulator encountered an error.",
+  "player.conflict": "Your account has newer progress. The local game is paused and retained. Save it as a separate profile, or discard it to use the cloud revision.",
   "player.refreshRequired": "Refresh the save and try again.",
   "player.notReady": "The emulator window is not ready.",
   "player.startTimeout": "The emulator took too long to start. Stop it and try again.",
@@ -8,11 +9,17 @@
   "player.unchanged": "There is no new save data.",
   "player.editApplied": "Edits were written to the game save. Reload the save inside the game; values in game memory do not change automatically.",
   "player.syncRequired": "Complete synchronization in the game window first.",
+  "player.noRecovery": "There is no game progress to save separately.",
+  "player.discardConfirm": "Discard unsynchronized in-game progress? Your account's save history will be retained.",
+  "player.cloudRetained": "The cloud revision was retained. Select Start game to load it.",
   "player.window": "Game window",
   "player.start": "Start game",
   "player.resume": "Resume game",
   "player.pause": "Pause game",
   "player.save": "Save to account",
+  "player.recover": "Save local progress as a new profile",
+  "player.recoverHelp": "Save or discard editor drafts before saving the running game as a new profile.",
+  "player.discard": "Discard local progress",
   "player.retryEdit": "Retry edit synchronization",
   "player.integerPixels": "Integer scaling",
   "player.integerPixelsHelp": "Scale pixels by whole numbers. Turn off to fit the window.",
@@ -23,5 +30,6 @@
   "player.dosSyncHelp": "Changed game saves are synchronized every 30 seconds, and before stopping or leaving the game.",
   "player.starting": "Starting the emulator…",
   "player.frame": "Game emulator",
+  "player.backupName": "{game} · Local backup {date}",
   "player.keyboardHelp": "Save to account preserves the current state. Click the game to use the keyboard; see Control Settings for bindings."
 }

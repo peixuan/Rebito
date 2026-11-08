@@ -4,12 +4,13 @@ import Message from "primevue/message";
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
 import type { Game } from "../src/library/catalog.ts";
 import { type DisplayText, displayMessage, MessageError, message } from "../src/shared/messages.ts";
-import type { Revision } from "../src/storage/revisions.ts";
+import type { Profile, Revision } from "../src/storage/revisions.ts";
 import { ApiError, errorText } from "./api.ts";
-import { i18n, t, translate } from "./i18n.ts";
+import { formatDate, i18n, t, translate } from "./i18n.ts";
 import { runtimeIdentity } from "./runtime/identity.ts";
 import { prepareLiveEdit } from "./runtime/live-edit.ts";
 import { assertCompatible, downloadProgress, downloadVerified } from "./runtime/progress.ts";
+import { createProgressRecovery } from "./runtime/progress-recovery.ts";
 import { nativeProgressChanged, publishProgress } from "./runtime/progress-sync.ts";
 import type { RuntimeHandle, RuntimeWindow } from "./runtime/types.ts";
 
@@ -18,8 +19,9 @@ const props = defineProps<{
   profileId: string;
   baseRevision: string | null;
   revision: Revision | null;
+  editorDirty: boolean;
 }>();
-const emit = defineEmits<{ saved: [] }>();
+const emit = defineEmits<{ saved: []; recovered: [profile: Profile] }>();
 const frame = ref<HTMLIFrameElement | null>(null);
 const active = ref(false);
 const ready = ref(false);
@@ -30,6 +32,8 @@ const integerPixels = ref(true);
 const error = ref<DisplayText>("");
 const notice = ref<DisplayText>("");
 const synchronizedAt = ref<number | null>(null);
+const conflict = ref(false);
+let recoverProgress: ReturnType<typeof createProgressRecovery> | null = null;
 let automaticSync: ReturnType<typeof setInterval> | undefined;
 let handle: RuntimeHandle | null = null;
 let base: string | null = null;
@@ -48,6 +52,12 @@ function runtimeErrorText(cause: unknown) {
     ? errorText(cause)
     : (displayMessage(cause) ?? message("player.failed"));
 }
+function markConflict() {
+  handle?.pause();
+  paused.value = true;
+  conflict.value = true;
+  error.value = message("player.conflict");
+}
 async function perform(action: () => Promise<void>) {
   busy.value = true;
   error.value = "";
@@ -56,7 +66,8 @@ async function perform(action: () => Promise<void>) {
     await action();
     return true;
   } catch (cause) {
-    error.value = runtimeErrorText(cause);
+    if (cause instanceof ApiError && cause.status === 409) markConflict();
+    else error.value = runtimeErrorText(cause);
     return false;
   } finally {
     busy.value = false;
@@ -115,6 +126,8 @@ async function stop() {
   generation++;
   const current = handle;
   handle = null;
+  recoverProgress = null;
+  conflict.value = false;
   pendingEdit.value = null;
   ready.value = false;
   try {
@@ -128,7 +141,7 @@ async function stop() {
 }
 async function save(automatic = false) {
   const current = handle;
-  if (!current || !ready.value || busy.value || pendingSync.value) return false;
+  if (!current || !ready.value || busy.value || pendingSync.value || conflict.value) return false;
   return perform(async () => {
     const resume = !paused.value;
     paused.value = true;
@@ -148,7 +161,7 @@ async function save(automatic = false) {
   });
 }
 async function stopAndSave() {
-  if (busy.value || pendingSync.value) return false;
+  if (busy.value || pendingSync.value || conflict.value) return false;
   if (!active.value) return true;
   if (!ready.value || (await save())) return perform(stop);
   return false;
@@ -172,9 +185,12 @@ async function applyPendingEdit() {
 async function publishEdit(revisionId: string, files: string[], publish: () => Promise<Revision>) {
   const current = handle;
   if (!current?.files) return publish();
-  if (busy.value || pendingSync.value)
+  if (busy.value || pendingSync.value || conflict.value)
     throw new ApiError("runtime_busy", 422, message("player.syncRequired"));
-  if (revisionId !== base || !runningRevision) throw new ApiError("conflict", 409);
+  if (revisionId !== base || !runningRevision) {
+    markConflict();
+    throw new ApiError("conflict", 409);
+  }
   const resume = !paused.value;
   busy.value = true;
   error.value = "";
@@ -189,7 +205,8 @@ async function publishEdit(revisionId: string, files: string[], publish: () => P
     await applyPendingEdit();
     return revision;
   } catch (cause) {
-    if (resume) {
+    if (cause instanceof ApiError && cause.status === 409) markConflict();
+    else if (resume) {
       current.resume();
       paused.value = false;
     }
@@ -218,7 +235,38 @@ function togglePixels() {
 }
 function reconcileHead() {
   if (changedHead === base) changedHead = undefined;
-  if (handle && changedHead !== undefined && !busy.value && !pendingSync.value) void perform(stop);
+  if (handle && changedHead !== undefined && !busy.value && !pendingSync.value && !conflict.value)
+    markConflict();
+}
+async function recover() {
+  const current = handle;
+  if (!current || busy.value || pendingSync.value || props.editorDirty) return;
+  await perform(async () => {
+    paused.value = true;
+    if (!recoverProgress) {
+      const progress = await current.capture();
+      if (!progress) throw new MessageError(message("player.noRecovery"));
+      recoverProgress = createProgressRecovery(
+        props.game.id,
+        t("player.backupName", {
+          game: props.game.title.slice(0, 40),
+          date: formatDate(Date.now()),
+        }),
+        progress,
+      );
+    }
+    const profile = await recoverProgress();
+    await stop();
+    emit("recovered", profile);
+  });
+}
+async function discardLocal() {
+  if (busy.value || !window.confirm(t("player.discardConfirm"))) return;
+  await perform(async () => {
+    await stop();
+    emit("saved");
+    notice.value = message("player.cloudRetained");
+  });
 }
 watch(
   () => props.baseRevision,
@@ -241,6 +289,7 @@ onMounted(() => {
       ready.value &&
       !busy.value &&
       !pendingSync.value &&
+      !conflict.value &&
       !error.value
     )
       void save(true);
@@ -251,7 +300,7 @@ onBeforeUnmount(() => {
   window.removeEventListener("beforeunload", leaving);
   void stop();
 });
-defineExpose({ save, active, ready, busy, pendingSync, publishEdit, leave: stopAndSave });
+defineExpose({ save, active, ready, busy, pendingSync, conflict, publishEdit, leave: stopAndSave });
 </script>
 
 <template>
@@ -269,15 +318,31 @@ defineExpose({ save, active, ready, busy, pendingSync, publishEdit, leave: stopA
           :label="paused ? t('player.resume') : t('player.pause')"
           size="small"
           severity="secondary"
-          :disabled="!ready || busy || pendingSync"
+          :disabled="!ready || busy || pendingSync || conflict"
           @click="togglePause"
         />
         <Button
           :label="t('player.save')"
           size="small"
-          :disabled="!ready || pendingSync"
+          :disabled="!ready || pendingSync || conflict"
           :loading="busy"
           @click="save()"
+        />
+        <Button
+          v-if="conflict"
+          :label="t('player.recover')"
+          :title="t('player.recoverHelp')"
+          size="small"
+          :disabled="busy || pendingSync || editorDirty"
+          @click="recover"
+        />
+        <Button
+          v-if="conflict || pendingSync"
+          :label="t('player.discard')"
+          size="small"
+          severity="secondary"
+          :disabled="busy"
+          @click="discardLocal"
         />
         <Button
           v-if="pendingSync"
@@ -310,7 +375,7 @@ defineExpose({ save, active, ready, busy, pendingSync, publishEdit, leave: stopA
           :title="t('player.stopHelp')"
           size="small"
           severity="secondary"
-          :disabled="(busy && ready) || pendingSync"
+          :disabled="(busy && ready) || pendingSync || conflict"
           @click="stopAndSave"
         />
       </template>
