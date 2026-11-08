@@ -10,6 +10,9 @@ Updated: 2026-11-08 (Asia/Shanghai).
   forged flags, cross-origin requests and revocation. Upload/UI work follows.
   Catalog refresh now verifies and atomically swaps complete snapshots without a
   server restart; 38 catalog/import/save-route checks and type checks pass.
+  Streamed DOS repackaging now validates archive paths, sizes, encryption, file
+  types and CRCs, generates startup configuration, and excludes declared saves.
+  Its 25 fixture checks and types pass; dependency policy covers 280 locked packages.
 
 - Capacity review: blob writes now leave a configurable 1 GiB free-space margin,
   count this process's pending writes, and return a distinct recoverable 507 error.

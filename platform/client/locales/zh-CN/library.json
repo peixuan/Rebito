@@ -1,4 +1,14 @@
 {
+  "library.unreadableZip": "无法读取 ZIP 游戏包。",
+  "library.tooManyFiles": "游戏包文件过多。",
+  "library.specialFiles": "游戏包不能包含加密文件、链接或特殊文件。",
+  "library.reservedPath": "游戏包包含保留路径。",
+  "library.duplicatePaths": "游戏包存在重名或大小写冲突。",
+  "library.pathCollision": "游戏包路径同时被用作文件和目录。",
+  "library.invalidZip": "ZIP 游戏包存在无效路径、损坏数据或不支持的格式。",
+  "library.archiveSizeMismatch": "压缩包文件大小校验失败。",
+  "library.archiveIntegrity": "压缩包文件校验失败。",
+  "library.executableMissing": "启动程序不存在，或被选为了存档文件。",
   "library.back": "返回游戏库",
   "library.platform": "游戏平台",
   "library.gameFile": "游戏文件",
@@ -14,5 +24,6 @@
   "library.profileExample": "例如：第一周目",
   "library.createProfile": "新建进度",
   "library.profileCount": "{count} 份个人进度",
-  "library.profileTitle": "{title} · 个人进度"
+  "library.profileTitle": "{title} · 个人进度",
+  "library.expandedSizeLegacy": "游戏包展开后超过 256 MiB。"
 }
