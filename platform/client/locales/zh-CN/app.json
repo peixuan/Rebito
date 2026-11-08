@@ -5,7 +5,5 @@
   "app.workspace": "个人空间",
   "app.language": "语言",
   "app.english": "English",
-  "app.chinese": "简体中文",
-  "app.welcome": "欢迎回来，{name}",
-  "app.signedInHelp": "已登录，游戏进度会保存到此账号。"
+  "app.chinese": "简体中文"
 }

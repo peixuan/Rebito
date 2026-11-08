@@ -26,7 +26,7 @@ test("autosaves changed DOS files and saves again before returning to the librar
   expect(await (await page.request.get(latest ?? "")).text()).toBe("THIRD\r\n");
 });
 
-test("keeps a failed exit alive, warns on browser navigation and synchronizes before logout", async ({
+test("keeps a disk-full exit alive, warns on navigation and synchronizes before logout", async ({
   page,
 }) => {
   await openDosWorkspace(page, "Failed exit validation");
@@ -34,16 +34,16 @@ test("keeps a failed exit alive, warns on browser navigation and synchronizes be
   await page.route("**/api/profiles/*/revisions", (route) =>
     route.request().method() === "POST"
       ? route.fulfill({
-          status: 503,
+          status: 507,
           contentType: "application/json",
-          body: '{"error":"unavailable"}',
+          body: '{"error":"disk_space_low"}',
         })
       : route.continue(),
   );
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(
     page.getByRole("region", { name: "Game window", exact: true }).getByRole("alert"),
-  ).toBeVisible();
+  ).toContainText("insufficient disk space");
   await expect(page.getByRole("button", { name: "Resume game", exact: true })).toBeEnabled();
   const dialog = page.waitForEvent("dialog");
   const reload = page.reload({ timeout: 2_000 }).catch(() => {});

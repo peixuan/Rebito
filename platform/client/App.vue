@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import Message from "primevue/message";
-import { onMounted, ref } from "vue";
+import { defineAsyncComponent, onMounted, ref } from "vue";
 import type { Game } from "../src/library/catalog.ts";
 import type { DisplayText } from "../src/shared/messages.ts";
 import type { Profile } from "../src/storage/revisions.ts";
@@ -9,14 +9,16 @@ import AccountPanel from "./AccountPanel.vue";
 import { api, errorText, type Session } from "./api.ts";
 import { t, translate } from "./i18n.ts";
 import LanguagePicker from "./LanguagePicker.vue";
-import LibraryPanel from "./LibraryPanel.vue";
-import SavePanel from "./SavePanel.vue";
+import StorageUsage from "./StorageUsage.vue";
 
+const LibraryPanel = defineAsyncComponent(() => import("./LibraryPanel.vue"));
+const SavePanel = defineAsyncComponent(() => import("./SavePanel.vue"));
 const session = ref<Session | null>(null);
 const error = ref<DisplayText>("");
 const workspace = ref<{ game: Game; profile: Profile } | null>(null);
 const savePanel = ref<InstanceType<typeof SavePanel> | null>(null);
 const leaving = ref(false);
+const storageVersion = ref(0);
 async function refresh() {
   try {
     session.value = await api<Session>("session");
@@ -75,14 +77,14 @@ onMounted(refresh);
       @authenticated="refresh"
     />
     <section v-else-if="session?.user" :aria-label="t('app.workspace')">
-      <h1>{{ t("app.welcome", { name: session.user.name }) }}</h1>
-      <p class="muted">{{ t("app.signedInHelp") }}</p>
+      <StorageUsage :key="session.user.id" :refresh-key="storageVersion" />
       <SavePanel
         ref="savePanel"
         v-if="workspace"
         :key="workspace.profile.id"
         :game="workspace.game"
         :profile="workspace.profile"
+        @changed="storageVersion++"
         @back="workspace = null"
         @recovered="
           (profile) => {
@@ -90,7 +92,11 @@ onMounted(refresh);
           }
         "
       />
-      <LibraryPanel v-else @open="(game, profile) => (workspace = { game, profile })" />
+      <LibraryPanel
+        v-else
+        @changed="storageVersion++"
+        @open="(game, profile) => (workspace = { game, profile })"
+      />
     </section>
   </main>
 </template>

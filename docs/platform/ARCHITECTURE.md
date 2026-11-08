@@ -95,6 +95,22 @@ embedded credentials, root execution and public database exposure. Production
 requires TLS at the reverse proxy. Browser runtime assets are pinned and served
 with the headers required by the chosen core, rather than fetched from `latest`.
 
+## Product presentation
+
+`Rebito · 晚回舟` is the project display name; the root README explains its origins.
+Compose uses the `rebito` project namespace, including generated container, network
+and volume names. Earlier deployments require an explicit backup/restore migration;
+changing the name alone creates separate empty volumes. Authentication cookie and
+identity bindings retain their existing values so the name does not change accounts.
+
+Keep the interface compact and neutral slate/blue: the game screen and editor
+values should carry visual emphasis. Avoid green primary styling, decorative
+cover downloads, repeated welcome sections and advanced-settings foldouts.
+Show personal usage directly because both revision count and retained logical
+bytes can stop publication even when physical blobs are deduplicated. Refresh it
+after progress mutations and expose failed refreshes instead of presenting stale
+values as current. Do not add a background polling service just for this display.
+
 ## Validation sequence
 
 1. Build formatting, lint, types, unit tests and reproducible installs into CI.

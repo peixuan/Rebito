@@ -38,7 +38,7 @@ test("uses a real OIDC code exchange and keeps provider users' progress isolated
   browser,
 }) => {
   await authorize(page, "alice");
-  await expect(page.getByRole("heading", { name: "Welcome back, OIDC alice" })).toBeVisible();
+  await expect(page.locator(".account-actions")).toContainText("OIDC alice");
   const cookie = (await page.context().cookies()).find(
     (entry) => entry.name === "retro.session_token",
   );
@@ -51,12 +51,12 @@ test("uses a real OIDC code exchange and keeps provider users' progress isolated
   expect(profileResponse.status()).toBe(201);
   const profile = await profileResponse.json();
   await page.reload();
-  await expect(page.getByRole("heading", { name: "Welcome back, OIDC alice" })).toBeVisible();
+  await expect(page.locator(".account-actions")).toContainText("OIDC alice");
   const second = await browser.newContext({ baseURL: origin });
   try {
     const other = await second.newPage();
     await authorize(other, "bob");
-    await expect(other.getByRole("heading", { name: "Welcome back, OIDC bob" })).toBeVisible();
+    await expect(other.locator(".account-actions")).toContainText("OIDC bob");
     expect(await (await other.request.get("/api/profiles")).json()).toEqual([]);
     expect((await other.request.get(`/api/profiles/${profile.id}/revisions`)).status()).toBe(404);
   } finally {

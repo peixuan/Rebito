@@ -12,9 +12,9 @@ test("registers, retains a session, reports a bad password and logs out", async 
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill("browser-test-password-123");
   await page.getByRole("button", { name: "Create account", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Welcome back, Browser tester" })).toBeVisible();
+  await expect(page.locator(".account-actions")).toContainText("Browser tester");
   await page.reload();
-  await expect(page.getByRole("heading", { name: "Welcome back, Browser tester" })).toBeVisible();
+  await expect(page.locator(".account-actions")).toContainText("Browser tester");
   await page.getByRole("button", { name: "Sign out" }).click();
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill("incorrect-password-123");
@@ -22,7 +22,7 @@ test("registers, retains a session, reports a bad password and logs out", async 
   await expect(page.getByRole("alert")).toContainText("Your email or password is incorrect");
   await page.getByLabel("Password").fill("browser-test-password-123");
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Welcome back, Browser tester" })).toBeVisible();
+  await expect(page.locator(".account-actions")).toContainText("Browser tester");
 });
 
 test("keeps the login controls usable at a narrow viewport", async ({ page }, info) => {

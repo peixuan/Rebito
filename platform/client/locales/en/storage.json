@@ -1,0 +1,8 @@
+{
+  "storage.bytes": "Save storage",
+  "storage.title": "Account usage",
+  "storage.refresh": "Refresh usage",
+  "storage.failed": "Usage could not be updated. Displayed values may be outdated. Please retry.",
+  "storage.warning": "Usage has reached 80% of your quota. New revisions cannot be saved at the limit. Contact an administrator.",
+  "storage.help": "Usage includes retained revisions. Identical files occupy disk space only once."
+}

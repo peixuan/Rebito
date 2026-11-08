@@ -10,7 +10,7 @@ import type { Profile } from "../src/storage/revisions.ts";
 import { api, errorText } from "./api.ts";
 import { t, translate } from "./i18n.ts";
 
-const emit = defineEmits<{ open: [game: Game, profile: Profile] }>();
+const emit = defineEmits<{ open: [game: Game, profile: Profile]; changed: [] }>();
 const games = ref<Game[]>([]);
 const profiles = ref<Profile[]>([]);
 const selected = ref<Game | null>(null);
@@ -61,6 +61,7 @@ async function createProfile() {
     });
     profiles.value.push(profile);
     profileName.value = "";
+    emit("changed");
   } catch (cause) {
     error.value = errorText(cause);
   } finally {

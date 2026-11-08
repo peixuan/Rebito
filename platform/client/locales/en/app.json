@@ -5,7 +5,5 @@
   "app.workspace": "Your workspace",
   "app.language": "Language",
   "app.english": "English",
-  "app.chinese": "简体中文",
-  "app.welcome": "Welcome back, {name}",
-  "app.signedInHelp": "You are signed in. Game progress will be saved to this account."
+  "app.chinese": "简体中文"
 }

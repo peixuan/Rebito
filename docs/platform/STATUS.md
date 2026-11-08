@@ -11,7 +11,18 @@ Updated: 2026-11-08 (Asia/Shanghai).
   disk probes cover concurrent reservations and late ENOSPC/EDQUOT failures.
   Compose bounds app/database logs to three 10 MB files per container. This is
   not a global filesystem quota or automatic history pruning; see operations.
-  Deployment of this configuration and the accompanying UI is pending below.
+  The rebuilt app/database containers are healthy and both report the bounded local
+  log driver. A real Linux filesystem probe verifies refused writes, intact old
+  bytes and temporary-file cleanup. Three recorded save artifacts match their
+  pre-recreation digests through the authenticated download API.
+- The compact slate/blue shell now shows per-account bytes, revisions and profiles,
+  updates after save/profile changes, warns at 80%, and labels stale usage after a
+  failed refresh. It removes the repeated welcome section and retains the temporary
+  name at the user's request; see the presentation rationale in architecture.
+  No dependencies or services were added. Lint/types/build and all 24 sandboxed
+  Chrome checks pass, including real usage updates/account isolation, narrow layout,
+  simulated capacity-warning display and a disk-full response during real DOS play.
+  The DOS failure retains the runtime and successfully retries before logout.
 
 - Multi-file follow-up: the runtime now validates a complete replacement group
   before writing, rolls back every attempted member on failure, and keeps trying
@@ -54,7 +65,7 @@ Updated: 2026-11-08 (Asia/Shanghai).
 - Primary controls now use neutral slate tones with blue links instead of green.
   Lint, types and the container build pass; the deployed theme was inspected in
   Chrome. The real Koukai2 canvas was verified at 640 × 480 source/display pixels.
-- All 23 browser checks pass after these changes. The DOS synchronization test
+- All 24 browser checks pass after these changes. The DOS synchronization test
   observes the real filesystem read-only and waits for the complete expected file
   before clicking refresh, avoiding a race with the emulator's keyboard queue.
   After editor saves it waits for completed writeback before observation: js-dos
@@ -146,12 +157,12 @@ remote CI has not run because this work has not been pushed.
 
 `cd platform && npm run check` with the test database: format/lint, TypeScript,
 HTTP/domain/filesystem and real PostgreSQL identity/revision/service tests passed.
-The complete run passed 197 tests with 98.40% Windows line coverage, 95.69% branch
-coverage and 99.55% function coverage. Linux-only directory fsync is exercised by
+The complete run passed 210 tests with 98.44% Windows line coverage, 95.82% branch
+coverage and 99.56% function coverage. Linux-only directory fsync is exercised by
 deployment, not by Windows unit coverage. The process entrypoint and account-provisioning CLI
 are excluded from unit coverage and exercised by the container smoke test.
 
-The complete 23-test browser suite passes, including all four console cores, DOS,
+The complete 24-test browser suite passes, including all four console cores, DOS,
 OIDC and three editor tests: exact multi-slot output bytes, numeric sorting and
 selection retention, clamping/invalid-input handling, narrow layouts, and retaining
 drafts when another upload advances the revision head. Edited cells update without

@@ -13,7 +13,7 @@ import PlayerPanel from "./PlayerPanel.vue";
 const EditorPanel = defineAsyncComponent(() => import("./EditorPanel.vue"));
 
 const props = defineProps<{ game: Game; profile: Profile }>();
-const emit = defineEmits<{ back: []; recovered: [profile: Profile] }>();
+const emit = defineEmits<{ back: []; recovered: [profile: Profile]; changed: [] }>();
 const revisions = ref<Revision[]>([]);
 const head = ref(props.profile.headId);
 const files = ref<File[]>([]);
@@ -27,6 +27,7 @@ async function refresh() {
   revisions.value = await api<Revision[]>(`profiles/${props.profile.id}/revisions`);
   const profiles = await api<Profile[]>("profiles");
   head.value = profiles.find((profile) => profile.id === props.profile.id)?.headId ?? null;
+  emit("changed");
 }
 async function perform(action: () => Promise<void>) {
   busy.value = true;
@@ -141,7 +142,7 @@ onMounted(() => perform(refresh));
     />
     <section class="profile-panel">
       <h3>{{ t("saves.import") }}</h3>
-      <p class="muted">{{ t("saves.importSingleHelp") }}</p>
+      <p class="muted">{{ t("saves.importHelp") }}</p>
       <p v-if="game.system !== 'dos'" class="muted">{{ t("saves.consoleImportHelp") }}</p>
       <form class="toolbar" @submit.prevent="upload">
         <input
@@ -163,6 +164,7 @@ onMounted(() => perform(refresh));
     </section>
     <section class="profile-panel" :aria-label="t('saves.history')">
       <h3>{{ t("saves.history") }}</h3>
+      <p v-if="revisions.length === 100" class="muted">{{ t("saves.historyLimit") }}</p>
       <p v-if="!revisions.length" class="muted">{{ t("saves.empty") }}</p>
       <article v-for="revision in revisions" :key="revision.id" class="revision-row">
         <div>
