@@ -13,6 +13,9 @@ Updated: 2026-11-08 (Asia/Shanghai).
   Streamed DOS repackaging now validates archive paths, sizes, encryption, file
   types and CRCs, generates startup configuration, and excludes declared saves.
   Its 25 fixture checks and types pass; dependency policy covers 280 locked packages.
+  Shared game assets now have a separate default 10 GiB catalog quota, enforced
+  under the publication lock by CLI and web import callers. The 36 importer/config
+  checks and type checks pass; save quotas remain independent.
 
 - Capacity review: blob writes now leave a configurable 1 GiB free-space margin,
   count this process's pending writes, and return a distinct recoverable 507 error.

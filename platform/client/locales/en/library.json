@@ -9,6 +9,7 @@
   "library.archiveSizeMismatch": "Archive file size verification failed.",
   "library.archiveIntegrity": "Archive file verification failed.",
   "library.executableMissing": "The launch executable is missing or has been selected as a save file.",
+  "library.quota": "The game library quota is full. Ask the deployment administrator to adjust its capacity.",
   "library.back": "Back to library",
   "library.platform": "Platform",
   "library.gameFile": "Game file",
@@ -25,5 +26,6 @@
   "library.createProfile": "Create profile",
   "library.profileCount": "{count} personal profile | {count} personal profiles",
   "library.profileTitle": "{title} · Personal profiles",
-  "library.expandedSizeLegacy": "The expanded game archive exceeds 256 MiB."
+  "library.expandedSizeLegacy": "The expanded game archive exceeds 256 MiB.",
+  "library.duplicateRelease": "This game release already exists. Refresh the library to view it."
 }

@@ -9,6 +9,7 @@
   "library.archiveSizeMismatch": "压缩包文件大小校验失败。",
   "library.archiveIntegrity": "压缩包文件校验失败。",
   "library.executableMissing": "启动程序不存在，或被选为了存档文件。",
+  "library.quota": "游戏库配额已满，请联系部署管理员调整容量。",
   "library.back": "返回游戏库",
   "library.platform": "游戏平台",
   "library.gameFile": "游戏文件",
@@ -25,5 +26,6 @@
   "library.createProfile": "新建进度",
   "library.profileCount": "{count} 份个人进度",
   "library.profileTitle": "{title} · 个人进度",
-  "library.expandedSizeLegacy": "游戏包展开后超过 256 MiB。"
+  "library.expandedSizeLegacy": "游戏包展开后超过 256 MiB。",
+  "library.duplicateRelease": "相同游戏版本已存在，请刷新游戏库查看。"
 }

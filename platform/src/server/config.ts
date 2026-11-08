@@ -1,5 +1,6 @@
 import { resolve } from "node:path";
 import { z } from "zod";
+import { defaultLibraryBytes } from "../library/upload-settings.ts";
 import { type StorageLimits, storageLimitSchema } from "../storage/limits.ts";
 
 export interface ServerConfig {
@@ -13,6 +14,7 @@ export interface ServerConfig {
   readonly storageLimits: StorageLimits;
   readonly minimumFreeBytes: number;
   readonly adminUserIds: readonly string[];
+  readonly maximumLibraryBytes: number;
   readonly oidc?: {
     readonly discoveryUrl: string;
     readonly clientId: string;
@@ -79,6 +81,12 @@ export function loadConfig(environment: Environment): ServerConfig {
     port,
     allowRegistration: registration === "true",
     minimumFreeBytes,
+    maximumLibraryBytes: z
+      .number()
+      .int()
+      .min(1)
+      .max(1024 ** 4)
+      .parse(Number(environment.MAX_LIBRARY_BYTES ?? defaultLibraryBytes)),
     adminUserIds: z
       .array(z.string().regex(/^[a-zA-Z0-9_-]{1,128}$/))
       .max(100)

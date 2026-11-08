@@ -13,6 +13,7 @@ describe("server configuration", () => {
     const config = loadConfig(environment);
     expect(config.allowRegistration).toBe(false);
     expect(config.adminUserIds).toEqual([]);
+    expect(config.maximumLibraryBytes).toBe(10 * 1024 ** 3);
     expect(config.host).toBe("127.0.0.1");
     expect(config.port).toBe(3000);
     expect(config.minimumFreeBytes).toBe(1024 ** 3);
@@ -38,6 +39,7 @@ describe("server configuration", () => {
       DATA_DIR: "private-data",
       ALLOW_REGISTRATION: "true",
       ADMIN_USER_IDS: " first-user, second_user ",
+      MAX_LIBRARY_BYTES: "2048",
       MAX_PROFILES_PER_USER: "20",
       MAX_REVISIONS_PER_USER: "100",
       MAX_SAVE_BYTES_PER_USER: "1073741824",
@@ -53,6 +55,7 @@ describe("server configuration", () => {
     expect(config.dataDirectory).toContain("private-data");
     expect(config.allowRegistration).toBe(true);
     expect(config.adminUserIds).toEqual(["first-user", "second_user"]);
+    expect(config.maximumLibraryBytes).toBe(2048);
     expect(config.storageLimits).toEqual({ profiles: 20, revisions: 100, bytes: 1073741824 });
     expect(config.oidc?.clientId).toBe("retro");
   });
@@ -73,6 +76,8 @@ describe("server configuration", () => {
     { ALLOW_REGISTRATION: "yes" },
     { ADMIN_USER_IDS: "email@example.test" },
     { ADMIN_USER_IDS: "user id" },
+    { MAX_LIBRARY_BYTES: "0" },
+    { MAX_LIBRARY_BYTES: "Infinity" },
     { MAX_PROFILES_PER_USER: "0" },
     { MAX_REVISIONS_PER_USER: "1.5" },
     { MAX_SAVE_BYTES_PER_USER: "Infinity" },

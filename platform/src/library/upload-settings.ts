@@ -7,6 +7,7 @@ export const gameUploadLimits = {
   expanded: 256 * 1024 ** 2,
   files: 5000,
 } as const;
+export const defaultLibraryBytes = 10 * 1024 ** 3;
 const shape = catalogSchema.shape.games.element.shape;
 export const gameUploadSchema = z
   .strictObject({

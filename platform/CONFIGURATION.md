@@ -44,6 +44,11 @@ An operator sets this once in deployment configuration; normal signups and OIDC
 logins never grant administrator privileges. Restart the app after changing it.
 Every management request checks the list server-side, before reading uploads.
 
+`MAX_LIBRARY_BYTES` limits retained shared game assets (default 10 GiB, maximum
+1 TiB). Publication checks the combined catalog size under the import lock, across
+all administrators. This is separate from personal save quotas. The operator import
+CLI respects the same setting. Web uploads additionally reserve disk headroom.
+
 ## OIDC and directory integration
 
 Create a confidential OIDC client with authorization-code flow and PKCE S256.

@@ -38,9 +38,7 @@ describe("operator game import", () => {
   it("rejects duplicate releases and concurrent imports without replacing the catalog", async () => {
     await importGame(library, source, metadata);
     const catalog = await readFile(join(library, "catalog.json"));
-    await expect(importGame(library, source, metadata)).rejects.toThrow(
-      "Game release already exists",
-    );
+    await expect(importGame(library, source, metadata)).rejects.toThrow("library.duplicateRelease");
     await writeFile(join(library, ".import.lock"), "");
     await expect(importGame(library, source, metadata)).rejects.toMatchObject({ code: "EEXIST" });
     expect(await readFile(join(library, "catalog.json"))).toEqual(catalog);
@@ -58,6 +56,21 @@ describe("operator game import", () => {
     ).rejects.toThrow();
     await expect(readFile(join(library, "catalog.json"))).rejects.toMatchObject({ code: "ENOENT" });
     await expect(readFile(join(library, ".import.lock"))).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  it("enforces the shared library quota under the publication lock and leaves no temporary files", async () => {
+    const size = (await readFile(source)).length;
+    await importGame(library, source, metadata, size);
+    const before = await readFile(join(library, "catalog.json"));
+    await writeFile(source, "new game");
+    await expect(importGame(library, source, metadata, size)).rejects.toMatchObject({
+      statusCode: 507,
+    });
+    expect(await readFile(join(library, "catalog.json"))).toEqual(before);
+    expect(
+      (await readdir(library)).some((name) => name.endsWith(".tmp") || name.endsWith(".lock")),
+    ).toBe(false);
+    await expect(importGame(library, source, metadata, -1)).rejects.toThrow("quota");
   });
 
   it("reuses a valid unpublished asset and refuses a corrupt existing asset", async () => {
