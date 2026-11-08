@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { dosEditorSave } from "../library/dos-editor-fixture.ts";
 import { useSession } from "./session.ts";
 
-test("refresh captures live DOS writes, updates the editor and preserves dirty drafts", async ({
+test("synchronizes live DOS saves and editor updates without restarting the runtime", async ({
   page,
 }) => {
   test.setTimeout(60_000);
@@ -34,9 +34,14 @@ test("refresh captures live DOS writes, updates the editor and preserves dirty d
   await useSession(page.context(), "player");
   await page.goto("/");
   await page.getByRole("button", { name: /DOS live edit test/ }).click();
-  await page.getByLabel("Profile name").fill("In-game save synchronization");
+  const profileName = `In-game save synchronization ${test.info().repeatEachIndex}`;
+  await page.getByLabel("Profile name").fill(profileName);
   await page.getByRole("button", { name: "Create profile", exact: true }).click();
-  await page.getByRole("button", { name: "Open profile", exact: true }).click();
+  await page
+    .getByText(profileName, { exact: true })
+    .locator("..")
+    .getByRole("button", { name: "Open profile", exact: true })
+    .click();
   await page.getByLabel("Save files").setInputFiles({
     name: "KOUKAI2.DAT",
     mimeType: "application/octet-stream",
@@ -50,27 +55,30 @@ test("refresh captures live DOS writes, updates the editor and preserves dirty d
   const refresh = page.getByRole("button", { name: "Synchronize and refresh", exact: true });
   await expect(refresh).toBeEnabled({ timeout: 30_000 });
   const game = page.getByRole("region", { name: "Game window", exact: true });
-  async function saveInsideDos(source: string, amount: number) {
-    await page.frameLocator("iframe").locator("canvas").click();
-    await page.keyboard.type(`copy /y ${source}.DAT KOUKAI2.DAT`, { delay: 25 });
-    await page.keyboard.press("Enter", { delay: 150 });
-    const runtime = page.frames().find((frame) => frame.url().endsWith("/runtime.html"));
-    if (!runtime) throw new Error("Missing DOS frame");
+  const runtime = page.frames().find((frame) => frame.url().endsWith("/runtime.html"));
+  if (!runtime) throw new Error("Missing DOS frame");
+  async function expectFile(amount: number, name = "KOUKAI2.DAT") {
     await expect
       .poll(() =>
-        runtime.evaluate(async () => {
+        runtime?.evaluate(async (file) => {
           const host = window as Window & {
             testDosFiles?: { fsReadFile(name: string): Promise<Uint8Array<ArrayBuffer>> };
           };
-          const bytes = await host.testDosFiles?.fsReadFile("KOUKAI2.DAT");
+          const bytes = await host.testDosFiles?.fsReadFile(file);
           if (!bytes) return null;
           const digest = await crypto.subtle.digest("SHA-256", bytes);
           return [...new Uint8Array(digest)]
             .map((value) => value.toString(16).padStart(2, "0"))
             .join("");
-        }),
+        }, name),
       )
       .toBe(createHash("sha256").update(dosEditorSave(amount)).digest("hex"));
+  }
+  async function saveInsideDos(source: string, amount: number) {
+    await page.frameLocator("iframe").locator("canvas").click();
+    await page.keyboard.type(`copy /y ${source}.DAT KOUKAI2.DAT`, { delay: 25 });
+    await page.keyboard.press("Enter", { delay: 150 });
+    await expectFile(amount);
   }
   async function downloaded() {
     const url = await page
@@ -91,12 +99,73 @@ test("refresh captures live DOS writes, updates the editor and preserves dirty d
   await money.press("Tab");
   await saveInsideDos("FIRST", 123);
   await refresh.click();
-  await expect(editor.getByRole("alert")).toContainText("A newer save exists");
+  await expect(editor.getByRole("alert").filter({ hasText: "A newer save exists" })).toBeVisible();
   await expect(money).toHaveValue("999");
   await expect(editor.getByRole("button", { name: "Save edits", exact: true })).toBeDisabled();
   expect(await downloaded()).toEqual(Buffer.from(dosEditorSave(123)));
   await editor.getByRole("button", { name: "Discard draft and reload", exact: true }).click();
   await expect(money).toHaveValue("123");
+
+  // Publish edits through the backend, then replace only the native file in place.
+  await money.fill("777");
+  await money.press("Tab");
+  await editor.getByRole("button", { name: "Save edits", exact: true }).click();
+  await expect(game.getByRole("status")).toContainText("Edits were written to the game save");
+  expect(runtime.isDetached()).toBe(false);
+  await expect(game.getByRole("button", { name: "Pause game", exact: true })).toBeEnabled();
+  await expectFile(777);
+  await expectFile(123, "FIRST.DAT");
+  await expectFile(456, "NEXT.DAT");
+  expect(await downloaded()).toEqual(Buffer.from(dosEditorSave(777)));
+
+  await game.getByRole("button", { name: "Pause game", exact: true }).click();
+  await money.fill("888");
+  await money.press("Tab");
+  await editor.getByRole("button", { name: "Save edits", exact: true }).click();
+  // The pinned command interface rejects concurrent reads of the same file.
+  // Observe after writeback completes, without racing the application's readback.
+  await expect(editor.getByRole("status")).toContainText("Edits were saved as a new revision");
+  await expectFile(888);
+  await expect(game.getByRole("button", { name: "Resume game", exact: true })).toBeEnabled();
+
+  // A failed download retains the paused runtime; retry never publishes twice.
+  let publications = 0;
+  page.on("request", (request) => {
+    if (request.method() === "POST" && request.url().endsWith("/editor")) publications++;
+  });
+  const fileUrl = "**/api/revisions/*/file?name=KOUKAI2.DAT";
+  await page.route(fileUrl, (route) => route.fulfill({ status: 503, body: "Unavailable" }));
+  await money.fill("999");
+  await money.press("Tab");
+  await editor.getByRole("button", { name: "Save edits", exact: true }).click();
+  await expect(
+    game.getByRole("button", { name: "Retry edit synchronization", exact: true }),
+  ).toBeEnabled();
+  await expect(game.getByRole("button", { name: "Save to account", exact: true })).toBeDisabled();
+  await expectFile(888);
+  expect(runtime.isDetached()).toBe(false);
+  await page.unroute(fileUrl);
+  await game.getByRole("button", { name: "Retry edit synchronization", exact: true }).click();
+  await expect(
+    game.getByRole("button", { name: "Retry edit synchronization", exact: true }),
+  ).toHaveCount(0);
+  await expectFile(999);
+  await expect(game.getByRole("button", { name: "Resume game", exact: true })).toBeEnabled();
+  expect(publications).toBe(1);
+
+  // Reject an edit before publication when the game has an unsynchronized save.
+  await game.getByRole("button", { name: "Resume game", exact: true }).click();
+  await saveInsideDos("NEXT", 456);
+  await money.fill("333");
+  await money.press("Tab");
+  await editor.getByRole("button", { name: "Save edits", exact: true }).click();
+  await expect(editor.getByRole("alert")).toContainText("The in-game save has changed");
+  expect(publications).toBe(1);
+  await expectFile(456);
+  await refresh.click();
+  await expect(editor.getByRole("alert").filter({ hasText: "A newer save exists" })).toBeVisible();
+  await editor.getByRole("button", { name: "Discard draft and reload", exact: true }).click();
+  await expect(money).toHaveValue("456");
 
   const versions = page.getByRole("link", { name: "KOUKAI2.DAT", exact: true });
   const count = await versions.count();
@@ -121,5 +190,5 @@ test("refresh captures live DOS writes, updates the editor and preserves dirty d
   await expect(versions).toHaveCount(count + 1);
   await expect(game.getByRole("alert")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Start game", exact: true })).toBeVisible();
-  expect(await downloaded()).toEqual(Buffer.from(dosEditorSave(123)));
+  expect(await downloaded()).toEqual(Buffer.from(dosEditorSave(456)));
 });

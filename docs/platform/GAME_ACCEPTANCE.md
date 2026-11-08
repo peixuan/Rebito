@@ -16,7 +16,8 @@ it complements the automated original-program fixtures and editor golden tests.
    account button. The game created a valid 328,991-byte `KOUKAI2.DAT` without
    requiring a pre-existing personal save or a shared blank-save template.
 4. Changed money from 0 to 12,345,678 and protagonist leadership from 78 to 200
-   in the web editor. Publishing stopped the old running instance automatically.
+   in the web editor. At that time publishing stopped the old instance; the live
+   writeback follow-up below supersedes this behavior for DOS editor saves.
 5. Restarted and loaded slot 1 in the actual game. Its display showed 1,234 gold
    bars plus 5,678 coins, and the character information screen showed leadership
    200. Saved again inside the game and uploaded another cloud revision.
@@ -70,3 +71,18 @@ the active deployment correctly failed with `Storage is in use`.
 
 These checks follow [storage operations](../../platform/OPERATIONS.md). Private
 backups, credentials and screenshots remain under `.analysis/`, outside commits.
+
+## Live native-file writeback (2026-11-08)
+
+Rebuilt the WSL container and verified healthy startup. Chrome ran with its sandbox
+enabled. In the real Koukai2 runtime, consecutive editor publications changed slot 1
+money from 87,654,321 to 87,654,322 and back. The same iframe/runtime remained alive;
+all 328,991 native bytes matched the independently constructed expected file after
+each edit. Stopping synchronized the final file, whose cloud bytes exactly matched
+the pre-check baseline. The original game directory was not modified.
+
+The synthetic DOS test additionally executes a DOS command that reads a replaced
+file, and exercises unrelated-file preservation, an already-paused runtime, failed
+download/retry without duplicate publication, and rejecting unsynchronized game
+saves before publication. These checks verify live file replacement, not automatic
+mutation of game RAM: users must load the save inside the game.

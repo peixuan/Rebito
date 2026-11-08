@@ -10,13 +10,16 @@ import Dialog from "primevue/dialog";
 import Message from "primevue/message";
 import Select from "primevue/select";
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
-import type { EditorQuery, EditorResponse } from "../src/editors/service.ts";
+import type { EditorBatch, EditorQuery, EditorResponse } from "../src/editors/service.ts";
 import type { Revision } from "../src/storage/revisions.ts";
 import { api, errorText } from "./api.ts";
 import FieldGrid from "./controls/FieldGrid.vue";
 import RecordTable from "./controls/RecordTable.vue";
 
-const props = defineProps<{ revisionId: string }>();
+const props = defineProps<{
+  revisionId: string;
+  publish?: (revisionId: string, batch: EditorBatch) => Promise<Revision>;
+}>();
 const emit = defineEmits<{ saved: []; dirty: [value: boolean] }>();
 const view = ref<EditorResponse | null>(null);
 const base = ref(props.revisionId);
@@ -141,13 +144,15 @@ async function save() {
     notice.value = message("editor.noChanges");
     return;
   }
-  const revision = await api<Revision>(`revisions/${base.value}/editor`, { file, edits });
+  const revision = props.publish
+    ? await props.publish(base.value, { file, edits })
+    : await api<Revision>(`revisions/${base.value}/editor`, { file, edits });
   base.value = revision.id;
   drafts.delete(file);
   previews.delete(file);
   await refresh();
   emit("saved");
-  notice.value = message("editor.savedRestart");
+  notice.value = message("editor.saved");
 }
 async function discard() {
   drafts.clear();

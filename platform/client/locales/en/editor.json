@@ -7,6 +7,7 @@
   "editor.selectRecord": "Select a valid record.",
   "editor.noChanges": "There are no changes to save.",
   "editor.title": "Save editor",
+  "editor.saved": "Edits were saved as a new revision. Check the game window for synchronization results.",
   "editor.slot": "Save slot to edit",
   "editor.file": "File to edit",
   "editor.discard": "Discard draft and reload",
@@ -22,6 +23,5 @@
   "editor.emptyPreview": "No edits.",
   "editor.unknownValue": "Unknown #{value}",
   "editor.columnLabel": "{group} · {field}",
-  "editor.savedRestart": "Edits were saved as a new revision. Restart the game to load them.",
   "editor.pendingSlotChanges": "{count} unsaved edit across all slots | {count} unsaved edits across all slots"
 }

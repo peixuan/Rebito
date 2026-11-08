@@ -31,9 +31,23 @@ Local development and container validation do not imply that release packaging
 has already passed this review.
 
 Runtime adapters must isolate browser persistence by profile and load the chosen
-server revision before play. A server-side edit or history restore requires a
-fresh runtime instance; continuing an old instance would restore stale memory.
+server revision before play. History restores and external imports invalidate an
+active instance. DOS editor saves use the guarded native-file capability below;
+adapters without it still require a fresh instance after an editor publication.
 Real game acceptance checks are separate from installer and manifest tests.
+
+Live DOS editing pauses the existing instance and checks the target file against
+the editor's base revision before server publication. It downloads only that
+revision's selected native file, verifies its hash, rechecks the original bytes,
+writes and reads back the replacement, then restores the previous pause state.
+Only manifest-declared native saves are writable; archives and other files remain
+untouched. Worker writes receive copies because their buffers may be transferred.
+Failed writes attempt verified rollback; failed writeback keeps the runtime paused
+with a retry that reuses the published revision. A failed rollback requires reloading
+the page from the retained cloud revision. Upload/resume is blocked while pending.
+This changes files, not game RAM: the player must load the save inside the game.
+Unit tests cover guards, corruption and rollback; real DOS tests read replacements
+from DOS and exercise publication, unchanged files, pause preservation and retry.
 
 js-dos applies plain `initFs` files before extracting archive overlays. The DOS
 adapter therefore supplies edited native files as a final ZIP overlay. A real

@@ -7,6 +7,7 @@
   "editor.selectRecord": "请选择有效记录。",
   "editor.noChanges": "没有需要保存的修改。",
   "editor.title": "存档修改器",
+  "editor.saved": "修改已保存为新版本。运行中游戏的同步结果见游戏窗口。",
   "editor.slot": "编辑存档槽",
   "editor.file": "编辑文件",
   "editor.discard": "放弃草稿并重新载入",
@@ -22,6 +23,5 @@
   "editor.emptyPreview": "没有修改。",
   "editor.unknownValue": "未知 #{value}",
   "editor.columnLabel": "{group} · {field}",
-  "editor.savedRestart": "修改已保存为新版本，重新启动游戏即可载入。",
   "editor.pendingSlotChanges": "{count} 项待保存修改（包含其他存档槽）"
 }

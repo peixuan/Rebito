@@ -66,6 +66,12 @@ revision. A stale write returns a conflict; it never silently replaces the newer
 head. Editing and gameplay synchronization use this same service. Snapshot restore
 must not silently replace a newly edited native-save revision.
 
+An optional runtime file capability supports live native-save editing. The player
+coordinates pause, base-file verification, server publication and guarded replacement
+of the one edited file. Failed writeback retains the published revision for retry and
+blocks stale uploads. Game memory and filesystem state remain distinct; users reload
+the save inside the game. See [runtime details](../../platform/RUNTIMES.md).
+
 Blob storage has a local-directory implementation initially. The service publishes
 metadata only after blobs are durable; failed publication can leave reclaimable
 unreferenced blobs, never a visible revision referencing an incomplete upload.

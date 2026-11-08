@@ -69,7 +69,9 @@ edits as one new revision. Only the owning account can read or edit it. The serv
 chooses the adapter from the catalog, restricts editable files to configured native
 paths and rejects snapshots whose memory could undo native edits. Every slot must
 transform successfully before publication. Existing filesystem overlays remain
-immutable; DOS applies changed native files last on restart. The compact browser
+immutable; DOS applies changed native files last on startup, or replaces the selected
+file in a running instance through [guarded writeback](RUNTIMES.md). The player must
+reload the save inside the game to update game memory. The compact browser
 editor now retains drafts across modules and slots, exposes all fields without
 advanced foldouts and saves the current file's slot drafts together. Numeric
 inputs normalize edited values on Enter/blur; untouched abnormal values remain.

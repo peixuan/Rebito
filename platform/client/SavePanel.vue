@@ -2,6 +2,7 @@
 import Button from "primevue/button";
 import Message from "primevue/message";
 import { defineAsyncComponent, onMounted, ref } from "vue";
+import type { EditorBatch } from "../src/editors/service.ts";
 import type { Game } from "../src/library/catalog.ts";
 import { type DisplayText, message } from "../src/shared/messages.ts";
 import type { Profile, Revision } from "../src/storage/revisions.ts";
@@ -43,6 +44,10 @@ async function refreshWorkspace() {
   // Capture first: reading server history alone cannot see a game's local writes.
   if (player.value?.active) await player.value.save();
   else await perform(refresh);
+}
+async function publishEdit(revisionId: string, batch: EditorBatch) {
+  const publish = () => api<Revision>(`revisions/${revisionId}/editor`, batch);
+  return player.value ? player.value.publishEdit(revisionId, batch.file, publish) : publish();
 }
 async function upload() {
   if (!files.value.length) return;
@@ -91,7 +96,7 @@ onMounted(() => perform(refresh));
         :title="player?.active ? t('saves.synchronizeHelp') : undefined"
         variant="text"
         :loading="busy || player?.busy"
-        :disabled="Boolean(player?.active && !player.ready)"
+        :disabled="Boolean(player?.active && (!player.ready || player.pendingSync))"
         @click="refreshWorkspace"
       />
     </div>
@@ -108,6 +113,7 @@ onMounted(() => perform(refresh));
     <EditorPanel
       v-if="game.editor && head"
       :revision-id="head"
+      :publish="publishEdit"
       @saved="perform(refresh)"
       @dirty="editorDirty = $event"
     />

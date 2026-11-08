@@ -36,6 +36,13 @@ closing; a failed synchronization retains the paused runtime for retry. Closing
 the browser or navigating away is not a replacement for synchronization. Pending
 editor drafts survive a new game revision and require an explicit reload.
 
+Saving an editor change while DOS is running now pauses briefly, replaces only
+the selected native save and resumes the same instance. **Load that save inside
+the game** to apply its values; running game memory does not change automatically.
+If the game has saved since the last synchronization, use **Synchronize and refresh** first and
+reload the editor before editing again. A failed writeback keeps the runtime paused
+and offers **Retry edit synchronization**, reusing the published revision without publishing twice.
+
 For browser development run `npm run dev:web` alongside the configured API.
 Set the API's `APP_ORIGIN=http://127.0.0.1:5173` to the browser's Vite origin;
 the API still listens on port 3000. Use that exact browser URL for CSRF checks.

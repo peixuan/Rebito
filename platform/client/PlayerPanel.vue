@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import Message from "primevue/message";
-import { onBeforeUnmount, ref, watch } from "vue";
+import { computed, onBeforeUnmount, ref, shallowRef, watch } from "vue";
 import type { Game } from "../src/library/catalog.ts";
-import { type DisplayText, MessageError, message } from "../src/shared/messages.ts";
+import { type DisplayText, displayMessage, MessageError, message } from "../src/shared/messages.ts";
 import type { Revision } from "../src/storage/revisions.ts";
 import { ApiError, api, errorText } from "./api.ts";
 import { i18n, t, translate } from "./i18n.ts";
 import { runtimeIdentity } from "./runtime/identity.ts";
+import { prepareLiveEdit } from "./runtime/live-edit.ts";
 import { assertCompatible, downloadProgress, downloadVerified } from "./runtime/progress.ts";
 import type { RuntimeHandle, RuntimeWindow } from "./runtime/types.ts";
 
@@ -29,13 +30,20 @@ const error = ref<DisplayText>("");
 const notice = ref<DisplayText>("");
 let handle: RuntimeHandle | null = null;
 let base: string | null = null;
+let runningRevision: Revision | null = null;
+let changedHead: string | null | undefined;
+const pendingEdit = shallowRef<{
+  revision: Revision;
+  apply: (revision: Revision) => Promise<void>;
+  resume: boolean;
+} | null>(null);
+const pendingSync = computed(() => pendingEdit.value !== null);
 let generation = 0;
 function runtimeErrorText(cause: unknown) {
+  // Expected runtime errors cross frame boundaries as language-neutral descriptors.
   return cause instanceof ApiError
     ? errorText(cause)
-    : cause instanceof Error
-      ? cause.message
-      : message("player.failed");
+    : (displayMessage(cause) ?? message("player.failed"));
 }
 async function perform(action: () => Promise<void>) {
   busy.value = true;
@@ -58,6 +66,7 @@ async function boot() {
   notice.value = "";
   try {
     base = props.baseRevision;
+    runningRevision = props.revision;
     if (base !== (props.revision?.id ?? null))
       throw new MessageError(message("player.refreshRequired"));
     if (props.revision)
@@ -103,6 +112,7 @@ async function stop() {
   generation++;
   const current = handle;
   handle = null;
+  pendingEdit.value = null;
   ready.value = false;
   try {
     if (current) await current.stop();
@@ -115,7 +125,7 @@ async function stop() {
 }
 async function save() {
   const current = handle;
-  if (!current || !ready.value || busy.value) return false;
+  if (!current || !ready.value || busy.value || pendingSync.value) return false;
   return perform(async () => {
     const resume = !paused.value;
     paused.value = true;
@@ -134,6 +144,7 @@ async function save() {
       for (const file of progress.files) body.append("file", new Blob([file.bytes]), file.name);
       const revision = await api<Revision>(`profiles/${props.profileId}/revisions`, body);
       base = revision.id;
+      runningRevision = revision;
       emit("saved");
       notice.value = message("player.saved");
     } else notice.value = message("player.unchanged");
@@ -145,6 +156,53 @@ async function save() {
 }
 async function stopAndSave() {
   if (!ready.value || (await save())) await perform(stop);
+}
+async function applyPendingEdit() {
+  const pending = pendingEdit.value;
+  const current = handle;
+  if (!pending || !current) return;
+  await perform(async () => {
+    await pending.apply(pending.revision);
+    base = pending.revision.id;
+    runningRevision = pending.revision;
+    pendingEdit.value = null;
+    notice.value = message("player.editApplied");
+    if (pending.resume) {
+      current.resume();
+      paused.value = false;
+    }
+  });
+}
+async function publishEdit(revisionId: string, file: string, publish: () => Promise<Revision>) {
+  const current = handle;
+  if (!current?.files) return publish();
+  if (busy.value || pendingSync.value)
+    throw new ApiError("runtime_busy", 422, message("player.syncRequired"));
+  if (revisionId !== base || !runningRevision) throw new ApiError("conflict", 409);
+  const resume = !paused.value;
+  busy.value = true;
+  error.value = "";
+  notice.value = "";
+  current.pause();
+  paused.value = true;
+  try {
+    const apply = await prepareLiveEdit(current.files, runningRevision, file);
+    const revision = await publish();
+    pendingEdit.value = { revision, apply, resume };
+    // Publication has succeeded even if local writeback needs a later retry.
+    await applyPendingEdit();
+    return revision;
+  } catch (cause) {
+    if (resume) {
+      current.resume();
+      paused.value = false;
+    }
+    throw cause instanceof ApiError
+      ? cause
+      : new ApiError("runtime_edit_failed", 422, runtimeErrorText(cause));
+  } finally {
+    busy.value = false;
+  }
 }
 function togglePause() {
   if (!handle) return;
@@ -162,16 +220,22 @@ function togglePixels() {
   integerPixels.value = !integerPixels.value;
   handle.setIntegerScaling(integerPixels.value);
 }
+function reconcileHead() {
+  if (changedHead === base) changedHead = undefined;
+  if (handle && changedHead !== undefined && !busy.value && !pendingSync.value) void perform(stop);
+}
 watch(
   () => props.baseRevision,
   (value) => {
-    if (handle && value !== base) void perform(stop);
+    changedHead = value;
+    reconcileHead();
   },
 );
+watch(busy, reconcileHead);
 onBeforeUnmount(() => {
   void stop();
 });
-defineExpose({ save, active, ready, busy });
+defineExpose({ save, active, ready, busy, pendingSync, publishEdit });
 </script>
 
 <template>
@@ -189,15 +253,22 @@ defineExpose({ save, active, ready, busy });
           :label="paused ? t('player.resume') : t('player.pause')"
           size="small"
           severity="secondary"
-          :disabled="!ready || busy"
+          :disabled="!ready || busy || pendingSync"
           @click="togglePause"
         />
         <Button
           :label="t('player.save')"
           size="small"
-          :disabled="!ready"
+          :disabled="!ready || pendingSync"
           :loading="busy"
           @click="save"
+        />
+        <Button
+          v-if="pendingSync"
+          :label="t('player.retryEdit')"
+          size="small"
+          :disabled="busy"
+          @click="applyPendingEdit"
         />
         <Button
           v-if="game.system === 'dos'"
@@ -223,7 +294,7 @@ defineExpose({ save, active, ready, busy });
           :title="t('player.stopHelp')"
           size="small"
           severity="secondary"
-          :disabled="busy && ready"
+          :disabled="(busy && ready) || pendingSync"
           @click="stopAndSave"
         />
       </template>
