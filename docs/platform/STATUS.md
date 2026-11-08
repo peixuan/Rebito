@@ -9,8 +9,10 @@ Updated: 2026-11-08 (Asia/Shanghai).
   other rollbacks if one recovery fails. Fourteen focused unit checks and both
   real DOS browser checks pass, including two files and a nested path. Cloud
   batch publication now also passes seven service checks, including a failed
-  second blob and concurrent writers. Editor UI grouping, automatic synchronization
-  and conflict recovery are in progress.
+  second blob and concurrent writers. The UI now publishes all pending files/slots
+  together. Ten coordinator/editor API checks and four browser checks pass, including
+  two-file publication and live replacement. Automatic synchronization and conflict
+  recovery are in progress. Unknown game formats still require their own adapter.
 - Chromium sandboxing is now explicitly enabled for manual validation and E2E.
   All 19 browser checks pass, including a launch check that rejects
   sandbox-disabling arguments. The visible Windows Chrome process and

@@ -47,7 +47,13 @@ async function refreshWorkspace() {
 }
 async function publishEdit(revisionId: string, batch: EditorBatch) {
   const publish = () => api<Revision>(`revisions/${revisionId}/editor`, batch);
-  return player.value ? player.value.publishEdit(revisionId, batch.file, publish) : publish();
+  return player.value
+    ? player.value.publishEdit(
+        revisionId,
+        batch.files.map((entry) => entry.file),
+        publish,
+      )
+    : publish();
 }
 async function upload() {
   if (!files.value.length) return;

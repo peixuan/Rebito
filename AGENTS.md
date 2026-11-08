@@ -40,8 +40,8 @@ because an upstream documentation page lists a feature.
 - Model game saves, emulator snapshots and writable file collections separately.
 - Workspace synchronization must capture the running game before reloading server
   history. Keep its runtime alive if synchronization fails during an explicit stop.
-- Live DOS edits replace only the declared native save after verifying its base
-  bytes. Keep failed writeback paused and retry the published revision; never
+- Live DOS edits replace only the declared native file group after verifying each
+  member's base bytes. Keep failed writeback paused and retry the published revision; never
   republish or upload stale runtime bytes. File changes do not update game RAM.
 - Bind editor support to verified game/format versions; preserve unknown bytes.
 - Authorize every private resource on the server and publish revisions atomically.

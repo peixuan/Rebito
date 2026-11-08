@@ -173,7 +173,7 @@ async function applyPendingEdit() {
     }
   });
 }
-async function publishEdit(revisionId: string, file: string, publish: () => Promise<Revision>) {
+async function publishEdit(revisionId: string, files: string[], publish: () => Promise<Revision>) {
   const current = handle;
   if (!current?.files) return publish();
   if (busy.value || pendingSync.value)
@@ -186,7 +186,7 @@ async function publishEdit(revisionId: string, file: string, publish: () => Prom
   current.pause();
   paused.value = true;
   try {
-    const apply = await prepareLiveEdit(current.files, runningRevision, file);
+    const apply = await prepareLiveEdit(current.files, runningRevision, files);
     const revision = await publish();
     pendingEdit.value = { revision, apply, resume };
     // Publication has succeeded even if local writeback needs a later retry.

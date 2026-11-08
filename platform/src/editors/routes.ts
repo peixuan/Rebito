@@ -17,7 +17,7 @@ const preview = z.strictObject({
   changes: changes.optional(),
   action: z.strictObject({ id: identifier, record: identifier }).optional(),
 });
-const publish = z.strictObject({
+const fileEdits = z.strictObject({
   file,
   edits: z
     .array(z.strictObject({ slot, changes }))
@@ -25,6 +25,21 @@ const publish = z.strictObject({
     .max(10)
     .refine((edits) => new Set(edits.map((edit) => edit.slot)).size === edits.length),
 });
+const publish = z.union([
+  // Keep already-open clients working while deployment switches to collection requests.
+  fileEdits.transform((entry) => ({ files: [entry] })),
+  z.strictObject({
+    files: z
+      .array(fileEdits)
+      .min(1)
+      .max(127)
+      .refine(
+        (files) =>
+          new Set(files.map((entry) => entry.file.normalize("NFC").toLowerCase())).size ===
+          files.length,
+      ),
+  }),
+]);
 
 /** Registered under privateApi: identity/origin checks run before reading bodies. */
 export function registerEditors(app: FastifyInstance, service: EditorService): void {

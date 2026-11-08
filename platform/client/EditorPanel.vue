@@ -1,7 +1,4 @@
 <script setup lang="ts">
-import { type DisplayText, message } from "../src/shared/messages.ts";
-import { localize, t, translate } from "./i18n.ts";
-
 import "./editor-messages.ts";
 import Button from "primevue/button";
 import Column from "primevue/column";
@@ -11,10 +8,12 @@ import Message from "primevue/message";
 import Select from "primevue/select";
 import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
 import type { EditorBatch, EditorQuery, EditorResponse } from "../src/editors/service.ts";
+import { type DisplayText, message } from "../src/shared/messages.ts";
 import type { Revision } from "../src/storage/revisions.ts";
 import { api, errorText } from "./api.ts";
 import FieldGrid from "./controls/FieldGrid.vue";
 import RecordTable from "./controls/RecordTable.vue";
+import { localize, t, translate } from "./i18n.ts";
 
 const props = defineProps<{
   revisionId: string;
@@ -48,10 +47,9 @@ const dirty = computed(() =>
   ),
 );
 const count = computed(() =>
-  [...(drafts.get(view.value?.file ?? "")?.values() ?? [])].reduce(
-    (sum, values) => sum + Object.keys(values).length,
-    0,
-  ),
+  [...drafts.values()]
+    .flatMap((slots) => [...slots.values()])
+    .reduce((sum, values) => sum + Object.keys(values).length, 0),
 );
 const fields = computed(
   () =>
@@ -136,20 +134,24 @@ async function navigate(selection: EditorQuery) {
 async function save() {
   await refresh();
   if (!view.value) return;
-  const file = view.value.file;
-  const edits = [...(drafts.get(file) ?? [])]
-    .filter(([, changes]) => Object.keys(changes).length)
-    .map(([slot, changes]) => ({ slot, changes }));
-  if (!edits.length) {
+  const files = [...drafts]
+    .map(([file, slots]) => ({
+      file,
+      edits: [...slots]
+        .filter(([, changes]) => Object.keys(changes).length)
+        .map(([slot, changes]) => ({ slot, changes })),
+    }))
+    .filter((entry) => entry.edits.length);
+  if (!files.length) {
     notice.value = message("editor.noChanges");
     return;
   }
   const revision = props.publish
-    ? await props.publish(base.value, { file, edits })
-    : await api<Revision>(`revisions/${base.value}/editor`, { file, edits });
+    ? await props.publish(base.value, { files })
+    : await api<Revision>(`revisions/${base.value}/editor`, { files });
   base.value = revision.id;
-  drafts.delete(file);
-  previews.delete(file);
+  drafts.clear();
+  previews.clear();
   await refresh();
   emit("saved");
   notice.value = message("editor.saved");
@@ -278,7 +280,7 @@ onBeforeUnmount(() => {
         </div>
       </div>
       <div class="editor-footer">
-        <span>{{ t("editor.pendingSlotChanges", { count }) }}</span>
+        <span>{{ t("editor.pendingChanges", { count }) }}</span>
         <Button
           :label="t('editor.preview')"
           size="small"

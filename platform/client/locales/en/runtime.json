@@ -13,6 +13,7 @@
   "runtime.editConflict": "The in-game save has changed. Synchronize and refresh before editing again; your draft has been retained.",
   "runtime.editRevisionMismatch": "The edited revision does not match. No files were written to the game.",
   "runtime.editedFileMissing": "This save file is missing from the edited revision.",
+  "runtime.undeclaredChanges": "The edited revision contains undeclared file changes.",
   "runtime.integrity": "Save or game file verification failed.",
   "runtime.releaseMismatch": "The save belongs to another game release.",
   "runtime.snapshotMismatch": "The snapshot is incompatible with this emulator version. Choose a native game save instead.",

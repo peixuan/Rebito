@@ -14,7 +14,7 @@ export async function seedEditor(directory: string) {
     file: "editor.fixture",
     size: bytes.length,
     sha256: createHash("sha256").update(bytes).digest("hex"),
-    saveFiles: ["KOUKAI2.DAT"],
+    saveFiles: ["KOUKAI2.DAT", "SECOND.DAT"],
     editor: "koukai2",
   };
   await writeFile(join(root, entry.file), bytes);

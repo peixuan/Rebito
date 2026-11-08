@@ -73,7 +73,7 @@ immutable; DOS applies changed native files last on startup, or replaces the sel
 file in a running instance through [guarded writeback](RUNTIMES.md). The player must
 reload the save inside the game to update game memory. The compact browser
 editor now retains drafts across modules and slots, exposes all fields without
-advanced foldouts and saves the current file's slot drafts together. Numeric
+advanced foldouts and saves all pending files and slots as one revision. Numeric
 inputs normalize edited values on Enter/blur; untouched abnormal values remain.
 The reusable table supports search, sortable columns and a companion filter.
 The browser acceptance test downloads the resulting file and independently checks

@@ -9,8 +9,7 @@ export interface EditorQuery extends EditorDraft {
   file?: string | undefined;
 }
 export interface EditorBatch {
-  file: string;
-  edits: { slot: number; changes: Record<string, number> }[];
+  files: { file: string; edits: { slot: number; changes: Record<string, number> }[] }[];
 }
 
 /** Release configuration selects the adapter; clients cannot choose a binary parser. */
@@ -50,11 +49,15 @@ export class EditorService {
     return { file: opened.file, files: opened.files, ...opened.adapter.view(opened.bytes, query) };
   }
   async publish(owner: string, revisionId: string, batch: EditorBatch) {
-    const opened = await this.open(owner, revisionId, batch.file);
-    let bytes = opened.bytes;
-    // Transform every slot before publishing anything: a bad later edit is atomic.
-    for (const edit of batch.edits) bytes = opened.adapter.apply(bytes, edit);
-    return this.saves.replaceFiles(owner, revisionId, [{ name: opened.file, bytes }]);
+    const files = [];
+    // Transform every slot of every member before publishing the group once.
+    for (const entry of batch.files) {
+      const opened = await this.open(owner, revisionId, entry.file);
+      let bytes = opened.bytes;
+      for (const edit of entry.edits) bytes = opened.adapter.apply(bytes, edit);
+      files.push({ name: opened.file, bytes });
+    }
+    return this.saves.replaceFiles(owner, revisionId, files);
   }
 }
 export type EditorResponse = Awaited<ReturnType<EditorService["preview"]>>;

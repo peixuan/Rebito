@@ -183,3 +183,33 @@ it("allows only one concurrent editor to advance a revision", async () => {
   ]);
   expect(results.map((response) => response.statusCode).sort()).toEqual([201, 409]);
 });
+
+it("publishes multiple editable files once and rejects an invalid later file atomically", async () => {
+  const owner = users[0]?.id ?? "";
+  const profile = await saves.revisions.create(owner, releaseId, "Grouped edits");
+  const initial = await saves.publish(
+    owner,
+    profile.id,
+    null,
+    { kind: "game-save", releaseId },
+    ["KOUKAI2.DAT", "SECOND.DAT"].map((name) => ({ name, bytes: editorFixture() })),
+    "game",
+  );
+  const group = { files: [batch(123), { ...batch(-1), file: "SECOND.DAT" }] };
+  expect((await request(initial.id, group, true)).statusCode).toBe(422);
+  expect(await saves.revisions.history(owner, profile.id)).toHaveLength(1);
+  expect((await request(initial.id, { files: [batch(1), batch(2)] }, true)).statusCode).toBe(400);
+  expect((await request(initial.id, { files: [] }, true)).statusCode).toBe(400);
+  group.files[1] = { ...batch(456), file: "SECOND.DAT" };
+  const result = await request(initial.id, group, true);
+  expect(result.statusCode).toBe(201);
+  expect(await saves.revisions.history(owner, profile.id)).toHaveLength(2);
+  for (const [name, money] of [
+    ["KOUKAI2.DAT", 123],
+    ["SECOND.DAT", 456],
+  ] as const) {
+    const expected = Buffer.from(editorFixture());
+    expected.writeUInt32LE(money, 0x6a1);
+    expect(Buffer.from(await saves.file(owner, result.json().id, name))).toEqual(expected);
+  }
+});

@@ -23,5 +23,5 @@
   "editor.emptyPreview": "没有修改。",
   "editor.unknownValue": "未知 #{value}",
   "editor.columnLabel": "{group} · {field}",
-  "editor.pendingSlotChanges": "{count} 项待保存修改（包含其他存档槽）"
+  "editor.pendingChanges": "{count} 项待保存修改（包含所有文件和存档槽）"
 }

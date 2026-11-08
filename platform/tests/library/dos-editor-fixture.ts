@@ -15,6 +15,7 @@ export async function seedDosEditor(directory: string) {
   const bytes = zipSync({
     ".jsdos/dosbox.conf": strToU8("[cpu]\r\ncycles=3000\r\n[autoexec]\r\nmount c .\r\nc:\r\n"),
     "KOUKAI2.DAT": dosEditorSave(123),
+    "slots/SECOND.DAT": dosEditorSave(42),
     "FIRST.DAT": dosEditorSave(123),
     "NEXT.DAT": dosEditorSave(456),
   });
@@ -25,7 +26,7 @@ export async function seedDosEditor(directory: string) {
     file: "dos-editor.fixture",
     size: bytes.length,
     sha256: createHash("sha256").update(bytes).digest("hex"),
-    saveFiles: ["KOUKAI2.DAT"],
+    saveFiles: ["KOUKAI2.DAT", "slots/SECOND.DAT"],
     editor: "koukai2",
   };
   const catalogPath = join(root, "catalog.json");

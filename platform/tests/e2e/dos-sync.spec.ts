@@ -109,11 +109,26 @@ test("synchronizes live DOS saves and editor updates without restarting the runt
   // Publish edits through the backend, then replace only the native file in place.
   await money.fill("777");
   await money.press("Tab");
+  const versionsBeforeEdit = await page
+    .getByRole("link", { name: "KOUKAI2.DAT", exact: true })
+    .count();
+  await editor.getByLabel("File to edit").click();
+  await page.getByRole("option", { name: "slots/SECOND.DAT", exact: true }).click();
+  await expect(money).toHaveValue("42");
+  await money.fill("778");
+  await money.press("Tab");
+  await editor.getByLabel("File to edit").click();
+  await page.getByRole("option", { name: "KOUKAI2.DAT", exact: true }).click();
+  await expect(money).toHaveValue("777");
   await editor.getByRole("button", { name: "Save edits", exact: true }).click();
   await expect(game.getByRole("status")).toContainText("Edits were written to the game save");
   expect(runtime.isDetached()).toBe(false);
   await expect(game.getByRole("button", { name: "Pause game", exact: true })).toBeEnabled();
   await expectFile(777);
+  await expectFile(778, "slots/SECOND.DAT");
+  await expect(page.getByRole("link", { name: "KOUKAI2.DAT", exact: true })).toHaveCount(
+    versionsBeforeEdit + 1,
+  );
   await expectFile(123, "FIRST.DAT");
   await expectFile(456, "NEXT.DAT");
   expect(await downloaded()).toEqual(Buffer.from(dosEditorSave(777)));

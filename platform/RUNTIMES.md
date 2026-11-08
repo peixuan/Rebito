@@ -36,18 +36,31 @@ active instance. DOS editor saves use the guarded native-file capability below;
 adapters without it still require a fresh instance after an editor publication.
 Real game acceptance checks are separate from installer and manifest tests.
 
-Live DOS editing pauses the existing instance and checks the target file against
-the editor's base revision before server publication. It downloads only that
-revision's selected native file, verifies its hash, rechecks the original bytes,
-writes and reads back the replacement, then restores the previous pause state.
+Live DOS editing pauses the existing instance and checks every target file against
+the editor's base revision before server publication. It downloads only the edited
+native file group, verifies all hashes, rechecks every original file before writing,
+then writes and reads back the group before restoring the previous pause state.
 Only manifest-declared native saves are writable; archives and other files remain
 untouched. Worker writes receive copies because their buffers may be transferred.
-Failed writes attempt verified rollback; failed writeback keeps the runtime paused
+Failed writes attempt verified rollback of all attempted members, continuing other
+rollbacks if one fails; failed writeback keeps the runtime paused
 with a retry that reuses the published revision. A failed rollback requires reloading
 the page from the retained cloud revision. Upload/resume is blocked while pending.
 This changes files, not game RAM: the player must load the save inside the game.
 Unit tests cover guards, corruption and rollback; real DOS tests read replacements
 from DOS and exercise publication, unchanged files, pause preservation and retry.
+
+`saveFiles` is a portable-path allowlist and already supports multiple files and
+subdirectories. The same capture/upload/restore flow handles the complete collection.
+Editor requests now accept multiple files and slots in one atomic cloud revision;
+all pending UI drafts are submitted together. The older single-file request remains
+accepted for already-open clients. A real DOS fixture verifies two-file UI publication
+and live replacement; no Koukai2 filename is hardcoded in platform synchronization.
+New games still need verified manifests and format-specific editors. Related index,
+world and character files must be declared and edited together by that game's adapter;
+the current Koukai2 adapter does not parse other games' formats. File creation/deletion,
+dynamic filename discovery and games that cache open save handles need separate
+compatibility work; do not infer universal live-edit compatibility from DOS support.
 
 js-dos applies plain `initFs` files before extracting archive overlays. The DOS
 adapter therefore supplies edited native files as a final ZIP overlay. A real
