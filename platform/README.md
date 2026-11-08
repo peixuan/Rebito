@@ -36,6 +36,14 @@ closing; a failed synchronization retains the paused runtime for retry. Closing
 the browser or navigating away is not a replacement for synchronization. Pending
 editor drafts survive a new game revision and require an explicit reload.
 
+DOS also checks declared native saves about every 30 seconds and publishes only
+when their contents or membership change. This synchronizes files already written
+by the game; it does not invoke the game's save command or capture DOS game RAM.
+Returning to the library and signing out synchronize first and stay in the workspace
+if saving fails. Closing/reloading a running game prompts before leaving. Browser
+timer throttling, forced termination and power loss can still lose work after the
+last successful synchronization; this is not an offline backup guarantee.
+
 Saving an editor change while DOS is running now pauses briefly, replaces only
 the edited native file group and resumes the same instance. **Load that save inside
 the game** to apply its values; running game memory does not change automatically.

@@ -1,6 +1,7 @@
 {
   "saves.uploaded": "存档已保存为新版本。",
   "saves.restored": "已恢复为新版本，原历史仍然保留。",
+  "saves.dirty": "还有未保存的修改，请先保存或放弃草稿。",
   "saves.workspace": "进度工作区",
   "saves.synchronize": "同步并刷新",
   "saves.refresh": "刷新存档",

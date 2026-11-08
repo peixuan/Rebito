@@ -1,6 +1,7 @@
 {
   "saves.uploaded": "The save was stored as a new revision.",
   "saves.restored": "Restored as a new revision. The original history is retained.",
+  "saves.dirty": "There are unsaved edits. Save or discard the draft first.",
   "saves.workspace": "Progress workspace",
   "saves.synchronize": "Synchronize and refresh",
   "saves.refresh": "Refresh saves",

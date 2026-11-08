@@ -25,6 +25,8 @@ export async function seedDos(dataDirectory: string) {
       "@echo off\r\nif exist SAVE.DAT goto display\r\necho FIRST>SAVE.DAT\r\n:display\r\ntype SAVE.DAT\r\necho RETRO PORTAL DOS TEST\r\n",
     ),
     "slots/INDEX.DAT": strToU8("INDEX FIRST\r\n"),
+    "SECOND.DAT": strToU8("SECOND\r\n"),
+    "THIRD.DAT": strToU8("THIRD\r\n"),
     "verify.bat": strToU8(
       "@copy /y SAVE.DAT CHECK.DAT\r\n@copy /y SLOTS\\INDEX.DAT CHECKIDX.DAT\r\n",
     ),

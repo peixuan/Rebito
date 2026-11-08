@@ -84,6 +84,18 @@ async function restore(revision: Revision) {
 function selectFiles(event: Event) {
   files.value = [...((event.target as HTMLInputElement).files ?? [])];
 }
+async function leave() {
+  if (busy.value || player.value?.busy) return false;
+  if (editorDirty.value) {
+    error.value = message("saves.dirty");
+    return false;
+  }
+  return player.value ? player.value.leave() : true;
+}
+async function back() {
+  if (await leave()) emit("back");
+}
+defineExpose({ leave });
 onMounted(() => perform(refresh));
 </script>
 
@@ -94,7 +106,7 @@ onMounted(() => perform(refresh));
         :label="t('library.back')"
         variant="text"
         :disabled="busy || editorDirty"
-        @click="emit('back')"
+        @click="back"
       />
       <h2>{{ game.title }} · {{ profile.name }}</h2>
       <Button

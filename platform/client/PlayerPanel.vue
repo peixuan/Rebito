@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import Message from "primevue/message";
-import { computed, onBeforeUnmount, ref, shallowRef, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
 import type { Game } from "../src/library/catalog.ts";
 import { type DisplayText, displayMessage, MessageError, message } from "../src/shared/messages.ts";
 import type { Revision } from "../src/storage/revisions.ts";
-import { ApiError, api, errorText } from "./api.ts";
+import { ApiError, errorText } from "./api.ts";
 import { i18n, t, translate } from "./i18n.ts";
 import { runtimeIdentity } from "./runtime/identity.ts";
 import { prepareLiveEdit } from "./runtime/live-edit.ts";
 import { assertCompatible, downloadProgress, downloadVerified } from "./runtime/progress.ts";
+import { nativeProgressChanged, publishProgress } from "./runtime/progress-sync.ts";
 import type { RuntimeHandle, RuntimeWindow } from "./runtime/types.ts";
 
 const props = defineProps<{
@@ -28,6 +29,8 @@ const relativeMouse = ref(false);
 const integerPixels = ref(true);
 const error = ref<DisplayText>("");
 const notice = ref<DisplayText>("");
+const synchronizedAt = ref<number | null>(null);
+let automaticSync: ReturnType<typeof setInterval> | undefined;
 let handle: RuntimeHandle | null = null;
 let base: string | null = null;
 let runningRevision: Revision | null = null;
@@ -123,31 +126,21 @@ async function stop() {
     integerPixels.value = true;
   }
 }
-async function save() {
+async function save(automatic = false) {
   const current = handle;
   if (!current || !ready.value || busy.value || pendingSync.value) return false;
   return perform(async () => {
     const resume = !paused.value;
     paused.value = true;
     const progress = await current.capture();
-    if (progress) {
-      const body = new FormData();
-      body.append(
-        "metadata",
-        JSON.stringify({
-          kind: progress.kind,
-          runtime: progress.runtime,
-          releaseId: props.game.id,
-          baseRevision: base,
-        }),
-      );
-      for (const file of progress.files) body.append("file", new Blob([file.bytes]), file.name);
-      const revision = await api<Revision>(`profiles/${props.profileId}/revisions`, body);
+    if (progress && (!automatic || (await nativeProgressChanged(progress, runningRevision)))) {
+      const revision = await publishProgress(props.profileId, props.game.id, base, progress);
       base = revision.id;
       runningRevision = revision;
       emit("saved");
-      notice.value = message("player.saved");
-    } else notice.value = message("player.unchanged");
+      synchronizedAt.value = Date.now();
+      notice.value = automatic ? message("player.autosaved") : message("player.saved");
+    } else if (!automatic) notice.value = message("player.unchanged");
     if (resume) {
       current.resume();
       paused.value = false;
@@ -155,7 +148,10 @@ async function save() {
   });
 }
 async function stopAndSave() {
-  if (!ready.value || (await save())) await perform(stop);
+  if (busy.value || pendingSync.value) return false;
+  if (!active.value) return true;
+  if (!ready.value || (await save())) return perform(stop);
+  return false;
 }
 async function applyPendingEdit() {
   const pending = pendingEdit.value;
@@ -232,10 +228,30 @@ watch(
   },
 );
 watch(busy, reconcileHead);
+function leaving(event: BeforeUnloadEvent) {
+  if (!active.value) return;
+  event.preventDefault();
+  event.returnValue = "";
+}
+onMounted(() => {
+  window.addEventListener("beforeunload", leaving);
+  automaticSync = setInterval(() => {
+    if (
+      props.game.system === "dos" &&
+      ready.value &&
+      !busy.value &&
+      !pendingSync.value &&
+      !error.value
+    )
+      void save(true);
+  }, 30_000);
+});
 onBeforeUnmount(() => {
+  clearInterval(automaticSync);
+  window.removeEventListener("beforeunload", leaving);
   void stop();
 });
-defineExpose({ save, active, ready, busy, pendingSync, publishEdit });
+defineExpose({ save, active, ready, busy, pendingSync, publishEdit, leave: stopAndSave });
 </script>
 
 <template>
@@ -261,7 +277,7 @@ defineExpose({ save, active, ready, busy, pendingSync, publishEdit });
           size="small"
           :disabled="!ready || pendingSync"
           :loading="busy"
-          @click="save"
+          @click="save()"
         />
         <Button
           v-if="pendingSync"
@@ -300,7 +316,7 @@ defineExpose({ save, active, ready, busy, pendingSync, publishEdit });
       </template>
       <span v-if="relativeMouse" class="muted">{{ t("player.mouseHelp") }}</span>
       <span class="muted">{{
-        game.system === "dos" ? t("player.manualSyncHelp") : t("player.keyboardHelp")
+        game.system === "dos" ? t("player.dosSyncHelp") : t("player.keyboardHelp")
       }}</span>
     </div>
     <Message v-if="error" severity="error" role="alert">{{ translate(error) }}</Message>

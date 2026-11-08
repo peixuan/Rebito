@@ -3,6 +3,7 @@
   "player.refreshRequired": "Refresh the save and try again.",
   "player.notReady": "The emulator window is not ready.",
   "player.startTimeout": "The emulator took too long to start. Stop it and try again.",
+  "player.autosaved": "Game progress was automatically saved to your account.",
   "player.saved": "Game progress was saved to your account.",
   "player.unchanged": "There is no new save data.",
   "player.editApplied": "Edits were written to the game save. Reload the save inside the game; values in game memory do not change automatically.",
@@ -19,8 +20,8 @@
   "player.stop": "Stop game",
   "player.stopHelp": "Synchronize before stopping. The game window remains open if synchronization fails.",
   "player.mouseHelp": "Click the game to capture the mouse. Press Esc to release it.",
+  "player.dosSyncHelp": "Changed game saves are synchronized every 30 seconds, and before stopping or leaving the game.",
   "player.starting": "Starting the emulator…",
   "player.frame": "Game emulator",
-  "player.manualSyncHelp": "Save inside the game, then select Synchronize and refresh. Stopping also synchronizes first.",
   "player.keyboardHelp": "Save to account preserves the current state. Click the game to use the keyboard; see Control Settings for bindings."
 }

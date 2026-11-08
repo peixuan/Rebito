@@ -11,8 +11,11 @@ Updated: 2026-11-08 (Asia/Shanghai).
   batch publication now also passes seven service checks, including a failed
   second blob and concurrent writers. The UI now publishes all pending files/slots
   together. Ten coordinator/editor API checks and four browser checks pass, including
-  two-file publication and live replacement. Automatic synchronization and conflict
-  recovery are in progress. Unknown game formats still require their own adapter.
+  two-file publication and live replacement. Unknown game formats still require
+  their own adapter. DOS now checks native-file changes every 30 seconds, and saves
+  before library navigation/logout. Three change-detection/transport unit checks
+  and real DOS automatic publication/navigation checks pass. Explicit conflict
+  recovery is in progress; forced termination still risks the latest unsynced work.
 - Chromium sandboxing is now explicitly enabled for manual validation and E2E.
   All 19 browser checks pass, including a launch check that rejects
   sandbox-disabling arguments. The visible Windows Chrome process and
