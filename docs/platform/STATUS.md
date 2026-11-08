@@ -4,6 +4,15 @@ Updated: 2026-11-08 (Asia/Shanghai).
 
 ## User verification follow-up
 
+- Capacity review: blob writes now leave a configurable 1 GiB free-space margin,
+  count this process's pending writes, and return a distinct recoverable 507 error.
+  Full local checks pass (210 tests); actual filesystem probes plus PostgreSQL
+  verify that a rejected upload leaves the old head and bytes intact. Simulated
+  disk probes cover concurrent reservations and late ENOSPC/EDQUOT failures.
+  Compose bounds app/database logs to three 10 MB files per container. This is
+  not a global filesystem quota or automatic history pruning; see operations.
+  Deployment of this configuration and the accompanying UI is pending below.
+
 - Multi-file follow-up: the runtime now validates a complete replacement group
   before writing, rolls back every attempted member on failure, and keeps trying
   other rollbacks if one recovery fails. Fourteen focused unit checks and both

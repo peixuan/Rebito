@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { createApp } from "../../src/server/app.ts";
+import { DiskSpaceError } from "../../src/storage/capacity.ts";
 import { ProgressError } from "../../src/storage/revisions.ts";
 
 describe("HTTP service boundary", () => {
@@ -45,6 +46,16 @@ describe("HTTP service boundary", () => {
     const response = await instance.inject("/broken");
     expect(response.statusCode).toBe(500);
     expect(response.json()).toEqual({ error: "internal_error" });
+  });
+
+  it("reports insufficient disk space distinctly from personal quotas", async () => {
+    const instance = app();
+    instance.get("/disk-full", () => {
+      throw new DiskSpaceError();
+    });
+    const response = await instance.inject("/disk-full");
+    expect(response.statusCode).toBe(507);
+    expect(response.json()).toEqual({ error: "disk_space_low" });
   });
 
   it("keeps callback queries, credentials and error payloads out of logs", async () => {

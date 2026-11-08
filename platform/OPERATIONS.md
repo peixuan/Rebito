@@ -7,6 +7,27 @@ with three 10 MB files each and compression of rotated files. Recreate both serv
 with `docker compose up -d --build --wait` to apply changed logging settings. This
 bounds container stdout/stderr logs, not database files or external log collectors.
 
+The default per-account limits are 100 profiles, 2,000 revisions and 2 GiB of logical
+history. Identical blob contents share physical space; each retained revision still
+counts its full logical size. DOS automatic sync publishes only when native files
+change. Repeated manual captures and different snapshots can still grow history.
+Quota exhaustion stops new saves; it is not automatic history rotation. Do not
+increase quotas indefinitely as a substitute for a retention policy.
+
+Before new blob writes the app leaves a configurable 1 GiB free-space margin. A
+failed upload preserves the published head; the player remains paused for retry.
+The guard covers this app process's pending writes, not all filesystem writers or
+the Windows host space behind WSL's virtual disk. Monitor the data and database
+filesystems, host disk, backup destination and Docker disk use separately.
+
+Useful read-only checks are `docker system df`, `df -h`, and
+`docker compose exec app du -sh /data`. Backups, old images and build caches need
+their own size/retention budgets. Never use a blanket volume prune to manage saves.
+Offline `collect` below only removes abandoned blobs; retained history needs an
+explicit future retention/deletion policy, with current heads protected. No automatic
+history deletion is enabled. No additional queue, cache service or metrics database
+is needed for these bounds.
+
 Use the same application image/configuration as the deployment. All commands below
 run from `platform/` in a POSIX shell. Binary output redirection must preserve bytes;
 on Windows, run these commands in WSL rather than an older PowerShell pipeline.

@@ -2,14 +2,17 @@ import { createHash, randomUUID } from "node:crypto";
 import { link, mkdir, open, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { type ArtifactRef, progressLimits } from "../domain/artifacts.ts";
+import { DiskCapacity } from "./capacity.ts";
 
 export type BlobRef = Pick<ArtifactRef, "sha256" | "size">;
 
 /** Private content-addressed storage. Authorization belongs to the revision service. */
 export class LocalBlobStore {
   private readonly root: string;
-  constructor(root: string) {
+  private readonly capacity: DiskCapacity;
+  constructor(root: string, minimumFreeBytes?: number) {
     this.root = root;
+    this.capacity = new DiskCapacity(minimumFreeBytes);
   }
 
   async put(bytes: Uint8Array): Promise<BlobRef> {
@@ -18,6 +21,10 @@ export class LocalBlobStore {
     const content = Buffer.from(bytes);
     const sha256 = createHash("sha256").update(content).digest("hex");
     await mkdir(this.root, { recursive: true, mode: 0o700 });
+    return this.capacity.write(this.root, content.byteLength, () => this.persist(content, sha256));
+  }
+
+  private async persist(content: Buffer, sha256: string): Promise<BlobRef> {
     const temporary = join(this.root, `${randomUUID()}.tmp`);
     try {
       const handle = await open(temporary, "wx", 0o600);

@@ -7,6 +7,7 @@ import { migrateIdentity } from "../../src/identity/migrate.ts";
 import { SaveService } from "../../src/saves/service.ts";
 import { loadConfig } from "../../src/server/config.ts";
 import { LocalBlobStore } from "../../src/storage/blobs.ts";
+import { DiskSpaceError } from "../../src/storage/capacity.ts";
 import { RevisionRepository } from "../../src/storage/revisions.ts";
 import { migrateStorage } from "../../src/storage/schema.ts";
 import { testDatabase } from "../database.ts";
@@ -80,6 +81,25 @@ describe("save publication service", () => {
     ).rejects.toMatchObject({ code: "quota_exceeded" });
     expect(await readdir(directory)).toEqual(before);
     expect(await limited.history("alice", profile.id)).toEqual([]);
+  });
+
+  it("refuses writes below the disk reserve without advancing or damaging existing progress", async () => {
+    const profile = await repository.create("alice", metadata.releaseId, "Disk reserve");
+    const original = await service.publish("alice", profile.id, null, metadata, files, "game");
+    const before = await readdir(directory);
+    const bounded = new SaveService(
+      repository,
+      new LocalBlobStore(directory, Number.MAX_SAFE_INTEGER),
+    );
+    await expect(
+      bounded.publish("alice", profile.id, original.id, metadata, files, "game"),
+    ).rejects.toBeInstanceOf(DiskSpaceError);
+    expect(await readdir(directory)).toEqual(before);
+    expect(await repository.history("alice", profile.id)).toHaveLength(1);
+    expect((await repository.list("alice")).find((entry) => entry.id === profile.id)?.headId).toBe(
+      original.id,
+    );
+    expect(await bounded.file("alice", original.id, "SAVE.DAT")).toEqual(Buffer.from([1, 2, 3]));
   });
 
   it("rejects unauthorized, stale and mismatched uploads before writing blobs", async () => {

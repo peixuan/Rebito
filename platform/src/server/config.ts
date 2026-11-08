@@ -10,6 +10,7 @@ export interface ServerConfig {
   readonly port: number;
   readonly allowRegistration: boolean;
   readonly storageLimits: StorageLimits;
+  readonly minimumFreeBytes: number;
   readonly oidc?: {
     readonly discoveryUrl: string;
     readonly clientId: string;
@@ -55,6 +56,9 @@ export function loadConfig(environment: Environment): ServerConfig {
   if (!["true", "false"].includes(registration)) {
     throw new Error("ALLOW_REGISTRATION must be true or false");
   }
+  const minimumFreeBytes = Number(environment.MIN_FREE_DISK_BYTES ?? 1024 ** 3);
+  if (!Number.isSafeInteger(minimumFreeBytes) || minimumFreeBytes < 0)
+    throw new Error("MIN_FREE_DISK_BYTES must be a nonnegative safe integer");
 
   const oidcKeys = ["OIDC_DISCOVERY_URL", "OIDC_CLIENT_ID", "OIDC_CLIENT_SECRET"] as const;
   const oidc = oidcKeys.some((key) => Boolean(environment[key]))
@@ -72,6 +76,7 @@ export function loadConfig(environment: Environment): ServerConfig {
     host: environment.HOST ?? "127.0.0.1",
     port,
     allowRegistration: registration === "true",
+    minimumFreeBytes,
     storageLimits: storageLimitSchema.parse({
       profiles: Number(environment.MAX_PROFILES_PER_USER ?? 100),
       revisions: Number(environment.MAX_REVISIONS_PER_USER ?? 2000),

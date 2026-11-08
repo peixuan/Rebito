@@ -14,6 +14,7 @@ describe("server configuration", () => {
     expect(config.allowRegistration).toBe(false);
     expect(config.host).toBe("127.0.0.1");
     expect(config.port).toBe(3000);
+    expect(config.minimumFreeBytes).toBe(1024 ** 3);
     expect(config.oidc).toBeUndefined();
     expect(config.storageLimits).toEqual({ profiles: 100, revisions: 2000, bytes: 2147483648 });
     expect(isAbsolute(config.dataDirectory)).toBe(true);
@@ -38,12 +39,14 @@ describe("server configuration", () => {
       MAX_PROFILES_PER_USER: "20",
       MAX_REVISIONS_PER_USER: "100",
       MAX_SAVE_BYTES_PER_USER: "1073741824",
+      MIN_FREE_DISK_BYTES: "536870912",
       OIDC_DISCOVERY_URL: "https://identity.example.com/.well-known/openid-configuration",
       OIDC_CLIENT_ID: "retro",
       OIDC_CLIENT_SECRET: "test-client-secret",
     });
     expect(config.origin).toBe("https://games.example.com");
     expect(config.port).toBe(8080);
+    expect(config.minimumFreeBytes).toBe(536870912);
     expect(config.host).toBe("0.0.0.0");
     expect(config.dataDirectory).toContain("private-data");
     expect(config.allowRegistration).toBe(true);
@@ -69,6 +72,9 @@ describe("server configuration", () => {
     { MAX_REVISIONS_PER_USER: "1.5" },
     { MAX_SAVE_BYTES_PER_USER: "Infinity" },
     { MAX_SAVE_BYTES_PER_USER: "-1" },
+    { MIN_FREE_DISK_BYTES: "-1" },
+    { MIN_FREE_DISK_BYTES: "1.5" },
+    { MIN_FREE_DISK_BYTES: "Infinity" },
     { OIDC_DISCOVERY_URL: "https://identity.example.com" },
     { OIDC_CLIENT_ID: "retro" },
     { OIDC_CLIENT_SECRET: "secret-with-missing-settings" },
