@@ -50,6 +50,9 @@ logical release IDs, never physical storage paths.
 
 ## Browser administration
 
+Administrators open **游戏管理** in the page header to upload and configure games.
+The form suggests DOS launch programs, preserves failed drafts and shows shared usage.
+
 Administrators can also publish through `POST /api/admin/games` using a multipart
 `metadata` JSON field followed by one `file` (maximum 64 MiB). The server accepts
 uncompressed console ROMs, or DOS ZIP/jsdos packages and an executable path,

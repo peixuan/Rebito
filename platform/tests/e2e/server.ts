@@ -19,14 +19,18 @@ await seedDos(directory);
 await seedDosEditor(directory);
 await seedConsoles(directory);
 await seedEditor(directory);
+const adminUserIds: string[] = [];
 const app = await createPlatform(
-  loadConfig({
-    APP_ORIGIN: "http://localhost:4317",
-    DATABASE_URL: "postgresql://unused/unused",
-    AUTH_SECRET: randomBytes(32).toString("hex"),
-    DATA_DIR: directory,
-    ALLOW_REGISTRATION: "true",
-  }),
+  {
+    ...loadConfig({
+      APP_ORIGIN: "http://localhost:4317",
+      DATABASE_URL: "postgresql://unused/unused",
+      AUTH_SECRET: randomBytes(32).toString("hex"),
+      DATA_DIR: directory,
+      ALLOW_REGISTRATION: "true",
+    }),
+    adminUserIds,
+  },
   fixture.database,
 );
 registerWeb(app, resolve("dist/client"));
@@ -35,7 +39,15 @@ app.addHook("onClose", async () => {
   await rm(directory, { recursive: true, force: true });
 });
 const sessions: Record<string, unknown> = {};
-for (const [index, name] of ["dos", "library", "other", "player", "console", "editor"].entries()) {
+for (const [index, name] of [
+  "dos",
+  "library",
+  "other",
+  "player",
+  "console",
+  "editor",
+  "admin",
+].entries()) {
   // Fixture setup represents distinct clients; keep the real public rate limits enabled.
   const response = await app.inject({
     method: "POST",
@@ -45,6 +57,7 @@ for (const [index, name] of ["dos", "library", "other", "player", "console", "ed
     payload: { email: `${name}@example.test`, name, password: "browser-test-password-123" },
   });
   if (response.statusCode !== 200) throw new Error("Could not provision browser fixture");
+  if (name === "admin") adminUserIds.push(response.json().user.id);
   sessions[name] = response.cookies.map(({ name, value }) => ({
     name,
     value,

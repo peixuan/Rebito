@@ -23,6 +23,9 @@ Updated: 2026-11-08 (Asia/Shanghai).
   lease; published games are excluded. Full local component gates pass.
   Browser ZIP metadata inspection supplies launch suggestions without inflating
   uploaded files; 27 archive/browser-helper tests and type checks pass.
+  The administrator page now uploads/configures games and lists sortable releases.
+  Two sandboxed browser checks pass for publishing, rejected drafts, role isolation,
+  discard guards and the narrow layout; real uploaded-game acceptance follows.
 
 - Capacity review: blob writes now leave a configurable 1 GiB free-space margin,
   count this process's pending writes, and return a distinct recoverable 507 error.

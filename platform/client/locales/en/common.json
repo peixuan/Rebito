@@ -3,5 +3,8 @@
   "common.no": "No",
   "common.empty": "Empty",
   "common.retry": "Retry",
+  "common.platform": "Platform",
+  "common.size": "Size",
+  "common.unspecified": "Unspecified",
   "common.refresh": "Refresh"
 }

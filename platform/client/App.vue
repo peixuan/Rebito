@@ -11,8 +11,12 @@ import { t, translate } from "./i18n.ts";
 import LanguagePicker from "./LanguagePicker.vue";
 import StorageUsage from "./StorageUsage.vue";
 
-const LibraryPanel = defineAsyncComponent(() => import("./LibraryPanel.vue"));
+const AdminLibrary = defineAsyncComponent(() => import("./AdminLibrary.vue"));
 const SavePanel = defineAsyncComponent(() => import("./SavePanel.vue"));
+const LibraryPanel = defineAsyncComponent(() => import("./LibraryPanel.vue"));
+const administration = ref(false);
+const adminPanel = ref<InstanceType<typeof AdminLibrary> | null>(null);
+
 const session = ref<Session | null>(null);
 const error = ref<DisplayText>("");
 const workspace = ref<{ game: Game; profile: Profile } | null>(null);
@@ -32,8 +36,10 @@ async function logout() {
   leaving.value = true;
   try {
     if (savePanel.value && !(await savePanel.value.leave())) return;
+    if (adminPanel.value && !adminPanel.value.leave()) return;
     await api("auth/sign-out", {});
     workspace.value = null;
+    administration.value = false;
     if (session.value) session.value = { ...session.value, user: null };
     await refresh();
   } catch (cause) {
@@ -43,7 +49,15 @@ async function logout() {
   }
 }
 async function home() {
-  if (!savePanel.value || (await savePanel.value.leave())) workspace.value = null;
+  if (savePanel.value && !(await savePanel.value.leave())) return;
+  if (adminPanel.value && !adminPanel.value.leave()) return;
+  workspace.value = null;
+  administration.value = false;
+}
+async function manageGames() {
+  if (savePanel.value && !(await savePanel.value.leave())) return;
+  workspace.value = null;
+  administration.value = true;
 }
 onMounted(refresh);
 </script>
@@ -56,6 +70,13 @@ onMounted(refresh);
     <LanguagePicker />
     <div v-if="session?.user" class="account-actions">
       <span>{{ session.user.name }}</span>
+      <Button
+        v-if="session.user.admin && !administration"
+        :label="t('admin.title')"
+        variant="text"
+        size="small"
+        @click="manageGames"
+      />
       <Button
         :label="t('account.logout')"
         severity="secondary"
@@ -77,10 +98,11 @@ onMounted(refresh);
       @authenticated="refresh"
     />
     <section v-else-if="session?.user" :aria-label="t('app.workspace')">
-      <StorageUsage :key="session.user.id" :refresh-key="storageVersion" />
+      <StorageUsage v-if="!administration" :key="session.user.id" :refresh-key="storageVersion" />
+      <AdminLibrary v-if="administration && session.user.admin" ref="adminPanel" @back="home" />
       <SavePanel
         ref="savePanel"
-        v-if="workspace"
+        v-else-if="workspace"
         :key="workspace.profile.id"
         :game="workspace.game"
         :profile="workspace.profile"

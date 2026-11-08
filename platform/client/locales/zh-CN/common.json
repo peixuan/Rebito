@@ -3,5 +3,8 @@
   "common.no": "否",
   "common.empty": "空位",
   "common.retry": "重试",
+  "common.platform": "平台",
+  "common.size": "大小",
+  "common.unspecified": "未指定",
   "common.refresh": "刷新"
 }

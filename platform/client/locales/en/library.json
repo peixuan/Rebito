@@ -22,6 +22,7 @@
   "library.platform": "Platform",
   "library.gameFile": "Game file",
   "library.search": "Search games",
+  "library.game": "Game",
   "library.profiles": "Personal profiles",
   "library.title": "Game library",
   "library.allPlatforms": "All platforms",

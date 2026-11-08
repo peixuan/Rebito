@@ -247,7 +247,9 @@ input[type="file"] {
     padding: 16px;
   }
   .app-header {
-    padding: 0 16px;
+    padding: 10px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
   }
   .account-panel {
     margin: 30px auto;
