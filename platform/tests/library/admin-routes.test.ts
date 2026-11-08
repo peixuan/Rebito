@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { mkdtemp, readdir, rm } from "node:fs/promises";
+import { request as httpRequest } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { unzipSync, zipSync } from "fflate";
@@ -189,4 +190,25 @@ it("preserves the catalog and cleans staging after quota or disk-reserve rejecti
     before,
   );
   expect(await readdir(join(directory, "library", ".uploads"))).toEqual([]);
+});
+
+it("cleans a real interrupted HTTP upload and permits the next publication", async () => {
+  const address = await app.listen({ host: "127.0.0.1", port: 0 });
+  const request = httpRequest(`${address}/api/admin/games`, {
+    method: "POST",
+    headers: { cookie: admin, origin, "content-type": "multipart/form-data; boundary=interrupted" },
+  });
+  request.on("error", () => {}); // Intentional client disconnect below.
+  try {
+    request.write(
+      `--interrupted\r\nContent-Disposition: form-data; name="metadata"\r\n\r\n${JSON.stringify(settings)}\r\n--interrupted\r\nContent-Disposition: form-data; name="file"; filename="game.zip"\r\nContent-Type: application/zip\r\n\r\npartial`,
+    );
+    const staging = join(directory, "library", ".uploads");
+    await expect.poll(() => readdir(staging)).toHaveLength(1);
+    request.destroy();
+    await expect.poll(() => readdir(staging)).toHaveLength(0);
+    expect((await upload({ metadata: { ...settings, cycles: "4000" } })).statusCode).toBe(201);
+  } finally {
+    request.destroy();
+  }
 });

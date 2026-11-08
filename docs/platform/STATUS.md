@@ -4,28 +4,28 @@ Updated: 2026-11-08 (Asia/Shanghai).
 
 ## User verification follow-up
 
-- Administrator game management is in progress. Stable account-ID allowlisting is
-  implemented with default-deny server checks and a session capability flag.
-  Types and 34 identity/configuration checks pass, including ordinary users,
-  forged flags, cross-origin requests and revocation. Upload/UI work follows.
-  Catalog refresh now verifies and atomically swaps complete snapshots without a
-  server restart; 38 catalog/import/save-route checks and type checks pass.
-  Streamed DOS repackaging now validates archive paths, sizes, encryption, file
-  types and CRCs, generates startup configuration, and excludes declared saves.
-  Its 25 fixture checks and types pass; dependency policy covers 280 locked packages.
-  Shared game assets now have a separate default 10 GiB catalog quota, enforced
-  under the publication lock by CLI and web import callers. The 36 importer/config
-  checks and type checks pass; save quotas remain independent.
-  The administrator upload API now streams and publishes DOS/console games live.
-  Five API checks cover auth/origin enforcement, cross-instance refresh, exact ROM
-  bytes, duplicate/concurrent uploads, size limits, quota failures and staging cleanup.
-  Offline collection now includes abandoned game-upload staging under its exclusive
-  lease; published games are excluded. Full local component gates pass.
-  Browser ZIP metadata inspection supplies launch suggestions without inflating
-  uploaded files; 27 archive/browser-helper tests and type checks pass.
-  The administrator page now uploads/configures games and lists sortable releases.
-  Two sandboxed browser checks pass for publishing, rejected drafts, role isolation,
-  discard guards and the narrow layout; real uploaded-game acceptance follows.
+- Administrator game management is implemented and deployed locally. The header
+  opens uploads, DOS launch settings, explicit save paths and a searchable/sortable
+  release list. Stable account-ID allowlisting defaults to no administrators and
+  is checked before reading uploads; the existing local acceptance account is enabled.
+  Games publish without a container restart. Configuration changes publish a new
+  immutable DOS release; existing profiles and verified editor bindings stay intact.
+  Browser ZIP inspection reads metadata only; server repackaging streams files and
+  validates paths, collisions, sizes, encryption, file types and CRCs. Declared saves
+  are excluded from shared packages. Uploads are limited to 64 MiB, DOS expansion to
+  256 MiB, and retained library assets to a configurable 10 GiB under the import lock.
+  Failed/disconnected uploads clean staging; offline collection handles abandoned
+  staging under its exclusive lease and never deletes published games.
+  All local gates pass: 251 unit/integration tests and 27 sandboxed Chrome tests.
+  Uploaded DOS and NES fixtures run in real emulators; DOS publishes two exact
+  native files including a nested path. Failed synchronization blocks navigation
+  to management and preserves the runtime. Tests also cover role/origin rejection,
+  draft retention, actual HTTP disconnect cleanup/retry, quota and concurrent uploads.
+  The rebuilt Linux containers are healthy; a real container probe verifies streamed
+  DOS preparation and save exclusion. Three existing save downloads retain identical
+  digests. Browser upload acceptance uses the local test server, not the production
+  catalog, which still contains only the verified Koukai2 release. Arbitrary game
+  compatibility, in-place release editing and deletion are not claimed.
 
 - Capacity review: blob writes now leave a configurable 1 GiB free-space margin,
   count this process's pending writes, and return a distinct recoverable 507 error.
@@ -136,6 +136,7 @@ support are separate: a playable game need not have an editor.
 | Browser login shell | Verified in Chrome | Real registration/login/logout, session recovery and narrow-viewport checks |
 | Game library and personal progress | Implemented | Verified assets; private catalog API; browser import, history, restore and account isolation |
 | Operator game preparation/import | Verified locally | Explicit DOS file allowlist; deterministic bundles; atomic catalog publication; source files unchanged |
+| Administrator game management | Verified and deployed locally | Role-checked uploads; DOS launch/save settings; live catalog refresh; quotas; real uploaded DOS/NES fixtures |
 | DOS browser runtime | Fixture and real game verified | DOSBox WASM, native files, filesystem overlay, edited-byte precedence; relative mouse capture/Escape release |
 | Console browser runtime | Four cores verified with own fixtures | NES/SNES/GB/GBA SRAM and states; NES keyboard, volatile palette and no-battery snapshot restoration |
 | Koukai2 editor | Real-game round trip verified | Eight modules; 13/13 legacy matches; browser editing/conflict tests; game reads and resaves modified money/leadership |
@@ -173,19 +174,19 @@ credentials or downloaded emulator archives are committed.
 ## Available checks
 
 `node --test scripts/*.test.mjs`: 10 tests passed locally.
-`node scripts/dependency-policy.mjs`: 274 locked packages reviewed.
+`node scripts/dependency-policy.mjs`: 280 locked packages reviewed.
 Enable local hooks with `git config core.hooksPath .githooks`.
 The `platform` workflow checks every new commit since the pre-platform baseline;
 remote CI has not run because this work has not been pushed.
 
 `cd platform && npm run check` with the test database: format/lint, TypeScript,
 HTTP/domain/filesystem and real PostgreSQL identity/revision/service tests passed.
-The complete run passed 210 tests with 98.44% Windows line coverage, 95.82% branch
-coverage and 99.56% function coverage. Linux-only directory fsync is exercised by
+The complete run passed 251 tests with 98.28% Windows line coverage, 95.01% branch
+coverage and 98.85% function coverage. Linux-only directory fsync is exercised by
 deployment, not by Windows unit coverage. The process entrypoint and account-provisioning CLI
 are excluded from unit coverage and exercised by the container smoke test.
 
-The complete 24-test browser suite passes, including all four console cores, DOS,
+The complete 27-test browser suite passes, including all four console cores, DOS,
 OIDC and three editor tests: exact multi-slot output bytes, numeric sorting and
 selection retention, clamping/invalid-input handling, narrow layouts, and retaining
 drafts when another upload advances the revision head. Edited cells update without

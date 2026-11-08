@@ -53,10 +53,18 @@ and remove it after use. The command prints an account ID, never the password or
 session. It does not enable the public signup endpoint. PowerShell users can pipe
 `Get-Content -Raw` from a private file into the same compose command.
 
+To grant game-library administration, put that account ID in `.env` as
+`ADMIN_USER_IDS=<account-id>` (comma-separated for multiple administrators), then run
+`docker compose up -d --wait app`. Existing accounts can read their own ID from the
+authenticated `/api/session` response. Refresh the page to show **游戏管理**.
+This is a one-time role setup; later game uploads require no container commands.
+Administration grants shared-library management, not access to other users' saves.
+
 ## Persistence and operations
 
-Use the [operator import command](LIBRARY.md) to add game releases. Import commands
-run inside the same image and data volume; mount their input directory read-only.
+Use [browser game management](LIBRARY.md#browser-administration) to add releases.
+The operator import command remains available for prepared bundles and larger files;
+it runs inside the same image and data volume with its input directory read-only.
 
 - `database` stores account and revision metadata; `saves` stores immutable bytes.
 - `docker compose restart` retains both volumes. Do not use `down --volumes` on a

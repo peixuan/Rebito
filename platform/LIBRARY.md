@@ -1,8 +1,12 @@
-# Operator game library
+# Game library
 
 Game files belong to the deployment operator, outside the source repository. The
 application serves verified assets only to signed-in users. Importing a game never
 uploads it elsewhere. Supply only files you are entitled to use and distribute.
+
+For routine uploads, use [browser administration](#browser-administration) after
+the [one-time administrator setup](DEPLOYMENT.md#creating-accounts). The command
+below remains available for operator-prepared releases.
 
 Create a metadata JSON file, for example:
 
@@ -13,8 +17,9 @@ Create a metadata JSON file, for example:
 Systems are `dos`, `nes`, `snes`, `gb`, `gba`. Console files are uncompressed ROMs;
 DOS files are `.jsdos` ZIP bundles with `.jsdos/dosbox.conf`. DOS metadata also
 accepts `saveFiles` (portable relative file paths) and optional `editor: "koukai2"`.
-Only enable an editor for a verified compatible release. Each imported file is
-limited to 512 MiB. Do not put personalized saves into shared game bundles.
+Only enable an editor for a verified compatible release. Each CLI-imported file is
+limited to 512 MiB; browser uploads are limited to 64 MiB. Do not put personalized
+saves into shared game bundles.
 At most 127 native save paths are allowed; one additional artifact holds the DOS
 filesystem overlay. The `__runtime` namespace and file/directory collisions are
 rejected. No game, BIOS or private save is shipped in the application image.
@@ -52,6 +57,21 @@ logical release IDs, never physical storage paths.
 
 Administrators open **游戏管理** in the page header to upload and configure games.
 The form suggests DOS launch programs, preserves failed drafts and shows shared usage.
+
+1. Choose a title, system and file. DOS accepts ZIP/jsdos; consoles accept an
+   uncompressed `.nes`, `.sfc`, `.smc`, `.gb` or `.gba` ROM.
+2. For DOS, choose the launch program and optional arguments/cycles. List each
+   native save path on its own line relative to the archive root, using `/` for
+   subdirectories. Paths are exact, not wildcards; multiple files are supported.
+3. Publish, then return to the library and create private progress for the game.
+   Leaving a running game for management first synchronizes its progress; a failure
+   preserves the runtime so the player can retry.
+
+Empty DOS save paths disable automatic native-file change detection; manual saves
+still capture the writable collection. Remove unrelated/private files before upload:
+the server removes only the explicitly declared save files. Launch/configuration
+changes require uploading a new release; existing releases cannot be edited or
+deleted from this page. Console save locations are managed by the emulator adapter.
 
 Administrators can also publish through `POST /api/admin/games` using a multipart
 `metadata` JSON field followed by one `file` (maximum 64 MiB). The server accepts
