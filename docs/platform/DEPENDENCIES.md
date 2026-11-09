@@ -34,3 +34,14 @@ streamed rewriting, instead of a custom archive parser or whole-archive bufferin
 Their MIT licenses, pend's MIT license and buffer-crc32's MIT license were reviewed;
 the pinned type packages are development-only. File-size limits, portable paths,
 case collisions, special files, encryption and CRC checks remain application gates.
+
+Sega integration reuses the pinned `@emulatorjs/core-genesis_plus_gx` 4.2.3 archive;
+its actual `.data` archive's `license.txt` was reviewed on 2026-11-09. The core
+prohibits commercial use/sale, requires retained notices and requires complete
+component source for modified redistribution. Bundled components have additional
+terms, including Nuked OPN2 under LGPL 2.1 or later. This fits the requested
+noncommercial scope, but is not a permissive or blanket OSI license. Preserve the
+entire notice file and fulfill source obligations before public binary releases.
+The core binary is unmodified; no new npm dependency or service was introduced.
+See the [core license](https://github.com/EmulatorJS/Genesis-Plus-GX/blob/master/LICENSE.txt)
+and [runtime inventory](../../platform/RUNTIMES.md).

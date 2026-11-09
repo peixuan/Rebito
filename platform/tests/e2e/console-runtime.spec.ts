@@ -3,16 +3,29 @@ import type { RuntimeHandle, RuntimeWindow } from "../../client/runtime/types.ts
 import type { Game } from "../../src/library/catalog.ts";
 import { useSession } from "./session.ts";
 
-for (const variant of ["NES", "NES without battery", "SNES", "GB", "GBA"]) {
-  const system = variant.startsWith("NES") ? "NES" : variant;
+for (const variant of [
+  "NES",
+  "NES without battery",
+  "SNES",
+  "GB",
+  "GBA",
+  "MD",
+  "MD-SMD",
+  "SMS",
+  "GG",
+]) {
+  const system = variant.startsWith("NES") ? "NES" : variant === "MD-SMD" ? "MD" : variant;
   const hasBattery = variant !== "NES without battery";
+  const sega = ["MD", "SMS", "GG"].includes(system);
   test(`runs ${variant} and restores its available save formats`, async ({ page }, info) => {
     test.setTimeout(60_000);
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.stack || error.message));
     await useSession(page.context(), "console");
     const games: Game[] = await (await page.request.get("/api/games")).json();
-    const selected = games.find((entry) => entry.title === `${system} runtime test`);
+    const selected = games.find(
+      (entry) => entry.title === `${hasBattery ? variant : system} runtime test`,
+    );
     if (!selected) throw new Error("Missing own console fixture");
     const game: Game = selected;
     type Progress = { kind: "snapshot" | "game-save"; files: { name: string; bytes: number[] }[] };
@@ -82,6 +95,12 @@ for (const variant of ["NES", "NES without battery", "SNES", "GB", "GBA"]) {
     }
     try {
       await start(null);
+      if (system === "MD")
+        expect(
+          await page
+            .locator('.ejs_control_bar[data-index="0"]')
+            .evaluateAll((rows) => rows.map((row) => row.getAttribute("data-label"))),
+        ).toEqual(expect.arrayContaining(["A", "B", "C", "X", "Y", "Z", "MODE"]));
       if (hasBattery) {
         await expect
           .poll(
@@ -95,6 +114,12 @@ for (const variant of ["NES", "NES without battery", "SNES", "GB", "GBA"]) {
         initial.files.find((file) => file.name === "__runtime/state.bin")?.bytes.length,
       ).toBeGreaterThan(100);
       const native = initial.files.find((file) => file.name === "save.srm");
+      if (sega) {
+        await expect.poll(async () => (await pixel())[2]).toBeGreaterThan(150);
+        await page.locator("canvas").click();
+        await page.keyboard.press("ArrowRight", { delay: 100 });
+        await expect.poll(async () => (await pixel())[0]).toBeGreaterThan(150);
+      }
       if (hasBattery) {
         if (!native) throw new Error("Missing SRAM");
         native.bytes[0] = 0x43;
@@ -124,17 +149,19 @@ for (const variant of ["NES", "NES without battery", "SNES", "GB", "GBA"]) {
           .toBe(true);
         await page.keyboard.up("z");
       }
+      if (sega) await expect.poll(async () => (await pixel())[0]).toBeGreaterThan(150);
       const snapshot = await capture();
-      if (system === "NES") {
-        await start(native ? { kind: "game-save", files: [native] } : null);
+      if (system === "NES" || sega) {
+        await start(sega ? null : native ? { kind: "game-save", files: [native] } : null);
         await expect
           .poll(async () => {
             const color = await pixel();
-            return (color[1] ?? 0) > (color[2] ?? 0);
+            return sega ? (color[2] ?? 0) > (color[0] ?? 0) : (color[1] ?? 0) > (color[2] ?? 0);
           })
           .toBe(true);
       }
-      // Boot with different SRAM: $43 must come from the state, not the save file.
+      // Genesis Plus GX keeps SRAM outside the state. Other cores restore it.
+      // Use different boot SRAM to prove the changed palette comes from the state.
       const snapshotSave = snapshot.files.find((file) => file.name === "save.srm");
       if (hasBattery && !snapshotSave) throw new Error("Missing snapshot SRAM");
       if (snapshotSave) snapshotSave.bytes[0] = 0x42;
@@ -147,11 +174,12 @@ for (const variant of ["NES", "NES without battery", "SNES", "GB", "GBA"]) {
           })
           .toBe(true);
       }
+      if (sega) await expect.poll(async () => (await pixel())[0]).toBeGreaterThan(150);
       await expect
         .poll(
           async () => (await capture()).files.find((file) => file.name === "save.srm")?.bytes[0],
         )
-        .toBe(hasBattery ? 0x43 : undefined);
+        .toBe(hasBattery ? (sega ? 0x42 : 0x43) : undefined);
       await page.screenshot({ path: info.outputPath("console.png"), animations: "disabled" });
       expect(errors).toEqual([]);
     } finally {

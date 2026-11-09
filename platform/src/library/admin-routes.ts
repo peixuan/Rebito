@@ -12,6 +12,7 @@ import { DiskCapacity } from "../storage/capacity.ts";
 import type { LocalLibrary } from "./catalog.ts";
 import { prepareDosUpload } from "./dos-upload.ts";
 import { importGame } from "./importer.ts";
+import { validateSegaRom } from "./sega-rom.ts";
 import {
   type GameUploadSettings,
   gameUploadLimits,
@@ -70,6 +71,8 @@ async function validateRom(source: string, filename: string, system: GameSystem)
       (system === "nes" && !header.subarray(0, 4).equals(Buffer.from([0x4e, 0x45, 0x53, 0x1a])))
     )
       throw new LibraryError(message("library.gameFormat"));
+    if (system === "md" || system === "sms" || system === "gg")
+      await validateSegaRom(handle, system, extname(filename).toLowerCase());
   } finally {
     await handle.close();
   }

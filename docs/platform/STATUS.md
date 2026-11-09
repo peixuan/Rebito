@@ -4,22 +4,27 @@ Updated: 2026-11-09 (Asia/Shanghai).
 
 ## User verification follow-up
 
-- Sega MD, Master System and Game Gear integration is in progress. The existing
-  snapshot identity depended on the entire runtime inventory; adding a core would
-  invalidate unrelated snapshots. Build identities now depend on each core/wrapper
-  while preserving the verified original baseline for unchanged binaries. Five
-  identity/progress checks and type checks pass; Sega runtime acceptance follows.
-  System labels/extensions now have one shared registry, with core/save-directory
-  bindings kept in the console adapter. The existing five systems are unchanged;
-  34 catalog/admin/progress checks and types pass.
-  Bounded Sega header inspection and original 68000/Z80 test generators now cover
-  raw/interleaved MD and SMS/GG model discrimination. Two format tests cover valid,
-  truncated and mismatched files without modifying uploaded bytes. Full runtime
-  and administrator flow acceptance remains in progress.
-  Full regression exposed the existing inventory loop approaching its 5-second
-  limit: dozens of deep comparisons each enumerate a 329 KiB save. It now uses
-  native byte comparison with an item-specific diagnostic, retaining exhaustive
-  whole-file equality without increasing timeouts or weakening coverage gates.
+- Sega MD/Genesis, Master System and Game Gear are implemented using one pinned
+  Genesis Plus GX core. Shared system metadata drives uploads/catalog labels;
+  core/save-path/control bindings remain in the runtime adapter. Bounded header
+  checks reject malformed/wrong-model images without changing cartridge bytes.
+  Real sandboxed Chrome tests cover raw/SMD MD, SMS and GG: keyboard input, correct
+  MD button labels, native SRAM import and visible state restoration. The core
+  omits SRAM from states, so snapshot revisions retain both artifacts. Web uploads,
+  account saves, stop/resume and cross-account download denial pass for each format.
+  Snapshot identities now depend on each core/wrapper while preserving the original
+  unchanged-binary baseline; adding this core does not invalidate other games.
+  Runtime noncommercial/component terms were reviewed and recorded in dependencies.
+  Full gates pass: 272 unit/integration tests and 37 browser tests. Container build
+  and an isolated Linux probe pass four uploads and exact native-save recovery after
+  app recreation. Local app recreation is healthy; the deployed administrator page
+  exposes all three models and the 390-pixel layout has no horizontal overflow.
+  Existing game bytes and all 27 recorded save downloads match the pre-upgrade
+  digests. Synthetic cartridges remain confined to disposable test libraries.
+  Original test programs
+  establish these runtime paths, not universal commercial-ROM compatibility.
+  The existing inventory test now compares whole-file bytes natively, avoiding its
+  timeout without reducing exhaustive cases or relaxing the quality gates.
 
 - Configuration editing and confirmed deletion are implemented and deployed locally.
   The form reuses stored assets: renaming preserves the release; changed DOS launch
@@ -142,8 +147,9 @@ Updated: 2026-11-09 (Asia/Shanghai).
 
 ## Target
 
-A container-deployable single-page gaming platform for DOS, FC/NES, SFC/SNES, GB
-and GBA, with login, isolated versioned saves and optional server-side game editors.
+A container-deployable single-page gaming platform for DOS, FC/NES, SFC/SNES, GB,
+GBA, Sega MD/Genesis, Master System and Game Gear, with login, isolated versioned
+saves and optional server-side game editors.
 The first editor reproduces the existing Koukai2 capabilities. Runtime and editor
 support are separate: a playable game need not have an editor.
 
@@ -178,10 +184,10 @@ support are separate: a playable game need not have an editor.
 | Browser login shell | Verified in Chrome | Real registration/login/logout, session recovery and narrow-viewport checks |
 | Game library and personal progress | Implemented | Verified assets; private catalog API; browser import, history, restore and account isolation |
 | Operator game preparation/import | Verified locally | Explicit DOS file allowlist; deterministic bundles; atomic catalog publication; source files unchanged |
-| Administrator game management | Verified and deployed locally | Role-checked uploads; DOS launch/save settings; live catalog refresh; quotas; real uploaded DOS/NES fixtures |
+| Administrator game management | Verified and deployed locally | Role-checked uploads; DOS launch/save settings; live catalog refresh; quotas; real uploaded DOS/NES/MD/SMD/SMS/GG fixtures |
 | Configuration and game deletion | Verified and deployed locally | No-upload editing; confirmed cross-owner deletion; stale-impact rejection; shared-reference-safe file recovery and retry |
 | DOS browser runtime | Fixture and real game verified | DOSBox WASM, native files, filesystem overlay, edited-byte precedence; relative mouse capture/Escape release |
-| Console browser runtime | Four cores verified with own fixtures | NES/SNES/GB/GBA SRAM and states; NES keyboard, volatile palette and no-battery snapshot restoration |
+| Console browser runtime | Five cores verified with own fixtures | NES/SNES/GB/GBA/MD/SMS/GG SRAM and states; keyboard, volatile palette, SMD, no-battery snapshots and separate Sega SRAM |
 | Koukai2 editor | Real-game round trip verified | Eight modules; 13/13 legacy matches; browser editing/conflict tests; game reads and resaves modified money/leadership |
 | Local acceptance | Verified | Gates, end-to-end flows, complete container restart and fresh-volume backup recovery pass |
 
@@ -209,7 +215,7 @@ credentials or downloaded emulator archives are committed.
 - Production TLS and the actual identity provider/LDAP directory remain operator
   configuration. The local OIDC acceptance uses an independent test provider.
 - DOS absolute pointer alignment depends on the game; relative capture and keyboard
-  input are available. Four console cores are exercised with original test programs,
+  input are available. Five console cores are exercised with original test programs,
   not every commercial release. Koukai2 compatibility is tied to the verified format.
 - Save history is retained and quota-limited; automatic pruning and arbitrary
   third-party editor plugins are not part of this implementation.
@@ -224,12 +230,12 @@ remote CI has not run because this work has not been pushed.
 
 `cd platform && npm run check` with the test database: format/lint, TypeScript,
 HTTP/domain/filesystem and real PostgreSQL identity/revision/service tests passed.
-The complete run passed 263 tests with 97.95% Windows line coverage, 92.92% branch
-coverage and 98.46% function coverage. Linux-only directory fsync is exercised by
+The complete run passed 272 tests with 97.99% Windows line coverage, 92.96% branch
+coverage and 98.47% function coverage. Linux-only directory fsync is exercised by
 deployment, not by Windows unit coverage. The process entrypoint and account-provisioning CLI
 are excluded from unit coverage and exercised by the container smoke test.
 
-The complete 29-test browser suite passes, including all four console cores, DOS,
+The complete 37-test browser suite passes, including all five console cores, DOS,
 OIDC and three editor tests: exact multi-slot output bytes, numeric sorting and
 selection retention, clamping/invalid-input handling, narrow layouts, and retaining
 drafts when another upload advances the revision head. Edited cells update without

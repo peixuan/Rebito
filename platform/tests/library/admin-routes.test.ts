@@ -11,6 +11,7 @@ import { withCatalog } from "../../src/library/transaction.ts";
 import { loadConfig } from "../../src/server/config.ts";
 import { createPlatform } from "../../src/server/platform.ts";
 import { testDatabase } from "../database.ts";
+import { mdFixture, sega8Fixture, smdFixture } from "./sega-fixtures.ts";
 
 let fixture: Awaited<ReturnType<typeof testDatabase>>;
 let app: Awaited<ReturnType<typeof createPlatform>>;
@@ -353,4 +354,45 @@ it("retains failed cleanup across restart, blocks reuse and permits an explicit 
     await restarted.close();
     await rm(lock, { force: true });
   }
+});
+
+it.each([
+  ["md", ".md", mdFixture],
+  ["md", ".smd", smdFixture],
+  ["sms", ".sms", () => sega8Fixture()],
+  ["gg", ".gg", () => sega8Fixture(true)],
+] as const)(
+  "publishes %s %s without changing cartridge bytes",
+  async (system, extension, fixture) => {
+    const bytes = fixture();
+    const response = await upload({
+      metadata: { title: `Sega ${extension}`, system },
+      filename: `cartridge${extension}`,
+      bytes,
+    });
+    expect(response.statusCode).toBe(201);
+    const game = response.json().game;
+    expect(game.system).toBe(system);
+    expect(game.editor).toBeUndefined();
+    const asset = await app.inject({
+      url: `/api/games/${game.id}/asset`,
+      headers: { cookie: player },
+    });
+    expect(asset.rawPayload).toEqual(Buffer.from(bytes));
+  },
+);
+
+it("rejects Sega model/header mismatches before publishing and cleans staged files", async () => {
+  const before = await readdir(join(directory, "library"));
+  for (const [system, filename, bytes] of [
+    ["md", "game.md", sega8Fixture()],
+    ["sms", "game.sms", sega8Fixture(true)],
+    ["gg", "game.gg", sega8Fixture()],
+    ["md", "game.iso", mdFixture()],
+  ] as const)
+    expect(
+      (await upload({ metadata: { title: "Mismatch", system }, filename, bytes })).statusCode,
+    ).toBe(422);
+  expect(await readdir(join(directory, "library"))).toEqual(before);
+  expect(await readdir(join(directory, "library", ".uploads"))).toEqual([]);
 });

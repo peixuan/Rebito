@@ -17,7 +17,7 @@ Original sources are retained beside the combined file, and the exact build
 adjustment is recorded in `scripts/runtime-assets.mjs`.
 
 The selected components are js-dos 8.5.3 (with emulators 8.5.2) and EmulatorJS
-4.2.3 with its 4.2.3 FCEUmm, Snes9x, Gambatte and mGBA packages. The wrapper version
+4.2.3 with its 4.2.3 FCEUmm, Snes9x, Gambatte, mGBA and Genesis Plus GX packages. The wrapper version
 does not identify a native core revision by itself: preserve the complete lock
 and use a lock-derived fingerprint when recording emulator snapshots.
 
@@ -28,7 +28,7 @@ components retain that identity; changed archives receive a new fingerprint.
 Keep this baseline immutable during upgrades; it is compatibility evidence, not
 a version alias for newly built binaries.
 
-Snes9x has noncommercial restrictions; it is not covered by a blanket claim that
+Snes9x and Genesis Plus GX have noncommercial restrictions; do not claim that
 every runtime has a permissive license. This fits the stated noncommercial scope
 but must be reconsidered if distribution terms or project goals change.
 Before public binary distribution, assemble the corresponding source/build
@@ -106,3 +106,14 @@ is part of the tests.
 Original LoROM, MBC1 and ARM fixtures exercise Snes9x, Gambatte and mGBA too.
 Each test imports a changed battery save and then restores a state over deliberately
 different boot SRAM, proving that the state load—not merely a restart—restores data.
+
+Genesis Plus GX serves MD/Genesis, Master System and Game Gear through the existing
+adapter. Each binding specifies its ROM suffix and control scheme; the wrapper's
+reverse lookup otherwise treats all three as Master System. Tests also verify MD
+button labels: the pinned wrapper omits MD from its settings menu, so its identical
+Sega CD pad scheme supplies A/B/C and X/Y/Z/MODE. Original 68000/Z80 fixtures cover
+raw/SMD MD, both 8-bit models, keyboard input, native SRAM import and visible palette
+restoration. This core excludes SRAM from its state, so snapshots
+must retain both `save.srm` and `__runtime/state.bin`; the test deliberately uses
+different boot SRAM and verifies the restored palette independently. These checks
+prove the tested runtime paths, not compatibility with every commercial game.

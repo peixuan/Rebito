@@ -1,6 +1,7 @@
 # Platform architecture
 
 Decision date: 2026-11-07. Scope: DOS, FC/NES, SFC/SNES, GB and GBA.
+Scope extended on 2026-11-09: Sega MD/Genesis, Master System and Game Gear.
 
 ## Decision: reuse libraries, keep a small application
 
@@ -8,6 +9,13 @@ Build a modular TypeScript application with Fastify, a browser SPA and PostgreSQ
 Reuse EmulatorJS/js-dos for emulation and Better Auth for account/session/OIDC
 flows. Do not implement an emulator, password protocol, OAuth flow or component
 framework. Game-specific save editing is our domain code.
+
+Sega cartridge support adds a pinned Genesis Plus GX core to the existing adapter,
+not another persistence or authentication service. Shared system metadata drives
+catalog validation and upload labels; adapter bindings own core names, save paths,
+ROM suffixes and controls. Runtime identities depend on the selected wrapper/core,
+so extending the machine list does not invalidate unrelated snapshots. Native
+SRAM and volatile state remain separate artifacts in the same atomic revision.
 
 ### RomM evaluation
 

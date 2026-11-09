@@ -14,7 +14,7 @@ Create a metadata JSON file, for example:
 { "title": "My game", "system": "nes" }
 ```
 
-Systems are `dos`, `nes`, `snes`, `gb`, `gba`. Console files are uncompressed ROMs;
+Systems are `dos`, `nes`, `snes`, `gb`, `gba`, `md`, `sms`, `gg`. Console files are uncompressed ROMs;
 DOS files are `.jsdos` ZIP bundles with `.jsdos/dosbox.conf`. DOS metadata also
 accepts `saveFiles` (portable relative file paths) and optional `editor: "koukai2"`.
 Only enable an editor for a verified compatible release. Each CLI-imported file is
@@ -62,7 +62,9 @@ Administrators open **游戏管理** in the page header to upload and configure 
 The form suggests DOS launch programs, preserves failed drafts and shows shared usage.
 
 1. Choose a title, system and file. DOS accepts ZIP/jsdos; consoles accept an
-   uncompressed `.nes`, `.sfc`, `.smc`, `.gb` or `.gba` ROM.
+   uncompressed `.nes`, `.sfc`, `.smc`, `.gb` or `.gba` ROM. Sega MD/Genesis accepts
+   `.md`, `.gen`, `.bin` and interleaved `.smd`; Master System accepts `.sms`, and
+   Game Gear accepts `.gg`. Choose the actual machine, not just a matching suffix.
 2. For DOS, choose the launch program and optional arguments/cycles. List each
    native save path on its own line relative to the archive root, using `/` for
    subdirectories. Paths are exact, not wildcards; multiple files are supported.
@@ -78,6 +80,10 @@ Renaming preserves the release ID; changed DOS launch/sync rules create a new re
 and preserve old profiles. Complex legacy launch scripts are not guessed: leaving
 the launch program empty renames only; selecting one replaces the launch script.
 Console save locations are managed by the emulator adapter.
+Sega uploads receive bounded header/model checks; ROM bytes are preserved, including
+SMD interleaving. Headers are not a complete compatibility guarantee. Sega CD, 32X,
+Pico, Saturn and Dreamcast are outside this cartridge integration. The selected
+MD/SMS/GG core runs these cartridge formats without a separately supplied BIOS.
 
 Administrators can also publish through `POST /api/admin/games` using a multipart
 `metadata` JSON field followed by one `file` (maximum 64 MiB). The server accepts

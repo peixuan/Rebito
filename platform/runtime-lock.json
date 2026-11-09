@@ -54,6 +54,15 @@
       "source": "https://github.com/EmulatorJS/mgba",
       "core": true,
       "target": "emulatorjs-4.2.3/data/cores"
+    },
+    {
+      "id": "genesis_plus_gx-4.2.3",
+      "url": "https://registry.npmjs.org/@emulatorjs/core-genesis_plus_gx/-/core-genesis_plus_gx-4.2.3.tgz",
+      "integrity": "sha512-D1e2XA2CPRAjfr0JurpXJgR9dePxl/xHtaE8v1T9BqD9A3DLfobIFWsWU9jCFS4NfUxCvcLdTYdY/We3QzvcTw==",
+      "license": "Genesis Plus GX noncommercial; component terms in core archive license.txt",
+      "source": "https://github.com/EmulatorJS/Genesis-Plus-GX",
+      "core": true,
+      "target": "emulatorjs-4.2.3/data/cores"
     }
   ],
   "snapshotBaseline": {

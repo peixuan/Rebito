@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { zipSync } from "fflate";
+import { gameSystems } from "../../src/domain/systems.ts";
 import { nesFixture } from "../library/nes-fixture.ts";
+import { mdFixture, sega8Fixture, smdFixture } from "../library/sega-fixtures.ts";
 import { useSession } from "./session.ts";
 
 test("publishes a DOS game from the administrator page and retains a rejected draft", async ({
@@ -82,41 +84,79 @@ test("publishes a DOS game from the administrator page and retains a rejected dr
   await expect(page.getByLabel("Game title", { exact: true })).toBeVisible();
 });
 
-test("uploads and plays a console ROM from the same administrator page", async ({ page }) => {
-  await useSession(page.context(), "admin");
-  await page.goto("/");
-  await page.getByRole("button", { name: "Game management", exact: true }).click();
-  await page.getByLabel("Game title", { exact: true }).fill("Console browser upload");
-  await page.getByRole("combobox", { name: "Upload platform" }).click();
-  await page.getByRole("option", { name: "FC / NES", exact: true }).click();
-  const bytes = nesFixture();
-  bytes[bytes.length - 1] = (bytes.at(-1) ?? 0) ^ 1; // Distinct fixture; keep the shared seed intact.
-  await page.getByLabel("Game file", { exact: true }).setInputFiles({
-    name: "fixture.nes",
-    mimeType: "application/octet-stream",
-    buffer: Buffer.from(bytes),
+for (const [system, extension, fixture] of [
+  ["nes", "nes", nesFixture],
+  ["md", "md", mdFixture],
+  ["md", "smd", smdFixture],
+  ["sms", "sms", () => sega8Fixture()],
+  ["gg", "gg", () => sega8Fixture(true)],
+] as const) {
+  test(`uploads, saves and resumes ${extension} through administration`, async ({
+    page,
+    browser,
+  }) => {
+    test.setTimeout(60_000);
+    const title = `Console browser upload ${extension}`;
+    await useSession(page.context(), "admin");
+    await page.goto("/");
+    await page.getByRole("button", { name: "Game management", exact: true }).click();
+    await page.getByLabel("Game title", { exact: true }).fill(title);
+    await page.getByRole("combobox", { name: "Upload platform" }).click();
+    await page.getByRole("option", { name: gameSystems[system].label, exact: true }).click();
+    const bytes = fixture();
+    bytes[bytes.length - 1] = (bytes.at(-1) ?? 0) ^ 1; // Distinct fixture; keep the shared seed intact.
+    await page.getByLabel("Game file", { exact: true }).setInputFiles({
+      name: `fixture.${extension}`,
+      mimeType: "application/octet-stream",
+      buffer: Buffer.from(bytes),
+    });
+    await expect(page.getByLabel("Save files to synchronize")).toHaveCount(0);
+    await page.getByRole("button", { name: "Publish to library", exact: true }).click();
+    await expect(page.getByRole("status").filter({ hasText: "Published" })).toContainText(
+      `Published ${title}`,
+    );
+    await page.getByRole("button", { name: "Back to library", exact: true }).click();
+    await page.getByRole("button", { name: new RegExp(title) }).click();
+    await page.getByLabel("Profile name").fill("Console upload acceptance");
+    await page.getByRole("button", { name: "Create profile", exact: true }).click();
+    await page.getByRole("button", { name: "Open profile", exact: true }).click();
+    await page.getByRole("button", { name: "Start game", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Pause game", exact: true })).toBeEnabled({
+      timeout: 30_000,
+    });
+    await expect(page.frameLocator("iframe").locator("canvas")).toBeVisible();
+    await page.getByRole("button", { name: "Stop game", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Start game", exact: true })).toBeVisible();
+    await expect(
+      page.getByRole("region", { name: "Revision history" }).getByRole("link"),
+    ).not.toHaveCount(0);
+    const nativeUrl = await page
+      .getByRole("link", { name: "save.srm", exact: true })
+      .first()
+      .getAttribute("href");
+    if (!nativeUrl) throw new Error("Missing native save download");
+    expect((await (await page.request.get(nativeUrl)).body())[0]).toBe(0x42);
+    const stranger = await browser.newContext();
+    try {
+      await useSession(stranger, "other");
+      expect((await stranger.request.get(new URL(nativeUrl, page.url()).href)).status()).toBe(404);
+    } finally {
+      await stranger.close();
+    }
+    await page.getByRole("button", { name: "Start game", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Pause game", exact: true })).toBeEnabled({
+      timeout: 30_000,
+    });
+    await page.getByRole("button", { name: "Stop game", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Start game", exact: true })).toBeVisible();
+    const resumedUrl = await page
+      .getByRole("link", { name: "save.srm", exact: true })
+      .first()
+      .getAttribute("href");
+    if (!resumedUrl) throw new Error("Missing resumed save download");
+    expect((await (await page.request.get(resumedUrl)).body())[0]).toBe(0x42);
   });
-  await expect(page.getByLabel("Save files to synchronize")).toHaveCount(0);
-  await page.getByRole("button", { name: "Publish to library", exact: true }).click();
-  await expect(page.getByRole("status").filter({ hasText: "Published" })).toContainText(
-    "Published「Console browser upload」",
-  );
-  await page.getByRole("button", { name: "Back to library", exact: true }).click();
-  await page.getByRole("button", { name: /Console browser upload/ }).click();
-  await page.getByLabel("Profile name").fill("Console upload acceptance");
-  await page.getByRole("button", { name: "Create profile", exact: true }).click();
-  await page.getByRole("button", { name: "Open profile", exact: true }).click();
-  await page.getByRole("button", { name: "Start game", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Pause game", exact: true })).toBeEnabled({
-    timeout: 30_000,
-  });
-  await expect(page.frameLocator("iframe").locator("canvas")).toBeVisible();
-  await page.getByRole("button", { name: "Stop game", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Start game", exact: true })).toBeVisible();
-  await expect(
-    page.getByRole("region", { name: "Revision history" }).getByRole("link"),
-  ).not.toHaveCount(0);
-});
+}
 
 test("hides game management from ordinary players and protects unpublished administrator drafts", async ({
   page,
