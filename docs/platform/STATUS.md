@@ -16,6 +16,10 @@ Updated: 2026-11-09 (Asia/Shanghai).
   raw/interleaved MD and SMS/GG model discrimination. Two format tests cover valid,
   truncated and mismatched files without modifying uploaded bytes. Full runtime
   and administrator flow acceptance remains in progress.
+  Full regression exposed the existing inventory loop approaching its 5-second
+  limit: dozens of deep comparisons each enumerate a 329 KiB save. It now uses
+  native byte comparison with an item-specific diagnostic, retaining exhaustive
+  whole-file equality without increasing timeouts or weakening coverage gates.
 
 - Configuration editing and confirmed deletion are implemented and deployed locally.
   The form reuses stored assets: renaming preserves the release; changed DOS launch
