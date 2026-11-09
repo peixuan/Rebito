@@ -14,6 +14,10 @@ Updated: 2026-11-09 (Asia/Shanghai).
   DOS bytes for changed launch/sync rules. Ten configuration/upload API checks pass,
   including stale drafts, unchanged bytes, editor-binding preservation, new-version
   isolation and quota rejection; types pass. Browser controls and deletion follow.
+  Deletion accounting now counts all owners/history, excludes shared blobs from
+  estimated recovery, rejects stale previews and records cleanup intent atomically
+  with history removal. Ten repository/deletion checks and types pass; the operation
+  is not exposed in the UI or HTTP API yet.
 
 - Administrator game management is implemented and deployed locally. The header
   opens uploads, DOS launch settings, explicit save paths and a searchable/sortable

@@ -37,6 +37,22 @@ export async function migrateStorage(database: Pool): Promise<void> {
       await client.query(initialSchema);
       await client.query("INSERT INTO schema_versions VALUES (1)");
     }
+    const deletionSchema = await client.query(
+      "SELECT version FROM schema_versions WHERE version = 2",
+    );
+    if (deletionSchema.rowCount === 0) {
+      await client.query(`
+        CREATE INDEX profiles_release ON profiles(release_id);
+        CREATE TABLE game_deletions (
+          release_id text PRIMARY KEY,
+          entry jsonb NOT NULL,
+          preview jsonb NOT NULL,
+          candidates jsonb NOT NULL,
+          created_at timestamptz NOT NULL DEFAULT now()
+        );
+        INSERT INTO schema_versions VALUES (2);
+      `);
+    }
     await client.query("COMMIT");
   } catch (error) {
     await client.query("ROLLBACK");
