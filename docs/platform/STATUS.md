@@ -9,6 +9,9 @@ Updated: 2026-11-09 (Asia/Shanghai).
   invalidate unrelated snapshots. Build identities now depend on each core/wrapper
   while preserving the verified original baseline for unchanged binaries. Five
   identity/progress checks and type checks pass; Sega runtime acceptance follows.
+  System labels/extensions now have one shared registry, with core/save-directory
+  bindings kept in the console adapter. The existing five systems are unchanged;
+  34 catalog/admin/progress checks and types pass.
 
 - Configuration editing and confirmed deletion are implemented and deployed locally.
   The form reuses stored assets: renaming preserves the release; changed DOS launch

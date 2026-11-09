@@ -4,6 +4,7 @@ import { readFile, realpath, stat } from "node:fs/promises";
 import { isAbsolute, join, relative, sep } from "node:path";
 import { z } from "zod";
 import { assertArtifactName, progressLimits } from "../domain/artifacts.ts";
+import { systemIds } from "../domain/systems.ts";
 
 const portablePath = z.string().refine((value) => {
   try {
@@ -17,7 +18,7 @@ const portablePath = z.string().refine((value) => {
 const entrySchema = z
   .strictObject({
     title: z.string().trim().min(1).max(120),
-    system: z.enum(["dos", "nes", "snes", "gb", "gba"]),
+    system: z.enum(systemIds),
     file: portablePath,
     sha256: z.string().regex(/^[a-f0-9]{64}$/),
     size: z

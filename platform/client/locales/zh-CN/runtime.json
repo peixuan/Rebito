@@ -1,5 +1,6 @@
 {
   "runtime.loadFailed": "模拟器资源加载失败。",
+  "runtime.dosRequired": "DOS 游戏需要 DOS 模拟器。",
   "runtime.consoleSaveType": "此文件系统存档不适用于主机模拟器。",
   "runtime.nativeSaveRequired": "请导入一个游戏原生存档文件。",
   "runtime.snapshotMissing": "即时快照缺少运行状态。",

@@ -4,6 +4,7 @@ import { mkdir, open, rm, stat } from "node:fs/promises";
 import { extname, join } from "node:path";
 import { pipeline } from "node:stream/promises";
 import type { FastifyInstance, FastifyRequest } from "fastify";
+import { type GameSystem, gameSystems } from "../domain/systems.ts";
 import { requireAdministrator } from "../identity/administrator.ts";
 import type { ServerConfig } from "../server/config.ts";
 import { message } from "../shared/messages.ts";
@@ -56,14 +57,8 @@ async function receive(request: FastifyRequest, source: string) {
   return { settings, filename };
 }
 
-async function validateRom(source: string, filename: string, system: string) {
-  const extensions: Record<string, string[]> = {
-    nes: [".nes"],
-    snes: [".sfc", ".smc"],
-    gb: [".gb"],
-    gba: [".gba"],
-  };
-  if (!extensions[system]?.includes(extname(filename).toLowerCase()))
+async function validateRom(source: string, filename: string, system: GameSystem) {
+  if (!gameSystems[system].extensions.includes(extname(filename).toLowerCase()))
     throw new LibraryError(message("library.romExtension"));
   const handle = await open(source, "r");
   try {

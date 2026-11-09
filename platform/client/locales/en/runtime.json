@@ -1,5 +1,6 @@
 {
   "runtime.loadFailed": "Could not load emulator resources.",
+  "runtime.dosRequired": "DOS games require the DOS emulator.",
   "runtime.consoleSaveType": "This filesystem save cannot be used by the console emulator.",
   "runtime.nativeSaveRequired": "Import one native game save file.",
   "runtime.snapshotMissing": "The snapshot is missing its runtime state.",

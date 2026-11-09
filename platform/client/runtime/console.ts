@@ -1,6 +1,7 @@
 import { MessageError, message } from "../../src/shared/messages.ts";
 import { loadScript, loadStyle } from "./assets.ts";
 import { consoleLocale } from "./console-locale.ts";
+import { consoleSystems } from "./console-systems.ts";
 import { runtimeIdentity } from "./identity.ts";
 import type { RuntimeFile, RuntimeHandle, RuntimeLaunch } from "./types.ts";
 
@@ -24,6 +25,8 @@ interface Emulator {
 }
 
 export async function startConsole(launch: RuntimeLaunch): Promise<RuntimeHandle> {
+  if (launch.game.system === "dos") throw new MessageError(message("runtime.dosRequired"));
+  const system = consoleSystems[launch.game.system];
   const runtime = runtimeIdentity(launch.game.system);
   const urls: string[] = [];
   function url(bytes: Uint8Array<ArrayBuffer>) {
@@ -41,9 +44,7 @@ export async function startConsole(launch: RuntimeLaunch): Promise<RuntimeHandle
   const state = files.find((file) => file.name === "__runtime/state.bin");
   if (progress?.kind === "snapshot" && !state)
     throw new MessageError(message("runtime.snapshotMissing"));
-  const directories = { dos: "", nes: "FCEUmm", snes: "Snes9x", gb: "Gambatte", gba: "mGBA" };
-  const savePath = `/data/saves/${directories[launch.game.system]}/${launch.profileId}.srm`;
-  const extension = launch.game.system === "snes" ? "sfc" : launch.game.system;
+  const savePath = `/data/saves/${system.directory}/${launch.profileId}.srm`;
   const base = "/runtimes/emulatorjs-4.2.3/data/";
   const localization = await consoleLocale(base, launch.locale);
   loadStyle(`${base}emulator.min.css`);
@@ -58,7 +59,8 @@ export async function startConsole(launch: RuntimeLaunch): Promise<RuntimeHandle
     ...localization,
     system: runtime.core,
     gameUrl: url(launch.gameBytes),
-    gameName: `${launch.profileId}.${extension}`,
+    gameName: `${launch.profileId}.${system.extension}`,
+    ...(system.controls ? { controlScheme: system.controls } : {}),
     dataPath: base,
     startOnLoad: true,
     disableDatabases: true,

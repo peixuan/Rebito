@@ -4,6 +4,7 @@ import InputText from "primevue/inputtext";
 import Message from "primevue/message";
 import Select from "primevue/select";
 import { computed, onMounted, ref } from "vue";
+import { gameSystems, systemIds } from "../src/domain/systems.ts";
 import type { Game } from "../src/library/catalog.ts";
 import type { DisplayText } from "../src/shared/messages.ts";
 import type { Profile } from "../src/storage/revisions.ts";
@@ -19,13 +20,7 @@ const system = ref<string | null>(null);
 const profileName = ref("");
 const busy = ref(true);
 const error = ref<DisplayText>("");
-const systems = [
-  { label: "DOS", value: "dos" },
-  { label: "FC", value: "nes" },
-  { label: "SFC", value: "snes" },
-  { label: "GB", value: "gb" },
-  { label: "GBA", value: "gba" },
-];
+const systems = systemIds.map((value) => ({ value, label: gameSystems[value].shortLabel }));
 const visibleGames = computed(() =>
   games.value.filter(
     (game) =>

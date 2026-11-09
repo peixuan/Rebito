@@ -8,6 +8,7 @@ import Select from "primevue/select";
 import Textarea from "primevue/textarea";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { gameUploadLimits } from "../src/domain/game-import.ts";
+import { gameSystems, systemOptions as systems } from "../src/domain/systems.ts";
 import type { Game } from "../src/library/catalog.ts";
 import type { describeConfiguration } from "../src/library/configuration.ts";
 import type { DeletionPreview } from "../src/library/deletion-records.ts";
@@ -19,16 +20,9 @@ import { t, translate } from "./i18n.ts";
 import { inspectDosArchive } from "./library-archive.ts";
 
 const emit = defineEmits<{ back: [] }>();
-const systems = [
-  { label: "DOS", value: "dos" },
-  { label: "FC / NES", value: "nes" },
-  { label: "SFC / SNES", value: "snes" },
-  { label: "GB", value: "gb" },
-  { label: "GBA", value: "gba" },
-];
 const catalog = ref<{ games: Game[]; usedBytes: number; maximumBytes: number } | null>(null);
 const title = ref("");
-const system = ref("dos");
+const system = ref<Game["system"]>("dos");
 const executable = ref("");
 const args = ref("");
 const cycles = ref("auto");
@@ -67,10 +61,7 @@ const games = computed(
         game.title.toLocaleLowerCase().includes(query.value.trim().toLocaleLowerCase()),
     ) ?? [],
 );
-const accept = computed(
-  () =>
-    ({ dos: ".zip,.jsdos", nes: ".nes", snes: ".sfc,.smc", gb: ".gb", gba: ".gba" })[system.value],
-);
+const accept = computed(() => gameSystems[system.value].extensions.join(","));
 async function refresh() {
   try {
     [catalog.value, pending.value] = await Promise.all([
