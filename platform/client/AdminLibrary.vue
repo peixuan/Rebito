@@ -9,6 +9,7 @@ import Textarea from "primevue/textarea";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { gameUploadLimits } from "../src/domain/game-import.ts";
 import type { Game } from "../src/library/catalog.ts";
+import type { describeConfiguration } from "../src/library/configuration.ts";
 import { type DisplayText, message } from "../src/shared/messages.ts";
 import { api, errorText } from "./api.ts";
 import { t, translate } from "./i18n.ts";
@@ -36,15 +37,22 @@ const busy = ref(false);
 const error = ref<DisplayText>("");
 const notice = ref<DisplayText>("");
 const query = ref("");
+const editing = ref<{ id: string; token: string } | null>(null);
+const initialDraft = ref("");
+const legacyConfiguration = ref(false);
+const draft = () =>
+  JSON.stringify([title.value, executable.value, args.value, cycles.value, savePaths.value]);
 const dirty = computed(() =>
-  Boolean(
-    file.value ||
-      title.value ||
-      executable.value ||
-      args.value ||
-      savePaths.value ||
-      cycles.value !== "auto",
-  ),
+  editing.value
+    ? draft() !== initialDraft.value
+    : Boolean(
+        file.value ||
+          title.value ||
+          executable.value ||
+          args.value ||
+          savePaths.value ||
+          cycles.value !== "auto",
+      ),
 );
 const games = computed(
   () =>
@@ -98,41 +106,53 @@ function resetFile() {
   if (input.value) input.value.value = "";
 }
 async function publish() {
-  if (!file.value || busy.value) return;
+  if ((!file.value && !editing.value) || busy.value) return;
   busy.value = true;
   error.value = "";
   notice.value = "";
   try {
-    const form = new FormData();
-    form.append(
-      "metadata",
-      JSON.stringify({
-        title: title.value,
-        system: system.value,
-        ...(system.value === "dos"
-          ? {
-              executable: executable.value,
-              arguments: args.value,
-              cycles: cycles.value,
-              saveFiles: savePaths.value
-                .split(/\r?\n/)
-                .map((path) => path.trim())
-                .filter(Boolean),
-            }
-          : {}),
-      }),
-    );
-    form.append("file", file.value);
-    const result = await api<{ game: Game; removed: string[] }>("admin/games", form);
-    notice.value = message("admin.published", {
-      title: result.game.title,
-      removed: result.removed.length
-        ? message("admin.removedSaves", { files: result.removed.join(", ") })
-        : "",
-    });
-    title.value = args.value = savePaths.value = "";
-    cycles.value = "auto";
-    resetFile();
+    const settings = {
+      title: title.value,
+      system: system.value,
+      ...(system.value === "dos"
+        ? {
+            executable: executable.value,
+            arguments: args.value,
+            cycles: cycles.value,
+            saveFiles: savePaths.value
+              .split(/\r?\n/)
+              .map((path) => path.trim())
+              .filter(Boolean),
+          }
+        : {}),
+    };
+    if (editing.value) {
+      const { title: gameTitle, system: _, ...launch } = settings;
+      const result = await api<{ game: Game; created: boolean }>(
+        `admin/games/${editing.value.id}/configuration`,
+        {
+          token: editing.value.token,
+          title: gameTitle,
+          ...(system.value === "dos" && executable.value ? { launch } : {}),
+        },
+      );
+      notice.value = result.created
+        ? message("admin.reconfiguredLegacy", { title: result.game.title })
+        : message("admin.configured", { title: result.game.title });
+    } else {
+      const form = new FormData();
+      form.append("metadata", JSON.stringify(settings));
+      if (!file.value) return;
+      form.append("file", file.value);
+      const result = await api<{ game: Game; removed: string[] }>("admin/games", form);
+      notice.value = message("admin.published", {
+        title: result.game.title,
+        removed: result.removed.length
+          ? message("admin.removedSaves", { files: result.removed.join(", ") })
+          : "",
+      });
+    }
+    resetDraft();
     await refresh();
   } catch (cause) {
     error.value = errorText(cause);
@@ -140,9 +160,44 @@ async function publish() {
     busy.value = false;
   }
 }
+function resetDraft() {
+  editing.value = null;
+  legacyConfiguration.value = false;
+  title.value = args.value = savePaths.value = "";
+  cycles.value = "auto";
+  resetFile();
+}
+async function edit(game: Game) {
+  if (!leave()) return;
+  busy.value = true;
+  error.value = notice.value = "";
+  try {
+    const detail = await api<Awaited<ReturnType<typeof describeConfiguration>>>(
+      `admin/games/${game.id}/configuration`,
+    );
+    resetDraft();
+    editing.value = { id: game.id, token: detail.token };
+    title.value = game.title;
+    system.value = game.system;
+    programs.value = detail.executables;
+    executable.value = detail.settings?.executable ?? "";
+    args.value = detail.settings?.arguments ?? "";
+    cycles.value = detail.settings?.cycles ?? "auto";
+    savePaths.value = game.saveFiles.join("\n");
+    legacyConfiguration.value = game.system === "dos" && !detail.settings;
+    initialDraft.value = draft();
+  } catch (cause) {
+    error.value = errorText(cause);
+  } finally {
+    busy.value = false;
+  }
+}
+function cancelEdit() {
+  if (leave()) resetDraft();
+}
 function leave() {
   if (busy.value) {
-    error.value = message("admin.processingUpload");
+    error.value = message("admin.processingConfiguration");
     return false;
   }
   return !dirty.value || window.confirm(t("admin.discardConfiguration"));
@@ -173,7 +228,18 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
     <Message v-if="notice" severity="success" role="status">{{ translate(notice) }}</Message>
     <div class="admin-layout">
       <form class="profile-panel admin-form" @submit.prevent="publish">
-        <h2>{{ t("admin.uploadTitle") }}</h2>
+        <div class="toolbar">
+          <h2>{{ editing ? t("admin.editTitle") : t("admin.uploadTitle") }}</h2>
+          <Button
+            v-if="editing"
+            :label="t('admin.cancelEdit')"
+            size="small"
+            variant="text"
+            :disabled="busy"
+            @click="cancelEdit"
+          />
+        </div>
+        <p v-if="editing" class="muted">{{ t("admin.reuseLegacyHelp") }}</p>
         <label for="admin-title"
           >{{ t("admin.gameTitle")
           }}<InputText
@@ -194,11 +260,11 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
             option-label="label"
             option-value="value"
             :aria-label="t('admin.uploadPlatform')"
-            :disabled="busy"
+            :disabled="busy || !!editing"
             @change="resetFile"
           /></label
         >
-        <label
+        <label v-if="!editing"
           >{{ t("library.gameFile")
           }}<input
             ref="input"
@@ -210,7 +276,8 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
             @change="selectFile"
           ></label
         >
-        <p class="muted">{{ t("admin.fileHelp") }}</p>
+        <p v-if="!editing" class="muted">{{ t("admin.fileHelp") }}</p>
+        <p v-if="legacyConfiguration" class="muted">{{ t("admin.launchLegacyHelp") }}</p>
         <template v-if="system === 'dos'">
           <label for="admin-executable"
             >{{ t("admin.executable")
@@ -220,7 +287,7 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
               list="dos-programs"
               :aria-label="t('admin.executable')"
               :placeholder="t('admin.executableExample')"
-              required
+              :required="!editing"
               :disabled="busy"
             /></label
           >
@@ -235,7 +302,7 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
                 id="admin-arguments"
                 :aria-label="t('admin.arguments')"
                 maxlength="200"
-                :disabled="busy"
+                :disabled="busy || (!!editing && !executable)"
               /></label
             >
             <label for="admin-cycles"
@@ -245,7 +312,7 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
                 id="admin-cycles"
                 :aria-label="t('admin.cycles')"
                 placeholder="auto"
-                :disabled="busy"
+                :disabled="busy || (!!editing && !executable)"
               /></label
             >
           </div>
@@ -258,7 +325,7 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
               :aria-label="t('admin.saveFiles')"
               rows="4"
               :placeholder="t('admin.savePathsExample')"
-              :disabled="busy"
+              :disabled="busy || (!!editing && !executable)"
             /></label
           >
           <p class="muted">{{ t("admin.savePathsHelp") }}</p>
@@ -266,9 +333,11 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
         <p v-else class="muted">{{ t("admin.consoleSaveHelp") }}</p>
         <Button
           type="submit"
-          :label="busy ? t('admin.uploading') : t('admin.publish')"
+          :label="busy ? t('common.processing') : editing ? t('admin.save') : t('admin.publish')"
           :loading="busy"
-          :disabled="!file || !title.trim() || (system === 'dos' && !executable)"
+          :disabled="
+            (!file && !editing) || !title.trim() || (!editing && system === 'dos' && !executable)
+          "
         />
       </form>
       <section class="profile-panel admin-catalog" :aria-label="t('admin.publishedGames')">
@@ -314,8 +383,19 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
               }}</span></template
             ></Column
           >
+          <Column :header="t('common.actions')"
+            ><template #body="{ data }"
+              ><Button
+                :label="t('admin.edit')"
+                size="small"
+                variant="text"
+                :disabled="busy"
+                @click="edit(data)"
+              /></template
+            ></Column
+          >
         </DataTable>
-        <p class="muted">{{ t("admin.immutableLaunchHelp") }}</p>
+        <p class="muted">{{ t("admin.versionHelp") }}</p>
       </section>
     </div>
   </section>
