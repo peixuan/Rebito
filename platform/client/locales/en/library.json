@@ -30,6 +30,7 @@
   "library.cleanupPending": "Related progress has been deleted, but disk cleanup is incomplete. Select Retry cleanup.",
   "library.executableMissing": "The launch executable is missing or has been selected as a save file.",
   "library.quota": "The game library quota is full. Ask the deployment administrator to adjust its capacity.",
+  "library.segaHeader": "The file header does not match the selected Sega system, or the ROM format is unsupported.",
   "library.back": "Back to library",
   "library.platform": "Platform",
   "library.gameFile": "Game file",

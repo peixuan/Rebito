@@ -12,6 +12,10 @@ Updated: 2026-11-09 (Asia/Shanghai).
   System labels/extensions now have one shared registry, with core/save-directory
   bindings kept in the console adapter. The existing five systems are unchanged;
   34 catalog/admin/progress checks and types pass.
+  Bounded Sega header inspection and original 68000/Z80 test generators now cover
+  raw/interleaved MD and SMS/GG model discrimination. Two format tests cover valid,
+  truncated and mismatched files without modifying uploaded bytes. Full runtime
+  and administrator flow acceptance remains in progress.
 
 - Configuration editing and confirmed deletion are implemented and deployed locally.
   The form reuses stored assets: renaming preserves the release; changed DOS launch
