@@ -18,6 +18,9 @@ Updated: 2026-11-09 (Asia/Shanghai).
   estimated recovery, rejects stale previews and records cleanup intent atomically
   with history removal. Ten repository/deletion checks and types pass; the operation
   is not exposed in the UI or HTTP API yet.
+  The reclamation worker now unlinks actual assets/unreferenced blobs after atomic
+  catalog removal. Two real-filesystem/PostgreSQL checks cover shared bytes,
+  interrupted unlink/retry and a candidate reused by another game before retry.
 
 - Administrator game management is implemented and deployed locally. The header
   opens uploads, DOS launch settings, explicit save paths and a searchable/sortable
