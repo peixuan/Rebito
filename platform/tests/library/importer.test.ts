@@ -6,6 +6,8 @@ import { promisify } from "node:util";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { fingerprint, LocalLibrary } from "../../src/library/catalog.ts";
 import { importGame } from "../../src/library/importer.ts";
+import { migrateStorage } from "../../src/storage/schema.ts";
+import { testDatabase } from "../database.ts";
 
 describe("operator game import", () => {
   let directory: string;
@@ -96,11 +98,22 @@ describe("operator game import", () => {
     const cli = resolve("src/library/import-game.ts");
     const specification = join(directory, "game.json");
     await writeFile(specification, JSON.stringify(metadata));
-    const result = await run(process.execPath, [cli, source, specification], {
-      env: { ...process.env, DATA_DIR: directory },
-    });
-    expect(result.stdout).toMatch(/Imported nes-[a-f0-9]{64}/);
-    expect((await LocalLibrary.load(library)).list()).toHaveLength(1);
-    await expect(run(process.execPath, [cli])).rejects.toMatchObject({ code: 1 });
+    const fixture = await testDatabase();
+    try {
+      await fixture.database.query('CREATE TABLE "user" (id text PRIMARY KEY)');
+      await migrateStorage(fixture.database);
+      const url = new URL(process.env.PG_TEST_URL ?? "");
+      url.pathname = (
+        await fixture.database.query("SELECT current_database() AS name")
+      ).rows[0].name;
+      const result = await run(process.execPath, [cli, source, specification], {
+        env: { ...process.env, DATA_DIR: directory, DATABASE_URL: url.href },
+      });
+      expect(result.stdout).toMatch(/Imported nes-[a-f0-9]{64}/);
+      expect((await LocalLibrary.load(library)).list()).toHaveLength(1);
+      await expect(run(process.execPath, [cli])).rejects.toMatchObject({ code: 1 });
+    } finally {
+      await fixture.close();
+    }
   });
 });

@@ -85,6 +85,7 @@ export function registerGameAdministration(
   app: FastifyInstance,
   config: ServerConfig,
   library: LocalLibrary,
+  assertMutable: () => Promise<void>,
 ) {
   const authorize = requireAdministrator(config);
   const directory = join(config.dataDirectory, "library");
@@ -101,6 +102,7 @@ export function registerGameAdministration(
     };
   });
   app.post("/api/admin/games", { onRequest: authorize }, async (request, reply) => {
+    await assertMutable();
     if (busy) return reply.code(503).header("retry-after", "1").send({ error: "upload_busy" });
     busy = true;
     const source = join(staging, `${randomUUID()}.tmp`);

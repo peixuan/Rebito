@@ -1,10 +1,13 @@
 import { randomBytes } from "node:crypto";
-import { mkdtemp, readdir, rm } from "node:fs/promises";
+import { mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { request as httpRequest } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { unzipSync, zipSync } from "fflate";
 import { afterAll, beforeAll, expect, it } from "vitest";
+import { findEntry } from "../../src/library/configuration.ts";
+import { beginDeletion, deletionImpact } from "../../src/library/deletion-records.ts";
+import { withCatalog } from "../../src/library/transaction.ts";
 import { loadConfig } from "../../src/server/config.ts";
 import { createPlatform } from "../../src/server/platform.ts";
 import { testDatabase } from "../database.ts";
@@ -241,4 +244,113 @@ it("authorizes configuration changes and preserves a renamed release without upl
     created: false,
     game: { id: games[0].id, title: payload.title },
   });
+});
+
+it("previews all users, requires explicit consent, rejects stale impact and removes only that game", async () => {
+  const games = (await app.inject({ url: "/api/games", headers: { cookie: admin } })).json();
+  const game = games[0];
+  const url = `/api/admin/games/${game.id}/deletion`;
+  const profiles: string[] = [];
+  for (const cookie of [admin, player]) {
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/profiles",
+      headers: { cookie, origin },
+      payload: { releaseId: game.id, name: "Affected" },
+    });
+    expect(response.statusCode).toBe(201);
+    profiles.push(response.json().id);
+  }
+  expect((await app.inject({ url, headers: { cookie: player } })).statusCode).toBe(403);
+  const preview = (await app.inject({ url, headers: { cookie: admin } })).json();
+  expect(preview).toMatchObject({ users: 2, profiles: 2, revisions: 0 });
+  const payload = { token: preview.token, title: preview.title, deleteSaves: true };
+  const remove = (body = payload, cookie = admin, site = origin) =>
+    app.inject({ method: "POST", url, headers: { cookie, origin: site }, payload: body });
+  expect((await remove(payload, player)).statusCode).toBe(403);
+  expect((await remove(payload, admin, "https://other.test")).statusCode).toBe(403);
+  expect((await remove({ ...payload, deleteSaves: false })).statusCode).toBe(422);
+  await app.inject({
+    method: "POST",
+    url: "/api/profiles",
+    headers: { cookie: player, origin },
+    payload: { releaseId: game.id, name: "After preview" },
+  });
+  expect((await remove()).statusCode).toBe(409);
+  const current = (await app.inject({ url, headers: { cookie: admin } })).json();
+  const removed = await remove({ ...payload, token: current.token });
+  expect(removed.statusCode).toBe(200);
+  expect(removed.json()).toMatchObject({
+    status: "deleted",
+    profiles: 3,
+    reclaimedBytes: game.size,
+  });
+  expect(
+    (await app.inject({ url: `/api/games/${game.id}/asset`, headers: { cookie: player } }))
+      .statusCode,
+  ).toBe(404);
+  expect(
+    (
+      await app.inject({
+        url: `/api/profiles/${profiles[1]}/revisions`,
+        headers: { cookie: player },
+      })
+    ).statusCode,
+  ).toBe(404);
+  expect(
+    (
+      await app.inject({
+        method: "POST",
+        url: "/api/profiles",
+        headers: { cookie: player, origin },
+        payload: { releaseId: game.id, name: "Stale browser" },
+      })
+    ).statusCode,
+  ).toBe(404);
+  expect(
+    (await app.inject({ url: "/api/games", headers: { cookie: player } })).json(),
+  ).toHaveLength(games.length - 1);
+});
+
+it("retains failed cleanup across restart, blocks reuse and permits an explicit retry", async () => {
+  const game = (await app.inject({ url: "/api/games", headers: { cookie: admin } })).json()[0];
+  const job = await withCatalog(join(directory, "library"), async (catalog) => {
+    const entry = findEntry(catalog, game.id);
+    const { preview } = await deletionImpact(fixture.database, catalog, entry);
+    return beginDeletion(fixture.database, catalog, entry, {
+      token: preview.token,
+      title: preview.title,
+      deleteSaves: true,
+    });
+  });
+  const lock = join(directory, "library", ".import.lock");
+  await writeFile(lock, "simulated interrupted publisher");
+  const restarted = await createPlatform(config, fixture.database);
+  try {
+    expect(
+      (await restarted.inject({ url: "/api/games", headers: { cookie: player } }))
+        .json()
+        .some((entry: { id: string }) => entry.id === game.id),
+    ).toBe(false);
+    const pending = (
+      await restarted.inject({ url: "/api/admin/deletions", headers: { cookie: admin } })
+    ).json();
+    expect(pending).toHaveLength(1);
+    expect((await upload({ target: restarted })).statusCode).toBe(409);
+    const request = {
+      method: "POST" as const,
+      url: `/api/admin/games/${game.id}/deletion`,
+      headers: { cookie: admin, origin },
+      payload: { token: job.preview.token, title: job.preview.title, deleteSaves: true },
+    };
+    expect((await restarted.inject(request)).statusCode).toBe(202);
+    await rm(lock);
+    expect((await restarted.inject(request)).json().status).toBe("deleted");
+    expect(
+      (await restarted.inject({ url: "/api/admin/deletions", headers: { cookie: admin } })).json(),
+    ).toEqual([]);
+  } finally {
+    await restarted.close();
+    await rm(lock, { force: true });
+  }
 });

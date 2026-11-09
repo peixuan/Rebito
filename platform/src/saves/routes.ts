@@ -1,6 +1,10 @@
 import multipart from "@fastify/multipart";
 import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { Pool } from "pg";
 import { assertProgressManifest, progressLimits } from "../domain/artifacts.ts";
+import type { LocalLibrary } from "../library/catalog.ts";
+import { pendingDeletions } from "../library/deletion-records.ts";
+import { ProgressError } from "../storage/revisions.ts";
 import { idParameters, profileBody, restoreBody, uploadMetadata } from "./http-schema.ts";
 import type { SaveFile, SaveMetadata, SaveService } from "./service.ts";
 
@@ -58,7 +62,12 @@ async function readUpload(
 }
 
 /** Register inside privateApi so user identity and origin checks precede body parsing. */
-export async function registerSaves(app: FastifyInstance, service: SaveService): Promise<void> {
+export async function registerSaves(
+  app: FastifyInstance,
+  service: SaveService,
+  library: LocalLibrary,
+  database: Pool,
+): Promise<void> {
   await app.register(multipart, {
     preservePath: true,
     limits: {
@@ -76,8 +85,14 @@ export async function registerSaves(app: FastifyInstance, service: SaveService):
   app.post<{ Body: { releaseId: string; name: string } }>(
     "/api/profiles",
     { schema: { body: profileBody } },
-    async (request, reply) =>
-      reply
+    async (request, reply) => {
+      await library.refresh();
+      if (
+        !library.get(request.body.releaseId) ||
+        (await pendingDeletions(database)).some((job) => job.release_id === request.body.releaseId)
+      )
+        throw new ProgressError("not_found");
+      return reply
         .code(201)
         .send(
           await service.revisions.create(
@@ -85,7 +100,8 @@ export async function registerSaves(app: FastifyInstance, service: SaveService):
             request.body.releaseId,
             request.body.name,
           ),
-        ),
+        );
+    },
   );
   app.get<Params>(
     "/api/profiles/:id/revisions",

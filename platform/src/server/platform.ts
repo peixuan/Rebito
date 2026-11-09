@@ -9,6 +9,9 @@ import { registerIdentity } from "../identity/routes.ts";
 import { registerGameAdministration } from "../library/admin-routes.ts";
 import { LocalLibrary } from "../library/catalog.ts";
 import { registerConfiguration } from "../library/configuration-routes.ts";
+import { assertNoPendingDeletion, pendingDeletions } from "../library/deletion-records.ts";
+import { registerDeletions } from "../library/deletion-routes.ts";
+import { reclaimDeletion } from "../library/reclamation.ts";
 import { registerLibrary } from "../library/routes.ts";
 import { registerSaves } from "../saves/routes.ts";
 import { SaveService } from "../saves/service.ts";
@@ -44,6 +47,15 @@ async function createServices(config: ServerConfig, database: Pool, activity: St
   await migrateStorage(database);
   const auth = createAuth(config, database);
   const app = createApp();
+  await activity.run(true, async () => {
+    for (const job of await pendingDeletions(database)) {
+      try {
+        await reclaimDeletion(database, config.dataDirectory, job);
+      } catch (error) {
+        app.log.error({ err: error }, "Pending game cleanup retained for retry");
+      }
+    }
+  });
   const library = await LocalLibrary.load(join(config.dataDirectory, "library"));
   const saves = new SaveService(
     new RevisionRepository(database, config.storageLimits),
@@ -52,10 +64,11 @@ async function createServices(config: ServerConfig, database: Pool, activity: St
   registerIdentity(app, auth, config);
   privateApi(app, auth, config.origin, async (scope) => {
     guardStorageRoutes(scope, activity);
-    registerLibrary(scope, library);
-    await registerSaves(scope, saves);
-    registerGameAdministration(scope, config, library);
-    registerConfiguration(scope, config, library);
+    registerLibrary(scope, library, database);
+    await registerSaves(scope, saves, library, database);
+    registerGameAdministration(scope, config, library, () => assertNoPendingDeletion(database));
+    registerConfiguration(scope, config, library, () => assertNoPendingDeletion(database));
+    registerDeletions(scope, config, library, database);
     registerEditors(scope, new EditorService(saves, library));
   });
   app.get("/health/ready", async () => {

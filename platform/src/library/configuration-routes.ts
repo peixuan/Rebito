@@ -9,6 +9,7 @@ export function registerConfiguration(
   app: FastifyInstance,
   config: ServerConfig,
   library: LocalLibrary,
+  assertMutable: () => Promise<void>,
 ) {
   const options = { onRequest: requireAdministrator(config), config: { exclusiveStorage: true } };
   const directory = join(config.dataDirectory, "library");
@@ -19,6 +20,7 @@ export function registerConfiguration(
     "/api/admin/games/:id/configuration",
     options,
     async (request) => {
+      await assertMutable();
       const id = await changeConfiguration(
         directory,
         request.params.id,

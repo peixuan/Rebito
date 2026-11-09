@@ -21,6 +21,13 @@ Updated: 2026-11-09 (Asia/Shanghai).
   The reclamation worker now unlinks actual assets/unreferenced blobs after atomic
   catalog removal. Two real-filesystem/PostgreSQL checks cover shared bytes,
   interrupted unlink/retry and a candidate reused by another game before retry.
+  Administrator deletion APIs now enforce impact tokens/title/explicit save consent,
+  hide pending deletions, reject stale clients and expose cleanup retry. Startup
+  retries durable jobs; imports are blocked while cleanup remains pending. Nine
+  administrator API checks and the 29-test related regression pass; types pass.
+  Profile creation now requires an available catalog release; container smoke setup
+  seeds its own catalog fixture. The CLI now requires the initialized database and
+  participates in both storage leases. Browser controls/deployment remain pending.
 
 - Administrator game management is implemented and deployed locally. The header
   opens uploads, DOS launch settings, explicit save paths and a searchable/sortable

@@ -25,7 +25,8 @@ filesystem overlay. The `__runtime` namespace and file/directory collisions are
 rejected. No game, BIOS or private save is shipped in the application image.
 
 ```sh
-# From platform/, after building. DATA_DIR defaults to .data.
+# From platform/, after building and initializing the database; supply DATABASE_URL.
+# DATA_DIR defaults to .data. The CLI shares the online storage coordination lease.
 node dist/library/import-game.js /private/game.nes /private/game.json
 
 # Containers: mount only the required operator input, read-only.
@@ -43,6 +44,8 @@ Imports use an exclusive `.import.lock`. After an interrupted process, stop all
 import commands, inspect `catalog.json` and its referenced assets, then remove the
 stale lock before retrying. Unreferenced `.asset`/`.tmp` files may remain after a
 crash; they are not served. Never delete assets referenced by the catalog.
+The CLI requires the initialized deployment's `DATABASE_URL`; it refuses imports
+while game cleanup is pending, just like browser management.
 
 The generated `catalog.json` has `version: 1` and a `games` array containing the
 metadata plus `file`, `sha256` and `size`. A missing catalog means an empty library.

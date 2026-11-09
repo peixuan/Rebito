@@ -34,6 +34,21 @@ on Windows, run these commands in WSL rather than an older PowerShell pipeline.
 
 ## Integrity verification and abandoned files
 
+Game deletion uses a separate online reader/writer lease across application
+instances. It waits for complete API handlers and asset streams before removing
+history or files. All private handlers and the operator import CLI participate.
+Deleting history and recording its cleanup job is one database transaction;
+catalog removal precedes unlinking assets. Shared blobs/assets are checked again
+on every retry. Interrupted cleanup remains visible to administrators, blocks new
+library mutations, hides the game from players and is retried on startup.
+An interrupted catalog publisher can leave `.import.lock`; do not remove that lock
+while any publisher is active. Inspect it as described in [game imports](LIBRARY.md)
+before retrying cleanup. No age-based lock takeover is permitted.
+
+Unlinked files release space inside the data filesystem. PostgreSQL can reuse
+deleted row space after normal vacuum; WSL/Docker virtual disks and backups do not
+necessarily shrink on the host. Deletion does not prune backups or Docker images.
+
 ```sh
 docker compose stop app
 docker compose run --rm -T app node dist/storage/maintain-storage.js verify

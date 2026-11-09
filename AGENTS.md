@@ -51,6 +51,9 @@ because an upstream documentation page lists a feature.
 - Check administrator authority before reading game uploads. Stream bounded archive
   preparation and publish immutable releases; launch/sync changes must not reassign
   existing profiles or enable an editor for an unverified game.
+- Online deletion must hold the exclusive storage activity lease, recheck the
+  confirmed impact, and durably record cleanup before removing history. All live
+  handlers/import entrypoints must participate; retries must recheck shared references.
 - Keep per-user quotas transactional across profiles. Preserve the application
   storage lease when adding entrypoints; offline collection must exclude active
   writers. Read [storage operations](platform/OPERATIONS.md) before maintenance.

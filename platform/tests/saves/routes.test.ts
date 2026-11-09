@@ -21,6 +21,7 @@ describe("authenticated save HTTP API", () => {
     fixture = await testDatabase();
     directory = await mkdtemp(join(tmpdir(), "retro-api-"));
     game = await seedLibrary(directory);
+    metadata.releaseId = game.id;
     app = await createPlatform(
       loadConfig({
         APP_ORIGIN: origin,
@@ -56,7 +57,7 @@ describe("authenticated save HTTP API", () => {
       method: "POST",
       url: "/api/profiles",
       headers: { origin, cookie: alice },
-      payload: { releaseId: "test-game", name: "Test", ownerId: "bob" },
+      payload: { releaseId: metadata.releaseId, name: "Test", ownerId: "bob" },
     });
     expect(response.statusCode).toBe(201);
     return response.json().id as string;

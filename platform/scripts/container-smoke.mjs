@@ -26,17 +26,20 @@ async function privateRequest(path, options = {}) {
 const profiles = await (await privateRequest("/api/profiles")).json();
 let profile = profiles.find((entry) => entry.name === "Container persistence");
 if (!profile) {
+  const games = await (await privateRequest("/api/games")).json();
+  const game = games.find((entry) => entry.title === "Container fixture");
+  assert.ok(game, "Seed the disposable container game first");
   const created = await privateRequest("/api/profiles", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ releaseId: "container-test", name: "Container persistence" }),
+    body: JSON.stringify({ releaseId: game.id, name: "Container persistence" }),
   });
   assert.equal(created.status, 201);
   profile = await created.json();
   const body = new FormData();
   body.append(
     "metadata",
-    JSON.stringify({ releaseId: "container-test", kind: "game-save", baseRevision: null }),
+    JSON.stringify({ releaseId: game.id, kind: "game-save", baseRevision: null }),
   );
   body.append("file", new Blob([Uint8Array.of(0, 1, 127, 255)]), "SAVE.BIN");
   assert.equal(
