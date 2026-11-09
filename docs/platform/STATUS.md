@@ -1,8 +1,15 @@
 # Platform work status
 
-Updated: 2026-11-08 (Asia/Shanghai).
+Updated: 2026-11-09 (Asia/Shanghai).
 
 ## User verification follow-up
+
+- Configuration editing without re-upload and confirmed game deletion are in progress.
+  Catalog mutations now share the existing atomic publication lock. Private HTTP
+  handlers hold a shared online storage lease; reclamation can take its exclusive
+  counterpart across app instances. Real PostgreSQL checks cover concurrent readers,
+  writer exclusion/fairness and failures; uploads, interrupted HTTP cleanup and
+  offline maintenance checks still pass. No existing game or save has been deleted.
 
 - Administrator game management is implemented and deployed locally. The header
   opens uploads, DOS launch settings, explicit save paths and a searchable/sortable

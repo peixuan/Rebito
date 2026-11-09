@@ -11,6 +11,7 @@ import { LocalLibrary } from "../library/catalog.ts";
 import { registerLibrary } from "../library/routes.ts";
 import { registerSaves } from "../saves/routes.ts";
 import { SaveService } from "../saves/service.ts";
+import { guardStorageRoutes, StorageActivity } from "../storage/activity.ts";
 import { LocalBlobStore } from "../storage/blobs.ts";
 import { storageLease } from "../storage/maintenance.ts";
 import { RevisionRepository } from "../storage/revisions.ts";
@@ -21,17 +22,23 @@ import type { ServerConfig } from "./config.ts";
 /** Compose real services without opening a port; the caller owns the database pool. */
 export async function createPlatform(config: ServerConfig, database: Pool) {
   const release = await storageLease(database, false);
+  let activity: StorageActivity | undefined;
   try {
-    const app = await createServices(config, database);
-    app.addHook("onClose", release);
+    activity = await StorageActivity.open(database);
+    const app = await createServices(config, database, activity);
+    app.addHook("onClose", async () => {
+      await activity?.close();
+      await release();
+    });
     return app;
   } catch (error) {
+    await activity?.close();
     await release();
     throw error;
   }
 }
 
-async function createServices(config: ServerConfig, database: Pool) {
+async function createServices(config: ServerConfig, database: Pool, activity: StorageActivity) {
   await migrateIdentity(config, database);
   await migrateStorage(database);
   const auth = createAuth(config, database);
@@ -43,6 +50,7 @@ async function createServices(config: ServerConfig, database: Pool) {
   );
   registerIdentity(app, auth, config);
   privateApi(app, auth, config.origin, async (scope) => {
+    guardStorageRoutes(scope, activity);
     registerLibrary(scope, library);
     await registerSaves(scope, saves);
     registerGameAdministration(scope, config, library);
