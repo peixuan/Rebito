@@ -52,6 +52,7 @@ export function errorText(error: unknown): DisplayMessage {
     if (error.status === 401) return message("errors.authentication");
     if (error.status === 409) return message("errors.conflict");
     if (error.status === 403) return message("errors.forbidden");
+    if (error.status === 404) return message("errors.notFound");
     return message("errors.request");
   }
   return message("errors.connection");

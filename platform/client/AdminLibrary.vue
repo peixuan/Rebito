@@ -10,8 +10,11 @@ import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { gameUploadLimits } from "../src/domain/game-import.ts";
 import type { Game } from "../src/library/catalog.ts";
 import type { describeConfiguration } from "../src/library/configuration.ts";
+import type { DeletionPreview } from "../src/library/deletion-records.ts";
 import { type DisplayText, message } from "../src/shared/messages.ts";
 import { api, errorText } from "./api.ts";
+import { formatBytes as size } from "./format-bytes.ts";
+import GameDeletion from "./GameDeletion.vue";
 import { t, translate } from "./i18n.ts";
 import { inspectDosArchive } from "./library-archive.ts";
 
@@ -37,6 +40,8 @@ const busy = ref(false);
 const error = ref<DisplayText>("");
 const notice = ref<DisplayText>("");
 const query = ref("");
+const deleting = ref<string | null>(null);
+const pending = ref<DeletionPreview[]>([]);
 const editing = ref<{ id: string; token: string } | null>(null);
 const initialDraft = ref("");
 const legacyConfiguration = ref(false);
@@ -56,20 +61,22 @@ const dirty = computed(() =>
 );
 const games = computed(
   () =>
-    catalog.value?.games.filter((game) =>
-      game.title.toLocaleLowerCase().includes(query.value.trim().toLocaleLowerCase()),
+    catalog.value?.games.filter(
+      (game) =>
+        !pending.value.some((job) => job.id === game.id) &&
+        game.title.toLocaleLowerCase().includes(query.value.trim().toLocaleLowerCase()),
     ) ?? [],
 );
 const accept = computed(
   () =>
     ({ dos: ".zip,.jsdos", nes: ".nes", snes: ".sfc,.smc", gb: ".gb", gba: ".gba" })[system.value],
 );
-function size(bytes: number) {
-  return `${(bytes / 1024 ** 2).toFixed(1)} MiB`;
-}
 async function refresh() {
   try {
-    catalog.value = await api("admin/games");
+    [catalog.value, pending.value] = await Promise.all([
+      api<NonNullable<typeof catalog.value>>("admin/games"),
+      api<DeletionPreview[]>("admin/deletions"),
+    ]);
   } catch (cause) {
     error.value = errorText(cause);
   }
@@ -161,6 +168,7 @@ async function publish() {
   }
 }
 function resetDraft() {
+  deleting.value = null;
   editing.value = null;
   legacyConfiguration.value = false;
   title.value = args.value = savePaths.value = "";
@@ -175,16 +183,18 @@ async function edit(game: Game) {
     const detail = await api<Awaited<ReturnType<typeof describeConfiguration>>>(
       `admin/games/${game.id}/configuration`,
     );
+    const current = detail.game;
+    if (!current) throw new Error("Missing game configuration");
     resetDraft();
     editing.value = { id: game.id, token: detail.token };
-    title.value = game.title;
-    system.value = game.system;
+    title.value = current.title;
+    system.value = current.system;
     programs.value = detail.executables;
     executable.value = detail.settings?.executable ?? "";
     args.value = detail.settings?.arguments ?? "";
     cycles.value = detail.settings?.cycles ?? "auto";
-    savePaths.value = game.saveFiles.join("\n");
-    legacyConfiguration.value = game.system === "dos" && !detail.settings;
+    savePaths.value = current.saveFiles.join("\n");
+    legacyConfiguration.value = current.system === "dos" && !detail.settings;
     initialDraft.value = draft();
   } catch (cause) {
     error.value = errorText(cause);
@@ -194,6 +204,18 @@ async function edit(game: Game) {
 }
 function cancelEdit() {
   if (leave()) resetDraft();
+}
+function openDeletion(id: string) {
+  if (leave()) {
+    resetDraft();
+    deleting.value = id;
+    error.value = notice.value = "";
+  }
+}
+function deleted(message: DisplayText) {
+  deleting.value = null;
+  notice.value = message;
+  void refresh();
 }
 function leave() {
   if (busy.value) {
@@ -223,11 +245,20 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
       <h1>{{ t("admin.title") }}</h1>
       <Button :label="t('admin.refresh')" variant="text" :disabled="busy" @click="refresh" />
     </div>
-    <p class="muted">{{ t("admin.uploadIntroduction") }}</p>
+    <p class="muted">{{ t("admin.description") }}</p>
     <Message v-if="error" severity="error" role="alert">{{ translate(error) }}</Message>
     <Message v-if="notice" severity="success" role="status">{{ translate(notice) }}</Message>
     <div class="admin-layout">
-      <form class="profile-panel admin-form" @submit.prevent="publish">
+      <GameDeletion
+        v-if="deleting"
+        :key="deleting"
+        :game-id="deleting"
+        @busy="busy = $event"
+        @close="deleting = null"
+        @changed="refresh"
+        @deleted="deleted"
+      />
+      <form v-else class="profile-panel admin-form" @submit.prevent="publish">
         <div class="toolbar">
           <h2>{{ editing ? t("admin.editTitle") : t("admin.uploadTitle") }}</h2>
           <Button
@@ -341,6 +372,20 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
         />
       </form>
       <section class="profile-panel admin-catalog" :aria-label="t('admin.publishedGames')">
+        <div v-if="pending.length" class="pending-deletions" role="status">
+          <p>{{ t("admin.pendingCleanup") }}</p>
+          <div v-for="job in pending" :key="job.id" class="toolbar">
+            <span>{{ job.title }}</span>
+            <Button
+              :label="t('deletion.retry')"
+              size="small"
+              severity="danger"
+              variant="text"
+              :disabled="busy"
+              @click="openDeletion(job.id)"
+            />
+          </div>
+        </div>
         <div class="toolbar">
           <h2>{{ t("admin.publishedGames") }}</h2>
           <InputText
@@ -385,13 +430,22 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
           >
           <Column :header="t('common.actions')"
             ><template #body="{ data }"
-              ><Button
-                :label="t('admin.edit')"
-                size="small"
-                variant="text"
-                :disabled="busy"
-                @click="edit(data)"
-              /></template
+              ><div class="admin-actions">
+                <Button
+                  :label="t('admin.edit')"
+                  size="small"
+                  variant="text"
+                  :disabled="busy"
+                  @click="edit(data)"
+                /><Button
+                  :label="t('common.delete')"
+                  size="small"
+                  severity="danger"
+                  variant="text"
+                  :disabled="busy"
+                  @click="openDeletion(data.id)"
+                />
+              </div></template
             ></Column
           >
         </DataTable>
@@ -404,6 +458,13 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
 <style scoped>
 .admin-manager {
   overflow-wrap: anywhere;
+}
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+}
+.pending-deletions {
+  padding-bottom: 12px;
 }
 .admin-layout {
   display: grid;

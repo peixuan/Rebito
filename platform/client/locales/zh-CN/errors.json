@@ -6,6 +6,7 @@
   "errors.authentication": "邮箱或密码不正确，或登录已过期。",
   "errors.conflict": "存档已有新版本，请重新载入后再操作。",
   "errors.forbidden": "当前操作未获授权。",
+  "errors.notFound": "游戏、进度或文件已不存在，请刷新确认；正在运行的游戏会保留在当前页面。",
   "errors.request": "操作未完成，请检查输入后重试。",
   "errors.connection": "暂时无法连接服务，请稍后重试。",
   "errors.uploadBusyLegacy": "另一个上传正在处理，请稍后重试。"

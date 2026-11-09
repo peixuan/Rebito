@@ -1,0 +1,20 @@
+{
+  "deletion.retry": "重试清理",
+  "deletion.incomplete": "磁盘清理尚未完成，请重试。",
+  "deletion.confirmation": "删除游戏确认",
+  "deletion.pendingTitle": "待清理游戏",
+  "deletion.title": "删除游戏",
+  "deletion.cancel": "取消删除",
+  "deletion.users": "受影响用户",
+  "deletion.revisions": "历史存档版本",
+  "deletion.logicalSize": "存档逻辑容量",
+  "deletion.reclaimableSize": "预计可回收文件空间",
+  "deletion.sharedHelp": "仍被其它游戏或进度引用的文件会保留。备份和容器镜像不在删除范围内。",
+  "deletion.cleanupHelp": "相关进度已删除，游戏已停止提供。请重试完成剩余磁盘清理。",
+  "deletion.warning": "此操作无法撤销。正在游玩的用户将无法继续同步这个版本的进度。",
+  "deletion.acknowledge": "我确认删除所有用户在此版本下的进度及全部历史存档",
+  "deletion.typeTitle": "输入游戏名称确认",
+  "deletion.submit": "永久删除",
+  "deletion.refresh": "重新查看删除影响",
+  "deletion.completed": "已删除「{title}」及其相关进度。本次回收 {size}。"
+}

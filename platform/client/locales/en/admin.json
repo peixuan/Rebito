@@ -4,6 +4,7 @@
   "admin.processingConfiguration": "The game configuration is being processed. Please wait.",
   "admin.discardConfiguration": "Discard the unpublished game configuration?",
   "admin.refresh": "Refresh games",
+  "admin.description": "Manage the shared library. Configuration changes preserve existing progress; deletions show their impact before confirmation.",
   "admin.editTitle": "Edit game configuration",
   "admin.uploadTitle": "Upload a game",
   "admin.cancelEdit": "Cancel editing",
@@ -22,6 +23,7 @@
   "admin.save": "Save configuration",
   "admin.publish": "Publish to library",
   "admin.publishedGames": "Published games",
+  "admin.pendingCleanup": "Progress for these games has been deleted, but disk cleanup is incomplete:",
   "admin.search": "Search published games",
   "admin.noMatches": "No matching games.",
   "admin.syncFiles": "Synchronized files",
@@ -32,7 +34,6 @@
   "admin.published": "Published {title}. Return to the library to play. {removed}",
   "admin.removedSaves": "Removed bundled saves: {files}.",
   "admin.usage": "{count} release · {used} / {maximum} | {count} releases · {used} / {maximum}",
-  "admin.uploadIntroduction": "Published games are immediately available in the shared library. Existing games and personal progress are retained.",
   "admin.reuseLegacyHelp": "Reuse the game files already on the server. Renaming keeps the release; changing launch or save settings creates a new release and preserves existing progress.",
   "admin.launchLegacyHelp": "This archive has a complex launch script. Leave the executable empty to rename only. Selecting an executable replaces the script and creates a new release.",
   "admin.reconfiguredLegacy": "Published a new release of {title} using the existing files. Earlier releases and progress are retained; editor support for the new release requires verification."

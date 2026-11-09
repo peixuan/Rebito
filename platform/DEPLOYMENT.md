@@ -58,7 +58,8 @@ To grant game-library administration, put that account ID in `.env` as
 `docker compose up -d --wait app`. Existing accounts can read their own ID from the
 authenticated `/api/session` response. Refresh the page to show **游戏管理**.
 This is a one-time role setup; later game uploads require no container commands.
-Administration grants shared-library management, not access to other users' saves.
+Administration grants shared-library management and confirmed deletion of all users'
+progress for a selected release. It does not grant reading other users' save contents.
 
 ## Persistence and operations
 

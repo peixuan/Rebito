@@ -1,0 +1,20 @@
+{
+  "deletion.retry": "Retry cleanup",
+  "deletion.incomplete": "Disk cleanup is incomplete. Please retry.",
+  "deletion.confirmation": "Confirm game deletion",
+  "deletion.pendingTitle": "Game awaiting cleanup",
+  "deletion.title": "Delete game",
+  "deletion.cancel": "Cancel deletion",
+  "deletion.users": "Affected users",
+  "deletion.revisions": "Save revisions",
+  "deletion.logicalSize": "Logical save size",
+  "deletion.reclaimableSize": "Estimated reclaimable space",
+  "deletion.sharedHelp": "Files referenced by other games or profiles are retained. Backups and container images are not deleted.",
+  "deletion.cleanupHelp": "Related progress has been deleted and the game is unavailable. Retry to finish disk cleanup.",
+  "deletion.warning": "This cannot be undone. Users currently playing will no longer be able to synchronize progress for this release.",
+  "deletion.acknowledge": "I confirm deletion of all users' progress and save history for this release",
+  "deletion.typeTitle": "Type the game title to confirm",
+  "deletion.submit": "Delete permanently",
+  "deletion.refresh": "Review deletion impact again",
+  "deletion.completed": "Deleted {title} and its related progress. Reclaimed {size}."
+}

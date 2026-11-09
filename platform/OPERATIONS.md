@@ -37,6 +37,9 @@ on Windows, run these commands in WSL rather than an older PowerShell pipeline.
 Game deletion uses a separate online reader/writer lease across application
 instances. It waits for complete API handlers and asset streams before removing
 history or files. All private handlers and the operator import CLI participate.
+The online gate uses one additional dedicated connection per app process, sharing
+reader locks across concurrent handlers. Upgrade all replicas together before using
+online deletion; old versions do not participate in this protocol.
 Deleting history and recording its cleanup job is one database transaction;
 catalog removal precedes unlinking assets. Shared blobs/assets are checked again
 on every retry. Interrupted cleanup remains visible to administrators, blocks new

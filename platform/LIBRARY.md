@@ -73,8 +73,11 @@ The form suggests DOS launch programs, preserves failed drafts and shows shared 
 Empty DOS save paths disable automatic native-file change detection; manual saves
 still capture the writable collection. Remove unrelated/private files before upload:
 the server removes only the explicitly declared save files. Launch/configuration
-changes require uploading a new release; existing releases cannot be edited or
-deleted from this page. Console save locations are managed by the emulator adapter.
+changes reuse the stored game file through **编辑配置**, without another upload.
+Renaming preserves the release ID; changed DOS launch/sync rules create a new release
+and preserve old profiles. Complex legacy launch scripts are not guessed: leaving
+the launch program empty renames only; selecting one replaces the launch script.
+Console save locations are managed by the emulator adapter.
 
 Administrators can also publish through `POST /api/admin/games` using a multipart
 `metadata` JSON field followed by one `file` (maximum 64 MiB). The server accepts
@@ -85,6 +88,20 @@ Existing `.jsdos` settings are replaced; declared save files are omitted. Each
 changed DOS launch/sync configuration produces a new immutable release; existing
 profiles and editor bindings are not reassigned. Arbitrary uploads cannot enable
 the Koukai2 editor. Successful publication appears without restarting the server.
+
+**删除** shows affected users, profiles, revision count, logical save bytes and
+estimated recoverable file bytes. The administrator must type the exact title and,
+when profiles exist, explicitly consent to deleting every user's history for that
+release. New saves/configuration changes invalidate this preview and require fresh
+confirmation. No private save content or account identifiers are exposed in the preview.
+
+Deletion removes the game release and related profiles/history, then unlinks its
+unshared asset and save blobs. Other releases and shared bytes remain intact. Running
+clients cannot recreate the deleted profile or upload its stale progress; failed
+synchronization keeps their local runtime available. **重试清理** completes interrupted
+disk cleanup, including after a restart. See [operations](OPERATIONS.md) for storage
+leases, interrupted catalog locks and the distinction between filesystem free space
+and host virtual-disk size. There is no implicit save migration or soft-delete archive.
 
 ## Preparing a DOS bundle with the CLI
 

@@ -41,12 +41,26 @@ test("edits an uploaded game without uploading again and runs the derived DOS re
   expect(profile.status()).toBe(201);
   await page.getByRole("button", { name: "Game management", exact: true }).click();
   await page.getByLabel("Search published games").fill("Configuration acceptance");
+  const current = await (
+    await page.request.get(`/api/admin/games/${upload.id}/configuration`)
+  ).json();
+  expect(
+    (
+      await page.request.post(`/api/admin/games/${upload.id}/configuration`, {
+        headers: { origin: "http://localhost:4317" },
+        data: { token: current.token, title: "Externally renamed configuration" },
+      })
+    ).status(),
+  ).toBe(200);
   await page
     .getByRole("row")
     .filter({ hasText: "Configuration acceptance" })
     .getByRole("button", { name: "Edit configuration" })
     .click();
   await expect(page.getByLabel("Game file", { exact: true })).toHaveCount(0);
+  await expect(page.getByLabel("Game title", { exact: true })).toHaveValue(
+    "Externally renamed configuration",
+  );
   await expect(page.getByLabel("Launch executable", { exact: true })).toHaveValue("PLAY.BAT");
   await page.getByLabel("Game title", { exact: true }).fill("Original configuration");
   await page.getByRole("button", { name: "Save configuration", exact: true }).click();

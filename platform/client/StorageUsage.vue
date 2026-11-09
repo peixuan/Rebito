@@ -4,6 +4,7 @@ import { computed, ref, watch } from "vue";
 import { message } from "../src/shared/messages.ts";
 import type { StorageUsage } from "../src/storage/limits.ts";
 import { api } from "./api.ts";
+import { formatBytes } from "./format-bytes.ts";
 import { formatNumber, t, translate } from "./i18n.ts";
 
 const props = defineProps<{ refreshKey: number }>();
@@ -32,12 +33,6 @@ const items = computed(() => {
   });
 });
 const nearingLimit = computed(() => items.value.some((item) => item.used >= item.limit * 0.8));
-function formatBytes(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KiB`;
-  if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MiB`;
-  return `${(bytes / 1024 ** 3).toFixed(1)} GiB`;
-}
 async function refresh() {
   const current = ++request;
   busy.value = true;

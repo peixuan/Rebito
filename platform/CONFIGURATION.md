@@ -43,6 +43,8 @@ from `/api/session`, not email addresses, display names or provider group names.
 An operator sets this once in deployment configuration; normal signups and OIDC
 logins never grant administrator privileges. Restart the app after changing it.
 Every management request checks the list server-side, before reading uploads.
+This role can permanently delete a game and all associated users' progress after
+an impact preview and explicit confirmation. It cannot read private save contents.
 
 `MAX_LIBRARY_BYTES` limits retained shared game assets (default 10 GiB, maximum
 1 TiB). Publication checks the combined catalog size under the import lock, across
