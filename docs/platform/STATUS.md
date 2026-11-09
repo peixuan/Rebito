@@ -4,33 +4,30 @@ Updated: 2026-11-09 (Asia/Shanghai).
 
 ## User verification follow-up
 
-- Configuration editing without re-upload and confirmed game deletion are in progress.
-  Catalog mutations now share the existing atomic publication lock. Private HTTP
-  handlers hold a shared online storage lease; reclamation can take its exclusive
-  counterpart across app instances. Real PostgreSQL checks cover concurrent readers,
-  writer exclusion/fairness and failures; uploads, interrupted HTTP cleanup and
-  offline maintenance checks still pass. No existing game or save has been deleted.
-  Configuration APIs now rename releases in place or repackage existing server-side
-  DOS bytes for changed launch/sync rules. Ten configuration/upload API checks pass,
-  including stale drafts, unchanged bytes, editor-binding preservation, new-version
-  isolation and quota rejection; types pass. Browser controls and deletion follow.
-  Deletion accounting now counts all owners/history, excludes shared blobs from
-  estimated recovery, rejects stale previews and records cleanup intent atomically
-  with history removal. Ten repository/deletion checks and types pass; the operation
-  is not exposed in the UI or HTTP API yet.
-  The reclamation worker now unlinks actual assets/unreferenced blobs after atomic
-  catalog removal. Two real-filesystem/PostgreSQL checks cover shared bytes,
-  interrupted unlink/retry and a candidate reused by another game before retry.
-  Administrator deletion APIs now enforce impact tokens/title/explicit save consent,
-  hide pending deletions, reject stale clients and expose cleanup retry. Startup
-  retries durable jobs; imports are blocked while cleanup remains pending. Nine
-  administrator API checks and the 29-test related regression pass; types pass.
-  Profile creation now requires an available catalog release; container smoke setup
-  seeds its own catalog fixture. The CLI now requires the initialized database and
-  participates in both storage leases. Browser controls/deployment remain pending.
-  The existing upload form now also edits server-side configurations, without a
-  second file input. A sandboxed browser check renames in place, changes DOS cycles,
-  preserves the old profile, runs the derived release and verifies native save bytes.
+- Configuration editing and confirmed deletion are implemented and deployed locally.
+  The form reuses stored assets: renaming preserves the release; changed DOS launch
+  or sync rules publish a new immutable release without migrating old profiles or
+  inheriting an unverified editor binding. Fresh configuration tokens reject stale
+  edits, including a catalog renamed before the administrator opens its editor.
+  Deletion shows affected users/profiles/history and estimated physical recovery,
+  requires an exact title plus explicit consent for all related saves, and rejects
+  a preview invalidated by new progress. Cleanup intent and history removal commit
+  together; catalog removal precedes unlinking. Shared blobs/assets are rechecked on
+  retry. Pending cleanup is visible, blocks new imports and is retried at startup.
+  Private HTTP handlers and the import CLI share an online storage activity lease;
+  reclamation takes its exclusive counterpart across instances. Tests cover active
+  readers/writers, fairness, stale consent, interrupted unlink and later blob reuse.
+  Profile creation now requires an available catalog release. CLI imports require
+  the initialized deployment database and participate in both storage leases.
+  Full gates pass: 263 unit/integration tests and 29 sandboxed Chrome tests. Browser
+  acceptance runs a reconfigured DOS release, checks native save bytes and keeps
+  the local runtime when deletion prevents further synchronization. Linux container
+  API/filesystem acceptance deleted two synthetic profiles, reclaimed 32,788 bytes,
+  retained shared bytes and survived app recreation. Both local services are healthy.
+  The existing library and all 27 recorded save downloads match their pre-upgrade
+  values; no real game/progress was deleted. A stale publisher `.import.lock` still
+  requires operator inspection; backups and host virtual-disk compaction remain
+  separate from reclaiming files inside the data filesystem.
 
 - Administrator game management is implemented and deployed locally. The header
   opens uploads, DOS launch settings, explicit save paths and a searchable/sortable
@@ -53,7 +50,7 @@ Updated: 2026-11-09 (Asia/Shanghai).
   DOS preparation and save exclusion. Three existing save downloads retain identical
   digests. Browser upload acceptance uses the local test server, not the production
   catalog, which still contains only the verified Koukai2 release. Arbitrary game
-  compatibility, in-place release editing and deletion are not claimed.
+  compatibility is not claimed; configuration/deletion follow-up is recorded above.
 
 - Capacity review: blob writes now leave a configurable 1 GiB free-space margin,
   count this process's pending writes, and return a distinct recoverable 507 error.
@@ -165,6 +162,7 @@ support are separate: a playable game need not have an editor.
 | Game library and personal progress | Implemented | Verified assets; private catalog API; browser import, history, restore and account isolation |
 | Operator game preparation/import | Verified locally | Explicit DOS file allowlist; deterministic bundles; atomic catalog publication; source files unchanged |
 | Administrator game management | Verified and deployed locally | Role-checked uploads; DOS launch/save settings; live catalog refresh; quotas; real uploaded DOS/NES fixtures |
+| Configuration and game deletion | Verified and deployed locally | No-upload editing; confirmed cross-owner deletion; stale-impact rejection; shared-reference-safe file recovery and retry |
 | DOS browser runtime | Fixture and real game verified | DOSBox WASM, native files, filesystem overlay, edited-byte precedence; relative mouse capture/Escape release |
 | Console browser runtime | Four cores verified with own fixtures | NES/SNES/GB/GBA SRAM and states; NES keyboard, volatile palette and no-battery snapshot restoration |
 | Koukai2 editor | Real-game round trip verified | Eight modules; 13/13 legacy matches; browser editing/conflict tests; game reads and resaves modified money/leadership |
@@ -209,12 +207,12 @@ remote CI has not run because this work has not been pushed.
 
 `cd platform && npm run check` with the test database: format/lint, TypeScript,
 HTTP/domain/filesystem and real PostgreSQL identity/revision/service tests passed.
-The complete run passed 251 tests with 98.28% Windows line coverage, 95.01% branch
-coverage and 98.85% function coverage. Linux-only directory fsync is exercised by
+The complete run passed 263 tests with 97.95% Windows line coverage, 92.92% branch
+coverage and 98.46% function coverage. Linux-only directory fsync is exercised by
 deployment, not by Windows unit coverage. The process entrypoint and account-provisioning CLI
 are excluded from unit coverage and exercised by the container smoke test.
 
-The complete 27-test browser suite passes, including all four console cores, DOS,
+The complete 29-test browser suite passes, including all four console cores, DOS,
 OIDC and three editor tests: exact multi-slot output bytes, numeric sorting and
 selection retention, clamping/invalid-input handling, narrow layouts, and retaining
 drafts when another upload advances the revision head. Edited cells update without
