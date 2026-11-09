@@ -212,3 +212,33 @@ it("cleans a real interrupted HTTP upload and permits the next publication", asy
     request.destroy();
   }
 });
+
+it("authorizes configuration changes and preserves a renamed release without uploads", async () => {
+  const games = (await app.inject({ url: "/api/admin/games", headers: { cookie: admin } })).json()
+    .games;
+  const path = `/api/admin/games/${games[0].id}/configuration`;
+  expect((await app.inject({ url: path, headers: { cookie: player } })).statusCode).toBe(403);
+  const detail = (await app.inject({ url: path, headers: { cookie: admin } })).json();
+  const payload = { token: detail.token, title: "Updated without upload" };
+  expect(
+    (
+      await app.inject({
+        method: "POST",
+        url: path,
+        headers: { cookie: admin, origin: "https://other.test" },
+        payload,
+      })
+    ).statusCode,
+  ).toBe(403);
+  const response = await app.inject({
+    method: "POST",
+    url: path,
+    headers: { cookie: admin, origin },
+    payload,
+  });
+  expect(response.statusCode).toBe(200);
+  expect(response.json()).toMatchObject({
+    created: false,
+    game: { id: games[0].id, title: payload.title },
+  });
+});

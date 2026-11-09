@@ -1,0 +1,174 @@
+import { createHash, randomUUID } from "node:crypto";
+import { mkdir, rm } from "node:fs/promises";
+import { join } from "node:path";
+import { openPromise } from "yauzl";
+import { z } from "zod";
+import { dosExecutablePattern } from "../domain/game-import.ts";
+import { message } from "../shared/messages.ts";
+import { DiskCapacity } from "../storage/capacity.ts";
+import { type LibraryEntry, releaseId } from "./catalog.ts";
+import { prepareDosUpload } from "./dos-upload.ts";
+import { importGame } from "./importer.ts";
+import { type Catalog, withCatalog, writeCatalog } from "./transaction.ts";
+import {
+  type GameUploadSettings,
+  gameUploadLimits,
+  gameUploadSchema,
+  LibraryError,
+} from "./upload-settings.ts";
+
+export const configurationChange = z.strictObject({
+  token: z.string().regex(/^[a-f0-9]{64}$/),
+  title: gameUploadSchema.shape.title,
+  launch: z
+    .object(gameUploadSchema.shape)
+    .pick({ executable: true, arguments: true, cycles: true, saveFiles: true })
+    .optional(),
+});
+
+export function entryToken(entry: LibraryEntry): string {
+  return createHash("sha256").update(JSON.stringify(entry)).digest("hex");
+}
+
+export function findEntry(catalog: Catalog, id: string) {
+  const entry = catalog.games.find((game) => releaseId(game) === id);
+  if (!entry) throw new LibraryError(message("library.releaseMissing"), 404);
+  return entry;
+}
+
+/** Only recognize our simple launch sequence; do not guess complex legacy scripts. */
+function parseLaunch(configuration: string, entry: LibraryEntry): GameUploadSettings | null {
+  const sections = configuration.split(/^\s*\[autoexec\]\s*$/im);
+  const commands = sections[1]
+    ?.split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith("#"));
+  if (
+    !commands ||
+    !/^mount c \.$/i.test(commands.shift() ?? "") ||
+    !/^c:$/i.test(commands.shift() ?? "")
+  )
+    return null;
+  let directory = "";
+  if (/^cd /i.test(commands[0] ?? ""))
+    directory = `${commands.shift()?.slice(3).replaceAll("\\", "/")}/`;
+  if (commands.length !== 1) return null;
+  const [executable, ...args] = (commands[0] ?? "").split(/\s+/);
+  const parsed = gameUploadSchema.safeParse({
+    title: entry.title,
+    system: entry.system,
+    saveFiles: entry.saveFiles,
+    executable: directory + executable,
+    arguments: args.join(" "),
+    cycles: configuration.match(/^\s*cycles\s*=\s*(\S+)\s*$/im)?.[1] ?? "auto",
+  });
+  return parsed.success ? parsed.data : null;
+}
+
+async function inspectConfiguration(directory: string, entry: LibraryEntry) {
+  if (entry.system !== "dos") return { settings: null, executables: [], configuration: "" };
+  const archive = await openPromise(join(directory, entry.file), {
+    lazyEntries: true,
+    autoClose: false,
+  });
+  try {
+    if (archive.entryCount > gameUploadLimits.files)
+      throw new LibraryError(message("library.configurationFileCount"));
+    const executables: string[] = [];
+    let configuration = "";
+    for await (const member of archive.eachEntry()) {
+      if (dosExecutablePattern.test(member.fileName)) executables.push(member.fileName);
+      if (member.fileName.toLowerCase() !== ".jsdos/dosbox.conf") continue;
+      if (member.uncompressedSize > 65536)
+        throw new LibraryError(message("library.configurationSize"));
+      const stream = await archive.openReadStreamPromise(member);
+      const chunks: Buffer[] = [];
+      let size = 0;
+      for await (const chunk of stream) {
+        size += chunk.length;
+        if (size > 65536) throw new LibraryError(message("library.configurationSize"));
+        chunks.push(chunk);
+      }
+      configuration = Buffer.concat(chunks).toString("utf8");
+    }
+    return { settings: parseLaunch(configuration, entry), executables, configuration };
+  } finally {
+    archive.close();
+  }
+}
+
+export async function describeConfiguration(directory: string, id: string) {
+  return withCatalog(directory, async (catalog, library) => {
+    const entry = findEntry(catalog, id);
+    return {
+      game: library.get(id),
+      token: entryToken(entry),
+      ...(await inspectConfiguration(directory, entry)),
+    };
+  });
+}
+
+/** HTTP callers hold the exclusive online lease. Old releases/profiles remain immutable. */
+export async function changeConfiguration(
+  directory: string,
+  id: string,
+  input: unknown,
+  maximumBytes: number,
+  minimumFreeBytes: number,
+) {
+  const parsed = configurationChange.safeParse(input);
+  if (!parsed.success) throw new LibraryError(message("library.invalidConfiguration"));
+  const change = parsed.data;
+  const staging = join(directory, ".uploads");
+  const prepared = join(staging, `${randomUUID()}.tmp`);
+  let settings: GameUploadSettings | undefined;
+  try {
+    await withCatalog(directory, async (catalog) => {
+      const entry = findEntry(catalog, id);
+      if (entryToken(entry) !== change.token)
+        throw new LibraryError(message("library.configurationConflict"), 409);
+      if (change.launch) {
+        const result = gameUploadSchema.safeParse({
+          ...change.launch,
+          title: change.title,
+          system: entry.system,
+        });
+        if (entry.system !== "dos" || !result.success)
+          throw new LibraryError(message("library.invalidLaunch"));
+        settings = result.data;
+        const current = (await inspectConfiguration(directory, entry)).settings;
+        if (
+          current &&
+          JSON.stringify({ ...current, title: change.title }) === JSON.stringify(settings)
+        )
+          settings = undefined;
+      }
+      if (!settings) {
+        entry.title = change.title;
+        await writeCatalog(directory, catalog);
+        return;
+      }
+      await mkdir(staging, { recursive: true, mode: 0o700 });
+      await new DiskCapacity(minimumFreeBytes).write(
+        staging,
+        2 * (gameUploadLimits.expanded + 4 * 1024 ** 2),
+        () =>
+          prepareDosUpload(join(directory, entry.file), prepared, settings as GameUploadSettings),
+      );
+    });
+    if (!settings) return id;
+    return await importGame(
+      directory,
+      prepared,
+      {
+        title: settings.title,
+        system: settings.system,
+        saveFiles: settings.saveFiles,
+        // Deliberately do not inherit a verified editor binding onto a changed release.
+      },
+      maximumBytes,
+    );
+  } finally {
+    await rm(prepared, { force: true });
+  }
+}

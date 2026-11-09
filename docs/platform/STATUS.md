@@ -10,6 +10,10 @@ Updated: 2026-11-09 (Asia/Shanghai).
   counterpart across app instances. Real PostgreSQL checks cover concurrent readers,
   writer exclusion/fairness and failures; uploads, interrupted HTTP cleanup and
   offline maintenance checks still pass. No existing game or save has been deleted.
+  Configuration APIs now rename releases in place or repackage existing server-side
+  DOS bytes for changed launch/sync rules. Ten configuration/upload API checks pass,
+  including stale drafts, unchanged bytes, editor-binding preservation, new-version
+  isolation and quota rejection; types pass. Browser controls and deletion follow.
 
 - Administrator game management is implemented and deployed locally. The header
   opens uploads, DOS launch settings, explicit save paths and a searchable/sortable
