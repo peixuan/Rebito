@@ -8,6 +8,7 @@
   "runtime.dosResources": "DOS emulator resources are incomplete.",
   "runtime.dosConfiguration": "The DOS archive has no valid launch configuration.",
   "runtime.dosCanvas": "The DOS emulator display is not ready.",
+  "runtime.identityMissing": "The emulator version identity is missing.",
   "runtime.invalidFileGroup": "The save file group is empty or contains duplicate names.",
   "runtime.baseFileMissing": "This save file is missing from the current revision.",
   "runtime.editConflict": "The in-game save has changed. Synchronize and refresh before editing again; your draft has been retained.",

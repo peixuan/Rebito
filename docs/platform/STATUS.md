@@ -4,6 +4,12 @@ Updated: 2026-11-09 (Asia/Shanghai).
 
 ## User verification follow-up
 
+- Sega MD, Master System and Game Gear integration is in progress. The existing
+  snapshot identity depended on the entire runtime inventory; adding a core would
+  invalidate unrelated snapshots. Build identities now depend on each core/wrapper
+  while preserving the verified original baseline for unchanged binaries. Five
+  identity/progress checks and type checks pass; Sega runtime acceptance follows.
+
 - Configuration editing and confirmed deletion are implemented and deployed locally.
   The form reuses stored assets: renaming preserves the release; changed DOS launch
   or sync rules publish a new immutable release without migrating old profiles or

@@ -8,6 +8,7 @@
   "runtime.dosResources": "DOS 模拟器资源不完整。",
   "runtime.dosConfiguration": "DOS 游戏包缺少有效的启动配置。",
   "runtime.dosCanvas": "DOS 模拟器画布尚未就绪。",
+  "runtime.identityMissing": "缺少模拟器版本标识。",
   "runtime.invalidFileGroup": "存档文件组为空或名称重复。",
   "runtime.baseFileMissing": "当前版本缺少此存档文件。",
   "runtime.editConflict": "游戏内存档已有变化。请先同步并刷新，再重新编辑；草稿仍然保留。",

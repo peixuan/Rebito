@@ -55,5 +55,16 @@
       "core": true,
       "target": "emulatorjs-4.2.3/data/cores"
     }
-  ]
+  ],
+  "snapshotBaseline": {
+    "version": "4968117d922665bf79a612eeb3691b88709f404804a7387e5e765bdf757e6d1c",
+    "integrities": {
+      "jsdos-8.5.3": "sha512-1nZxQqW4wlsAKXIrvw9g6kUbSJECkJlAi+VOf/yD7Y1aRkO6TNixFuuD6uePMiEno8NXQJCGVr/QBvrCd9MNZQ==",
+      "emulatorjs-4.2.3": "sha512-7z3qaA4LwyurhuGvdMUDF9xJpEbxC3SNy9+E9tSaOsRo8FCS2QXam/0k/lc9kqHWRFIlLKWahNjPAStyL0rFnw==",
+      "fceumm-4.2.3": "sha512-XX9Vv2N/hzp0TstNMCTSppEs+sg+1lpJpPdSDuRqIO/cwdt7dUcF+WjNX1yQJLRbP5+XwcNHZ6K4BKy8CJpndQ==",
+      "snes9x-4.2.3": "sha512-JTe9Rv9eOuCkgkG4ILwuCZUqNcVI3m9ju1NHTTjridUlFgJSqL4DUqF/vLKN9olCpsqlJFfcCayAOoikJxefwA==",
+      "gambatte-4.2.3": "sha512-Oq3AJL9SKnMsNAmtAP2eN934TQts3NHeaAe0z1BO9Lx/L3xDZKLpxL+XwgcSXIrl4Sx1oXxYEUwD7JjPEQ0DGg==",
+      "mgba-4.2.3": "sha512-daiHzZQKEr+P9fra7j5YoEAXiyYUEtBhFQ8EAV/SeCtrkvqtayU7GQ9LYgoSgzkKSwsbNSskApqGuA9EGARYPA=="
+    }
+  }
 }

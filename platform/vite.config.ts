@@ -1,9 +1,9 @@
-import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import VueI18nPlugin from "@intlify/unplugin-vue-i18n/vite";
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite";
+import { runtimeIdentities } from "./scripts/runtime-identities.ts";
 
 export default defineConfig({
   plugins: [
@@ -17,10 +17,8 @@ export default defineConfig({
   ],
   publicDir: ".runtime-cache/public",
   define: {
-    __RUNTIME_FINGERPRINT__: JSON.stringify(
-      createHash("sha256")
-        .update(JSON.stringify(JSON.parse(readFileSync("runtime-lock.json", "utf8"))))
-        .digest("hex"),
+    __RUNTIME_FINGERPRINTS__: JSON.stringify(
+      runtimeIdentities(JSON.parse(readFileSync("runtime-lock.json", "utf8"))),
     ),
   },
   build: {

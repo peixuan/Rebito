@@ -7,6 +7,7 @@ COPY tsconfig.json tsconfig.build.json tsconfig.client.json vite.config.ts index
 COPY src ./src
 COPY client ./client
 COPY scripts/runtime-assets.mjs ./scripts/runtime-assets.mjs
+COPY scripts/runtime-identities.ts ./scripts/runtime-identities.ts
 COPY runtime-lock.json ./
 RUN --mount=type=cache,target=/app/.runtime-cache npm run build
 

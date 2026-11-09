@@ -21,6 +21,13 @@ The selected components are js-dos 8.5.3 (with emulators 8.5.2) and EmulatorJS
 does not identify a native core revision by itself: preserve the complete lock
 and use a lock-derived fingerprint when recording emulator snapshots.
 
+Snapshot identities are derived from the selected core and wrapper, so adding an
+unrelated core does not invalidate existing progress. `snapshotBaseline` records
+the original deployment's identity and archive integrities. Unchanged legacy
+components retain that identity; changed archives receive a new fingerprint.
+Keep this baseline immutable during upgrades; it is compatibility evidence, not
+a version alias for newly built binaries.
+
 Snes9x has noncommercial restrictions; it is not covered by a blanket claim that
 every runtime has a permissive license. This fits the stated noncommercial scope
 but must be reconsidered if distribution terms or project goals change.
