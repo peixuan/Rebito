@@ -62,6 +62,7 @@ it.each([
   discCue.replace("MODE1/2352", "AUDIO"),
   discCue.replace("INDEX 01", "INDEX 00"),
   discCue.replace("00:00:00", "00:00:75"),
+  discCue.replace("00:00:00", "00:00:01"),
   discCue.replace("00:00:00", "00:10:00"),
   `${discCue}INDEX 00 00:00:00`,
   `${discCue}FILE "game.bin" BINARY`,

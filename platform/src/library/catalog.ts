@@ -25,7 +25,7 @@ const entrySchema = z
       .number()
       .int()
       .min(1)
-      .max(512 * 1024 * 1024),
+      .max(1024 ** 3 + 4 * 1024 ** 2),
     // Reserve one artifact for the DOS filesystem overlay.
     saveFiles: z
       .array(portablePath)
@@ -34,6 +34,8 @@ const entrySchema = z
     editor: z.literal("koukai2").optional(),
   })
   .superRefine((entry, context) => {
+    if (entry.system !== "segacd" && entry.size > 512 * 1024 ** 2)
+      context.addIssue({ code: "custom", message: "Game file exceeds system limit" });
     const names = entry.saveFiles.map((name) => name.normalize("NFC").toLowerCase());
     if (new Set(names).size !== names.length) {
       context.addIssue({ code: "custom", message: "Duplicate save paths" });

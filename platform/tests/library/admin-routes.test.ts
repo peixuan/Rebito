@@ -12,6 +12,7 @@ import { loadConfig } from "../../src/server/config.ts";
 import { createPlatform } from "../../src/server/platform.ts";
 import { testDatabase } from "../database.ts";
 import { mdFixture, sega8Fixture, smdFixture } from "./sega-fixtures.ts";
+import { discArchive, discBios } from "./segacd-fixtures.ts";
 
 let fixture: Awaited<ReturnType<typeof testDatabase>>;
 let app: Awaited<ReturnType<typeof createPlatform>>;
@@ -175,6 +176,44 @@ it("streams console bytes unchanged and admits only one concurrent import", asyn
     headers: { cookie: player },
   });
   expect(asset.rawPayload).toEqual(rom);
+});
+
+it("requires matching BIOS, publishes a private CD package and cleans failed uploads", async () => {
+  const metadata = {
+    title: "Mega CD fixture",
+    system: "segacd",
+    firmware: discBios().toString("base64"),
+  };
+  expect((await upload({ metadata, bytes: discArchive(), cookie: player })).statusCode).toBe(403);
+  expect(
+    (await upload({ metadata: { ...metadata, firmware: undefined }, bytes: discArchive() }))
+      .statusCode,
+  ).toBe(422);
+  expect(
+    (
+      await upload({
+        metadata: { ...metadata, firmware: discBios("U").toString("base64") },
+        bytes: discArchive(),
+      })
+    ).statusCode,
+  ).toBe(422);
+  const response = await upload({ metadata, bytes: discArchive() });
+  expect(response.statusCode).toBe(201);
+  const { game } = response.json();
+  expect(game.system).toBe("segacd");
+  expect(game).not.toHaveProperty("firmware");
+  expect((await app.inject(`/api/games/${game.id}/asset`)).statusCode).toBe(401);
+  const asset = await app.inject({
+    url: `/api/games/${game.id}/asset`,
+    headers: { cookie: player },
+  });
+  expect(Object.keys(unzipSync(asset.rawPayload))).toEqual([
+    "disc.cue",
+    "track-01.bin",
+    "bios_CD_J.bin",
+  ]);
+  expect((await upload({ metadata, bytes: discArchive() })).statusCode).toBe(409);
+  expect(await readdir(join(directory, "library", ".uploads"))).toEqual([]);
 });
 
 it("preserves the catalog and cleans staging after quota or disk-reserve rejection", async () => {

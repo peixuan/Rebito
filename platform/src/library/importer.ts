@@ -26,8 +26,9 @@ export async function importGame(
     throw new Error("Invalid library quota");
   const settings = metadataSchema.parse(metadata);
   const sourceInfo = await stat(source);
-  if (!sourceInfo.isFile() || sourceInfo.size < 1 || sourceInfo.size > 512 * 1024 * 1024)
-    throw new Error("Expected a game file between 1 byte and 512 MiB");
+  const maximumFile = settings.system === "segacd" ? 1024 ** 3 + 4 * 1024 ** 2 : 512 * 1024 ** 2;
+  if (!sourceInfo.isFile() || sourceInfo.size < 1 || sourceInfo.size > maximumFile)
+    throw new Error("Expected a game file within this system's size limit");
   return withCatalog(directory, async (catalog, library) => {
     const temporary = join(directory, `${randomUUID()}.tmp`);
     try {

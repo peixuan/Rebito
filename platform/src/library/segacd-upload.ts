@@ -4,12 +4,11 @@ import type { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import type { ZipFile as Archive, Entry } from "yauzl";
 import { ZipFile } from "yazl";
+import { discUploadLimits } from "../domain/game-import.ts";
 import { message } from "../shared/messages.ts";
 import { openGameArchive, verifiedEntry } from "./archive.ts";
 import { parseDiscCue } from "./segacd-cue.ts";
 import { LibraryError } from "./upload-settings.ts";
-
-export const discUploadLimits = { bytes: 1024 ** 3, expanded: 1024 ** 3, files: 500 } as const;
 
 export function validateDiscBios(bytes: Buffer) {
   const region = bytes.subarray(0x1f0, 0x200).toString("ascii").trim();
@@ -43,6 +42,13 @@ export async function prepareDiscUpload(source: string, destination: string, bio
       cue.fileName,
       entries,
     );
+    if (
+      disc.files.reduce(
+        (sum, file) => sum + file.entry.uncompressedSize,
+        bios.length + Buffer.byteLength(disc.text),
+      ) > discUploadLimits.expanded
+    )
+      throw new LibraryError(message("library.discSize"));
     const first = disc.files[0];
     if (!first) throw new LibraryError(message("library.dataTrackMissing"));
     const stream = verifiedEntry(archive, first.entry);
@@ -51,13 +57,18 @@ export async function prepareDiscUpload(source: string, destination: string, bio
     for await (const chunk of stream) {
       chunks.push(chunk);
       size += chunk.length;
-      if (size >= 528) break;
+      if (size >= 540) break;
     }
     const header = Buffer.concat(chunks).subarray(first.sector === 2352 ? 16 : 0);
     if (header.subarray(0, 14).toString("ascii") !== "SEGADISCSYSTEM")
       throw new LibraryError(message("library.discFormat"));
     const region = header.subarray(0x1f0, 0x200).toString("ascii").trim();
-    if (!/^[JUE]+$/.test(region) || !region.includes(firmware.region))
+    const bootRegion = header[0x20b] === 0xa1 ? "J" : header[0x20b] === 0x64 ? "E" : "U";
+    if (
+      !/^[JUE]+$/.test(region) ||
+      !region.includes(firmware.region) ||
+      bootRegion !== firmware.region
+    )
       throw new LibraryError(message("library.discRegion"));
     const output = new ZipFile();
     const target = createWriteStream(destination, { flags: "wx", mode: 0o600 });

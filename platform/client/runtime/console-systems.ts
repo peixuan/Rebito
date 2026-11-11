@@ -7,6 +7,7 @@ export const consoleSystems: Record<
     directory: string;
     extension: string;
     controls?: string;
+    saveName?: string;
   }
 > = {
   nes: { core: "fceumm", directory: "FCEUmm", extension: "nes" },
@@ -31,5 +32,12 @@ export const consoleSystems: Record<
     directory: "Genesis Plus GX",
     extension: "gg",
     controls: "segaGG",
+  },
+  segacd: {
+    core: "picodrive",
+    directory: "PicoDrive",
+    extension: "zip",
+    controls: "segaCD",
+    saveName: "disc",
   },
 };

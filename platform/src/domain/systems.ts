@@ -1,4 +1,4 @@
-export const systemIds = ["dos", "nes", "snes", "gb", "gba", "md", "sms", "gg"] as const;
+export const systemIds = ["dos", "nes", "snes", "gb", "gba", "md", "sms", "gg", "segacd"] as const;
 export type GameSystem = (typeof systemIds)[number];
 
 /** Shared upload/catalog labels and extensions; emulator bindings remain in the adapter. */
@@ -14,5 +14,6 @@ export const gameSystems: Record<
   md: { label: "Sega MD / Genesis", shortLabel: "MD", extensions: [".md", ".bin", ".gen", ".smd"] },
   sms: { label: "Sega Master System", shortLabel: "SMS", extensions: [".sms"] },
   gg: { label: "Sega Game Gear", shortLabel: "GG", extensions: [".gg"] },
+  segacd: { label: "Mega CD / Sega CD", shortLabel: "Mega CD", extensions: [".zip"] },
 };
 export const systemOptions = systemIds.map((value) => ({ value, label: gameSystems[value].label }));

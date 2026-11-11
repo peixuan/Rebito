@@ -1,0 +1,6 @@
+{
+  "bios.size": "The BIOS must be a 128 KiB BIN file.",
+  "bios.readFailed": "Cannot read the BIOS. Please select it again.",
+  "bios.file": "BIOS file",
+  "bios.help": "Supply your own Mega CD BIOS matching the disc region. Japanese, US and European BIOS files are supported."
+}

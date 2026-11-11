@@ -1,8 +1,14 @@
 # Platform work status
 
-Updated: 2026-11-09 (Asia/Shanghai).
+Updated: 2026-11-11 (Asia/Shanghai).
 
 ## User verification follow-up
+
+- Mega CD implementation is under acceptance: region-checked BIOS, streamed
+  CUE/BIN uploads up to 1 GiB, private progress, and
+  PicoDrive cartridge/state restoration. Component gates pass; full browser and
+  real-game/container checks are still running. BIOS editing is next. Native cartridge import must
+  follow PicoDrive RAM allocation; complete progress retains both state and SRAM.
 
 - Sega MD/Genesis, Master System and Game Gear are implemented using one pinned
   Genesis Plus GX core. Shared system metadata drives uploads/catalog labels;

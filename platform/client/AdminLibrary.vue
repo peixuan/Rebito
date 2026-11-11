@@ -7,13 +7,14 @@ import Message from "primevue/message";
 import Select from "primevue/select";
 import Textarea from "primevue/textarea";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
-import { gameUploadLimits } from "../src/domain/game-import.ts";
+import { discUploadLimits, gameUploadLimits } from "../src/domain/game-import.ts";
 import { gameSystems, systemOptions as systems } from "../src/domain/systems.ts";
 import type { Game } from "../src/library/catalog.ts";
 import type { describeConfiguration } from "../src/library/configuration.ts";
 import type { DeletionPreview } from "../src/library/deletion-records.ts";
 import { type DisplayText, message } from "../src/shared/messages.ts";
 import { api, errorText } from "./api.ts";
+import BiosFile from "./BiosFile.vue";
 import { formatBytes as size } from "./format-bytes.ts";
 import GameDeletion from "./GameDeletion.vue";
 import { t, translate } from "./i18n.ts";
@@ -28,6 +29,8 @@ const args = ref("");
 const cycles = ref("auto");
 const savePaths = ref("");
 const file = ref<File | null>(null);
+const firmware = ref("");
+const biosGeneration = ref(0);
 const input = ref<HTMLInputElement | null>(null);
 const programs = ref<string[]>([]);
 const busy = ref(false);
@@ -40,12 +43,20 @@ const editing = ref<{ id: string; token: string } | null>(null);
 const initialDraft = ref("");
 const legacyConfiguration = ref(false);
 const draft = () =>
-  JSON.stringify([title.value, executable.value, args.value, cycles.value, savePaths.value]);
+  JSON.stringify([
+    title.value,
+    executable.value,
+    args.value,
+    cycles.value,
+    savePaths.value,
+    firmware.value,
+  ]);
 const dirty = computed(() =>
   editing.value
     ? draft() !== initialDraft.value
     : Boolean(
         file.value ||
+          firmware.value ||
           title.value ||
           executable.value ||
           args.value ||
@@ -79,8 +90,9 @@ async function selectFile(event: Event) {
   executable.value = "";
   error.value = "";
   if (!selected) return;
-  if (selected.size > gameUploadLimits.bytes) {
-    error.value = message("library.previewSize");
+  const maximum = system.value === "segacd" ? discUploadLimits.bytes : gameUploadLimits.bytes;
+  if (selected.size > maximum) {
+    error.value = message("admin.fileSize", { maximum: maximum / 1024 ** 2 });
     file.value = null;
     return;
   }
@@ -98,6 +110,8 @@ async function selectFile(event: Event) {
   }
 }
 function resetFile() {
+  biosGeneration.value++;
+  firmware.value = "";
   file.value = null;
   programs.value = [];
   executable.value = "";
@@ -112,6 +126,7 @@ async function publish() {
     const settings = {
       title: title.value,
       system: system.value,
+      ...(system.value === "segacd" ? { firmware: firmware.value } : {}),
       ...(system.value === "dos"
         ? {
             executable: executable.value,
@@ -298,7 +313,17 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
             @change="selectFile"
           ></label
         >
-        <p v-if="!editing" class="muted">{{ t("admin.fileHelp") }}</p>
+        <template v-if="system === 'segacd'">
+          <BiosFile
+            v-if="!editing"
+            :key="biosGeneration"
+            v-model="firmware"
+            :disabled="busy"
+            :required="!editing"
+          />
+          <p class="muted">{{ t("admin.discHelp") }}</p>
+        </template>
+        <p v-else-if="!editing" class="muted">{{ t("admin.fileHelp") }}</p>
         <p v-if="legacyConfiguration" class="muted">{{ t("admin.launchLegacyHelp") }}</p>
         <template v-if="system === 'dos'">
           <label for="admin-executable"
@@ -358,7 +383,10 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
           :label="busy ? t('common.processing') : editing ? t('admin.save') : t('admin.publish')"
           :loading="busy"
           :disabled="
-            (!file && !editing) || !title.trim() || (!editing && system === 'dos' && !executable)
+            (!file && !editing) ||
+            !title.trim() ||
+            (!editing && system === 'dos' && !executable) ||
+            (!editing && system === 'segacd' && !firmware)
           "
         />
       </form>

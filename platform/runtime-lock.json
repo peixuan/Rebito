@@ -63,6 +63,15 @@
       "source": "https://github.com/EmulatorJS/Genesis-Plus-GX",
       "core": true,
       "target": "emulatorjs-4.2.3/data/cores"
+    },
+    {
+      "id": "picodrive-4.2.3",
+      "url": "https://registry.npmjs.org/@emulatorjs/core-picodrive/-/core-picodrive-4.2.3.tgz",
+      "integrity": "sha512-FUxeHeJIIKi4XG+UdOoCARDjH7hV11XLb6LFUO644F7Ri08veGqMQkOJAoCP8uXGxa/JdgS7SXqc0a40+vLv2w==",
+      "license": "PicoDrive noncommercial; full text in core archive license.txt",
+      "source": "https://github.com/EmulatorJS/picodrive",
+      "core": true,
+      "target": "emulatorjs-4.2.3/data/cores"
     }
   ],
   "snapshotBaseline": {

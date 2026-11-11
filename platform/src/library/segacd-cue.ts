@@ -60,6 +60,7 @@ export function parseDiscCue(text: string, cueName: string, entries: Map<string,
         const number = Number(index[2]);
         if (
           number <= lastIndex ||
+          (track === 1 && number === 1 && frame !== 0) ||
           frame < lastFrame ||
           frame >= file.entry.uncompressedSize / file.sector
         )

@@ -12,6 +12,7 @@ import { prepareDosUpload } from "./dos-upload.ts";
 import { importGame } from "./importer.ts";
 import { receiveGameUpload } from "./receive-upload.ts";
 import { validateSegaRom } from "./sega-rom.ts";
+import { prepareDiscUpload } from "./segacd-upload.ts";
 import { LibraryError } from "./upload-settings.ts";
 
 async function validateRom(source: string, filename: string, system: GameSystem) {
@@ -74,10 +75,17 @@ export function registerGameAdministration(
             if (!/\.(zip|jsdos)$/i.test(filename))
               throw new LibraryError(message("library.dosArchive"));
             removed = await prepareDosUpload(source, prepared, settings);
+          } else if (settings.system === "segacd") {
+            if (!/\.zip$/i.test(filename)) throw new LibraryError(message("library.discArchive"));
+            await prepareDiscUpload(
+              source,
+              prepared,
+              Buffer.from(settings.firmware ?? "", "base64"),
+            );
           } else await validateRom(source, filename, settings.system);
           const id = await importGame(
             directory,
-            settings.system === "dos" ? prepared : source,
+            settings.system === "dos" || settings.system === "segacd" ? prepared : source,
             {
               title: settings.title,
               system: settings.system,

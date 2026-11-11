@@ -14,11 +14,13 @@ Create a metadata JSON file, for example:
 { "title": "My game", "system": "nes" }
 ```
 
-Systems are `dos`, `nes`, `snes`, `gb`, `gba`, `md`, `sms`, `gg`. Console files are uncompressed ROMs;
+Systems are `dos`, `nes`, `snes`, `gb`, `gba`, `md`, `sms`, `gg`, `segacd`.
+Cartridge console files are uncompressed ROMs;
 DOS files are `.jsdos` ZIP bundles with `.jsdos/dosbox.conf`. DOS metadata also
 accepts `saveFiles` (portable relative file paths) and optional `editor: "koukai2"`.
 Only enable an editor for a verified compatible release. Each CLI-imported file is
-limited to 512 MiB; browser uploads are limited to 64 MiB. Do not put personalized
+limited to 512 MiB; browser cartridge/DOS uploads are limited to 64 MiB. Mega CD
+uses the bounded package format below, up to 1 GiB plus ZIP overhead. Do not put personalized
 saves into shared game bundles.
 At most 127 native save paths are allowed; one additional artifact holds the DOS
 filesystem overlay. The `__runtime` namespace and file/directory collisions are
@@ -81,12 +83,41 @@ and preserve old profiles. Complex legacy launch scripts are not guessed: leavin
 the launch program empty renames only; selecting one replaces the launch script.
 Console save locations are managed by the emulator adapter.
 Sega uploads receive bounded header/model checks; ROM bytes are preserved, including
-SMD interleaving. Headers are not a complete compatibility guarantee. Sega CD, 32X,
+SMD interleaving. Headers are not a complete compatibility guarantee. 32X,
 Pico, Saturn and Dreamcast are outside this cartridge integration. The selected
 MD/SMS/GG core runs these cartridge formats without a separately supplied BIOS.
 
+### Mega CD / Sega CD
+
+Choose **Mega CD / Sega CD**, upload a ZIP containing exactly one CUE and all its
+referenced BIN tracks, then select a separate 128 KiB BIOS matching the disc's
+Japanese, American or European region. A folder containing CUE/BIN files can be
+zipped directly; one BIN containing many tracks and separate BINs are both supported.
+The server resolves filename case, validates track indexes and regions, streams
+CRC-checked tracks, and publishes a canonical package without unrelated files.
+BIN/BIOS bytes are unchanged. No vendor BIOS is bundled with this project.
+
+The uploaded ZIP and total expanded content are each limited to 1 GiB and 500
+entries; the expanded limit also includes the BIOS and normalized CUE. The first
+track must be MODE1/2048 or MODE1/2352 at index zero, followed by BINARY audio.
+CHD, WAV/MP3 tracks, multi-disc switching and other CD platforms are not supported.
+The metadata-first API additionally supplies `firmware` as base64; the browser
+handles this conversion. For the trusted CLI, supply an already prepared canonical
+package; it does not transform arbitrary CUE/BIN uploads.
+
+PicoDrive runs with a RAM cartridge. Platform snapshots retain the cartridge and
+emulator state together: the latter includes internal backup RAM. A downloaded
+`save.srm` alone is only the 72 KiB cartridge format, not complete CD progress or
+a universal Fusion save format. Use **保存到账号** or **停止游戏** before closing the
+page; console progress is not automatically uploaded on tab close. The first boot
+of a game may ask to initialize its new private backup cartridge.
+
+Large discs are downloaded and expanded in browser memory. Browser RAM usage can
+substantially exceed the archive size. Server preparation streams files instead
+of holding an entire disc in memory.
+
 Administrators can also publish through `POST /api/admin/games` using a multipart
-`metadata` JSON field followed by one `file` (maximum 64 MiB). The server accepts
+`metadata` JSON field followed by one `file` (64 MiB, or 1 GiB for Mega CD). The server accepts
 uncompressed console ROMs, or DOS ZIP/jsdos packages and an executable path,
 arguments, cycles and explicit save paths. DOS archives are streamed, limited to
 5,000 entries and 256 MiB expanded, and repackaged with generated configuration.

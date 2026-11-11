@@ -1,0 +1,6 @@
+{
+  "bios.size": "BIOS 应为 128 KiB 的 BIN 文件。",
+  "bios.readFailed": "无法读取 BIOS，请重新选择。",
+  "bios.file": "BIOS 文件",
+  "bios.help": "选择与光盘地区一致的 Mega CD BIOS；支持日版、美版和欧版。BIOS 由你提供。"
+}

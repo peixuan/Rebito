@@ -3,6 +3,7 @@ import { zipSync } from "fflate";
 import { gameSystems } from "../../src/domain/systems.ts";
 import { nesFixture } from "../library/nes-fixture.ts";
 import { mdFixture, sega8Fixture, smdFixture } from "../library/sega-fixtures.ts";
+import { discArchive, discBios } from "../library/segacd-fixtures.ts";
 import { useSession } from "./session.ts";
 
 test("publishes a DOS game from the administrator page and retains a rejected draft", async ({
@@ -90,21 +91,31 @@ for (const [system, extension, fixture] of [
   ["md", "smd", smdFixture],
   ["sms", "sms", () => sega8Fixture()],
   ["gg", "gg", () => sega8Fixture(true)],
+  ["segacd", "zip", discArchive],
 ] as const) {
   test(`uploads, saves and resumes ${extension} through administration`, async ({
     page,
     browser,
   }) => {
     test.setTimeout(60_000);
-    const title = `Console browser upload ${extension}`;
-    await useSession(page.context(), "admin");
+    const title = `Console upload ${extension}`;
+    await useSession(page.context(), system === "segacd" ? "admin-cd" : "admin");
     await page.goto("/");
     await page.getByRole("button", { name: "Game management", exact: true }).click();
     await page.getByLabel("Game title", { exact: true }).fill(title);
     await page.getByRole("combobox", { name: "Upload platform" }).click();
     await page.getByRole("option", { name: gameSystems[system].label, exact: true }).click();
     const bytes = fixture();
-    bytes[bytes.length - 1] = (bytes.at(-1) ?? 0) ^ 1; // Distinct fixture; keep the shared seed intact.
+    if (system !== "segacd") bytes[bytes.length - 1] = (bytes.at(-1) ?? 0) ^ 1;
+    else {
+      const bios = discBios();
+      bios[0x1000] = 1;
+      await page.getByLabel("BIOS file", { exact: true }).setInputFiles({
+        name: "own-bios.bin",
+        mimeType: "application/octet-stream",
+        buffer: bios,
+      });
+    }
     await page.getByLabel("Game file", { exact: true }).setInputFiles({
       name: `fixture.${extension}`,
       mimeType: "application/octet-stream",
@@ -135,7 +146,9 @@ for (const [system, extension, fixture] of [
       .first()
       .getAttribute("href");
     if (!nativeUrl) throw new Error("Missing native save download");
-    expect((await (await page.request.get(nativeUrl)).body())[0]).toBe(0x42);
+    const native = await (await page.request.get(nativeUrl)).body();
+    expect(native[0]).toBe(system === "segacd" ? 0 : 0x42);
+    if (system === "segacd") expect(native.length).toBe(73728);
     const stranger = await browser.newContext();
     try {
       await useSession(stranger, "other");
@@ -154,7 +167,7 @@ for (const [system, extension, fixture] of [
       .first()
       .getAttribute("href");
     if (!resumedUrl) throw new Error("Missing resumed save download");
-    expect((await (await page.request.get(resumedUrl)).body())[0]).toBe(0x42);
+    expect(await (await page.request.get(resumedUrl)).body()).toEqual(native);
   });
 }
 

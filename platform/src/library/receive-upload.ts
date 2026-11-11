@@ -3,7 +3,7 @@ import { stat } from "node:fs/promises";
 import { Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import type { FastifyRequest } from "fastify";
-import { gameUploadLimits } from "../domain/game-import.ts";
+import { discUploadLimits, gameUploadLimits } from "../domain/game-import.ts";
 import { message } from "../shared/messages.ts";
 import type { DiskCapacity } from "../storage/capacity.ts";
 import { type GameUploadSettings, gameUploadSchema, LibraryError } from "./upload-settings.ts";
@@ -21,7 +21,7 @@ export async function receiveGameUpload<T>(
       files: 1,
       fields: 1,
       parts: 2,
-      fileSize: gameUploadLimits.bytes,
+      fileSize: discUploadLimits.bytes,
       fieldSize: 256 * 1024,
     },
   });
@@ -39,7 +39,7 @@ export async function receiveGameUpload<T>(
   } catch {
     throw new LibraryError(message("library.metadataFirst"));
   }
-  const limits = gameUploadLimits;
+  const limits = settings.system === "segacd" ? discUploadLimits : gameUploadLimits;
   const reserve = limits.bytes + 2 * (limits.expanded + 4 * 1024 ** 2);
   return capacity.write(staging, reserve, async () => {
     const part = (await parts.next()).value;

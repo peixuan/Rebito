@@ -47,6 +47,7 @@ for (const [index, name] of [
   "console",
   "editor",
   "admin",
+  "admin-cd",
 ].entries()) {
   // Fixture setup represents distinct clients; keep the real public rate limits enabled.
   const response = await app.inject({
@@ -57,7 +58,7 @@ for (const [index, name] of [
     payload: { email: `${name}@example.test`, name, password: "browser-test-password-123" },
   });
   if (response.statusCode !== 200) throw new Error("Could not provision browser fixture");
-  if (name === "admin") adminUserIds.push(response.json().user.id);
+  if (name.startsWith("admin")) adminUserIds.push(response.json().user.id);
   sessions[name] = response.cookies.map(({ name, value }) => ({
     name,
     value,
