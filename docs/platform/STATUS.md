@@ -4,11 +4,17 @@ Updated: 2026-11-11 (Asia/Shanghai).
 
 ## User verification follow-up
 
-- Mega CD implementation is under acceptance: region-checked BIOS, streamed
-  CUE/BIN uploads up to 1 GiB, no-reupload BIOS changes, private progress, and
-  PicoDrive cartridge/state restoration. Component gates pass; full browser and
-  real-game/container checks are still running. Native cartridge import must
-  follow PicoDrive RAM allocation; complete progress retains both state and SRAM.
+- Mega CD/Sega CD is implemented with region-checked BIOS, streamed CUE/BIN uploads
+  up to 1 GiB, no-reupload BIOS changes, private progress and PicoDrive restoration.
+  Original firmware tests actual cartridge reads/writes and visible state recovery;
+  the operator's Japanese Sangokushi III boots with its BIOS and formatted cart.
+  Full gates pass 292 tests; 39 browser regressions plus the BIOS-edit browser test
+  pass with Chromium's sandbox enabled. The real 497 MiB package uploads through
+  the 512 MiB Linux container in 39 seconds. Native import follows the core's correct
+  allocation sequence; complete progress retains both state and cartridge. Full
+  app/database restart preserves the new head/artifacts and all 29 original saves.
+  The game and a validation profile are deployed locally. See
+  [game acceptance](GAME_ACCEPTANCE.md) and [runtime boundaries](../../platform/RUNTIMES.md).
 
 - Sega MD/Genesis, Master System and Game Gear are implemented using one pinned
   Genesis Plus GX core. Shared system metadata drives uploads/catalog labels;
@@ -193,7 +199,7 @@ support are separate: a playable game need not have an editor.
 | Administrator game management | Verified and deployed locally | Role-checked uploads; DOS launch/save settings; live catalog refresh; quotas; real uploaded DOS/NES/MD/SMD/SMS/GG fixtures |
 | Configuration and game deletion | Verified and deployed locally | No-upload editing; confirmed cross-owner deletion; stale-impact rejection; shared-reference-safe file recovery and retry |
 | DOS browser runtime | Fixture and real game verified | DOSBox WASM, native files, filesystem overlay, edited-byte precedence; relative mouse capture/Escape release |
-| Console browser runtime | Five cores verified with own fixtures | NES/SNES/GB/GBA/MD/SMS/GG SRAM and states; keyboard, volatile palette, SMD, no-battery snapshots and separate Sega SRAM |
+| Console browser runtime | Six cores verified with own fixtures | NES/SNES/GB/GBA/MD/SMS/GG/CD memory and states; keyboard, visible restoration, SMD, no-battery snapshots and BIOS/cart initialization |
 | Koukai2 editor | Real-game round trip verified | Eight modules; 13/13 legacy matches; browser editing/conflict tests; game reads and resaves modified money/leadership |
 | Local acceptance | Verified | Gates, end-to-end flows, complete container restart and fresh-volume backup recovery pass |
 
@@ -221,7 +227,7 @@ credentials or downloaded emulator archives are committed.
 - Production TLS and the actual identity provider/LDAP directory remain operator
   configuration. The local OIDC acceptance uses an independent test provider.
 - DOS absolute pointer alignment depends on the game; relative capture and keyboard
-  input are available. Five console cores are exercised with original test programs,
+  input are available. Six console cores are exercised with original test programs,
   not every commercial release. Koukai2 compatibility is tied to the verified format.
 - Save history is retained and quota-limited; automatic pruning and arbitrary
   third-party editor plugins are not part of this implementation.
@@ -236,12 +242,12 @@ remote CI has not run because this work has not been pushed.
 
 `cd platform && npm run check` with the test database: format/lint, TypeScript,
 HTTP/domain/filesystem and real PostgreSQL identity/revision/service tests passed.
-The complete run passed 272 tests with 97.99% Windows line coverage, 92.96% branch
-coverage and 98.47% function coverage. Linux-only directory fsync is exercised by
+The complete run passed 292 tests with 97.99% Windows line coverage, 92.28% branch
+coverage and 97.98% function coverage. Linux-only directory fsync is exercised by
 deployment, not by Windows unit coverage. The process entrypoint and account-provisioning CLI
 are excluded from unit coverage and exercised by the container smoke test.
 
-The complete 37-test browser suite passes, including all five console cores, DOS,
+The complete 39-test browser suite plus the BIOS-edit test pass, including six console cores, DOS,
 OIDC and three editor tests: exact multi-slot output bytes, numeric sorting and
 selection retention, clamping/invalid-input handling, narrow layouts, and retaining
 drafts when another upload advances the revision head. Edited cells update without

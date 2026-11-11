@@ -17,7 +17,7 @@ Original sources are retained beside the combined file, and the exact build
 adjustment is recorded in `scripts/runtime-assets.mjs`.
 
 The selected components are js-dos 8.5.3 (with emulators 8.5.2) and EmulatorJS
-4.2.3 with its 4.2.3 FCEUmm, Snes9x, Gambatte, mGBA and Genesis Plus GX packages. The wrapper version
+4.2.3 with its 4.2.3 FCEUmm, Snes9x, Gambatte, mGBA, Genesis Plus GX and PicoDrive packages. The wrapper version
 does not identify a native core revision by itself: preserve the complete lock
 and use a lock-derived fingerprint when recording emulator snapshots.
 
@@ -28,7 +28,7 @@ components retain that identity; changed archives receive a new fingerprint.
 Keep this baseline immutable during upgrades; it is compatibility evidence, not
 a version alias for newly built binaries.
 
-Snes9x and Genesis Plus GX have noncommercial restrictions; do not claim that
+Snes9x, Genesis Plus GX and PicoDrive have noncommercial restrictions; do not claim that
 every runtime has a permissive license. This fits the stated noncommercial scope
 but must be reconsidered if distribution terms or project goals change.
 Before public binary distribution, assemble the corresponding source/build

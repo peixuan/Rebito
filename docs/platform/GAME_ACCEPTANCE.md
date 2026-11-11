@@ -94,3 +94,48 @@ published the full collection and preserved every native byte. The browser suite
 now additionally checks two-file UI publication, automatic DOS upload, guarded
 navigation/logout and genuine concurrent-writer conflict recovery, including a
 committed backup whose success response was lost.
+
+## Mega CD / Sega CD (2026-11-11)
+
+Used the operator's Japanese Sangokushi III CUE/BIN (50 tracks, 604,405,200-byte
+BIN) and Japanese Mega CD 1 BIOS, MD5 `bdeb4c47da613946d422d97d98b21cda`.
+Original files were read only. The administrator browser upload published a
+521,285,753-byte canonical ZIP through the Linux app with its 512 MiB memory limit.
+The successful HTTP publication took 39 seconds; the upload staging directory
+was empty afterward. An initial acceptance run exposed a 30-second socket timeout
+during preparation. Both HTTP time limits now allow the bounded 15-minute operation.
+Deleting the first empty test release reclaimed its 521,285,753 asset bytes before
+repeating the upload, with no user profiles or history affected.
+
+Sandboxed Chrome booted the supplied BIOS, recognized all 50 tracks, entered the
+game's title/menu and new-game sequence, and accepted controller input. Formatting
+the private RAM cartridge produced the expected `SEGA_CD_ROM`/`RAM_CARTRIDGE___`
+markers. A fresh runtime imported those exact native bytes and booted the game.
+Original test firmware separately writes both ends of the 64 KiB emulated cart,
+reads imported bytes into a visible palette and restores volatile state. This
+caught the core's undersized initial allocation; the supported option/reset
+sequence in [runtimes](../../platform/RUNTIMES.md) fixes it without modifying WASM.
+
+The deployed page saved the real game's 73,728-byte cartridge alongside a
+1,560,568-byte emulator state. Fresh browser runtimes restored the title and
+continued the disc-based intro/menu with working input. After stopping both the
+app and PostgreSQL and starting them again, the same head and both downloaded
+artifacts matched their recorded SHA-256 values. The pre-upgrade game asset and
+all 29 existing save artifacts also matched their baseline bytes. The new game
+and an isolated validation profile remain available for local user verification.
+A new browser session after the full restart restored the saved game menu directly.
+
+The complete 39-test browser regression suite and the additional BIOS-configuration
+browser test passed. The latter verifies invalid size, mismatched regions, replacing
+BIOS without disc upload, resetting the input and retaining the old private profile.
+Full format/lint/type/unit/integration/build gates passed 292 tests, with 97.99%
+line coverage. The later HTTP timeout change passed lint, types and 15 server tests,
+plus the actual long container upload. Dependency policy reviewed 280 packages;
+the 10 repository policy tests and every new commit's line budget passed.
+
+This is evidence for the tested single-disc CUE/BINARY path, not every Mega CD game
+or a complete commercial playthrough. Multiple BINs are covered by archive tests;
+CHD, compressed audio and disc swapping remain outside this implementation. Native
+cartridge files alone omit internal backup RAM; complete progress retains both
+cartridge and emulator state. Private images, BIOS, saves and browser captures stay
+under ignored local diagnostics and deployment storage, never in commits.
