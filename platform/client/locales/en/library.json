@@ -30,6 +30,9 @@
   "library.cleanupPending": "Related progress has been deleted, but disk cleanup is incomplete. Select Retry cleanup.",
   "library.executableMissing": "The launch executable is missing or has been selected as a save file.",
   "library.quota": "The game library quota is full. Ask the deployment administrator to adjust its capacity.",
+  "library.metadataFirst": "Submit a valid launch configuration before uploading one game file.",
+  "library.fileRequired": "Select a valid game file.",
+  "library.singleFile": "Upload exactly one nonempty game file.",
   "library.segaHeader": "The file header does not match the selected Sega system, or the ROM format is unsupported.",
   "library.cueTracks": "The CUE track configuration is invalid. Single-disc MODE1 data tracks and BINARY audio tracks are supported.",
   "library.cueFiles": "A BIN file referenced by the CUE is missing, duplicated or in an unsupported format.",
@@ -56,11 +59,7 @@
   "library.profileExample": "For example, First playthrough",
   "library.createProfile": "Create profile",
   "library.expandedSize": "The expanded game archive exceeds {maximum} MiB.",
+  "library.uploadSize": "The upload exceeds {maximum} MiB.",
   "library.profileCount": "{count} personal profile | {count} personal profiles",
-  "library.profileTitle": "{title} · Personal profiles",
-  "library.selectUpload": "Select a valid game file.",
-  "library.uploadSizeLegacy": "The upload exceeds 64 MiB.",
-  "library.launchSettingsLegacy": "The launch executable, arguments or save file settings are invalid.",
-  "library.uploadOrderLegacy": "Submit configuration before uploading one game file.",
-  "library.uploadSettingsLegacy": "The upload configuration is invalid."
+  "library.profileTitle": "{title} · Personal profiles"
 }

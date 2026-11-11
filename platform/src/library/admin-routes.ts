@@ -1,9 +1,7 @@
 import { randomUUID } from "node:crypto";
-import { createWriteStream } from "node:fs";
-import { mkdir, open, rm, stat } from "node:fs/promises";
+import { mkdir, open, rm } from "node:fs/promises";
 import { extname, join } from "node:path";
-import { pipeline } from "node:stream/promises";
-import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { FastifyInstance } from "fastify";
 import { type GameSystem, gameSystems } from "../domain/systems.ts";
 import { requireAdministrator } from "../identity/administrator.ts";
 import type { ServerConfig } from "../server/config.ts";
@@ -12,51 +10,9 @@ import { DiskCapacity } from "../storage/capacity.ts";
 import type { LocalLibrary } from "./catalog.ts";
 import { prepareDosUpload } from "./dos-upload.ts";
 import { importGame } from "./importer.ts";
+import { receiveGameUpload } from "./receive-upload.ts";
 import { validateSegaRom } from "./sega-rom.ts";
-import {
-  type GameUploadSettings,
-  gameUploadLimits,
-  gameUploadSchema,
-  LibraryError,
-} from "./upload-settings.ts";
-
-async function receive(request: FastifyRequest, source: string) {
-  let settings: GameUploadSettings | undefined;
-  let filename = "";
-  for await (const part of request.parts({
-    limits: {
-      files: 1,
-      fields: 1,
-      parts: 2,
-      fileSize: gameUploadLimits.bytes,
-      fieldSize: 64 * 1024,
-    },
-  })) {
-    if (part.type === "field") {
-      if (
-        part.fieldname !== "metadata" ||
-        settings ||
-        part.valueTruncated ||
-        typeof part.value !== "string"
-      )
-        throw new LibraryError(message("library.uploadSettingsLegacy"));
-      try {
-        settings = gameUploadSchema.parse(JSON.parse(part.value));
-      } catch {
-        throw new LibraryError(message("library.launchSettingsLegacy"));
-      }
-    } else {
-      if (!settings || filename || part.fieldname !== "file")
-        throw new LibraryError(message("library.uploadOrderLegacy"));
-      filename = part.filename;
-      await pipeline(part.file, createWriteStream(source, { flags: "wx", mode: 0o600 }));
-      if (part.file.truncated) throw new LibraryError(message("library.uploadSizeLegacy"), 413);
-    }
-  }
-  if (!settings || !filename || (await stat(source)).size === 0)
-    throw new LibraryError(message("library.selectUpload"));
-  return { settings, filename };
-}
+import { LibraryError } from "./upload-settings.ts";
 
 async function validateRom(source: string, filename: string, system: GameSystem) {
   if (!gameSystems[system].extensions.includes(extname(filename).toLowerCase()))
@@ -107,30 +63,33 @@ export function registerGameAdministration(
     const prepared = join(staging, `${randomUUID()}.tmp`);
     try {
       await mkdir(staging, { recursive: true, mode: 0o700 });
-      // Cover raw upload, repackaging and publication copies, including ZIP headers.
-      const reserve = gameUploadLimits.bytes + 2 * (gameUploadLimits.expanded + 4 * 1024 ** 2);
-      return await capacity.write(staging, reserve, async () => {
-        const { settings, filename } = await receive(request, source);
-        let removed: string[] = [];
-        if (settings.system === "dos") {
-          if (!/\.(zip|jsdos)$/i.test(filename))
-            throw new LibraryError(message("library.dosArchive"));
-          removed = await prepareDosUpload(source, prepared, settings);
-        } else await validateRom(source, filename, settings.system);
-        const id = await importGame(
-          directory,
-          settings.system === "dos" ? prepared : source,
-          {
-            title: settings.title,
-            system: settings.system,
-            saveFiles: settings.saveFiles,
-          },
-          config.maximumLibraryBytes,
-        );
-        await library.refresh();
-        reply.code(201);
-        return { game: library.get(id), removed };
-      });
+      return await receiveGameUpload(
+        request,
+        source,
+        staging,
+        capacity,
+        async (settings, filename) => {
+          let removed: string[] = [];
+          if (settings.system === "dos") {
+            if (!/\.(zip|jsdos)$/i.test(filename))
+              throw new LibraryError(message("library.dosArchive"));
+            removed = await prepareDosUpload(source, prepared, settings);
+          } else await validateRom(source, filename, settings.system);
+          const id = await importGame(
+            directory,
+            settings.system === "dos" ? prepared : source,
+            {
+              title: settings.title,
+              system: settings.system,
+              saveFiles: settings.saveFiles,
+            },
+            config.maximumLibraryBytes,
+          );
+          await library.refresh();
+          reply.code(201);
+          return { game: library.get(id), removed };
+        },
+      );
     } catch (error) {
       if (error instanceof LibraryError && error.statusCode === 409)
         throw new LibraryError(message("library.duplicateRelease"), 409);

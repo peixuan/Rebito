@@ -30,6 +30,9 @@
   "library.cleanupPending": "相关进度已删除，磁盘清理尚未完成。请点击重试清理。",
   "library.executableMissing": "启动程序不存在，或被选为了存档文件。",
   "library.quota": "游戏库配额已满，请联系部署管理员调整容量。",
+  "library.metadataFirst": "请先提交有效的启动配置，再上传一个游戏文件。",
+  "library.fileRequired": "请选择一个有效的游戏文件。",
+  "library.singleFile": "请仅上传一个非空游戏文件。",
   "library.segaHeader": "文件头与所选世嘉机型不匹配，或 ROM 格式不受支持。",
   "library.cueTracks": "CUE 轨道配置无效；支持单碟 MODE1 数据轨和 BINARY 音频轨。",
   "library.cueFiles": "CUE 引用的 BIN 文件缺失、重复或格式不支持。",
@@ -56,11 +59,7 @@
   "library.profileExample": "例如：第一周目",
   "library.createProfile": "新建进度",
   "library.expandedSize": "游戏包展开后超过 {maximum} MiB。",
+  "library.uploadSize": "上传文件超过 {maximum} MiB。",
   "library.profileCount": "{count} 份个人进度",
-  "library.profileTitle": "{title} · 个人进度",
-  "library.selectUpload": "请选择有效的游戏文件。",
-  "library.uploadSizeLegacy": "上传文件超过 64 MiB。",
-  "library.launchSettingsLegacy": "启动程序、参数或同步文件配置无效。",
-  "library.uploadOrderLegacy": "请先提交配置，再上传一个游戏文件。",
-  "library.uploadSettingsLegacy": "上传配置无效。"
+  "library.profileTitle": "{title} · 个人进度"
 }
