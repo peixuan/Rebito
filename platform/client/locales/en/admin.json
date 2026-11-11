@@ -35,6 +35,7 @@
   "admin.configured": "Saved the configuration for {title}.",
   "admin.published": "Published {title}. Return to the library to play. {removed}",
   "admin.removedSaves": "Removed bundled saves: {files}.",
+  "admin.firmwareRegion": "Current BIOS region: {region}. Leave empty to keep it. Replacing it reuses the disc to publish a new release and preserves existing progress.",
   "admin.usage": "{count} release · {used} / {maximum} | {count} releases · {used} / {maximum}",
   "admin.reuseLegacyHelp": "Reuse the game files already on the server. Renaming keeps the release; changing launch or save settings creates a new release and preserves existing progress.",
   "admin.launchLegacyHelp": "This archive has a complex launch script. Leave the executable empty to rename only. Selecting an executable replaces the script and creates a new release.",

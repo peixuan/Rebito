@@ -97,6 +97,11 @@ The server resolves filename case, validates track indexes and regions, streams
 CRC-checked tracks, and publishes a canonical package without unrelated files.
 BIN/BIOS bytes are unchanged. No vendor BIOS is bundled with this project.
 
+**编辑配置** shows the installed BIOS region. Leave the file empty to retain it;
+select another matching BIOS to publish a new release using the stored disc.
+Existing profiles stay on their original release. Supplying the same BIOS bytes
+only updates the title and does not duplicate the package.
+
 The uploaded ZIP and total expanded content are each limited to 1 GiB and 500
 entries; the expanded limit also includes the BIOS and normalized CUE. The first
 track must be MODE1/2048 or MODE1/2352 at index zero, followed by BINARY audio.

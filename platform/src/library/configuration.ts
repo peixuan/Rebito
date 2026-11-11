@@ -3,12 +3,13 @@ import { mkdir, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { openPromise } from "yauzl";
 import { z } from "zod";
-import { dosExecutablePattern } from "../domain/game-import.ts";
+import { discUploadLimits, dosExecutablePattern } from "../domain/game-import.ts";
 import { message } from "../shared/messages.ts";
 import { DiskCapacity } from "../storage/capacity.ts";
 import { type LibraryEntry, releaseId } from "./catalog.ts";
 import { prepareDosUpload } from "./dos-upload.ts";
 import { importGame } from "./importer.ts";
+import { inspectDiscFirmware, prepareDiscUpload } from "./segacd-upload.ts";
 import { type Catalog, withCatalog, writeCatalog } from "./transaction.ts";
 import {
   type GameUploadSettings,
@@ -20,6 +21,7 @@ import {
 export const configurationChange = z.strictObject({
   token: z.string().regex(/^[a-f0-9]{64}$/),
   title: gameUploadSchema.shape.title,
+  firmware: gameUploadSchema.shape.firmware,
   launch: z
     .object(gameUploadSchema.shape)
     .pick({ executable: true, arguments: true, cycles: true, saveFiles: true })
@@ -104,6 +106,8 @@ export async function describeConfiguration(directory: string, id: string) {
       game: library.get(id),
       token: entryToken(entry),
       ...(await inspectConfiguration(directory, entry)),
+      firmware:
+        entry.system === "segacd" ? await inspectDiscFirmware(join(directory, entry.file)) : null,
     };
   });
 }
@@ -127,6 +131,20 @@ export async function changeConfiguration(
       const entry = findEntry(catalog, id);
       if (entryToken(entry) !== change.token)
         throw new LibraryError(message("library.configurationConflict"), 409);
+      if (change.firmware) {
+        if (entry.system !== "segacd" || change.launch)
+          throw new LibraryError(message("library.firmwareUnsupported"));
+        const current = await inspectDiscFirmware(join(directory, entry.file));
+        const hash = createHash("sha256")
+          .update(Buffer.from(change.firmware, "base64"))
+          .digest("hex");
+        if (current.sha256 !== hash)
+          settings = gameUploadSchema.parse({
+            title: change.title,
+            system: entry.system,
+            firmware: change.firmware,
+          });
+      }
       if (change.launch) {
         const result = gameUploadSchema.safeParse({
           ...change.launch,
@@ -149,11 +167,23 @@ export async function changeConfiguration(
         return;
       }
       await mkdir(staging, { recursive: true, mode: 0o700 });
-      await new DiskCapacity(minimumFreeBytes).write(
+      await new DiskCapacity(minimumFreeBytes).write<unknown>(
         staging,
-        2 * (gameUploadLimits.expanded + 4 * 1024 ** 2),
+        2 *
+          ((settings.system === "segacd" ? discUploadLimits : gameUploadLimits).expanded +
+            4 * 1024 ** 2),
         () =>
-          prepareDosUpload(join(directory, entry.file), prepared, settings as GameUploadSettings),
+          settings?.system === "segacd"
+            ? prepareDiscUpload(
+                join(directory, entry.file),
+                prepared,
+                Buffer.from(settings.firmware ?? "", "base64"),
+              )
+            : prepareDosUpload(
+                join(directory, entry.file),
+                prepared,
+                settings as GameUploadSettings,
+              ),
       );
     });
     if (!settings) return id;

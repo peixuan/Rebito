@@ -31,6 +31,7 @@ const savePaths = ref("");
 const file = ref<File | null>(null);
 const firmware = ref("");
 const biosGeneration = ref(0);
+const firmwareRegion = ref("");
 const input = ref<HTMLInputElement | null>(null);
 const programs = ref<string[]>([]);
 const busy = ref(false);
@@ -146,6 +147,7 @@ async function publish() {
         {
           token: editing.value.token,
           title: gameTitle,
+          ...(system.value === "segacd" && firmware.value ? { firmware: firmware.value } : {}),
           ...(system.value === "dos" && executable.value ? { launch } : {}),
         },
       );
@@ -177,6 +179,7 @@ function resetDraft() {
   deleting.value = null;
   editing.value = null;
   legacyConfiguration.value = false;
+  firmwareRegion.value = "";
   title.value = args.value = savePaths.value = "";
   cycles.value = "auto";
   resetFile();
@@ -201,6 +204,7 @@ async function edit(game: Game) {
     cycles.value = detail.settings?.cycles ?? "auto";
     savePaths.value = current.saveFiles.join("\n");
     legacyConfiguration.value = current.system === "dos" && !detail.settings;
+    firmwareRegion.value = detail.firmware?.region ?? "";
     initialDraft.value = draft();
   } catch (cause) {
     error.value = errorText(cause);
@@ -314,8 +318,10 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
           ></label
         >
         <template v-if="system === 'segacd'">
+          <p v-if="editing" class="muted">
+            {{ t("admin.firmwareRegion", { region: firmwareRegion }) }}
+          </p>
           <BiosFile
-            v-if="!editing"
             :key="biosGeneration"
             v-model="firmware"
             :disabled="busy"

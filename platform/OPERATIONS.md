@@ -72,6 +72,13 @@ interrupted process can leave them behind. Offline `verify` reports these files
 and `collect` removes them under the exclusive lease. Published library assets and
 the catalog are never removed by this collector.
 
+Mega CD preparation reserves up to the upload bound plus two expanded packages
+(just over 3 GiB), in addition to the configured free-space margin. This bounds
+concurrent disk activity while receiving, normalizing and publishing large discs.
+Changing a BIOS publishes another immutable package and retains the old release;
+it can consume another full disc's space. Delete an unused old release through
+the impact-confirmation screen to reclaim its unshared files and user histories.
+
 Applications hold a shared PostgreSQL storage lease for their lifetime. Maintenance
 requires an exclusive lease, so it fails while an app is active; apps likewise
 refuse to start during maintenance. The lease uses one dedicated database connection

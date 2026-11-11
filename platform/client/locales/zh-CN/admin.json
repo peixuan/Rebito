@@ -35,6 +35,7 @@
   "admin.configured": "已保存「{title}」的配置。",
   "admin.published": "已发布「{title}」，现在可以返回游戏库游玩。{removed}",
   "admin.removedSaves": "已移除随包存档：{files}。",
+  "admin.firmwareRegion": "当前 BIOS 地区：{region}。留空保留；更换时复用光盘发布新版本，旧版进度保留。",
   "admin.usage": "{count} 个版本 · {used} / {maximum}",
   "admin.reuseLegacyHelp": "复用服务器上的游戏文件，无需重新上传。只改名称保留原版本；启动方式或同步规则变化会生成新版本，旧进度保持原样。",
   "admin.launchLegacyHelp": "原启动脚本较复杂。启动程序留空时仅改名称；选择程序将替换原启动脚本并生成新版本。",

@@ -6,6 +6,8 @@ import { afterEach, beforeEach, expect, it } from "vitest";
 import { LocalLibrary } from "../../src/library/catalog.ts";
 import { changeConfiguration, describeConfiguration } from "../../src/library/configuration.ts";
 import { importGame } from "../../src/library/importer.ts";
+import { prepareDiscUpload } from "../../src/library/segacd-upload.ts";
+import { discArchive, discBios } from "./segacd-fixtures.ts";
 
 let directory: string;
 let id: string;
@@ -31,6 +33,55 @@ beforeEach(async () => {
 });
 afterEach(async () => {
   await rm(directory, { recursive: true, force: true });
+});
+
+it("reuses disc tracks for a BIOS revision and rejects stale or wrong-region changes", async () => {
+  const source = join(directory, "disc.zip");
+  const prepared = join(directory, "prepared.zip");
+  await writeFile(source, discArchive());
+  await prepareDiscUpload(source, prepared, discBios());
+  const original = await importGame(directory, prepared, { title: "CD", system: "segacd" });
+  const detail = await describeConfiguration(directory, original);
+  expect(detail.firmware?.region).toBe("J");
+  const change = { token: detail.token, title: "CD", firmware: discBios().toString("base64") };
+  expect(await changeConfiguration(directory, original, change, 1e9, 0)).toBe(original);
+  await expect(
+    changeConfiguration(directory, original, { ...change, token: "0".repeat(64) }, 1e9, 0),
+  ).rejects.toMatchObject({ statusCode: 409 });
+  await expect(
+    changeConfiguration(
+      directory,
+      original,
+      { ...change, firmware: discBios("U").toString("base64") },
+      1e9,
+      0,
+    ),
+  ).rejects.toThrow("library.discRegion");
+  await expect(
+    changeConfiguration(
+      directory,
+      id,
+      { ...change, token: (await describeConfiguration(directory, id)).token },
+      1e9,
+      0,
+    ),
+  ).rejects.toThrow("library.firmwareUnsupported");
+  const bios = discBios();
+  bios[0x1000] = 42;
+  const created = await changeConfiguration(
+    directory,
+    original,
+    { ...change, firmware: bios.toString("base64") },
+    1e9,
+    0,
+  );
+  expect(created).not.toBe(original);
+  const library = await LocalLibrary.load(directory);
+  expect(library.get(original)).toBeDefined();
+  const files = unzipSync(await readFile(join(directory, `${library.get(created)?.sha256}.asset`)));
+  expect(files["track-01.bin"]).toEqual(unzipSync(await readFile(prepared))["track-01.bin"]);
+  expect(files["bios_CD_J.bin"]).toEqual(new Uint8Array(bios));
+  expect(await readdir(join(directory, ".uploads"))).toEqual([]);
 });
 
 it("renames in place without changing the release, bytes or verified editor", async () => {

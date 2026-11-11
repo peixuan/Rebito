@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { once } from "node:events";
 import { createWriteStream } from "node:fs";
 import type { Readable } from "node:stream";
@@ -26,6 +27,20 @@ async function smallEntry(archive: Archive, entry: Entry, maximum: number) {
   const chunks: Buffer[] = [];
   for await (const chunk of verifiedEntry(archive, entry)) chunks.push(chunk);
   return Buffer.concat(chunks);
+}
+
+export async function inspectDiscFirmware(source: string) {
+  const { archive, entries } = await openGameArchive(source, discUploadLimits);
+  try {
+    const bios = [...entries.values()].filter((entry) =>
+      /^bios_CD_[JUE]\.bin$/.test(entry.fileName),
+    );
+    if (bios.length !== 1 || !bios[0]) throw new LibraryError(message("library.biosMissing"));
+    const bytes = await smallEntry(archive, bios[0], 131072);
+    return { ...validateDiscBios(bytes), sha256: createHash("sha256").update(bytes).digest("hex") };
+  } finally {
+    archive.close();
+  }
 }
 
 /** Repackage one disc and one region BIOS; unrelated files and bundled saves are excluded. */
