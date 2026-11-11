@@ -45,3 +45,10 @@ entire notice file and fulfill source obligations before public binary releases.
 The core binary is unmodified; no new npm dependency or service was introduced.
 See the [core license](https://github.com/EmulatorJS/Genesis-Plus-GX/blob/master/LICENSE.txt)
 and [runtime inventory](../../platform/RUNTIMES.md).
+
+Mega CD uses unmodified PicoDrive 4.2.3. Its bundled `license.txt` was reviewed
+on 2026-11-11: noncommercial redistribution, retained notices and complete source
+for modified redistribution. The same release obligations apply; this is not an
+OSI-approved license. No vendor BIOS is distributed. EmulatorJS's old warning
+links to [issue 579](https://github.com/EmulatorJS/EmulatorJS/issues/579); actual
+browser acceptance, rather than that warning or a feature list, gates this binding.

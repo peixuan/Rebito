@@ -117,3 +117,20 @@ restoration. This core excludes SRAM from its state, so snapshots
 must retain both `save.srm` and `__runtime/state.bin`; the test deliberately uses
 different boot SRAM and verifies the restored palette independently. These checks
 prove the tested runtime paths, not compatibility with every commercial game.
+
+Mega CD uses PicoDrive 4.2.3 with the RAM cartridge enabled and locked. Genesis
+Plus GX does not expose live CD BRAM through its native save API and omits it from
+states. PicoDrive states include internal BRAM; its native `.srm` with RAM cart
+enabled stores the cartridge (73,728 bytes, including its reserved prefix), not
+internal BRAM. Always retain both snapshot artifacts for complete progress.
+The canonical `disc.cue` selects `disc.srm` in each isolated runtime MEMFS.
+The pinned core initially allocates a smaller cartridge buffer when RAM cart is
+already enabled. Start with the option disabled so that buffer is released, enable
+it after the core starts, then reset before importing the 72 KiB file. This uses
+the wrapper's core-option/reset API; never patch WASM memory addresses. Original
+firmware writes both ends of the cart and reads imported bytes into the visible
+palette, checking actual emulated memory rather than just a file round trip.
+The original test firmware verifies keyboard input, cartridge import and visible
+snapshot restoration without distributing a vendor BIOS. CD uploads contain one
+CUE, BINARY tracks and an operator-supplied region-matched BIOS; CHD, compressed
+audio, multi-disc switching and arbitrary emulator settings are not supported.

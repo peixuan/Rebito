@@ -7,7 +7,7 @@ when completing a milestone or handing work to another agent.
 ## Product scope
 
 Build a single-page retro gaming platform for DOS, FC/NES, SFC/SNES, GB, GBA,
-Sega Mega Drive/Genesis, Master System and Game Gear.
+Sega Mega Drive/Genesis, Master System, Game Gear and Mega CD/Sega CD.
 Games run in browser emulators. The server owns authentication, private saves,
 revision checks and optional game-specific save editing. Koukai2 is the first
 editor adapter, not the platform's universal save format.
