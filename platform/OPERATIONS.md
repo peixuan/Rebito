@@ -78,6 +78,9 @@ concurrent disk activity while receiving, normalizing and publishing large discs
 Changing a BIOS publishes another immutable package and retains the old release;
 it can consume another full disc's space. Delete an unused old release through
 the impact-confirmation screen to reclaim its unshared files and user histories.
+HTTP receipt and socket inactivity both allow 15 minutes: a quiet socket during
+streamed ZIP preparation must not be mistaken for an abandoned upload. Configure
+any reverse proxy to allow this processing time as well as the upload size.
 
 Applications hold a shared PostgreSQL storage lease for their lifetime. Maintenance
 requires an exclusive lease, so it fails while an app is active; apps likewise

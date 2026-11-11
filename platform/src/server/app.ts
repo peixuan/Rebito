@@ -12,7 +12,8 @@ export function createApp(logStream?: { write(message: string): void }) {
     bodyLimit: 1024 * 1024,
     // Disc uploads are large; bound active transfers and abandon stalled sockets.
     requestTimeout: 15 * 60_000,
-    connectionTimeout: 30_000,
+    // Disc preparation can be CPU-bound with no socket traffic after upload.
+    connectionTimeout: 15 * 60_000,
     logger: {
       ...(logStream ? { stream: logStream } : {}),
       redact: ["req.headers.authorization", "req.headers.cookie", "res.headers.set-cookie"],
