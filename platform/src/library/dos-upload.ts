@@ -1,12 +1,10 @@
 import { once } from "node:events";
 import { createWriteStream } from "node:fs";
-import { Readable } from "node:stream";
+import type { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
-import { crc32 } from "node:zlib";
-import { type Entry, openPromise } from "yauzl";
 import { ZipFile } from "yazl";
-import { assertArtifactName } from "../domain/artifacts.ts";
 import { message } from "../shared/messages.ts";
+import { openGameArchive, verifiedEntry } from "./archive.ts";
 import {
   dosConfiguration,
   type GameUploadSettings,
@@ -20,43 +18,9 @@ export async function prepareDosUpload(
   destination: string,
   settings: GameUploadSettings,
 ) {
-  const archive = await openPromise(source, {
-    lazyEntries: true,
-    autoClose: false,
-    strictFileNames: true,
-  }).catch(() => {
-    throw new LibraryError(message("library.unreadableZip"));
-  });
+  const { archive, entries } = await openGameArchive(source, gameUploadLimits);
   let active: Readable | undefined;
   try {
-    if (archive.entryCount > gameUploadLimits.files)
-      throw new LibraryError(message("library.tooManyFiles"));
-    const entries = new Map<string, Entry>();
-    const directories = new Set<string>();
-    let expanded = 0;
-    for await (const entry of archive.eachEntry()) {
-      const directory = entry.fileName.endsWith("/");
-      const name = directory ? entry.fileName.slice(0, -1) : entry.fileName;
-      assertArtifactName(name);
-      const key = name.normalize("NFC").toLowerCase();
-      const mode = (entry.externalFileAttributes >>> 16) & 0o170000;
-      if (entry.isEncrypted() || (mode && mode !== (directory ? 0o040000 : 0o100000)))
-        throw new LibraryError(message("library.specialFiles"));
-      if (key === "__runtime" || key.startsWith("__runtime/"))
-        throw new LibraryError(message("library.reservedPath"));
-      if (entries.has(key) || directories.has(key))
-        throw new LibraryError(message("library.duplicatePaths"));
-      if (directory) directories.add(key);
-      else entries.set(key, entry);
-      expanded += entry.uncompressedSize;
-      if (expanded > gameUploadLimits.expanded)
-        throw new LibraryError(message("library.expandedSizeLegacy"));
-    }
-    for (const key of [...entries.keys(), ...directories]) {
-      const parts = key.split("/");
-      while (parts.pop() && parts.length)
-        if (entries.has(parts.join("/"))) throw new LibraryError(message("library.pathCollision"));
-    }
     const saves = new Set(settings.saveFiles.map((name) => name.normalize("NFC").toLowerCase()));
     const launch = settings.executable.toLowerCase();
     if (!entries.has(launch) || saves.has(launch))
@@ -76,22 +40,7 @@ export async function prepareDosUpload(
         entry.fileName,
         { ...options, size: entry.uncompressedSize },
         (callback) => {
-          active = Readable.from(
-            (async function* () {
-              const stream = await archive.openReadStreamPromise(entry);
-              let checksum = 0;
-              let size = 0;
-              for await (const chunk of stream) {
-                size += chunk.length;
-                if (size > entry.uncompressedSize)
-                  throw new LibraryError(message("library.archiveSizeMismatch"));
-                checksum = crc32(chunk, checksum);
-                yield chunk;
-              }
-              if (size !== entry.uncompressedSize || checksum !== entry.crc32)
-                throw new LibraryError(message("library.archiveIntegrity"));
-            })(),
-          );
+          active = verifiedEntry(archive, entry);
           active.on("error", (error) => target.destroy(error));
           callback(null, active);
         },
