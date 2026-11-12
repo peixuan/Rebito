@@ -1,5 +1,6 @@
 import type { ProgressKind, RuntimeIdentity } from "../../src/domain/artifacts.ts";
 import type { Game } from "../../src/library/catalog.ts";
+import type { DisplayText } from "../../src/shared/messages.ts";
 import type { Locale } from "../locale-preference.ts";
 
 export interface RuntimeFile {
@@ -26,6 +27,15 @@ export interface RuntimeFileAccess {
 export interface RuntimeReplacement extends RuntimeFile {
   previous: Uint8Array<ArrayBuffer>;
 }
+export interface RuntimeControl {
+  button: DisplayText;
+  key: DisplayText;
+}
+export interface RuntimeControls {
+  /** Immediately reports player one's bindings; unsubscribe before discarding the view. */
+  watch(listener: (bindings: RuntimeControl[]) => void): () => void;
+  configure(): void;
+}
 export interface RuntimeHandle {
   pause(): void;
   resume(): void;
@@ -34,6 +44,7 @@ export interface RuntimeHandle {
   setMouseCapture?(enabled: boolean): void;
   setIntegerScaling?(enabled: boolean): void;
   files?: RuntimeFileAccess;
+  controls?: RuntimeControls;
 }
 export interface RuntimeHost {
   start(launch: RuntimeLaunch): Promise<RuntimeHandle>;

@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import type { RuntimeHandle, RuntimeWindow } from "../../client/runtime/types.ts";
+import type { RuntimeControl, RuntimeHandle, RuntimeWindow } from "../../client/runtime/types.ts";
 import type { Game } from "../../src/library/catalog.ts";
 import { useSession } from "./session.ts";
 
@@ -95,6 +95,39 @@ for (const variant of [
     }
     try {
       await start(null);
+      const bindings = await page.evaluate(() => {
+        let bindings: RuntimeControl[] = [];
+        const controls = (window as RuntimeWindow & { testHandle?: RuntimeHandle }).testHandle
+          ?.controls;
+        if (!controls) throw new Error("Missing controller capability");
+        controls.watch((value) => {
+          bindings = value;
+        })();
+        return Object.fromEntries(
+          bindings.map(({ button, key }) => [
+            typeof button === "string" ? button : button.messageId,
+            key,
+          ]),
+        );
+      });
+      expect(bindings).toMatchObject({
+        "controls.up": "↑",
+        "controls.down": "↓",
+        "controls.left": "←",
+        "controls.right": "→",
+      });
+      expect(bindings).toMatchObject(
+        system === "MD"
+          ? { A: "S", B: "X", C: "Z", X: "Q", Y: "A", Z: "E", "controls.mode": "V" }
+          : system === "SMS"
+            ? { "controls.buttonOneStart": "X", "controls.buttonTwo": "Z" }
+            : system === "GG"
+              ? { "controls.buttonOne": "X", "controls.buttonTwo": "Z" }
+              : { A: "Z", B: "X" },
+      );
+      if (system !== "SMS") expect(bindings["controls.start"]).toBe("Enter");
+      if (system === "SNES") expect(bindings).toMatchObject({ X: "A", Y: "S", L: "Q", R: "E" });
+      if (system === "GBA") expect(bindings).toMatchObject({ L: "Q", R: "E" });
       if (system === "MD")
         expect(
           await page

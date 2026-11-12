@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import type { RuntimeHandle, RuntimeWindow } from "../../client/runtime/types.ts";
+import type { RuntimeControl, RuntimeHandle, RuntimeWindow } from "../../client/runtime/types.ts";
 import type { Game } from "../../src/library/catalog.ts";
 import { useSession } from "./session.ts";
 
@@ -68,6 +68,30 @@ test("boots original CD firmware and restores native backup RAM and a visible sn
     );
   }
   await start(null);
+  const bindings = await page.evaluate(() => {
+    let bindings: RuntimeControl[] = [];
+    const controls = (window as RuntimeWindow & { handle?: RuntimeHandle }).handle?.controls;
+    if (!controls) throw new Error("Missing CD controls");
+    controls.watch((value) => {
+      bindings = value;
+    })();
+    return Object.fromEntries(
+      bindings.map(({ button, key }) => [
+        typeof button === "string" ? button : button.messageId,
+        key,
+      ]),
+    );
+  });
+  expect(bindings).toMatchObject({
+    A: "S",
+    B: "X",
+    C: "Z",
+    X: "Q",
+    Y: "A",
+    Z: "E",
+    "controls.mode": "V",
+    "controls.start": "Enter",
+  });
   await expect.poll(async () => (await pixel())[2]).toBeGreaterThan(150);
   const native = (await capture()).files.find((f) => f.name === "save.srm");
   expect(native?.bytes.length).toBe(73728);

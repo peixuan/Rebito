@@ -1,5 +1,22 @@
 {
   "controls.enterNumber": "请输入数字。",
+  "controls.up": "上",
+  "controls.down": "下",
+  "controls.left": "左",
+  "controls.right": "右",
+  "controls.start": "START（开始）",
+  "controls.select": "SELECT（选择）",
+  "controls.mode": "MODE（模式）",
+  "controls.buttonOne": "按键 1",
+  "controls.buttonOneStart": "按键 1 / START（开始）",
+  "controls.buttonTwo": "按键 2",
+  "controls.changeDisc": "切换磁盘",
+  "controls.ejectDisc": "弹出／插入磁盘",
+  "controls.unassigned": "未设置",
+  "controls.title": "键盘与手柄按键",
+  "controls.playerOne": "键盘 → 手柄 · 玩家 1",
+  "controls.focusHelp": "点击游戏画面后操作；改键仅本次运行。",
+  "controls.configure": "修改按键",
   "controls.adjusted": "已按范围或存档精度调整。",
   "controls.unknownOriginal": "未识别原值 #{value}"
 }

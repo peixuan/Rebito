@@ -1,5 +1,22 @@
 {
   "controls.enterNumber": "Enter a number.",
+  "controls.up": "Up",
+  "controls.down": "Down",
+  "controls.left": "Left",
+  "controls.right": "Right",
+  "controls.start": "START",
+  "controls.select": "SELECT",
+  "controls.mode": "MODE",
+  "controls.buttonOne": "Button 1",
+  "controls.buttonOneStart": "Button 1 / START",
+  "controls.buttonTwo": "Button 2",
+  "controls.changeDisc": "Change disc",
+  "controls.ejectDisc": "Eject / insert disc",
+  "controls.unassigned": "Unassigned",
+  "controls.title": "Keyboard and controller buttons",
+  "controls.playerOne": "Keyboard → controller · Player 1",
+  "controls.focusHelp": "Click the game to use the controls. Bindings apply to this session only.",
+  "controls.configure": "Configure controls",
   "controls.adjusted": "Adjusted to the allowed range or save precision.",
   "controls.unknownOriginal": "Unrecognized original value #{value}"
 }

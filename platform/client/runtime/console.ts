@@ -1,11 +1,12 @@
 import { MessageError, message } from "../../src/shared/messages.ts";
 import { loadScript, loadStyle } from "./assets.ts";
+import { type ConsoleControls, consoleControls } from "./console-controls.ts";
 import { consoleLocale } from "./console-locale.ts";
 import { consoleSystems } from "./console-systems.ts";
 import { runtimeIdentity } from "./identity.ts";
 import type { RuntimeFile, RuntimeHandle, RuntimeLaunch } from "./types.ts";
 
-interface Emulator {
+interface Emulator extends ConsoleControls {
   pause(): void;
   play(): void;
   on(event: string, callback: () => void): void;
@@ -135,7 +136,9 @@ export async function startConsole(launch: RuntimeLaunch): Promise<RuntimeHandle
       })().catch(reject);
     });
   });
+  const bindings = consoleControls(emulator, localization.langJson);
   return {
+    controls: bindings.controls,
     pause: () => emulator.pause(),
     resume: () => emulator.play(),
     async capture() {
@@ -153,6 +156,7 @@ export async function startConsole(launch: RuntimeLaunch): Promise<RuntimeHandle
       return captured.length ? { kind: "game-save", files: captured } : null;
     },
     async stop() {
+      bindings.dispose();
       emulator.pause();
       for (const value of urls) URL.revokeObjectURL(value);
     },
