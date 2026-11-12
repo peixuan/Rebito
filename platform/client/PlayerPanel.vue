@@ -7,12 +7,13 @@ import { type DisplayText, displayMessage, MessageError, message } from "../src/
 import type { Profile, Revision } from "../src/storage/revisions.ts";
 import { ApiError, errorText } from "./api.ts";
 import { formatDate, i18n, t, translate } from "./i18n.ts";
+import PlayerControls from "./PlayerControls.vue";
 import { runtimeIdentity } from "./runtime/identity.ts";
 import { prepareLiveEdit } from "./runtime/live-edit.ts";
 import { assertCompatible, downloadProgress, downloadVerified } from "./runtime/progress.ts";
 import { createProgressRecovery } from "./runtime/progress-recovery.ts";
 import { nativeProgressChanged, publishProgress } from "./runtime/progress-sync.ts";
-import type { RuntimeHandle, RuntimeWindow } from "./runtime/types.ts";
+import type { RuntimeControls, RuntimeHandle, RuntimeWindow } from "./runtime/types.ts";
 
 const props = defineProps<{
   game: Game;
@@ -25,6 +26,7 @@ const emit = defineEmits<{ saved: []; recovered: [profile: Profile] }>();
 const frame = ref<HTMLIFrameElement | null>(null);
 const active = ref(false);
 const ready = ref(false);
+const controls = shallowRef<RuntimeControls | null>(null);
 const busy = ref(false);
 const paused = ref(false);
 const relativeMouse = ref(false);
@@ -112,6 +114,7 @@ async function boot() {
         return;
       }
       handle = started;
+      controls.value = started.controls ?? null;
       ready.value = true;
     } finally {
       clearTimeout(timer);
@@ -126,6 +129,7 @@ async function stop() {
   generation++;
   const current = handle;
   handle = null;
+  controls.value = null;
   recoverProgress = null;
   conflict.value = false;
   pendingEdit.value = null;
@@ -381,12 +385,21 @@ defineExpose({ save, active, ready, busy, pendingSync, conflict, publishEdit, le
       </template>
       <span v-if="relativeMouse" class="muted">{{ t("player.mouseHelp") }}</span>
       <span class="muted">{{
-        game.system === "dos" ? t("player.dosSyncHelp") : t("player.keyboardHelp")
+        game.system === "dos" ? t("player.dosSyncHelp") : t("player.consoleSyncHelp")
+      }}</span>
+      <span v-if="synchronizedAt" class="muted">{{
+        t("player.lastSync", { time: formatDate(synchronizedAt, true) })
       }}</span>
     </div>
     <Message v-if="error" severity="error" role="alert">{{ translate(error) }}</Message>
     <Message v-if="notice" severity="success" role="status">{{ translate(notice) }}</Message>
     <p v-if="active && !ready && !error" role="status">{{ t("player.starting") }}</p>
+    <PlayerControls
+      v-if="controls"
+      :controls="controls"
+      @configure="frame?.scrollIntoView({ block: 'nearest' })"
+    />
+    <p v-if="ready && game.system === 'dos'" class="muted">{{ t("player.dosControls") }}</p>
     <iframe
       v-if="active"
       ref="frame"

@@ -1,8 +1,23 @@
 # Platform work status
 
-Updated: 2026-11-11 (Asia/Shanghai).
+Updated: 2026-11-12 (Asia/Shanghai).
 
 ## User verification follow-up
+
+- The game panel now displays a compact, expanded player-one keyboard/controller
+  guide and a direct control-settings button. The console adapter reads current
+  EmulatorJS labels/bindings and reports remap, Clear and Reset changes; the page
+  receives an optional runtime capability instead of depending on wrapper internals.
+  Remapping is explicitly session-only. DOS has separate keyboard/mouse guidance.
+  `npm run check` passes all 292 unit/integration tests, lint, types and production
+  build; dependency policy passes. Twelve sandboxed Chrome regressions pass across
+  NES (with/without battery), SNES, GB, GBA, MD (raw/SMD), SMS, GG and Mega CD, including
+  actual remapped NES input, empty/reset bindings, runtime restart, 390-pixel layout,
+  native saves and snapshot restoration. The updated Linux container is healthy;
+  prior game/save baseline hashes remain intact. A read-only local acceptance run
+  of the operator's Sangokushi III confirms all 12 hints, live remapping and narrow
+  layout without changing its revision history or reporting browser errors.
+  See [runtime boundaries](../../platform/RUNTIMES.md).
 
 - Mega CD/Sega CD is implemented with region-checked BIOS, streamed CUE/BIN uploads
   up to 1 GiB, no-reupload BIOS changes, private progress and PicoDrive restoration.

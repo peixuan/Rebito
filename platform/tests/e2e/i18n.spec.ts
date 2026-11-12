@@ -1,7 +1,9 @@
+import { randomUUID } from "node:crypto";
 import { expect, test } from "@playwright/test";
 import { editorFixture } from "../editors/fixture.ts";
 import { openEditor } from "./editor-session.ts";
 import { chinese } from "./locales.ts";
+import { useSession } from "./session.ts";
 
 test("follows browser language, retains form inputs and errors, and remembers an override", async ({
   browser,
@@ -84,4 +86,57 @@ test("retains editor values, sorting and selection while translating errors and 
   await page.getByLabel("Leadership", { exact: true }).press("Tab");
   await page.getByRole("button", { name: "Save edits", exact: true }).click();
   await expect(page.getByRole("status")).toContainText("Edits were saved as a new revision");
+});
+
+test("keeps a real console alive while translating its controller guide", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await useSession(page.context(), "console");
+  await page.goto("/");
+  await page
+    .getByRole("button")
+    .filter({ has: page.getByText("NES runtime test", { exact: true }) })
+    .click();
+  const profileName = `Locale runtime retention ${randomUUID()}`;
+  await page.getByLabel("Profile name").fill(profileName);
+  await page.getByRole("button", { name: "Create profile", exact: true }).click();
+  await page
+    .locator(".profile-row")
+    .filter({ has: page.getByText(profileName, { exact: true }) })
+    .getByRole("button")
+    .click();
+  await page.getByRole("button", { name: "Start game", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Pause game", exact: true })).toBeEnabled();
+  await page.frameLocator("iframe").locator("canvas").click();
+  await page.keyboard.press("z");
+  const frame = page.frames().find((candidate) => candidate.url().endsWith("runtime.html"));
+  if (!frame) throw new Error("Missing game frame");
+  await frame.evaluate(() => {
+    Object.assign(window, { localeRetentionMarker: 42 });
+  });
+  await page.getByRole("combobox", { name: "Language" }).selectOption("zh-CN");
+  await expect(
+    page.getByRole("button", { name: chinese("player.pause"), exact: true }),
+  ).toBeEnabled();
+  await expect(page.getByRole("region", { name: chinese("controls.title") })).toContainText(
+    chinese("controls.up"),
+  );
+  expect(await frame.evaluate(() => Reflect.get(window, "localeRetentionMarker"))).toBe(42);
+  await page.getByRole("button", { name: chinese("player.stop"), exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: chinese("player.start"), exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: chinese("player.start"), exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: chinese("player.pause"), exact: true }),
+  ).toBeEnabled();
+  await page.getByRole("button", { name: chinese("controls.configure"), exact: true }).click();
+  const runtime = page.frameLocator("iframe");
+  const settings = runtime
+    .locator(".ejs_popup_container")
+    .filter({ has: runtime.locator(".ejs_control_body") });
+  await expect(settings.getByText(chinese("widgets.close"), { exact: true })).toBeVisible();
+  await settings.getByText(chinese("widgets.close"), { exact: true }).click();
+  await page.getByRole("button", { name: chinese("player.stop"), exact: true }).click();
+  expect(errors).toEqual([]);
 });

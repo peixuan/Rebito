@@ -43,6 +43,16 @@ active instance. DOS editor saves use the guarded native-file capability below;
 adapters without it still require a fresh instance after an editor publication.
 Real game acceptance checks are separate from installer and manifest tests.
 
+The player shows an expanded keyboard-to-controller guide for player one after
+startup. The optional `RuntimeControls` capability keeps the page independent of
+EmulatorJS: the console adapter reads the active scheme's labels and current keys
+from the pinned wrapper, and opens its existing control settings. The 4.2.3 wrapper
+has no binding-change event; the adapter wraps `checkGamepadInputs`, restoring it
+on stop, to report rebinding, clearing and resets without polling during gameplay.
+Hints cover controller inputs and disk controls; account saving stays in the page
+toolbar. Remapping lasts for this runtime only, since browser settings persistence
+is disabled. DOS uses each game's own keyboard/mouse conventions instead.
+
 Live DOS editing pauses the existing instance and checks every target file against
 the editor's base revision before server publication. It downloads only the edited
 native file group, verifies all hashes, rechecks every original file before writing,

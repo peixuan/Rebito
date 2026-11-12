@@ -28,8 +28,10 @@
   "player.stopHelp": "Synchronize before stopping. The game window remains open if synchronization fails.",
   "player.mouseHelp": "Click the game to capture the mouse. Press Esc to release it.",
   "player.dosSyncHelp": "Changed game saves are synchronized every 30 seconds, and before stopping or leaving the game.",
+  "player.consoleSyncHelp": "Save to account preserves the current state. Progress is also saved before stopping.",
   "player.starting": "Starting the emulator…",
+  "player.dosControls": "Click the display to use the keyboard and mouse. See the game's instructions for controls. In relative mouse mode, press Esc to release the mouse.",
   "player.frame": "Game emulator",
   "player.backupName": "{game} · Local backup {date}",
-  "player.keyboardHelp": "Save to account preserves the current state. Click the game to use the keyboard; see Control Settings for bindings."
+  "player.lastSync": "Last synchronized: {time}"
 }
