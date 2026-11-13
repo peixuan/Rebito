@@ -28,6 +28,36 @@ explicit future retention/deletion policy, with current heads protected. No auto
 history deletion is enabled. No additional queue, cache service or metrics database
 is needed for these bounds.
 
+### Build-cache retention
+
+For a local Docker Engine using the default `docker` build driver, merge
+[`deploy/docker-daemon-gc.json`](deploy/docker-daemon-gc.json) into the existing
+`/etc/docker/daemon.json`, preserving other daemon settings. Validate with
+`dockerd --validate --config-file=/etc/docker/daemon.json`, then restart Docker
+during a maintenance window. This is a host-wide builder setting, not an app
+setting; coordinate it with other projects if the engine is shared. Docker Desktop
+users merge the same `builder` settings through its Docker Engine configuration.
+
+BuildKit's built-in garbage collector targets 2 GiB (`2GB` in its configuration). Its
+default rules age out unused entries and then reclaim cache exceeding the target;
+this is not a hard filesystem quota and active builds can temporarily exceed it.
+No extra scheduled service is needed. Check the effective policy with
+`docker buildx inspect --bootstrap` and usage with `docker buildx du`.
+
+After completed builds, an initial cleanup can use
+`docker buildx prune --all --force --reserved-space 2GB --max-used-space 2GB`.
+This removes unused build cache only; it does not delete application images,
+containers or data volumes.
+Keep a known-good image and a consistent private backup across upgrades. Never
+substitute `docker system prune --volumes` for this command. Backups, unused image
+tags and the host virtual-disk file are separate from BuildKit's cache target.
+Shared layers retained by images may still appear in the reported total; inspect
+the `Shared` and `Private` figures in `docker buildx du` instead of adding image
+and cache totals together.
+
+References: [Docker build garbage collection](https://docs.docker.com/build/cache/garbage-collection/)
+and [buildx prune](https://docs.docker.com/reference/cli/docker/buildx/prune/).
+
 Use the same application image/configuration as the deployment. All commands below
 run from `platform/` in a POSIX shell. Binary output redirection must preserve bytes;
 on Windows, run these commands in WSL rather than an older PowerShell pipeline.

@@ -100,3 +100,6 @@ before changing the deployment. PostgreSQL minor updates can have additional ind
 repair requirements: review those against the actual database instead of assuming
 that replacing the image completes every upgrade. Recheck revision metadata and
 game/save hashes after the change.
+
+Build-cache retention is configured separately on the Docker host; see
+[operations](OPERATIONS.md#build-cache-retention). It does not limit game volumes.

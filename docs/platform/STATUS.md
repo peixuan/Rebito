@@ -4,6 +4,16 @@ Updated: 2026-11-13 (Asia/Shanghai).
 
 ## User verification follow-up
 
+- Docker's native builder GC is configured and active on the local WSL engine,
+  with a 2 GiB retention target and no extra scheduler/service. The validated
+  configuration fragment and safe initial cleanup command are in
+  [operations](../../platform/OPERATIONS.md#build-cache-retention). Effective
+  policies were inspected after daemon restart. Reported cache fell from 5.462 GB
+  before activation to 3.187 GB: 2.140 GB private and 1.047 GB shared with images.
+  The subsequent bounded prune reclaimed 0 B because GC had already reached its
+  private-cache target. Existing deployment volumes and rollback images remain;
+  backups, image retention and host virtual-disk compaction are separate concerns.
+
 - Browser packages are now build-only and optional UI peers are omitted from the
   server install. The final image's `node_modules` fell from 169,360 to 50,148 KiB
   (116.42 MiB less); bundled browser license/notice text remains in the served
