@@ -2,6 +2,7 @@
 
 Decision date: 2026-11-07. Scope: DOS, FC/NES, SFC/SNES, GB and GBA.
 Scope extended on 2026-11-09: Sega MD/Genesis, Master System and Game Gear.
+Scope extended on 2026-11-11: Mega CD/Sega CD with operator-supplied BIOS.
 
 ## Decision: reuse libraries, keep a small application
 
@@ -67,7 +68,8 @@ when necessary, runtime/core version. Do not treat the Koukai2 ten-slot file as 
 universal platform model. Games without native saves may still support snapshots.
 
 Game assets are immutable. Mutable progress belongs to a server-authorized user
-and profile. Browser caches are namespaced by user, release and profile.
+and profile. Runtime persistence is disabled in the browser; the selected server
+revision initializes each isolated runtime. DOS names its workspace by profile.
 
 Publish a completed artifact collection and the profile head using a checked base
 revision. A stale write returns a conflict; it never silently replaces the newer

@@ -1,8 +1,20 @@
 # Platform work status
 
-Updated: 2026-11-12 (Asia/Shanghai).
+Updated: 2026-11-13 (Asia/Shanghai).
 
 ## User verification follow-up
+
+- Stack/redundancy review retains the modular Vue/Fastify/PostgreSQL architecture;
+  all 90 production TS/Vue modules are reachable from app/runtime/operator entries,
+  and direct dependencies have identified uses. It does not certify zero redundancy:
+  the deployed Node 24.22.2/PostgreSQL 18.6 images need newly published security
+  patches; frontend installation directories occupy 41.49 MiB in the server image,
+  and the DOS-only adapter still ships 25.32 MiB of unused DOSBox-X assets. Local
+  build-cache retention also needs attention. These are documented open findings,
+  not completed cleanup. Current checks pass 292 unit/integration tests, the full
+  41 sandboxed Chrome tests, lint/types/build, dependency audit and license metadata
+  policy. The existing service/data were not redeployed or pruned. See the dated
+  [review and priorities](ENGINEERING_LOG.md#2026-11-13-stack-and-redundancy-review).
 
 - The game panel now displays a compact, expanded player-one keyboard/controller
   guide and a direct control-settings button. The console adapter reads current

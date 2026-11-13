@@ -118,3 +118,99 @@ generated dependency lock adds 404 lines in a dedicated preparation commit.
 Both the lock update and subsequent integration stay below 500 lines separately.
 The provider's deliberately permissive
 development login binds to loopback and is excluded from the deployment image.
+
+## 2026-11-13: stack and redundancy review
+
+Reviewed application revision `bbf738a`, lockfiles, build/CI configuration, runtime
+adapters, identity, catalog and save publication boundaries, and the running local
+Linux containers. This is an audit record; the remediation items below have not
+been applied to the application or its stored data.
+
+### Retain the current architecture
+
+Vue 3/PrimeVue 4 with Vite, Node 24/Fastify 5, Better Auth and PostgreSQL 18 fit the
+current multi-user browser player/editor. Only the app and database are required
+services. No extra cache, queue, ORM, server-side emulator or C++ bridge is needed.
+The optional OIDC provider stays external; LDAP belongs behind that provider.
+The earlier source-based RomM decision remains appropriate for atomic editing of
+file collections; this review does not claim a new live RomM integration test.
+
+An import graph from the browser, runtime, server and three operator CLI entrypoints
+reaches all 90 production TS/Vue modules (about 8,160 lines including templates,
+comments and data tables). All 13 declared production dependencies have imports;
+development dependencies are accounted for by imports, CLI scripts, types or
+build/test configuration. This does not prove that every exported symbol is used.
+The largest UI modules are AdminLibrary (541 lines) and PlayerPanel (411 lines).
+They are future extraction candidates when behavior changes, not unused modules.
+
+Seemingly overlapping components have different jobs: js-dos runs DOS while
+EmulatorJS runs consoles; PicoDrive is the verified CD path while Genesis Plus GX
+handles Sega cartridges. Browser fflate and server streaming yauzl/yazl address
+different memory environments. PostgreSQL transactions, the offline storage lease,
+the online deletion lease and catalog publication lock protect different invariants.
+Do not remove these guards merely to reduce line count. The legacy desktop tree
+is a preserved local reference and is absent from the container build context.
+
+### Findings, in recommended order
+
+1. **Update pinned runtime images and add update detection.** The deployed image
+   reports Node 24.22.2 and PostgreSQL 18.6. Node's
+   [24.22.3 security release](https://nodejs.org/en/blog/release/v24.22.3) was published
+   on November 11; PostgreSQL's
+   [18.7 security/bug-fix release](https://www.postgresql.org/about/news/postgresql-187-1712-1616-1520-1425-and-19-rc-2-released-3442/)
+   followed on November 12. The major versions remain supported. CI's npm audit
+   does not cover these images or downloaded emulator binaries. Update reviewed
+   digests, test the new images in isolation, and verify existing data across restart.
+   Current HTTP-only app binding and private database reduce exposure; this review
+   does not assert that every upstream CVE is reachable through this application.
+
+2. **Remove frontend installation weight from the final server image.** The
+   production npm install retains Vue, PrimeVue and their compiler/theme directories
+   after Vite bundles the client. Those directories occupy 42,484 KiB (41.49 MiB)
+   of the image's 169,360 KiB node_modules directory. There is no SSR entrypoint.
+   Separate build-only declarations from server dependencies, preserve browser
+   notices, and verify npm's optional peer handling with a clean production install.
+   The measured directory size is not a promised image-layer saving.
+
+3. **Narrow the DOS asset set.** The player fixes `backend: "dosbox"` with
+   `backendLocked: true`, but recursive package copying deploys eight
+   `wdosbox-x*` files totaling 26,547,248 bytes (25.32 MiB), including debug/JSPI
+   variants. They are unused by the current adapter. Build a tested asset allowlist
+   into a clean output directory; retain notices and the actual DOS worker/WASM
+   path. Console legacy/thread variants need browser-compatibility evidence before
+   removal and are not counted as confirmed redundancy here.
+
+4. **Give developer caches a retention policy.** The local Docker inventory reports
+   4.437 GB of build cache, of which 3.767 GB is reclaimable. This is developer
+   build storage, separate from saved games and runtime memory. Image and cache
+   figures can overlap; do not add their reported reclaimable totals. No images,
+   caches or volumes were pruned during review. Data-volume cleanup remains governed
+   by the storage operations document, never by a broad Docker volume prune.
+
+### Dependency maintenance and review limits
+
+`npm audit --json` reports zero known vulnerabilities across its 280 locked package
+records; the license metadata gate passes. Better Auth 1.7.18 is outside the
+affected range of [GHSA-9hm7-xhfp-cx58](https://github.com/better-auth/better-auth/security/advisories/GHSA-9hm7-xhfp-cx58).
+Newer patch versions exist and need normal update review; a clean npm audit is not
+an OS/container/WASM vulnerability scan or a proof of application security.
+
+Keep TypeScript 6 with the pinned Volar peer requirement `<7`; npm's newer major
+alone does not justify upgrading. PrimeVue 4.5.5 and themes 1.2.5 remain MIT in the
+installed package metadata. Runtime noncommercial/source-distribution obligations
+and the project's own license are still release work described in DEPENDENCIES.md.
+Private local acceptance does not certify an unrestricted public binary release.
+
+Tests and measurements in this review concern the current single-host deployment.
+No high-concurrency benchmark, public deployment assessment or new emulator/version
+compatibility claim is made. Read-only container inspection did not restart the
+user's app or database; browser tests use disposable synthetic libraries/databases.
+
+Verification: on Windows Node 26.13.0, `npm run check` passes lint, both type checks,
+all 292 unit/integration tests and the production build. Coverage is 97.99% lines
+and 92.28% branches. The complete 41-test browser suite passes with Chrome's sandbox
+enabled, including ownership, OIDC failures, DOS editing/conflicts, console/CD
+native/state restoration and administrator lifecycle operations. `node
+scripts/dependency-policy.mjs` passes all 280 lock records. The current deployed
+app's readiness endpoint returns 200. No new container build or upgraded-image
+acceptance was performed; the two image updates remain open findings.
