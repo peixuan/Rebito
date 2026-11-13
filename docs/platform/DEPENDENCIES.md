@@ -10,7 +10,16 @@ The initial reviewed set is MIT, ISC, Apache-2.0, BSD-2-Clause, BSD-3-Clause,
 BlueOak-1.0.0, MPL-2.0 and the exact dual expression MIT OR Apache-2.0. The MPL
 packages are unmodified Lightning CSS build tools. The final application image
 retains production dependencies with their license files; build tools stay in
-the builder image. Browser dependency notices must accompany release artifacts.
+the builder image. Vue, PrimeVue and PrimeUI themes are build dependencies: their
+bundled browser code is served from `dist/client`, not server `node_modules`.
+The runtime installation omits optional dependencies as well, preventing Better
+Auth's optional UI peers from reinstalling Vue and its compiler. Container CI
+checks that these directories and TypeScript are absent.
+
+The Vite build inventories bundled npm modules and emits their full license/notice
+files as `dist/client/THIRD_PARTY_NOTICES.txt`, served at `/THIRD_PARTY_NOTICES.txt`.
+Missing notice files fail the build. Keep this artifact with browser releases;
+emulator notices and corresponding-source obligations remain separate below.
 
 PrimeVue is pinned to MIT-licensed 4.5.5 and PrimeUI themes to 1.2.5. Their newer
 major versions require a key and recurring eligibility confirmation. Do not
@@ -19,8 +28,8 @@ remove license enforcement, or upgrade across that boundary without a decision.
 Vue I18n 11.4.20 and its Vite plugin `@intlify/unplugin-vue-i18n` 11.2.8 use MIT
 licenses. Both are build dependencies; the browser uses the runtime-only library
 and precompiled messages, with no runtime message compiler or CSP relaxation.
-Preserve notices for bundled Intlify modules; the plugin and its compiler
-remain build tools. Editor catalogs load with the editor rather than the
+The browser notice inventory includes bundled Intlify modules; the plugin and its
+compiler remain build tools. Editor catalogs load with the editor rather than the
 account page. Review their exact lockfile changes and licenses on upgrades.
 
 Emulator assets are outside npm's lockfile. Their exact versions, hashes, source

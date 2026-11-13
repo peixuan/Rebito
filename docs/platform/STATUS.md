@@ -4,6 +4,16 @@ Updated: 2026-11-13 (Asia/Shanghai).
 
 ## User verification follow-up
 
+- Browser packages are now build-only and optional UI peers are omitted from the
+  server install. The final image's `node_modules` fell from 169,360 to 50,148 KiB
+  (116.42 MiB less); bundled browser license/notice text remains in the served
+  `THIRD_PARTY_NOTICES.txt`. Container CI rejects accidentally retained UI/compiler
+  packages or missing notices. Full checks pass 294 tests, lint/types/build and
+  all 41 sandboxed Chrome tests. Real Linux image acceptance passes account
+  creation/login, save bytes and app/database restart; the deployed Mega CD game
+  still runs with all 12 control hints and unchanged history. Dependency policy
+  passes all 280 lock records. See [dependency policy](DEPENDENCIES.md).
+
 - Runtime image security updates are deployed locally: Node 24.22.3 and PostgreSQL
   18.7, pinned by digest across app/test Compose and CI. A stopped-app backup was
   restored into separate volumes before upgrading; all 28 physical files, three

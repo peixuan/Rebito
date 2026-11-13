@@ -8,6 +8,9 @@ async function request(path, options = {}) {
   return fetch(new URL(path, origin), { signal: AbortSignal.timeout(10_000), ...options });
 }
 assert.equal((await request("/health/ready")).status, 200);
+const notices = await request("/THIRD_PARTY_NOTICES.txt");
+assert.equal(notices.status, 200);
+assert.ok((await notices.text()).includes("primevue@"));
 assert.equal((await (await request("/api/session")).json()).user, null);
 const login = await request("/api/auth/sign-in/email", {
   method: "POST",

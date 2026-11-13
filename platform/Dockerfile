@@ -8,6 +8,7 @@ COPY src ./src
 COPY client ./client
 COPY scripts/runtime-assets.mjs ./scripts/runtime-assets.mjs
 COPY scripts/runtime-identities.ts ./scripts/runtime-identities.ts
+COPY scripts/browser-notices.ts ./scripts/browser-notices.ts
 COPY runtime-lock.json ./
 RUN --mount=type=cache,target=/app/.runtime-cache npm run build
 
@@ -15,7 +16,8 @@ FROM ${NODE_IMAGE} AS runtime
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=3000 DATA_DIR=/data
 WORKDIR /app
 COPY package.json package-lock.json LICENSE NOTICE ./
-RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev --ignore-scripts
+# Better Auth's optional UI peers must not reinstall the build-only Vue tree.
+RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev --omit=optional --ignore-scripts
 RUN mkdir /data && chown node:node /data
 COPY --from=build --chown=node:node /app/dist ./dist
 USER node

@@ -15,4 +15,6 @@
 !src/**
 !scripts/
 !scripts/runtime-assets.mjs
+!scripts/runtime-identities.ts
+!scripts/browser-notices.ts
 !runtime-lock.json

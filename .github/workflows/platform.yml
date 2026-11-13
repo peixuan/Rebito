@@ -85,6 +85,7 @@ jobs:
           node-version: '24'
       - run: node scripts/configure.mjs
       - run: docker compose up -d --build --wait --wait-timeout 180
+      - run: docker compose exec -T app node --input-type=module < scripts/check-runtime-image.mjs
       - run: docker compose exec -T app node --input-type=module < scripts/seed-container-game.mjs
       - name: Provision and verify a disposable account
         run: |

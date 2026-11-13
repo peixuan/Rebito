@@ -214,3 +214,29 @@ native/state restoration and administrator lifecycle operations. `node
 scripts/dependency-policy.mjs` passes all 280 lock records. The current deployed
 app's readiness endpoint returns 200. No new container build or upgraded-image
 acceptance was performed; the two image updates remain open findings.
+
+## 2026-11-13 production dependency separation
+
+Vue, PrimeVue and themes are client build inputs; the server has no SSR entrypoint.
+Moving them to development dependencies alone was insufficient: Better Auth's
+optional peer declarations reinstalled Vue and its compiler. A clean runtime
+install now uses `--omit=dev --omit=optional`. No dependency versions changed.
+The Vite plugin copies full root license/notice files for modules actually included
+in browser chunks to `THIRD_PARTY_NOTICES.txt`; absent files stop the build.
+Server dependency notices remain in their installed packages. This does not replace
+the separate emulator source/distribution review.
+
+Measured inside the previous and new Linux images: `node_modules` decreased from
+169,360 to 50,148 KiB, a 116.42 MiB reduction. The 13,469-byte notice artifact is
+served successfully; `dist` increased from 60,216 to 60,232 KiB. These are directory
+measurements, not a claim about compressed downloads or shared Docker layers.
+The image guard checks absent UI/compiler directories and retained notices, and
+the existing container smoke checks their HTTP delivery.
+
+Verification: 294 unit/integration tests, lint/types/build, 41 sandboxed Chrome
+tests and the 280-record dependency policy pass. The actual Node 24.22.3 Linux
+image passes isolated account/session/save persistence acceptance before and after
+app/database restart. The deployed Mega CD game passes read-only control/remapping
+and narrow-layout acceptance without browser errors or changed history. Existing
+game/save hashes and all pre-upgrade revision metadata remain intact. Restore-drill
+and image-smoke containers/volumes were removed; the private backup is retained.

@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import VueI18nPlugin from "@intlify/unplugin-vue-i18n/vite";
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite";
+import { browserNotices } from "./scripts/browser-notices.ts";
 import { runtimeIdentities } from "./scripts/runtime-identities.ts";
 
 export default defineConfig({
@@ -14,6 +15,7 @@ export default defineConfig({
       dropMessageCompiler: true,
       fullInstall: false,
     }),
+    browserNotices(),
   ],
   publicDir: ".runtime-cache/public",
   define: {
