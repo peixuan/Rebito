@@ -4,6 +4,19 @@ Updated: 2026-11-13 (Asia/Shanghai).
 
 ## User verification follow-up
 
+- Five-user capacity acceptance supports a two-vCPU/2-GiB starting deployment,
+  with an explicit 512 MiB host reserve. App/database shared two logical CPUs and
+  a 1.5 GiB cgroup ceiling, swap disabled; service memory peaked at 578.1 MiB.
+  Five concurrent 497 MiB downloads and 256 KiB/8 MiB/64 MiB save workloads passed
+  byte/ownership checks; the 100 Mbit/s case took 218 seconds for all five downloads.
+  This does not establish seamless concurrent saving: the unchanged two-upload
+  admission limit rejected 72/120 first attempts; explicit probe retries succeeded.
+  Five sandboxed real Chrome players likewise saved successfully after three manual
+  retries, with no browser errors. Restart/integrity checks cover all 125 test
+  revisions. Test volumes were removed and original service/data remain intact.
+  See [method, measurements and remaining limits](CAPACITY.md). Cloud-host/TLS
+  acceptance and bounded browser retry remain follow-up work, not completed fixes.
+
 - The DOSBox-X removal recommendation is superseded by the user's future Windows
   scope. Its 25.32 MiB of assets remain intact as a candidate for Windows 95/98/ME;
   no runtime fingerprints or existing DOS snapshots change. Windows launching is
