@@ -84,3 +84,17 @@ it runs inside the same image and data volume with its input directory read-only
 Consult [status](../docs/platform/STATUS.md) for local acceptance and remaining
 release boundaries. The image contains pinned emulator runtimes, not a game
 collection; import your own game releases before starting a player.
+
+## Runtime image updates
+
+Reviewed baseline: Node 24.22.3 and PostgreSQL 18.7, pinned by tag and digest.
+Keep the database pin aligned in `compose.yaml`, `compose.test.yaml` and the platform
+CI service. Major-version updates require a separate migration decision.
+
+For each update, review upstream security notes, run the platform and real-browser
+checks, build the image and run the container acceptance job. Preserve a rollback
+image and make a consistent backup, then prove restoration into separate volumes
+before changing the deployment. PostgreSQL minor updates can have additional index
+repair requirements: review those against the actual database instead of assuming
+that replacing the image completes every upgrade. Recheck revision metadata and
+game/save hashes after the change.

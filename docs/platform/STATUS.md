@@ -4,14 +4,23 @@ Updated: 2026-11-13 (Asia/Shanghai).
 
 ## User verification follow-up
 
+- Runtime image security updates are deployed locally: Node 24.22.3 and PostgreSQL
+  18.7, pinned by digest across app/test Compose and CI. A stopped-app backup was
+  restored into separate volumes before upgrading; all 28 physical files, three
+  profiles and 25 revision records match before/after both restore and deployment.
+  No public GIN/GiST or bpchar-table indexes needed the release's repair review.
+  Readiness passes and the previous app image/consistent private backup are retained.
+  Full gates pass
+  294 unit/integration tests and 41 sandboxed Chrome tests against PostgreSQL 18.7.
+
 - Stack/redundancy review retains the modular Vue/Fastify/PostgreSQL architecture;
   all 90 production TS/Vue modules are reachable from app/runtime/operator entries,
   and direct dependencies have identified uses. It does not certify zero redundancy:
-  the deployed Node 24.22.2/PostgreSQL 18.6 images need newly published security
-  patches; frontend installation directories occupy 41.49 MiB in the server image,
-  and the DOS-only adapter still ships 25.32 MiB of unused DOSBox-X assets. Local
-  build-cache retention also needs attention. These are documented open findings,
-  not completed cleanup. Current checks pass 292 unit/integration tests, the full
+  at review time, Node 24.22.2/PostgreSQL 18.6 needed newly published security
+  patches, frontend directories occupied 41.49 MiB in the server image, and the
+  DOS-only adapter shipped 25.32 MiB of unused DOSBox-X assets. Local build-cache
+  retention also needed attention. Subsequent remediation is recorded above.
+  Review checks passed 292 unit/integration tests, the full
   41 sandboxed Chrome tests, lint/types/build, dependency audit and license metadata
   policy. The existing service/data were not redeployed or pruned. See the dated
   [review and priorities](ENGINEERING_LOG.md#2026-11-13-stack-and-redundancy-review).
