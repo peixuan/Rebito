@@ -1,0 +1,20 @@
+version: 2
+updates:
+  - package-ecosystem: docker
+    directory: /platform
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: build
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+  - package-ecosystem: docker-compose
+    directory: /platform
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: build
+    ignore:
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']

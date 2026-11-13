@@ -88,8 +88,10 @@ collection; import your own game releases before starting a player.
 ## Runtime image updates
 
 Reviewed baseline: Node 24.22.3 and PostgreSQL 18.7, pinned by tag and digest.
-Keep the database pin aligned in `compose.yaml`, `compose.test.yaml` and the platform
-CI service. Major-version updates require a separate migration decision.
+The Dependabot configuration proposes weekly Docker/Docker Compose updates once
+this repository is hosted with Dependabot enabled; it does not deploy or merge
+them. Major-version updates remain a separate migration decision. Keep the database
+pin aligned in `compose.yaml`, `compose.test.yaml` and the platform CI service.
 
 For each update, review upstream security notes, run the platform and real-browser
 checks, build the image and run the container acceptance job. Preserve a rollback

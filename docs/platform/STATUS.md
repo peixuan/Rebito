@@ -10,7 +10,8 @@ Updated: 2026-11-13 (Asia/Shanghai).
   profiles and 25 revision records match before/after both restore and deployment.
   No public GIN/GiST or bpchar-table indexes needed the release's repair review.
   Readiness passes and the previous app image/consistent private backup are retained.
-  Full gates pass
+  Weekly Dependabot image proposals are configured for a future hosted repository;
+  no remote was pushed and no unattended deployment is enabled. Full gates pass
   294 unit/integration tests and 41 sandboxed Chrome tests against PostgreSQL 18.7.
 
 - Stack/redundancy review retains the modular Vue/Fastify/PostgreSQL architecture;
