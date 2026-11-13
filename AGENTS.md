@@ -12,6 +12,10 @@ Games run in browser emulators. The server owns authentication, private saves,
 revision checks and optional game-specific save editing. Koukai2 is the first
 editor adapter, not the platform's universal save format.
 
+Early Windows games are planned, not implemented. Retain DOSBox-X assets as a
+candidate for Windows 95/98/ME; do not treat them as general Win32 support or reuse
+native-file sync for mounted disk writes. See [runtime boundaries](platform/RUNTIMES.md).
+
 Prefer maintained open-source components. Evaluate RomM before rebuilding its
 capabilities. Record decisions and evidence; do not assume an integration works
 because an upstream documentation page lists a feature.

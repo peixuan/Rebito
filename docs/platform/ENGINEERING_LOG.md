@@ -180,6 +180,12 @@ is a preserved local reference and is absent from the container build context.
    path. Console legacy/thread variants need browser-compatibility evidence before
    removal and are not counted as confirmed redundancy here.
 
+   Follow-up decision on November 13: the user explicitly plans Windows games.
+   Retain DOSBox-X as the candidate Windows 95/98/ME backend, superseding the
+   removal recommendation. Asset presence does not establish general Win32 support;
+   disk persistence and real-game acceptance remain separate future work. See
+   [runtime boundaries](../../platform/RUNTIMES.md).
+
 4. **Give developer caches a retention policy.** The local Docker inventory reports
    4.437 GB of build cache, of which 3.767 GB is reclaimable. This is developer
    build storage, separate from saved games and runtime memory. Image and cache

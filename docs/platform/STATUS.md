@@ -4,6 +4,14 @@ Updated: 2026-11-13 (Asia/Shanghai).
 
 ## User verification follow-up
 
+- The DOSBox-X removal recommendation is superseded by the user's future Windows
+  scope. Its 25.32 MiB of assets remain intact as a candidate for Windows 95/98/ME;
+  no runtime fingerprints or existing DOS snapshots change. Windows launching is
+  not implemented or tested. Separate OS disk boot, private writable disk changes,
+  quotas and revision/recovery acceptance are required before enabling it; see
+  [runtime boundaries](../../platform/RUNTIMES.md). Arbitrary Win32 support is not
+  promised by retaining these assets.
+
 - Docker's native builder GC is configured and active on the local WSL engine,
   with a 2 GiB retention target and no extra scheduler/service. The validated
   configuration fragment and safe initial cleanup command are in

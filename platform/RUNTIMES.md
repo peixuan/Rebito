@@ -28,6 +28,17 @@ components retain that identity; changed archives receive a new fingerprint.
 Keep this baseline immutable during upgrades; it is compatibility evidence, not
 a version alias for newly built binaries.
 
+DOSBox-X assets are intentionally retained for the planned Windows-game scope
+(decision: 2026-11-13). js-dos documents Windows 95/98/ME through its DOSBox-X
+backend; see [upstream support](https://js-dos.com/dosbox-x.html). This is a candidate
+for early Windows games, not a claim that arbitrary Win32/NT/XP games run here.
+The current adapter still selects ordinary DOSBox and does not expose Windows
+launching. Keep Windows OS images operator-supplied. A future adapter must verify
+boot/graphics/input and model immutable base disks plus private writable disk
+changes, with revision checks, quotas and recovery. Current native-file syncing
+cannot be assumed to capture writes inside a mounted disk image. Preserve runtime
+identities for existing DOS saves when introducing that separate capability.
+
 Snes9x, Genesis Plus GX and PicoDrive have noncommercial restrictions; do not claim that
 every runtime has a permissive license. This fits the stated noncommercial scope
 but must be reconsidered if distribution terms or project goals change.
