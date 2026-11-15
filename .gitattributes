@@ -26,3 +26,4 @@ Dockerfile text eol=lf
 *.html text eol=lf
 *.css text eol=lf
 .dockerignore text eol=lf
+LICENSE text eol=lf

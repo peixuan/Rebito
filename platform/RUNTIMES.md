@@ -39,9 +39,9 @@ changes, with revision checks, quotas and recovery. Current native-file syncing
 cannot be assumed to capture writes inside a mounted disk image. Preserve runtime
 identities for existing DOS saves when introducing that separate capability.
 
-Snes9x, Genesis Plus GX and PicoDrive have noncommercial restrictions; do not claim that
-every runtime has a permissive license. This fits the stated noncommercial scope
-but must be reconsidered if distribution terms or project goals change.
+Snes9x, Genesis Plus GX and PicoDrive have noncommercial restrictions; do not claim
+that every runtime permits commercial use. The project's original AGPL code does
+not remove these restrictions. See [licensing boundaries](../docs/platform/LICENSING.md).
 Before public binary distribution, assemble the corresponding source/build
 materials required by the selected GPL/MPL components. Source links and package
 metadata alone are not a source offer.

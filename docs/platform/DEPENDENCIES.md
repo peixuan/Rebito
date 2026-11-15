@@ -36,7 +36,7 @@ Emulator assets are outside npm's lockfile. Their exact versions, hashes, source
 locations and notices require a separate runtime inventory before distribution.
 Game assets are supplied by the operator and never included in this repository
 or application image. Original project code uses AGPL-3.0-or-later; dependency and runtime
-licenses remain separate.
+licenses remain separate. See [distribution boundaries](LICENSING.md).
 
 Administrator DOS imports use yauzl 3.4.0 and yazl 3.3.1 for lazy ZIP reading and
 streamed rewriting, instead of a custom archive parser or whole-archive buffering.
@@ -48,8 +48,8 @@ Sega integration reuses the pinned `@emulatorjs/core-genesis_plus_gx` 4.2.3 arch
 its actual `.data` archive's `license.txt` was reviewed on 2026-11-09. The core
 prohibits commercial use/sale, requires retained notices and requires complete
 component source for modified redistribution. Bundled components have additional
-terms, including Nuked OPN2 under LGPL 2.1 or later. This fits the requested
-noncommercial scope, but is not a permissive or blanket OSI license. Preserve the
+terms, including Nuked OPN2 under LGPL 2.1 or later. These core-level terms do not
+clear its combination with RetroArch or establish an OSI license. Preserve the
 entire notice file and fulfill source obligations before public binary releases.
 The core binary is unmodified; no new npm dependency or service was introduced.
 See the [core license](https://github.com/EmulatorJS/Genesis-Plus-GX/blob/master/LICENSE.txt)
