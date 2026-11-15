@@ -1,8 +1,14 @@
 # Platform work status
 
-Updated: 2026-11-13 (Asia/Shanghai).
+Updated: 2026-11-15 (Asia/Shanghai).
 
 ## User verification follow-up
+
+- Save admission now queues up to eight requests behind two active uploads, with
+  a 15-second admission timeout. Disconnects cannot release an active writer's
+  memory slot prematurely. Tests cover five concurrent saves, competing heads,
+  overflow/retry and real HTTP disconnects; ownership/revision guards remain intact.
+  Browser retry and renewed two-CPU capacity acceptance are in progress.
 
 - Five-user capacity acceptance supports a two-vCPU/2-GiB starting deployment,
   with an explicit 512 MiB host reserve. App/database shared two logical CPUs and

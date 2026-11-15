@@ -21,6 +21,13 @@ an asynchronous upload. A before-unload warning protects normal reload/close, bu
 forced termination or power loss can lose changes after the latest successful sync.
 There is currently no durable offline browser outbox.
 
+Save uploads share a per-process FIFO queue: two active collections, eight waiting
+requests and at most 15 seconds waiting for admission. Waiting multipart streams
+remain unread, keeping the two-upload memory bound. Overflow/expired waiters receive
+`503 upload_busy` with `Retry-After`; they have not started publication. Disconnects
+remove waiting requests but never free an active slot before its write settles.
+Every admitted save still checks ownership, quotas and the original base revision.
+
 ## Conflicts
 
 The server compares the submitted base revision with the current head atomically.

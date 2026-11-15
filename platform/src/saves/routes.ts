@@ -7,6 +7,7 @@ import { pendingDeletions } from "../library/deletion-records.ts";
 import { ProgressError } from "../storage/revisions.ts";
 import { idParameters, profileBody, restoreBody, uploadMetadata } from "./http-schema.ts";
 import type { SaveFile, SaveMetadata, SaveService } from "./service.ts";
+import { UploadBusyError, UploadQueue } from "./upload-queue.ts";
 
 type Params = { Params: { id: string } };
 type Upload = SaveMetadata & { baseRevision: string | null };
@@ -128,39 +129,37 @@ export async function registerSaves(
         .send(Buffer.from(bytes));
     },
   );
-  // Bound aggregate upload memory independently of per-user rate limits.
-  const uploads = new Set<FastifyRequest>();
-  app.addHook("onResponse", async (request) => {
-    uploads.delete(request);
-  });
-  app.addHook("onRequestAbort", async (request) => {
-    uploads.delete(request);
-  });
+  const uploads = new UploadQueue();
   app.post<Params>(
     "/api/profiles/:id/revisions",
-    {
-      schema: { params: idParameters },
-      onRequest: async (request, reply) => {
-        if (uploads.size >= 2)
-          return reply.code(503).header("retry-after", "1").send({ error: "upload_busy" });
-        uploads.add(request);
-      },
-    },
+    { schema: { params: idParameters } },
     async (request, reply) => {
-      const { metadata, files } = await readUpload(request);
-      const { baseRevision, ...progress } = metadata;
-      return reply
-        .code(201)
-        .send(
-          await service.publish(
+      const controller = new AbortController();
+      const disconnected = () => controller.abort(badRequest("Upload disconnected", 499));
+      reply.raw.once("close", disconnected);
+      if (reply.raw.destroyed) disconnected();
+      try {
+        const revision = await uploads.run(controller.signal, async () => {
+          const { metadata, files } = await readUpload(request);
+          const { baseRevision, ...progress } = metadata;
+          return service.publish(
             request.ownerId,
             request.params.id,
             baseRevision,
             progress,
             files,
             "game",
-          ),
-        );
+          );
+        });
+        return reply.code(201).send(revision);
+      } catch (error) {
+        // Only admission failures are safe for clients to automatically retry.
+        if (error instanceof UploadBusyError)
+          return reply.code(503).header("retry-after", "1").send({ error: "upload_busy" });
+        throw error;
+      } finally {
+        reply.raw.off("close", disconnected);
+      }
     },
   );
   app.post<Params & { Body: { baseRevision: string | null; revisionId: string } }>(

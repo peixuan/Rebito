@@ -2,10 +2,12 @@ import { randomBytes } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { SaveService } from "../../src/saves/service.ts";
 import { loadConfig } from "../../src/server/config.ts";
 import { createPlatform } from "../../src/server/platform.ts";
 import { testDatabase } from "../database.ts";
+import { deferred } from "../deferred.ts";
 import { seedLibrary } from "../library/fixture.ts";
 
 describe("authenticated save HTTP API", () => {
@@ -222,5 +224,142 @@ describe("authenticated save HTTP API", () => {
         )
       ).statusCode,
     ).toBe(413);
+  });
+
+  it("queues five publications and still rejects competing writes to one head", async () => {
+    const ids = await Promise.all(Array.from({ length: 5 }, () => profile()));
+    const responses = await Promise.all(ids.map((id) => upload(id)));
+    expect(responses.map((response) => response.statusCode)).toEqual([201, 201, 201, 201, 201]);
+    const id = ids[0] as string;
+    const baseRevision = responses[0]?.json().id;
+    const competing = await Promise.all(
+      Array.from({ length: 5 }, (_, index) =>
+        upload(id, { ...metadata, baseRevision }, [`SLOT${index}.DAT`]),
+      ),
+    );
+    expect(competing.map((response) => response.statusCode).sort()).toEqual([
+      201, 409, 409, 409, 409,
+    ]);
+    const history = await app.inject({
+      url: `/api/profiles/${id}/revisions`,
+      headers: { cookie: alice },
+    });
+    expect(history.json()).toHaveLength(2);
+    const winner = competing.find((response) => response.statusCode === 201)?.json();
+    expect(history.json()[0].id).toBe(winner.id);
+    expect(winner.parentId).toBe(baseRevision);
+    const file = `/api/revisions/${winner.id}/file?name=${winner.manifest.artifacts[0].name}`;
+    expect((await app.inject({ url: file, headers: { cookie: alice } })).rawPayload).toEqual(
+      Buffer.from([1, 2, 255]),
+    );
+    expect((await app.inject({ url: file, headers: { cookie: bob } })).statusCode).toBe(404);
+  });
+
+  it("removes disconnected HTTP waiters without releasing an active publication", async () => {
+    const address = await app.listen({ port: 0, host: "127.0.0.1" });
+    const ids = await Promise.all(Array.from({ length: 5 }, () => profile()));
+    const gate = deferred();
+    const original = SaveService.prototype.publish;
+    const publish = vi.spyOn(SaveService.prototype, "publish").mockImplementation(async function (
+      this: SaveService,
+      ...args
+    ) {
+      await gate.promise;
+      return original.apply(this, args);
+    });
+    const responses = new Map<string, import("node:http").ServerResponse>();
+    app.server.on("request", (request, response) => responses.set(request.url ?? "", response));
+    const controllers = ids.map(() => new AbortController());
+    const tasks: Promise<number | string>[] = [];
+    const start = (index: number) => {
+      const body = new FormData();
+      body.append("metadata", JSON.stringify(metadata));
+      body.append("file", new Blob([Uint8Array.of(index)]), "SAVE.DAT");
+      tasks.push(
+        fetch(`${address}/api/profiles/${ids[index]}/revisions`, {
+          method: "POST",
+          headers: { origin, cookie: alice },
+          body,
+          signal: controllers[index]?.signal ?? null,
+        })
+          .then(async (response) => {
+            await response.arrayBuffer();
+            return response.status;
+          })
+          .catch((error: Error) => error.name),
+      );
+    };
+    try {
+      start(0);
+      start(1);
+      await vi.waitFor(() => expect(publish).toHaveBeenCalledTimes(2));
+      start(2);
+      start(3);
+      start(4);
+      await vi.waitFor(() => expect(responses.size).toBe(5));
+      for (const index of [0, 2]) {
+        const response = responses.get(`/api/profiles/${ids[index]}/revisions`);
+        const closed = new Promise<void>((resolve) => response?.once("close", resolve));
+        controllers[index]?.abort();
+        await closed;
+      }
+      expect(publish).toHaveBeenCalledTimes(2);
+      gate.resolve();
+      expect(await Promise.all(tasks)).toEqual(["AbortError", 201, "AbortError", 201, 201]);
+      await vi.waitFor(() => expect(publish).toHaveBeenCalledTimes(4));
+      for (const [index, id] of ids.entries()) {
+        const history = (
+          await app.inject({ url: `/api/profiles/${id}/revisions`, headers: { cookie: alice } })
+        ).json();
+        expect(history).toHaveLength(index === 2 ? 0 : 1);
+        if (index === 2) continue;
+        const file = await app.inject({
+          url: `/api/revisions/${history[0].id}/file?name=SAVE.DAT`,
+          headers: { cookie: alice },
+        });
+        expect(file.rawPayload).toEqual(Buffer.from([index]));
+      }
+    } finally {
+      gate.resolve();
+      await Promise.allSettled(tasks);
+      publish.mockRestore();
+    }
+  });
+
+  it("rejects queue overflow before publication and permits a safe retry", async () => {
+    const ids = await Promise.all(Array.from({ length: 11 }, () => profile()));
+    const gate = deferred();
+    const original = SaveService.prototype.publish;
+    const publish = vi.spyOn(SaveService.prototype, "publish").mockImplementation(async function (
+      this: SaveService,
+      ...args
+    ) {
+      await gate.promise;
+      return original.apply(this, args);
+    });
+    const tasks = ids.map(async (id) => ({ id, response: await upload(id) }));
+    try {
+      const rejected = await Promise.race(tasks);
+      expect(rejected.response.statusCode).toBe(503);
+      expect(rejected.response.json()).toEqual({ error: "upload_busy" });
+      expect(rejected.response.headers["retry-after"]).toBe("1");
+      await vi.waitFor(() => expect(publish).toHaveBeenCalledTimes(2));
+      gate.resolve();
+      const results = await Promise.all(tasks);
+      expect(results.filter(({ response }) => response.statusCode === 201)).toHaveLength(10);
+      expect(
+        (
+          await app.inject({
+            url: `/api/profiles/${rejected.id}/revisions`,
+            headers: { cookie: alice },
+          })
+        ).json(),
+      ).toEqual([]);
+      expect((await upload(rejected.id)).statusCode).toBe(201);
+    } finally {
+      gate.resolve();
+      await Promise.allSettled(tasks);
+      publish.mockRestore();
+    }
   });
 });
