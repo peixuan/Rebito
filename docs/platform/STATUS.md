@@ -2,369 +2,70 @@
 
 Updated: 2026-11-15 (Asia/Shanghai).
 
-## User verification follow-up
+## Current implementation
 
-- Save admission now queues up to eight requests behind two active uploads, with
-  a 15-second admission timeout. Disconnects cannot release an active writer's
-  memory slot prematurely. Tests cover five concurrent saves, competing heads,
-  overflow/retry and real HTTP disconnects; ownership/revision guards remain intact.
-  Browser captures/imports now retry only explicit admission failures using the
-  original bytes/base; conflicts and uncertain publication results are preserved.
-  Full checks pass 311 unit/integration tests and 43 browser regressions; the final
-  three-case retry suite also passes with sandboxed Chrome, including a lost
-  success response (44 distinct browser cases total). The renewed two-CPU/2-GiB
-  budget run accepted all 120 API saves on their first attempt. Five real sandboxed
-  Mega CD players saved without manual retry; injected busy responses also recovered
-  automatically. Ordinary-save p95 was 0.28 s, maximum-size combined-load p95 5.38 s.
-  Aggregate memory peaked at 1,116.5 MiB including initial copy cache; subsequent
-  workloads peaked at 560–587 MiB, with no OOM. Restart checks verified 130 versions;
-  isolated test volumes were removed. A consistent backup/restore drill preceded
-  local deployment, preserving all 28 physical files and 25 existing real revisions.
-  See [current acceptance](CAPACITY_SAVE_QUEUE.md); cloud-host/TLS acceptance remains
-  a separate deployment check. Public-release code/license/history review is next.
+Rebito is a TypeScript/Vue/Fastify/PostgreSQL application. Games run in the
+browser; the server owns authentication, private revision history, game management
+and optional pure save editors. See [architecture](ARCHITECTURE.md).
 
-- Five-user capacity acceptance supports a two-vCPU/2-GiB starting deployment,
-  with an explicit 512 MiB host reserve. App/database shared two logical CPUs and
-  a 1.5 GiB cgroup ceiling, swap disabled; service memory peaked at 578.1 MiB.
-  Five concurrent 497 MiB downloads and 256 KiB/8 MiB/64 MiB save workloads passed
-  byte/ownership checks; the 100 Mbit/s case took 218 seconds for all five downloads.
-  This does not establish seamless concurrent saving: the unchanged two-upload
-  admission limit rejected 72/120 first attempts; explicit probe retries succeeded.
-  Five sandboxed real Chrome players likewise saved successfully after three manual
-  retries, with no browser errors. Restart/integrity checks cover all 125 test
-  revisions. Test volumes were removed and original service/data remain intact.
-  See [method, measurements and remaining limits](CAPACITY.md). Cloud-host/TLS
-  acceptance and bounded browser retry remain follow-up work, not completed fixes.
+- DOS, NES, SNES, GB, GBA, MD, Master System, Game Gear and Mega CD adapters have
+  real browser tests with original generated programs. Six console cores cover
+  native persistence and snapshots; this is not universal game compatibility.
+- Koukai2 has eight editor modules, independent expected-byte tests and 13 legacy
+  whole-file comparisons. Real-game editing/playback was checked privately; no
+  proprietary samples or old editor executables are distribution fixtures.
+- Administrator uploads, launch/save configuration, no-upload updates and confirmed
+  deletion are implemented. Shared assets and affected user histories are guarded
+  by storage leases, impact checks and durable retryable cleanup.
+- Accounts have isolated profiles and immutable revision checks. Password sessions
+  and OIDC/PKCE were tested with an independent provider; LDAP is an external
+  identity-provider federation option, not a built-in LDAP password service.
+- Save admission permits two active uploads and eight queued requests. Explicit
+  busy responses get bounded automatic retries using the same bytes/base revision.
+  Conflicts and uncertain responses preserve local progress without blind replay.
+  See [synchronization invariants](../../platform/SYNCHRONIZATION.md).
 
-- The DOSBox-X removal recommendation is superseded by the user's future Windows
-  scope. Its 25.32 MiB of assets remain intact as a candidate for Windows 95/98/ME;
-  no runtime fingerprints or existing DOS snapshots change. Windows launching is
-  not implemented or tested. Separate OS disk boot, private writable disk changes,
-  quotas and revision/recovery acceptance are required before enabling it; see
-  [runtime boundaries](../../platform/RUNTIMES.md). Arbitrary Win32 support is not
-  promised by retaining these assets.
+## Verified deployment and capacity
 
-- Docker's native builder GC is configured and active on the local WSL engine,
-  with a 2 GiB retention target and no extra scheduler/service. The validated
-  configuration fragment and safe initial cleanup command are in
-  [operations](../../platform/OPERATIONS.md#build-cache-retention). Effective
-  policies were inspected after daemon restart. Reported cache fell from 5.462 GB
-  before activation to 3.187 GB: 2.140 GB private and 1.047 GB shared with images.
-  The subsequent bounded prune reclaimed 0 B because GC had already reached its
-  private-cache target. Existing deployment volumes and rollback images remain;
-  backups, image retention and host virtual-disk compaction are separate concerns.
+The local Linux deployment uses pinned Node 24.22.3 and PostgreSQL 18.7 images.
+A backup/restore drill preserved all 28 physical files and 25 existing revisions
+before the save-queue update. Production data and the rollback image are retained.
 
-- Browser packages are now build-only and optional UI peers are omitted from the
-  server install. The final image's `node_modules` fell from 169,360 to 50,148 KiB
-  (116.42 MiB less); bundled browser license/notice text remains in the served
-  `THIRD_PARTY_NOTICES.txt`. Container CI rejects accidentally retained UI/compiler
-  packages or missing notices. Full checks pass 294 tests, lint/types/build and
-  all 41 sandboxed Chrome tests. Real Linux image acceptance passes account
-  creation/login, save bytes and app/database restart; the deployed Mega CD game
-  still runs with all 12 control hints and unchanged history. Dependency policy
-  passes all 280 lock records. See [dependency policy](DEPENDENCIES.md).
+The repeated five-user experiment shares two logical CPUs and 1.5 GiB between
+app/database, reserving 512 MiB for the host. All 120 API saves succeeded on their
+first attempt; five real Mega CD players also recovered injected busy responses
+without manual retry. Ordinary-save p95 was 0.28 s; 64 MiB saves with concurrent
+large downloads reached 5.38 s. Peak aggregate memory was 1,116.5 MiB including
+initial copy cache, with no OOM. Restart verified 130 revisions. Disposable test
+volumes were removed. See [current capacity acceptance](CAPACITY_SAVE_QUEUE.md);
+[earlier measurements](CAPACITY.md) document the superseded rejection behavior.
 
-- Runtime image security updates are deployed locally: Node 24.22.3 and PostgreSQL
-  18.7, pinned by digest across app/test Compose and CI. A stopped-app backup was
-  restored into separate volumes before upgrading; all 28 physical files, three
-  profiles and 25 revision records match before/after both restore and deployment.
-  No public GIN/GiST or bpchar-table indexes needed the release's repair review.
-  Readiness passes and the previous app image/consistent private backup are retained.
-  Weekly Dependabot image proposals are configured for a future hosted repository;
-  no remote was pushed and no unattended deployment is enabled. Full gates pass
-  294 unit/integration tests and 41 sandboxed Chrome tests against PostgreSQL 18.7.
+## Public source review
 
-- Stack/redundancy review retains the modular Vue/Fastify/PostgreSQL architecture;
-  all 90 production TS/Vue modules are reachable from app/runtime/operator entries,
-  and direct dependencies have identified uses. It does not certify zero redundancy:
-  at review time, Node 24.22.2/PostgreSQL 18.6 needed newly published security
-  patches, frontend directories occupied 41.49 MiB in the server image, and the
-  DOS-only adapter shipped 25.32 MiB of unused DOSBox-X assets. Local build-cache
-  retention also needed attention. Subsequent remediation is recorded above.
-  Review checks passed 292 unit/integration tests, the full
-  41 sandboxed Chrome tests, lint/types/build, dependency audit and license metadata
-  policy. The existing service/data were not redeployed or pruned. See the dated
-  [review and priorities](ENGINEERING_LOG.md#2026-11-13-stack-and-redundancy-review).
+Original code, documentation and original test programs use AGPL-3.0-or-later.
+Third-party licenses remain separate, and some console cores prohibit commercial use.
+Public source review does not clear assembled binary/container redistribution:
+exact native corresponding-source/build inventories remain required. Read
+[licensing boundaries](LICENSING.md) and [dependency policy](DEPENDENCIES.md).
 
-- The game panel now displays a compact, expanded player-one keyboard/controller
-  guide and a direct control-settings button. The console adapter reads current
-  EmulatorJS labels/bindings and reports remap, Clear and Reset changes; the page
-  receives an optional runtime capability instead of depending on wrapper internals.
-  Remapping is explicitly session-only. DOS has separate keyboard/mouse guidance.
-  `npm run check` passes all 292 unit/integration tests, lint, types and production
-  build; dependency policy passes. Twelve sandboxed Chrome regressions pass across
-  NES (with/without battery), SNES, GB, GBA, MD (raw/SMD), SMS, GG and Mega CD, including
-  actual remapped NES input, empty/reset bindings, runtime restart, 390-pixel layout,
-  native saves and snapshot restoration. The updated Linux container is healthy;
-  prior game/save baseline hashes remain intact. A read-only local acceptance run
-  of the operator's Sangokushi III confirms all 12 hints, live remapping and narrow
-  layout without changing its revision history or reporting browser errors.
-  See [runtime boundaries](../../platform/RUNTIMES.md).
+The candidate is reviewed in an isolated worktree; the original platform branch
+and pre-existing uncommitted desktop files are preserved. No remote has been
+pushed. Do not push to the template remote; select the intended repository first.
+History cleanup and its verification record are the current work item.
 
-- Mega CD/Sega CD is implemented with region-checked BIOS, streamed CUE/BIN uploads
-  up to 1 GiB, no-reupload BIOS changes, private progress and PicoDrive restoration.
-  Original firmware tests actual cartridge reads/writes and visible state recovery;
-  the operator's Japanese Sangokushi III boots with its BIOS and formatted cart.
-  Full gates pass 292 tests; 39 browser regressions plus the BIOS-edit browser test
-  pass with Chromium's sandbox enabled. The real 497 MiB package uploads through
-  the 512 MiB Linux container in 39 seconds. Native import follows the core's correct
-  allocation sequence; complete progress retains both state and cartridge. Full
-  app/database restart preserves the new head/artifacts and all 29 original saves.
-  The game and a validation profile are deployed locally. See
-  [game acceptance](GAME_ACCEPTANCE.md) and [runtime boundaries](../../platform/RUNTIMES.md).
+## Checks and next work
 
-- Sega MD/Genesis, Master System and Game Gear are implemented using one pinned
-  Genesis Plus GX core. Shared system metadata drives uploads/catalog labels;
-  core/save-path/control bindings remain in the runtime adapter. Bounded header
-  checks reject malformed/wrong-model images without changing cartridge bytes.
-  Real sandboxed Chrome tests cover raw/SMD MD, SMS and GG: keyboard input, correct
-  MD button labels, native SRAM import and visible state restoration. The core
-  omits SRAM from states, so snapshot revisions retain both artifacts. Web uploads,
-  account saves, stop/resume and cross-account download denial pass for each format.
-  Snapshot identities now depend on each core/wrapper while preserving the original
-  unchanged-binary baseline; adding this core does not invalidate other games.
-  Runtime noncommercial/component terms were reviewed and recorded in dependencies.
-  Full gates pass: 272 unit/integration tests and 37 browser tests. Container build
-  and an isolated Linux probe pass four uploads and exact native-save recovery after
-  app recreation. Local app recreation is healthy; the deployed administrator page
-  exposes all three models and the 390-pixel layout has no horizontal overflow.
-  Existing game bytes and all 27 recorded save downloads match the pre-upgrade
-  digests. Synthetic cartridges remain confined to disposable test libraries.
-  Original test programs
-  establish these runtime paths, not universal commercial-ROM compatibility.
-  The existing inventory test now compares whole-file bytes natively, avoiding its
-  timeout without reducing exhaustive cases or relaxing the quality gates.
+- Root policy tests, dependency-license metadata, secret scans and artifact rules.
+- `cd platform && npm run check`: 311 unit/integration tests, lint, types and build;
+  current Windows line coverage 98.12%, branch coverage 92.51%.
+- `npm run test:e2e`: 44 browser cases, explicitly sandboxed Chromium; real DOS,
+  console, OIDC, editor, management and save-conflict/retry flows.
+- Linux image notice/dependency checks, login/upload/download, app/database restart
+  and exact saved-byte recovery passed in isolated fresh volumes, then cleaned up.
+- Hosted GitHub CI and target-cloud TLS/network/disk acceptance have not run.
 
-- Configuration editing and confirmed deletion are implemented and deployed locally.
-  The form reuses stored assets: renaming preserves the release; changed DOS launch
-  or sync rules publish a new immutable release without migrating old profiles or
-  inheriting an unverified editor binding. Fresh configuration tokens reject stale
-  edits, including a catalog renamed before the administrator opens its editor.
-  Deletion shows affected users/profiles/history and estimated physical recovery,
-  requires an exact title plus explicit consent for all related saves, and rejects
-  a preview invalidated by new progress. Cleanup intent and history removal commit
-  together; catalog removal precedes unlinking. Shared blobs/assets are rechecked on
-  retry. Pending cleanup is visible, blocks new imports and is retried at startup.
-  Private HTTP handlers and the import CLI share an online storage activity lease;
-  reclamation takes its exclusive counterpart across instances. Tests cover active
-  readers/writers, fairness, stale consent, interrupted unlink and later blob reuse.
-  Profile creation now requires an available catalog release. CLI imports require
-  the initialized deployment database and participate in both storage leases.
-  Full gates pass: 263 unit/integration tests and 29 sandboxed Chrome tests. Browser
-  acceptance runs a reconfigured DOS release, checks native save bytes and keeps
-  the local runtime when deletion prevents further synchronization. Linux container
-  API/filesystem acceptance deleted two synthetic profiles, reclaimed 32,788 bytes,
-  retained shared bytes and survived app recreation. Both local services are healthy.
-  The existing library and all 27 recorded save downloads match their pre-upgrade
-  values; no real game/progress was deleted. A stale publisher `.import.lock` still
-  requires operator inspection; backups and host virtual-disk compaction remain
-  separate from reclaiming files inside the data filesystem.
-
-- Administrator game management is implemented and deployed locally. The header
-  opens uploads, DOS launch settings, explicit save paths and a searchable/sortable
-  release list. Stable account-ID allowlisting defaults to no administrators and
-  is checked before reading uploads; the existing local acceptance account is enabled.
-  Games publish without a container restart. Configuration changes publish a new
-  immutable DOS release; existing profiles and verified editor bindings stay intact.
-  Browser ZIP inspection reads metadata only; server repackaging streams files and
-  validates paths, collisions, sizes, encryption, file types and CRCs. Declared saves
-  are excluded from shared packages. Uploads are limited to 64 MiB, DOS expansion to
-  256 MiB, and retained library assets to a configurable 10 GiB under the import lock.
-  Failed/disconnected uploads clean staging; offline collection handles abandoned
-  staging under its exclusive lease and never deletes published games.
-  All local gates pass: 251 unit/integration tests and 27 sandboxed Chrome tests.
-  Uploaded DOS and NES fixtures run in real emulators; DOS publishes two exact
-  native files including a nested path. Failed synchronization blocks navigation
-  to management and preserves the runtime. Tests also cover role/origin rejection,
-  draft retention, actual HTTP disconnect cleanup/retry, quota and concurrent uploads.
-  The rebuilt Linux containers are healthy; a real container probe verifies streamed
-  DOS preparation and save exclusion. Three existing save downloads retain identical
-  digests. Browser upload acceptance uses the local test server, not the production
-  catalog, which still contains only the verified Koukai2 release. Arbitrary game
-  compatibility is not claimed; configuration/deletion follow-up is recorded above.
-
-- Capacity review: blob writes now leave a configurable 1 GiB free-space margin,
-  count this process's pending writes, and return a distinct recoverable 507 error.
-  Full local checks pass (210 tests); actual filesystem probes plus PostgreSQL
-  verify that a rejected upload leaves the old head and bytes intact. Simulated
-  disk probes cover concurrent reservations and late ENOSPC/EDQUOT failures.
-  Compose bounds app/database logs to three 10 MB files per container. This is
-  not a global filesystem quota or automatic history pruning; see operations.
-  The rebuilt app/database containers are healthy and both report the bounded local
-  log driver. A real Linux filesystem probe verifies refused writes, intact old
-  bytes and temporary-file cleanup. Three recorded save artifacts match their
-  pre-recreation digests through the authenticated download API.
-- The compact slate/blue shell now shows per-account bytes, revisions and profiles,
-  updates after save/profile changes, warns at 80%, and labels stale usage after a
-  failed refresh. It removes the repeated welcome section and retains the temporary
-  name at the user's request; see the presentation rationale in architecture.
-  No dependencies or services were added. Lint/types/build and all 24 sandboxed
-  Chrome checks pass, including real usage updates/account isolation, narrow layout,
-  simulated capacity-warning display and a disk-full response during real DOS play.
-  The DOS failure retains the runtime and successfully retries before logout.
-
-- Multi-file follow-up: the runtime now validates a complete replacement group
-  before writing, rolls back every attempted member on failure, and keeps trying
-  other rollbacks if one recovery fails. Fourteen focused unit checks and both
-  real DOS browser checks pass, including two files and a nested path. Cloud
-  batch publication now also passes seven service checks, including a failed
-  second blob and concurrent writers. The UI now publishes all pending files/slots
-  together. Ten coordinator/editor API checks and four browser checks pass, including
-  two-file publication and live replacement. Unknown game formats still require
-  their own adapter. DOS now checks native-file changes every 30 seconds, and saves
-  before library navigation/logout. Three change-detection/transport unit checks
-  and real DOS automatic publication/navigation checks pass. Conflict recovery now
-  preserves the runtime and offers a separate private profile or confirmed discard.
-  Two focused recovery unit checks and real concurrent-writer browser checks pass,
-  including a lost publication response. Forced termination still risks the latest
-  unsynced work; see [synchronization](../../platform/SYNCHRONIZATION.md).
-- Chromium sandboxing is now explicitly enabled for manual validation and E2E.
-  All 23 browser checks pass, including a launch check that rejects
-  sandbox-disabling arguments. The visible Windows Chrome process and
-  its renderer/GPU processes were checked without `--no-sandbox`.
-- Live DOS editor writeback now replaces only the edited native file group without
-  restarting the emulator. Preflight rejects unsynchronized game saves before
-  publication; verified writes preserve other files and the previous pause state.
-  Failed writeback stays paused and retries the existing revision, blocking stale
-  uploads. File-I/O and coordinator checks cover group guards, corruption and
-  rollback; worker writes receive copies because transfer detaches buffers.
-  Real DOS readback and browser checks cover exact bytes, pause state and retry.
-  Real Koukai2 on the updated container retained its runtime across consecutive
-  edits, with complete native/cloud bytes restored afterward. Load the save inside
-  the game to update game memory; external imports/restores still invalidate it.
-- DOS defaults to integer device-pixel scaling, with a fit-to-window toggle and
-  nearest-neighbor sampling. The real DOS browser checks cover non-integer window
-  sizes, toggling, palette preservation and pointer capture. Lint/types and both
-  DOS integration tests pass. This changes display scaling, not game CPU settings.
-- While a game runs, workspace refresh now captures and publishes its live files
-  before refreshing history and the editor. Explicit Stop also publishes first;
-  a failed upload keeps the paused runtime available for retry. Dirty editor drafts
-  survive publication and require explicit reloading. Real DOS shell writes verify
-  exact downloaded bytes, updated fields, retained drafts and failed-stop recovery.
-- Primary controls now use neutral slate tones with blue links instead of green.
-  Lint, types and the container build pass; the deployed theme was inspected in
-  Chrome. The real Koukai2 canvas was verified at 640 × 480 source/display pixels.
-- All 24 browser checks pass after these changes. The DOS synchronization test
-  observes the real filesystem read-only and waits for the complete expected file
-  before clicking refresh, avoiding a race with the emulator's keyboard queue.
-  After editor saves it waits for completed writeback before observation: js-dos
-  rejects concurrent reads of the same file, including reads by test instrumentation.
-  The updated image is deployed locally; no remote push or CI run was performed.
-  On that image, real Koukai2 remained running for 51 seconds without publishing
-  unchanged native data; Stop then published a complete revision with identical
-  native bytes. External imports now require explicit conflict resolution.
-
-## Target
-
-A container-deployable single-page gaming platform for DOS, FC/NES, SFC/SNES, GB,
-GBA, Sega MD/Genesis, Master System and Game Gear, with login, isolated versioned
-saves and optional server-side game editors.
-The first editor reproduces the existing Koukai2 capabilities. Runtime and editor
-support are separate: a playable game need not have an editor.
-
-## Workspace facts
-
-- Branch: `codex/retro-web-platform`.
-- Remote still points to `peixuan/project-template`; do not push there.
-- Existing C++/wxWidgets implementation and its documentation are pre-existing
-  uncommitted local work. Preserve them as migration evidence, not new platform commits.
-- Original game data: `<operator-game-directory>`; read-only for this project.
-- Private development evidence and upstream checkouts belong in `.analysis/`.
-- Docker Desktop fails locally; an independent WSL Ubuntu Docker Engine now runs
-  PostgreSQL 18.6 integration and application containers. Windows Docker Desktop
-  files were not changed to make this work.
-
-## Milestones
-
-| Milestone | Status | Acceptance |
-| --- | --- | --- |
-| Engineering rules and commit gates | Implemented | Hooks and CI enforce subjects, artifacts and line budgets |
-| Upstream reuse decision | Recorded | See [architecture](ARCHITECTURE.md); reuse runtimes/auth libraries |
-| TypeScript service skeleton | Verified locally | Format, lint, types, 9 route tests, coverage and build pass |
-| Progress collection contract | Verified locally | Native saves, snapshots and filesystem collections; portable paths and bounds |
-| Private blob storage | Verified on Windows/Linux | Exact bytes, concurrency, corruption detection; Linux publication and restart |
-| Identity API | Verified locally | PostgreSQL migrations; password/session lifecycle; CSRF; closed registration |
-| OIDC integration | Verified in Chrome | Independent provider; code flow/PKCE; isolated users; tampered state/nonce rejected; LDAP federation documented |
-| Container application | Verified locally | Non-root app; restricted database role; real login and save bytes survive full restart |
-| Revision repository | Verified locally | Real PostgreSQL ownership, concurrent writers, rollback and immutable history |
-| Save service | Verified locally | Durable blobs before publication; guarded download; non-destructive restore; storage failures |
-| Save publication API | Verified locally | Real multipart imports, private downloads, stale writes, history and restore |
-| Storage bounds and maintenance | Verified locally | Per-owner quotas under concurrent writes; exclusive offline verification/collection; no history deletion |
-| Browser login shell | Verified in Chrome | Real registration/login/logout, session recovery and narrow-viewport checks |
-| Game library and personal progress | Implemented | Verified assets; private catalog API; browser import, history, restore and account isolation |
-| Operator game preparation/import | Verified locally | Explicit DOS file allowlist; deterministic bundles; atomic catalog publication; source files unchanged |
-| Administrator game management | Verified and deployed locally | Role-checked uploads; DOS launch/save settings; live catalog refresh; quotas; real uploaded DOS/NES/MD/SMD/SMS/GG fixtures |
-| Configuration and game deletion | Verified and deployed locally | No-upload editing; confirmed cross-owner deletion; stale-impact rejection; shared-reference-safe file recovery and retry |
-| DOS browser runtime | Fixture and real game verified | DOSBox WASM, native files, filesystem overlay, edited-byte precedence; relative mouse capture/Escape release |
-| Console browser runtime | Six cores verified with own fixtures | NES/SNES/GB/GBA/MD/SMS/GG/CD memory and states; keyboard, visible restoration, SMD, no-battery snapshots and BIOS/cart initialization |
-| Koukai2 editor | Real-game round trip verified | Eight modules; 13/13 legacy matches; browser editing/conflict tests; game reads and resaves modified money/leadership |
-| Local acceptance | Verified | Gates, end-to-end flows, complete container restart and fresh-volume backup recovery pass |
-
-## Acceptance boundaries
-
-- Distinguish native game saves, emulator states and writable file collections.
-- Version snapshots against game release and emulator core where applicable.
-- Back-end identity determines ownership; never trust a submitted user identifier.
-- An edited save becomes a new revision. Stale game uploads cannot overwrite it.
-- Use established emulator and authentication libraries. Prefer OIDC; demonstrate
-  the documented LDAP federation route without requiring an LDAP server for everyone.
-- Do not make supported-system claims from mocked adapters alone.
-
-## Handoff and release boundaries
-
-The requested local implementation and acceptance are complete. Start with
-[deployment](../../platform/DEPLOYMENT.md), [game imports](../../platform/LIBRARY.md)
-and [storage operations](../../platform/OPERATIONS.md). No games, personal saves,
-credentials or downloaded emulator archives are committed.
-
-- No push or remote CI run has occurred; choose the actual destination first.
-- Before publishing a project release, complete the runtime
-  redistribution/source-material obligations in [dependencies](DEPENDENCIES.md)
-  and [runtimes](../../platform/RUNTIMES.md). Noncommercial intent alone does not settle these.
-- Production TLS and the actual identity provider/LDAP directory remain operator
-  configuration. The local OIDC acceptance uses an independent test provider.
-- DOS absolute pointer alignment depends on the game; relative capture and keyboard
-  input are available. Six console cores are exercised with original test programs,
-  not every commercial release. Koukai2 compatibility is tied to the verified format.
-- Save history is retained and quota-limited; automatic pruning and arbitrary
-  third-party editor plugins are not part of this implementation.
-
-## Available checks
-
-`node --test scripts/*.test.mjs`: 10 tests passed locally.
-`node scripts/dependency-policy.mjs`: 280 locked packages reviewed.
-Enable local hooks with `git config core.hooksPath .githooks`.
-The `platform` workflow checks every new commit since the pre-platform baseline;
-remote CI has not run because this work has not been pushed.
-
-`cd platform && npm run check` with the test database: format/lint, TypeScript,
-HTTP/domain/filesystem and real PostgreSQL identity/revision/service tests passed.
-The complete run passed 292 tests with 97.99% Windows line coverage, 92.28% branch
-coverage and 97.98% function coverage. Linux-only directory fsync is exercised by
-deployment, not by Windows unit coverage. The process entrypoint and account-provisioning CLI
-are excluded from unit coverage and exercised by the container smoke test.
-
-The complete 39-test browser suite plus the BIOS-edit test pass, including six console cores, DOS,
-OIDC and three editor tests: exact multi-slot output bytes, numeric sorting and
-selection retention, clamping/invalid-input handling, narrow layouts, and retaining
-drafts when another upload advances the revision head. Edited cells update without
-reordering the selected row until the next explicit sort. The no-battery NES test
-restores a changed visible palette from a snapshot without a native save file.
-The DOS player checks pointer capture and Escape release in the real runtime.
-
-Container verification used the pinned Node 24/PostgreSQL 18 images in WSL:
-image build, healthy startup, stdin account creation, login/logout, multipart save
-upload/download, full app/database restart, and exact saved-byte recovery passed.
-The app UID is 1000; the database role has no superuser/create-role/create-db rights.
-CI repeats build, startup and persistence smoke, but has not run remotely.
-The final image includes the runtimes, editor and relative mouse support. Real
-Koukai2 save editing/playback and backup recovery into separate fresh volumes also
-passed; see [game acceptance](GAME_ACCEPTANCE.md). Production dependency audit
-reported zero known vulnerabilities at the time of this local acceptance.
-
-## Existing evidence
-
-The desktop implementation documents 13 whole-file comparisons with the original
-editor in `docs/VALIDATION.md` (currently local, not committed). Those examples are
-useful regression evidence, not complete game compatibility proof. Preserve the
-independent expected-byte checks as well as comparisons with the C++ implementation.
+Start from [development](../../platform/README.md), [deployment](../../platform/DEPLOYMENT.md),
+[game management](../../platform/LIBRARY.md) and [operations](../../platform/OPERATIONS.md).
+Windows games are planned, not implemented; DOSBox-X assets alone do not establish
+Win32 support. History is quota-limited but never automatically pruned. Offline
+persistent save queues and arbitrary third-party editor plugins are not implemented.
