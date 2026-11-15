@@ -80,6 +80,11 @@ captures are not distributable project fixtures. No decompiled implementation is
 vendored. Contributors must identify the origin and redistribution rights of new
 data or code; a local file's availability is not permission to publish it.
 
+Short character, item and location labels identify records in the supported game
+and legacy UI. They are compatibility identifiers, not original game content that
+the project claims to own. AGPL does not grant rights to third-party names,
+trademarks, dialogue, artwork or game assets. No dialogue, artwork or audio is shipped.
+
 Operators are responsible for the rights to their uploaded games, BIOS and system
 images, including access they grant to other users. Do not infer redistribution
 permission from age, abandonment, possession of a copy or noncommercial hosting.

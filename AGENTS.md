@@ -81,6 +81,9 @@ because an upstream documentation page lists a feature.
   browser build/type checks separate from the server's compiled output.
 - Review dependency license changes; run `node scripts/dependency-policy.mjs`.
   See [dependency policy](docs/platform/DEPENDENCIES.md) before upgrading UI/runtimes.
+- Preserve project/dependency notices and read [licensing](docs/platform/LICENSING.md)
+  before distribution. Original work uses AGPL-3.0-or-later; dependency terms remain
+  separate. Publish source only; free hosting still conveys browser runtime copies.
 
 ## Verification
 
@@ -94,5 +97,5 @@ Keep Chromium's sandbox enabled for both manual validation and browser tests.
 Playwright launches must explicitly set `chromiumSandbox: true`; do not work around
 startup or feature problems with `--no-sandbox` or other sandbox-disabling flags.
 
-The existing desktop source is a local reference and has pre-existing uncommitted
-changes. Preserve it; do not reset, move, delete or bulk-commit it during platform work.
+A legacy desktop implementation may exist as uncommitted local reference material.
+Preserve it when present; do not reset, move, delete or bulk-commit it during platform work.

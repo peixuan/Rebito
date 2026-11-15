@@ -1,6 +1,6 @@
 # Five-user save queue acceptance
 
-Date: 2026-11-15. Application changes: `b5c9fa3`, `1d39192`. This retests the
+Date: 2026-11-15. Private development changes: `b5c9fa3`, `1d39192`. This retests the
 [2026-11-13 baseline](CAPACITY.md) after bounded admission and browser retry.
 
 ## Tested behavior

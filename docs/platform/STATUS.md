@@ -43,7 +43,9 @@ volumes were removed. See [current capacity acceptance](CAPACITY_SAVE_QUEUE.md);
 ## Public source review
 
 Original code, documentation and original test programs use AGPL-3.0-or-later.
-Third-party licenses remain separate, and some console cores prohibit commercial use.
+The project publishes source only, with no prebuilt runtime or container releases.
+Third-party licenses remain separate, and some console cores prohibit commercial
+use. Noncommercial intent does not resolve incompatible terms in combined WASM.
 Public source review does not clear assembled binary/container redistribution:
 exact native corresponding-source/build inventories remain required. Read
 [licensing boundaries](LICENSING.md) and [dependency policy](DEPENDENCIES.md).
@@ -51,13 +53,17 @@ exact native corresponding-source/build inventories remain required. Read
 The candidate is reviewed in an isolated worktree; the original platform branch
 and pre-existing uncommitted desktop files are preserved. No remote has been
 pushed. Do not push to the template remote; select the intended repository first.
-History cleanup and its verification record are the current work item.
+The `codex/open-source` publication branch has a curated, checked history. All 96
+distinct historical application trees passed their complete checks. See the
+[source readiness review](OPEN_SOURCE_REVIEW.md) for scope, results and remaining
+binary-distribution requirements. The next external step is the selected GitHub
+repository's first hosted CI run and private vulnerability-reporting setup.
 
 ## Checks and next work
 
-- Root policy tests, dependency-license metadata, secret scans and artifact rules.
+- All 15 root policy tests, dependency-license metadata, secret scans and artifact rules.
 - `cd platform && npm run check`: 311 unit/integration tests, lint, types and build;
-  current Windows line coverage 98.12%, branch coverage 92.51%.
+  Windows line coverage 98.12%, Linux 98.60%; both have 92.51% branch coverage.
 - `npm run test:e2e`: 44 browser cases, explicitly sandboxed Chromium; real DOS,
   console, OIDC, editor, management and save-conflict/retry flows.
 - Linux image notice/dependency checks, login/upload/download, app/database restart

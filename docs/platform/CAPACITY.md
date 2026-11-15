@@ -3,7 +3,8 @@
 Historical baseline. The [2026-11-15 save-queue retest](CAPACITY_SAVE_QUEUE.md)
 supersedes the save-admission limitation and retry follow-up below.
 
-Date: 2026-11-13. Application baseline: `12d5080` (Node 24.22.3, PostgreSQL 18.7).
+Date: 2026-11-13. Private development baseline: `12d5080` (Node 24.22.3, PostgreSQL 18.7).
+This label predates the [publication history review](OPEN_SOURCE_REVIEW.md).
 
 ## Scope and resource budget
 

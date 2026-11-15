@@ -121,7 +121,7 @@ development login binds to loopback and is excluded from the deployment image.
 
 ## 2026-11-13: stack and redundancy review
 
-Reviewed application revision `bbf738a`, lockfiles, build/CI configuration, runtime
+Reviewed private development revision `bbf738a`, lockfiles, build/CI configuration, runtime
 adapters, identity, catalog and save publication boundaries, and the running local
 Linux containers. This is an audit record; the remediation items below have not
 been applied to the application or its stored data.

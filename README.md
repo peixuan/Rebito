@@ -76,7 +76,8 @@ Read [CONTRIBUTING.md](CONTRIBUTING.md) and the
 types, unit tests, real-database integration, browser tests with Chromium's sandbox
 enabled, and container persistence. Commits must be independently reviewable,
 follow Conventional Commits and contain no more than 500 handwritten added and
-deleted lines.
+deleted lines. [The source review](docs/platform/OPEN_SOURCE_REVIEW.md) records
+the scope and results of final-tree and per-commit checks.
 
 ## Licensing and game content
 
