@@ -53,6 +53,9 @@ because an upstream documentation page lists a feature.
   republish or upload stale runtime bytes. File changes do not update game RAM.
 - Bind editor support to verified game/format versions; preserve unknown bytes.
 - Authorize every private resource on the server and publish revisions atomically.
+- Retry save admission failures with the original capture and base revision only.
+  Never blindly retry uncertain publication results or rebase a stale upload.
+  An aborted client must not free an active upload slot before its write settles.
 - Check administrator authority before reading game uploads. Stream bounded archive
   preparation and publish immutable releases; launch/sync changes must not reassign
   existing profiles or enable an editor for an unverified game.

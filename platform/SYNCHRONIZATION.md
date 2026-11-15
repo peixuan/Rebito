@@ -28,6 +28,17 @@ remain unread, keeping the two-upload memory bound. Overflow/expired waiters rec
 remove waiting requests but never free an active slot before its write settles.
 Every admitted save still checks ownership, quotas and the original base revision.
 
+Browser captures and file imports automatically retry only `503 upload_busy`, at
+most four retries, with exponential backoff, jitter and the server's `Retry-After`
+minimum. A retry is not scheduled beyond 60 seconds from the initial request;
+an already admitted request may take longer to finish. All attempts reuse the
+same captured bytes and base revision. Pending saves keep their runtime paused
+and controls busy; successful autosaves/exit saves proceed without another click.
+Exhaustion preserves the runtime/files for an explicit later attempt. Conflicts,
+quota/authentication errors, network failures and invalid responses are not
+automatically retried: a lost response can hide a successful publication. Never
+refresh the base and silently overwrite a newer head to make a retry succeed.
+
 ## Conflicts
 
 The server compares the submitted base revision with the current head atomically.

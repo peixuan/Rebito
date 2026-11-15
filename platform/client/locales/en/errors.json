@@ -1,4 +1,6 @@
 {
+  "errors.uploadBusy": "The server is processing other uploads. Please try again shortly.",
+  "errors.queueTimeout": "Saving timed out after automatic retries. Your progress remains in this page. Please try again shortly.",
   "errors.uploadSize": "The upload exceeds the allowed size.",
   "errors.quota": "Your storage quota is full. Ask an administrator to clean up history or adjust your quota.",
   "errors.diskSpace": "The server has insufficient disk space. Your progress has not been saved. Keep this page open and ask an administrator to free space before retrying.",
@@ -8,6 +10,5 @@
   "errors.forbidden": "You are not authorized to perform this action.",
   "errors.notFound": "The game, profile or file no longer exists. Refresh to check; your running game will remain in this page.",
   "errors.request": "The action could not be completed. Check your input and try again.",
-  "errors.connection": "Cannot connect to the service. Please try again shortly.",
-  "errors.uploadBusyLegacy": "Another upload is being processed. Please try again shortly."
+  "errors.connection": "Cannot connect to the service. Please try again shortly."
 }

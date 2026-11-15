@@ -1,5 +1,5 @@
 import type { Revision } from "../../src/storage/revisions.ts";
-import { api } from "../api.ts";
+import { ApiError, api } from "../api.ts";
 import { verifyBytes } from "./progress.ts";
 import type { RuntimeProgress } from "./types.ts";
 
@@ -21,7 +21,7 @@ export async function nativeProgressChanged(progress: RuntimeProgress, revision:
   return false;
 }
 
-export function publishProgress(
+export async function publishProgress(
   profileId: string,
   releaseId: string,
   baseRevision: string | null,
@@ -38,5 +38,25 @@ export function publishProgress(
     }),
   );
   for (const file of progress.files) body.append("file", new Blob([file.bytes]), file.name);
-  return api<Revision>(`profiles/${profileId}/revisions`, body);
+  return uploadProgress(profileId, body);
+}
+
+/** Shared by runtime captures and explicit file imports. Never recapture on retry. */
+export async function uploadProgress(profileId: string, body: FormData): Promise<Revision> {
+  const started = performance.now();
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await api<Revision>(`profiles/${profileId}/revisions`, body);
+    } catch (error) {
+      // A transport error can hide a committed revision. Only retry an explicit
+      // pre-publication rejection, reusing this capture and its original base.
+      if (!(error instanceof ApiError) || error.status !== 503 || error.message !== "upload_busy")
+        throw error;
+      const retryAfter = Number.isFinite(error.retryAfterMs) ? Math.max(0, error.retryAfterMs) : 0;
+      const delay = Math.max(retryAfter, Math.min(1000 * 2 ** attempt, 8000)) + Math.random() * 250;
+      if (attempt >= 4 || performance.now() - started + delay > 60_000)
+        throw new ApiError("save_queue_timeout", 503);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
 }

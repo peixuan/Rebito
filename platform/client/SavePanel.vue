@@ -9,6 +9,7 @@ import type { Profile, Revision } from "../src/storage/revisions.ts";
 import { api, errorText } from "./api.ts";
 import { formatDate, t, translate } from "./i18n.ts";
 import PlayerPanel from "./PlayerPanel.vue";
+import { uploadProgress } from "./runtime/progress-sync.ts";
 
 const EditorPanel = defineAsyncComponent(() => import("./EditorPanel.vue"));
 
@@ -65,7 +66,7 @@ async function upload() {
       JSON.stringify({ kind: "game-save", releaseId: props.game.id, baseRevision: head.value }),
     );
     for (const file of files.value) body.append("file", file, file.name);
-    await api(`profiles/${props.profile.id}/revisions`, body);
+    await uploadProgress(props.profile.id, body);
     files.value = [];
     if (input.value) input.value.value = "";
     await refresh();

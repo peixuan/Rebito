@@ -8,10 +8,12 @@ export interface Session {
 export class ApiError extends Error {
   readonly status: number;
   readonly detail: DisplayMessage | undefined;
-  constructor(code: string, status: number, detail?: DisplayMessage) {
+  readonly retryAfterMs: number;
+  constructor(code: string, status: number, detail?: DisplayMessage, retryAfterMs = 0) {
     super(code);
     this.status = status;
     this.detail = detail;
+    this.retryAfterMs = retryAfterMs;
   }
 }
 
@@ -34,6 +36,8 @@ export async function api<T>(path: string, body?: unknown): Promise<T> {
       result.error ?? result.code ?? "request_failed",
       response.status,
       displayMessage(result),
+      // Our admission endpoint sends delta-seconds, not an HTTP date.
+      Number(response.headers.get("retry-after")) * 1000,
     );
   return result as T;
 }
@@ -44,7 +48,8 @@ export function errorText(error: unknown): DisplayMessage {
   if (error instanceof ApiError) {
     if (error.status === 422 && error.detail) return error.detail;
     if (error.message === "library_error" && error.detail) return error.detail;
-    if (error.message === "upload_busy") return message("errors.uploadBusyLegacy");
+    if (error.message === "upload_busy") return message("errors.uploadBusy");
+    if (error.message === "save_queue_timeout") return message("errors.queueTimeout");
     if (error.status === 413) return message("errors.uploadSize");
     if (error.message === "quota_exceeded") return message("errors.quota");
     if (error.message === "disk_space_low") return message("errors.diskSpace");

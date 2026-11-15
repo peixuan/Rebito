@@ -28,7 +28,10 @@ const revision: Revision = {
     })),
   },
 };
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
+});
 
 test("ignores archive-only and ordering changes when deciding to autosave", async () => {
   expect(
@@ -75,3 +78,76 @@ test("uploads the complete collection with the original revision guard", async (
     progress.files.map((file) => file.name),
   );
 });
+
+function failure(status: number, error: string, retryAfter = "1") {
+  return new Response(JSON.stringify({ error }), {
+    status,
+    headers: { "retry-after": retryAfter },
+  });
+}
+
+test("automatically retries admission failures with the same captured bytes and base", async () => {
+  vi.useFakeTimers();
+  const fetch = vi
+    .fn()
+    .mockResolvedValueOnce(failure(503, "upload_busy", "3"))
+    .mockResolvedValueOnce(failure(503, "upload_busy"))
+    .mockResolvedValueOnce(new Response(JSON.stringify(revision)));
+  vi.stubGlobal("fetch", fetch);
+  const saved = publishProgress("profile", "game", "base", progress);
+  await vi.advanceTimersByTimeAsync(2999);
+  expect(fetch).toHaveBeenCalledTimes(1);
+  await vi.runAllTimersAsync();
+  expect(await saved).toMatchObject({ id: "base" });
+  expect(fetch).toHaveBeenCalledTimes(3);
+  const body = fetch.mock.calls[0]?.[1].body as FormData;
+  for (const [, options] of fetch.mock.calls) expect(options.body).toBe(body);
+  expect(JSON.parse(String(body.get("metadata"))).baseRevision).toBe("base");
+  const files = body.getAll("file") as File[];
+  for (const [index, file] of files.entries())
+    expect(new Uint8Array(await file.arrayBuffer())).toEqual(progress.files[index]?.bytes);
+});
+
+test.each([
+  [409, "conflict"],
+  [401, "unauthorized"],
+  [507, "quota_exceeded"],
+  [503, "internal_error"],
+  [500, "upload_busy"],
+])("does not retry status %i / %s", async (status, code) => {
+  const fetch = vi.fn().mockResolvedValue(failure(status, code));
+  vi.stubGlobal("fetch", fetch);
+  await expect(publishProgress("profile", "game", "base", progress)).rejects.toMatchObject({
+    status,
+  });
+  expect(fetch).toHaveBeenCalledTimes(1);
+});
+
+test("does not retry an uncertain network failure or an invalid response", async () => {
+  for (const response of [
+    Promise.reject(new TypeError("connection lost")),
+    Promise.resolve(new Response("truncated")),
+  ]) {
+    const fetch = vi.fn().mockReturnValue(response);
+    vi.stubGlobal("fetch", fetch);
+    await expect(publishProgress("profile", "game", "base", progress)).rejects.toBeInstanceOf(
+      Error,
+    );
+    expect(fetch).toHaveBeenCalledTimes(1);
+  }
+});
+
+test.each(["invalid", "-1", "120"])(
+  "bounds retry attempts and waits for Retry-After %s",
+  async (header) => {
+    vi.useFakeTimers();
+    const fetch = vi.fn().mockImplementation(async () => failure(503, "upload_busy", header));
+    vi.stubGlobal("fetch", fetch);
+    const saved = expect(
+      publishProgress("profile", "game", "base", progress),
+    ).rejects.toMatchObject({ status: 503, message: "save_queue_timeout" });
+    await vi.runAllTimersAsync();
+    await saved;
+    expect(fetch).toHaveBeenCalledTimes(header === "120" ? 1 : 5);
+  },
+);

@@ -8,7 +8,12 @@ Updated: 2026-11-15 (Asia/Shanghai).
   a 15-second admission timeout. Disconnects cannot release an active writer's
   memory slot prematurely. Tests cover five concurrent saves, competing heads,
   overflow/retry and real HTTP disconnects; ownership/revision guards remain intact.
-  Browser retry and renewed two-CPU capacity acceptance are in progress.
+  Browser captures/imports now retry only explicit admission failures using the
+  original bytes/base; conflicts and uncertain publication results are preserved.
+  Full checks pass 311 unit/integration tests and 43 browser regressions; the final
+  three-case retry suite also passes with sandboxed Chrome, including a lost
+  success response (44 distinct browser cases total). Renewed capacity acceptance
+  and local deployment verification are in progress.
 
 - Five-user capacity acceptance supports a two-vCPU/2-GiB starting deployment,
   with an explicit 512 MiB host reserve. App/database shared two logical CPUs and
