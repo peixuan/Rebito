@@ -1,0 +1,9 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Editor field identifier, not an authentication credential"
+condition = "AND"
+paths = ['''^(platform/tests/editors/adapter\.test\.ts|scripts/check-secret-scan\.mjs)$''']
+regexTarget = "match"
+regexes = ['''key:\s*"companion\.0\.salary"''']

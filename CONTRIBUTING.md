@@ -48,7 +48,8 @@ node --test scripts/*.test.mjs
 
 Hooks enforce the staged-file budget and subject. CI repeats history checks so
 local hook installation is not the only enforcement point. Run
-`node scripts/commit-policy.mjs --range BASE_SHA..HEAD_SHA` to inspect a commit range.
+`node scripts/commit-policy.mjs --range a20553aaf4bd0c506c8ddf8066ab74af6f9fdc03..$(git rev-parse HEAD)` to check platform work after the retained template baseline,
+or `node scripts/commit-policy.mjs --range BASE_SHA..HEAD_SHA` for a specific range.
 
 ## Quality gates
 
@@ -58,6 +59,14 @@ local hook installation is not the only enforcement point. Run
 - Browser tests for the user flows; real-emulator smoke checks before a release.
 - Container build, startup health check and persistence across a restart.
 - Dependency/license review and secret/artifact checks on tracked files.
+
+CI scans reachable Git history with the pinned Gitleaks CLI. Locally, run
+`gitleaks git . --log-opts=--all --redact=100` and
+`node scripts/check-secret-scan.mjs` (set `GITLEAKS_BIN` if it is not on PATH).
+The only configured false positive is one exact editor field in the adapter test
+and scanner self-test. Do not exclude whole directories or conceal real findings.
+ROMs, firmware, disc images, database copies and downloaded runtime archives are
+not contribution artifacts. Use original fixture generators for reproducible tests.
 
 Checks become mandatory as their components are introduced. A test stub or skipped
 test is not evidence that a feature works. Do not lower coverage or disable checks
