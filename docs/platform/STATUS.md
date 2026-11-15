@@ -12,8 +12,16 @@ Updated: 2026-11-15 (Asia/Shanghai).
   original bytes/base; conflicts and uncertain publication results are preserved.
   Full checks pass 311 unit/integration tests and 43 browser regressions; the final
   three-case retry suite also passes with sandboxed Chrome, including a lost
-  success response (44 distinct browser cases total). Renewed capacity acceptance
-  and local deployment verification are in progress.
+  success response (44 distinct browser cases total). The renewed two-CPU/2-GiB
+  budget run accepted all 120 API saves on their first attempt. Five real sandboxed
+  Mega CD players saved without manual retry; injected busy responses also recovered
+  automatically. Ordinary-save p95 was 0.28 s, maximum-size combined-load p95 5.38 s.
+  Aggregate memory peaked at 1,116.5 MiB including initial copy cache; subsequent
+  workloads peaked at 560–587 MiB, with no OOM. Restart checks verified 130 versions;
+  isolated test volumes were removed. A consistent backup/restore drill preceded
+  local deployment, preserving all 28 physical files and 25 existing real revisions.
+  See [current acceptance](CAPACITY_SAVE_QUEUE.md); cloud-host/TLS acceptance remains
+  a separate deployment check. Public-release code/license/history review is next.
 
 - Five-user capacity acceptance supports a two-vCPU/2-GiB starting deployment,
   with an explicit 512 MiB host reserve. App/database shared two logical CPUs and
