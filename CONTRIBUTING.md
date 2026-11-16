@@ -22,6 +22,20 @@ Each commit must be atomic, buildable and independently reviewable. Count added
 Refactoring and behavior changes should be separate commits when each can stand alone. Do not minify code or split
 an incomplete implementation merely to meet the budget.
 
+The checker uses Git's 50% similarity rename detection with no rename limit.
+Pure moves consume zero lines; edits inside moves count normally. Copies count
+as additions. Do not override this by enabling copy detection locally.
+
+Use your real, configured author and committer identities consistently. Each
+author timestamp and each committer timestamp must advance at least three seconds
+from the parent; the author timestamp cannot follow the committer timestamp.
+Adjacent subjects must differ. Ordinary development uses actual timestamps.
+The owner-authorized 2026-11-17 replay retains original source dates, with small
+recorded ordering offsets for split changes; these are not original edit times.
+See the [split timestamp ledger](docs/platform/REPLAY_TIMESTAMPS.tsv). Future work
+retains the three-second rule and must not invent development dates. The checker
+verifies ordering and identity syntax, not the historical truth of an identity.
+
 Only `platform/package-lock.json` may exceed 500 lines in a dedicated single-file
 commit. A mixed commit counts every lockfile line; an added, deleted, empty or moved
 companion file prevents the exception. Keep each dependency preparation installable
@@ -48,8 +62,12 @@ node --test scripts/*.test.mjs
 
 Hooks enforce the staged-file budget and subject. CI repeats history checks so
 local hook installation is not the only enforcement point. Run
-`node scripts/commit-policy.mjs --range a20553aaf4bd0c506c8ddf8066ab74af6f9fdc03..$(git rev-parse HEAD)` to check platform work after the retained template baseline,
+`node scripts/commit-policy.mjs --history` to check platform work after the baseline,
 or `node scripts/commit-policy.mjs --range BASE_SHA..HEAD_SHA` for a specific range.
+The publication branch must descend from
+`a20553aaf4bd0c506c8ddf8066ab74af6f9fdc03`. This template commit and its ancestors
+remain unchanged; modern commit rules apply to subsequent platform work. Secret
+scanning still covers the entire reachable history, including the template.
 
 ## Quality gates
 

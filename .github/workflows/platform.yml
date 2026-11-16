@@ -51,7 +51,7 @@ jobs:
       - name: Review locked dependency licenses
         run: node scripts/dependency-policy.mjs
       - name: Check the complete source history
-        run: node scripts/commit-policy.mjs --range a20553aaf4bd0c506c8ddf8066ab74af6f9fdc03..$(git rev-parse HEAD)
+        run: node scripts/commit-policy.mjs --history
 
   application:
     runs-on: ubuntu-24.04

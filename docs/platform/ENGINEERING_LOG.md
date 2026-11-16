@@ -30,6 +30,10 @@ are ordering metadata, not historical development durations. Licensing, naming
 and internationalization remain retrospective changes, not claims about when those
 decisions were originally made. Keep recovery references private. Any scoped
 publication exception requires immediate protection restoration and verification.
+The [split ledger](REPLAY_TIMESTAMPS.tsv) records 33 ordering adjustments; all 109
+source anchors retain their dates. Six dependency preparations are inserted within
+the neighboring source interval; negative offsets precede their source anchor.
+The three-second chronology check is unchanged.
 
 ## 2026-11-16: Rebito · 晚回舟
 

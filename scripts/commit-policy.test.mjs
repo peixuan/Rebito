@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { validateChanges, validateMessage } from "./commit-policy.mjs";
 import { originalLicense } from "./fixtures/original-license.mjs";
@@ -98,6 +99,34 @@ test("requires dedicated commits for oversized package locks", () => {
   assert.throws(() => validateChanges([small, { ...code, added: 201 }], [small.path, code.path]));
   for (const path of ["web/package-lock.json", "pnpm-lock.yaml", "yarn.lock"])
     assert.throws(() => validateChanges([{ ...lock, path }], [path]), /exceed 500/);
+});
+
+test("exempts canonical AGPL text only at its approved initial locations", () => {
+  const license = readFileSync(new URL("../LICENSE", import.meta.url), "utf8");
+  for (const path of ["LICENSE", "platform/LICENSE"]) {
+    const entry = { path, added: 661, deleted: 0 };
+    const contents = new Map([[path, { before: "", after: license }]]);
+    assert.deepEqual(validateChanges([entry], [path], contents), {
+      handwritten: 0,
+      generated: 0,
+      licenseText: 661,
+    });
+    for (const value of [
+      { before: license, after: license },
+      { before: "", after: license.replace("GNU AFFERO", "GNU MODIFIED") },
+      { before: "", after: `${license}extra text\n` },
+    ])
+      assert.throws(() => validateChanges([entry], [path], new Map([[path, value]])), /exceed 500/);
+    assert.throws(() => validateChanges([{ ...entry, deleted: 1 }], [path], contents));
+  }
+  const path = "extra/LICENSE";
+  assert.throws(() =>
+    validateChanges(
+      [{ path, added: 661, deleted: 0 }],
+      [path],
+      new Map([[path, { before: "", after: license }]]),
+    ),
+  );
 });
 
 test("rejects game artifacts, outputs and secret files at any depth", () => {

@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parseNumstat, publicationBase, validateTimeline } from "./commit-timeline.mjs";
 import { approvedLicenseLines } from "./license-text.mjs";
 
 const subjectPattern =
@@ -68,20 +69,30 @@ function git(args, input) {
   return execFileSync("git", args, { input, encoding: "utf8", maxBuffer: 8 * 1024 * 1024 });
 }
 
-function entriesFrom(output) {
-  return output
-    .split("\0")
-    .filter(Boolean)
-    .map((line) => {
-      const [added, deleted, ...path] = line.split("\t");
-      return { added: Number(added), deleted: Number(deleted), path: path.join("\t") };
-    });
-}
-
 function inspect(diffArguments) {
-  const entries = entriesFrom(git(["diff", ...diffArguments, "--no-renames", "--numstat", "-z"]));
+  // Reset repository/user copy-detection settings, then enable only renames at
+  // the documented threshold. Copies must consume the full addition budget.
+  const entries = parseNumstat(
+    git([
+      "diff",
+      ...diffArguments,
+      "--no-ext-diff",
+      "--no-renames",
+      "--find-renames=50%",
+      "-l0",
+      "--numstat",
+      "-z",
+    ]),
+  );
   if (!entries.length) throw new Error("Empty changes are not independently reviewable commits.");
-  const paths = git(["diff", ...diffArguments, "--name-only", "--diff-filter=ACMR", "-z"])
+  const paths = git([
+    "diff",
+    ...diffArguments,
+    "--no-renames",
+    "--name-only",
+    "--diff-filter=ACMR",
+    "-z",
+  ])
     .split("\0")
     .filter(Boolean);
   const licenseContents = new Map();
@@ -108,8 +119,33 @@ function inspectHistory(revision) {
   for (const commit of commits) {
     validateMessage(git(["show", "-s", "--format=%B", commit]));
     const [, parent] = git(["rev-list", "--parents", "-n", "1", commit]).trim().split(" ");
+    validateTimeline(metadata(commit), parent ? metadata(parent) : undefined);
     console.log(commit.slice(0, 8), inspect([parent ?? emptyTree, commit]));
   }
+}
+
+function metadata(id) {
+  const [
+    authorTime,
+    committerTime,
+    authorName,
+    authorEmail,
+    committerName,
+    committerEmail,
+    subject,
+  ] = git(["show", "-s", "--format=%at%x00%ct%x00%an%x00%ae%x00%cn%x00%ce%x00%s", id])
+    .trimEnd()
+    .split("\0");
+  return {
+    id,
+    authorTime: Number(authorTime),
+    committerTime: Number(committerTime),
+    authorName,
+    authorEmail,
+    committerName,
+    committerEmail,
+    subject,
+  };
 }
 
 function main(args) {
@@ -118,7 +154,12 @@ function main(args) {
   } else if (args[0] === "--staged" && args.length === 1) {
     console.log("Staged change budget:", inspect(["--cached"]));
   } else if (args[0] === "--history" && args.length === 1) {
-    inspectHistory("HEAD");
+    try {
+      git(["merge-base", "--is-ancestor", publicationBase, "HEAD"]);
+    } catch {
+      throw new Error(`Publication history must descend from ${publicationBase}.`);
+    }
+    inspectHistory(`${publicationBase}..HEAD`);
   } else if (args[0] === "--range" && args.length === 2) {
     // Accept only object IDs, never arbitrary revisions/options supplied by CI input.
     if (!/^[a-f0-9]{7,40}\.\.[a-f0-9]{7,40}$/i.test(args[1])) {

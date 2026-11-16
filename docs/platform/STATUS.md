@@ -1,6 +1,6 @@
 # Platform work status
 
-Updated: 2026-11-15 (Asia/Shanghai).
+Updated: 2026-11-16 (Asia/Shanghai).
 
 ## Current implementation
 
@@ -53,7 +53,9 @@ exact native corresponding-source/build inventories remain required. Read
 The candidate is reviewed in an isolated worktree; the original platform branch
 and pre-existing uncommitted desktop files are preserved. No remote has been
 pushed. Do not push to the template remote; select the intended repository first.
-The `codex/open-source` publication branch has a curated, checked history. All 96
+The `codex/open-source` publication branch retains the exact `a20553a` baseline
+and its ancestors, followed by 108 restored development commits and subsequent
+review work. The earlier new-root candidate is superseded. All 96
 distinct historical application trees passed their complete checks. See the
 [source readiness review](OPEN_SOURCE_REVIEW.md) for scope, results and remaining
 binary-distribution requirements. The next external step is the selected GitHub
@@ -61,7 +63,8 @@ repository's first hosted CI run and private vulnerability-reporting setup.
 
 ## Checks and next work
 
-- All 15 root policy tests, dependency-license metadata, secret scans and artifact rules.
+- All 21 root policy tests, including baseline ancestry, rename/copy budgets and
+  three-second author/committer chronology; dependency metadata and artifact rules.
 - `cd platform && npm run check`: 311 unit/integration tests, lint, types and build;
   Windows line coverage 98.12%, Linux 98.60%; both have 92.51% branch coverage.
 - `npm run test:e2e`: 44 browser cases, explicitly sandboxed Chromium; real DOS,

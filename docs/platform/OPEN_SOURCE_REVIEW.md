@@ -1,6 +1,6 @@
 # Public source readiness review
 
-Review date: 2026-11-15. Scope: the tracked web platform, repository automation,
+Initial review: 2026-11-15; ancestry correction: 2026-11-16. Scope: the tracked web platform, repository automation,
 original test generators and documentation. Proprietary games, BIOS, saves,
 legacy executables, local desktop experiments and private diagnostics are excluded.
 
@@ -37,24 +37,40 @@ The public history was curated from private development after reviewing the fina
 code. The original history and uncommitted desktop work are retained locally;
 neither is part of the branch intended for publication.
 
-The initial 24 template/setup steps became one meaningful foundation commit.
+The publication branch descends from the exact retained template baseline
+`a20553aaf4bd0c506c8ddf8066ab74af6f9fdc03`, including all of its ancestors.
+The earlier new-root candidate was superseded; it is not the publication history.
+Platform work starts with a focused scope/contribution change after that baseline.
 Recommended lint, erasable server TypeScript, explicit browser sandboxing and
 historical formatting fixes were moved to their relevant introduction points.
 The browser launch assertion and save-retry message correction were folded into
 their owning changes. Meaningful feature evolution, fixes and acceptance records
 remain independently reviewable; author attribution is retained.
 
-Including this report, the branch contains 109 nonempty, single-line Conventional
-Commits. Every handwritten diff is within 500 added plus deleted lines; the largest
-is 497. Four generated dependency-lock updates exceed the total budget and have
+The restored development sequence contains 108 nonempty, single-line Conventional
+Commits after the baseline, followed by the current policy/source-inventory work.
+Before the AGPL replay, each historical application tree matched the verified candidate.
+The adjacent license and secret-scanner preparation changes were combined into one
+source-publication change: their genuine author times were only one second apart.
+Other original author dates were retained; committer dates record actual replay
+times after per-commit checks, with no invented/backdated timestamp sequence.
+The license test checks the canonical project grant and official legal-text hashes,
+accepting LF or CRLF without changing the license wording.
+
+Authored diffs retain the 500 added/deleted line limit. The owner-approved exception
+is the initial complete 661-line AGPL body in each of the two build contexts;
+authored grant prefixes still count. Four generated dependency-lock updates also
+exceed the total budget and have
 their reasons recorded in the same commits' [engineering log](ENGINEERING_LOG.md).
 Locks were never omitted or split away from the dependencies that require them.
 
 Older acceptance reports retain explicitly marked **private development** commit
 labels. They identify the originally measured snapshots, not resolvable commits
 in the curated public history. Their measurements have not been relabeled as
-tests of newly created commit IDs. CI now checks the complete ancestry, including
-the root, without relying on the old pre-platform commit number.
+tests of newly created commit IDs. CI verifies baseline ancestry and checks
+subsequent commits, including rename-aware size accounting and both timestamp
+sequences. Inherited template commits remain unchanged, not relabeled as platform
+features. Secret scanning covers them too.
 
 ## Verification performed
 
@@ -65,7 +81,7 @@ the root, without relying on the old pre-platform commit number.
 | Current Windows / Node 26 and Linux / Node 24 | 311 tests each, lint, types and builds passed |
 | Current browser suite | All 44 tests passed in Chrome with Chromium sandboxing explicitly enabled |
 | Container acceptance | Image notices/dependency checks, fresh-volume startup, accounts, save upload/download and app/database restart with exact saved bytes passed |
-| Repository policies | 15 tests passed, including root commits, empty commits, artifact rejection and license consistency |
+| Repository policies | 21 tests passed, including required ancestry, rename/copy accounting, timestamps, empty commits, artifact rejection and license consistency |
 | Dependency licenses | Current 280 lock records and all 10 historical lock snapshots / 2,327 records passed the metadata policy |
 | Production dependency audit | `npm audit --omit=dev --audit-level=high` reported zero known vulnerabilities at review time |
 | Public Git contents | Complete reachable-history policy, secret and blob inspection found no binary artifacts, embedded workstation paths or unaddressed secret findings |
