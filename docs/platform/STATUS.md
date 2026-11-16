@@ -49,6 +49,10 @@ use. Noncommercial intent does not resolve incompatible terms in combined WASM.
 Public source review does not clear assembled binary/container redistribution:
 exact native corresponding-source/build inventories remain required. Read
 [licensing boundaries](LICENSING.md) and [dependency policy](DEPENDENCIES.md).
+The [runtime source review](RUNTIME_SOURCE_REVIEW.md) now records 11 pinned source
+records and verifies all 24 console variants' core/frontend markers and license
+bytes. Combined GPL/noncommercial WASM permissions, complete nested sources and
+actual native build provenance remain unresolved; no binary release is approved.
 
 The candidate is reviewed in an isolated worktree; the original platform branch
 and pre-existing uncommitted desktop files are preserved. No remote has been

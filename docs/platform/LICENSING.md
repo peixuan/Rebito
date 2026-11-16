@@ -61,6 +61,11 @@ and distribution obligations are verified, publish reviewed source only; do not
 publish project-built runtime bundles or container images as cleared releases.
 Local build and compatibility tests do not establish public distribution readiness.
 
+The [runtime source review](RUNTIME_SOURCE_REVIEW.md) binds the six cores and
+RetroArch to revisions found in all 24 WASM variants and compares exact license
+bytes. It also records unresolved static-link compatibility, toolchain provenance
+and nested-source obligations. These remain release blockers even for nonprofit use.
+
 Upstream evidence includes [EmulatorJS GPLv3](https://github.com/EmulatorJS/EmulatorJS/blob/e150dc0491ae747028919fb82d6598954976ede6/LICENSE),
 [Genesis Plus GX terms](https://github.com/EmulatorJS/Genesis-Plus-GX/blob/master/LICENSE.txt)
 and [PicoDrive terms](https://github.com/libretro/picodrive/blob/master/COPYING).

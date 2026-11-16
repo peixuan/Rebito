@@ -1,0 +1,227 @@
+{
+  "version": 1,
+  "archiveSetSha256": "134cb8a29e1f8dee1042b73025b908f3439780d46aa9f36398ee6222dcb0475c",
+  "notice": "Pinned review materials, not complete corresponding source or permission to distribute binaries.",
+  "components": [
+    {
+      "id": "jsdos",
+      "repository": "caiiiycuk/js-dos",
+      "revision": "506dfd2a99f56bc4e393a716125ae94e58eb3fba",
+      "evidence": "release-source",
+      "materials": [
+        {
+          "path": "package.json",
+          "sha256": "0912f0b4abb8dad92d6b53cc98bee7f6534661fe3daa2da77133b859aa691530"
+        },
+        {
+          "path": ".github/workflows/build.yml",
+          "sha256": "73a75ec242218cde72b4c5ae8fac228b79417ad15b3b0d52c7767609a698b7ad"
+        },
+        {
+          "path": "vite.config.ts",
+          "sha256": "e0eb7d116c5b7e321527031bdde038a6d755b4b9b7da651f4f5bd474c23ab4cc"
+        },
+        {
+          "path": "yarn.lock",
+          "sha256": "ef48d3d36043b88c0a1269c6406e984efe9e118106f12dafce9c663ccdfef9c6"
+        }
+      ]
+    },
+    {
+      "id": "emulators",
+      "repository": "caiiiycuk/emulators",
+      "revision": "6bbf0925d221a7304ea8e0dda1e89b8dc01569b2",
+      "evidence": "release-source",
+      "materials": [
+        {
+          "path": "LICENSE",
+          "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643"
+        },
+        {
+          "path": ".gitmodules",
+          "sha256": "1fa8a2ad100d8580277f7e9a34ebef9b174da78af7047b28e9e39325f27cbfa3"
+        },
+        {
+          "path": ".github/workflows/build.js.yml",
+          "sha256": "fe8a24a2a0591d644c2d4ef34ec15ef6856e3000952a7a51223a4fe3b223c86f"
+        },
+        {
+          "path": "CMakeLists.txt",
+          "sha256": "aaca09114b002261d6355117f244b0db374261bd71ba5481a26c30732fc4ae96"
+        },
+        {
+          "path": "gulpfile.ts/wasm.ts",
+          "sha256": "5602c4505f6dff9bae623f19ec1d65a2cdc31b4f3723eb907b988860a0d9ea5d"
+        },
+        {
+          "path": "yarn.lock",
+          "sha256": "dbc5e8fea7429ec0565c61e0fea6f64427899f5044f6a29e7e8afce11a191329"
+        }
+      ]
+    },
+    {
+      "id": "emulatorjs",
+      "repository": "EmulatorJS/EmulatorJS",
+      "revision": "e150dc0491ae747028919fb82d6598954976ede6",
+      "evidence": "release-source",
+      "materials": [
+        {
+          "path": "LICENSE",
+          "sha256": "a617fab6d251b3302b1cb2c1c94f52d1c584f6fcb2fc218ec1a475bc08053a61"
+        },
+        {
+          "path": "package.json",
+          "sha256": "84b698c401d2b9af36b47612e183478ccc7c29eb8ad5e52343b5ff27c8a66bb1"
+        }
+      ]
+    },
+    {
+      "id": "retroarch",
+      "repository": "EmulatorJS/RetroArch",
+      "revision": "6dd4353937ef48b6ec0bfbdbb15d1c5992d86927",
+      "evidence": "embedded-revision",
+      "materials": [
+        {
+          "path": "COPYING",
+          "sha256": "8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903"
+        },
+        {
+          "path": "Makefile.emulatorjs",
+          "sha256": "de878047208f5c9ccf67ff6ecb748abe58172a1d11832f8650338dadc04c31a2"
+        },
+        {
+          "path": "emulatorjs/build-emulatorjs.sh",
+          "sha256": "4db061dee2a22d8512d0d6580ab0a79772665a9fb1d82d90c5954d9f7100e1c3"
+        }
+      ]
+    },
+    {
+      "id": "emulatorjs-build",
+      "repository": "EmulatorJS/build",
+      "revision": "b24e5b535034dc7c3428d76f236d4793881969b6",
+      "evidence": "candidate-build-recipe",
+      "materials": [
+        {
+          "path": "LICENSE",
+          "sha256": "7cbcb6bb740a62f57daec2ca75cd377d553123b2dbdd80524fb5d8a46d9ac04b"
+        },
+        {
+          "path": "build.sh",
+          "sha256": "5d2a957a4ce083d52fafe46f743f423a83cd5462981b47dab6bc3f827ed3d9c0"
+        },
+        {
+          "path": "build_env.sh",
+          "sha256": "280f024efa6ecac6a119d75c024da74ef5432c23c5dc7712d880171d0b9e877d"
+        },
+        {
+          "path": "cores.json",
+          "sha256": "ac78770a8f1db3f9bd0c2ace86b3cf6c32e5f56ee670fda47ce22091aae9ec64"
+        },
+        {
+          "path": "build.json",
+          "sha256": "27d8d02b31afc26c5beeb9dd6a8603b1b2d05c447fef13288e12ef2066090996"
+        }
+      ]
+    },
+    {
+      "id": "fceumm",
+      "repository": "EmulatorJS/libretro-fceumm",
+      "revision": "d9d7e141274d07186b6a871ca2919b6f13cfb2f9",
+      "evidence": "embedded-revision",
+      "materials": [
+        {
+          "path": "Copying",
+          "sha256": "a6996dcf0c334281f734560926e079b2dbbd5b78e81c0ca00a413ec01e1cd2fb"
+        },
+        {
+          "path": "Makefile.libretro",
+          "sha256": "afb75019397acd63aeeb4e196788d9c43487509659d5e2ab7f190f3e6cc0cd9c"
+        }
+      ]
+    },
+    {
+      "id": "snes9x",
+      "repository": "EmulatorJS/snes9x",
+      "revision": "6ca2343e5f3b0acbea49ca958251e3a0af58a81d",
+      "evidence": "embedded-revision",
+      "materials": [
+        {
+          "path": "LICENSE",
+          "sha256": "70efeee282d82a6e9d26aeed5466d08c632369858371dc6a4644c8dcedc2be78"
+        },
+        {
+          "path": "libretro/Makefile",
+          "sha256": "aeaa7d11b7b7d0999684a0e3c9503fbc04e23986cb053f26c8265b4c43543f0e"
+        }
+      ]
+    },
+    {
+      "id": "gambatte",
+      "repository": "EmulatorJS/gambatte-libretro",
+      "revision": "4ac2b30d196a842061d6b333ea5e523a7c1a7cce",
+      "evidence": "embedded-revision",
+      "materials": [
+        {
+          "path": "COPYING",
+          "sha256": "ab15fd526bd8dd18a9e77ebc139656bf4d33e97fc7238cd11bf60e2b9b8666c6"
+        },
+        {
+          "path": "Makefile",
+          "sha256": "ff9154bcfd2af72a3e1210203aae7816c2be93035277fdb532a9bdefa7cfafd1"
+        }
+      ]
+    },
+    {
+      "id": "mgba",
+      "repository": "EmulatorJS/mgba",
+      "revision": "1d9dbb1dc8d51ed744fe6be82183f7f5076e549d",
+      "evidence": "embedded-revision",
+      "materials": [
+        {
+          "path": "LICENSE",
+          "sha256": "fab3dd6bdab226f1c08630b1dd917e11fcb4ec5e1e020e2c16f83a0a13863e85"
+        },
+        {
+          "path": "Makefile.libretro",
+          "sha256": "20d6d1fb4d28b689bca9e7b9166ecbb7965faec0dc29485e012415063b2d0e0b"
+        }
+      ]
+    },
+    {
+      "id": "genesis-plus-gx",
+      "repository": "EmulatorJS/Genesis-Plus-GX",
+      "revision": "594cdf3a666546f65f46391c3615ac5e9550bfc1",
+      "evidence": "embedded-revision",
+      "materials": [
+        {
+          "path": "LICENSE.txt",
+          "sha256": "c38ff8ea57f501f63a8e4a9e22a67be12eb006345ce2059f0419b69d8f7734cd"
+        },
+        {
+          "path": "Makefile.libretro",
+          "sha256": "36bcdb37bdbe72ac75e1b90dbb3f4cf7c3ca6b81971839fe6cb5f2689c35c386"
+        }
+      ]
+    },
+    {
+      "id": "picodrive",
+      "repository": "EmulatorJS/picodrive",
+      "revision": "3cf1e26179584fc06b4794b0b2bf5d41c01b19dd",
+      "evidence": "embedded-revision",
+      "materials": [
+        {
+          "path": "COPYING",
+          "sha256": "a36c54a119673c1b40233f55ff23c39042f35c3e798ce78aafba5d6bd9c19de4"
+        },
+        {
+          "path": ".gitmodules",
+          "sha256": "96adcf9caefd639069618a896d56e1e3436a058e4b4281e26b82fe606af467b3"
+        },
+        {
+          "path": "Makefile.libretro",
+          "sha256": "276c818f5b7eb5939a4fff0b630d72f9eab5b08430de6d02b7daf0b600975a1e"
+        }
+      ]
+    }
+  ]
+}

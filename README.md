@@ -105,7 +105,8 @@ confirmed. Build scripts download these assets from upstream; download URLs do n
 confer redistribution permission through this project, and these combinations must
 not be treated as approved release bundles. Public deployments also deliver
 JavaScript and WASM copies to browsers, so distribution and corresponding-source
-obligations still apply. See [licensing](docs/platform/LICENSING.md) for evidence and limits.
+obligations still apply. See [licensing](docs/platform/LICENSING.md) and the
+[runtime source review](docs/platform/RUNTIME_SOURCE_REVIEW.md) for evidence and limits.
 
 The repository supplies no commercial games, vendor BIOS, system images, game saves
 or legacy editor executable. Tests generate original minimal programs and synthetic
