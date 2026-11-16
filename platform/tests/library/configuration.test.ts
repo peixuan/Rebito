@@ -43,6 +43,15 @@ it("reuses disc tracks for a BIOS revision and rejects stale or wrong-region cha
   const original = await importGame(directory, prepared, { title: "CD", system: "segacd" });
   const detail = await describeConfiguration(directory, original);
   expect(detail.firmware?.region).toBe("J");
+  await expect(
+    changeConfiguration(
+      directory,
+      original,
+      { token: detail.token, title: "CD", editor: "koukai2" },
+      1e9,
+      0,
+    ),
+  ).rejects.toMatchObject({ statusCode: 422 });
   const change = { token: detail.token, title: "CD", firmware: discBios().toString("base64") };
   expect(await changeConfiguration(directory, original, change, 1e9, 0)).toBe(original);
   await expect(
@@ -140,10 +149,10 @@ it("reuses server bytes for new launch/sync settings and preserves the original 
   expect(await readdir(join(directory, ".uploads"))).toEqual([]);
 });
 
-it("rejects malformed/stale launches, missing programs, quotas and reserved editor overrides", async () => {
+it("rejects malformed/stale launches, missing programs, quotas and unknown editors", async () => {
   const { token } = await describeConfiguration(directory, id);
   for (const input of [
-    { token, title: "Bad", editor: "koukai2" },
+    { token, title: "Bad", editor: "unknown" },
     { token, title: "Bad", launch: { executable: "MISSING.EXE" } },
     { token, title: "Bad", launch: { executable: "../PLAY.BAT" } },
   ])
@@ -157,4 +166,37 @@ it("rejects malformed/stale launches, missing programs, quotas and reserved edit
   await expect(describeConfiguration(directory, "missing")).rejects.toMatchObject({
     statusCode: 404,
   });
+});
+
+it("changes associations without copying assets and rejects stale or unknown selections", async () => {
+  const detail = await describeConfiguration(directory, id);
+  const files = await readdir(directory);
+  const change = { token: detail.token, title: detail.game?.title, editor: null };
+  expect(await changeConfiguration(directory, id, change, 1e9, 0)).toBe(id);
+  expect((await LocalLibrary.load(directory)).get(id)?.editor).toBeUndefined();
+  expect(await readdir(directory)).toEqual(files);
+  await expect(
+    changeConfiguration(directory, id, { ...change, editor: "koukai2" }, 1e9, 0),
+  ).rejects.toMatchObject({ statusCode: 409 });
+  const fresh = await describeConfiguration(directory, id);
+  await expect(
+    changeConfiguration(
+      directory,
+      id,
+      { ...change, token: fresh.token, editor: "koukai2" },
+      1e9,
+      0,
+    ),
+  ).resolves.toBe(id);
+  expect((await LocalLibrary.load(directory)).get(id)?.editor).toBe("koukai2");
+  expect(await readdir(directory)).toEqual(files);
+  await expect(
+    changeConfiguration(
+      directory,
+      id,
+      { ...change, token: fresh.token, editor: "unknown" },
+      1e9,
+      0,
+    ),
+  ).rejects.toThrow("library.invalidConfiguration");
 });

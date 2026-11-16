@@ -5,6 +5,28 @@ identity and emulator APIs. The service must authorize a revision, choose the
 adapter from its immutable game release, transform a copy and publish through the
 normal revision check. Requests contain known field keys/values, never byte offsets.
 
+## Adapter registry and game association
+
+Each game editor has its own directory under `src/editors/<game>/`. Its pure
+adapter owns the save format; `registration.ts` declares its display name and
+format guidance. `src/editors/registry.ts` is the single lookup used by the service
+and catalog. Add a registry entry and format tests when introducing another editor.
+The administration upload and configuration forms list this metadata automatically.
+Administrators can associate or remove an editor without uploading the game again;
+existing saves remain intact and open editors recheck the association on each request.
+Associations are explicit administrator/operator choices. Program hashes, launcher
+names and edition allowlists do not gate them: a fingerprint cannot establish every
+game package's compatibility, and patches/translations may retain the same save format.
+Only installed adapters are selectable; ordinary players cannot submit a parser ID
+to override their release's association. This is not executable plugin upload.
+
+Before editing, the adapter validates supported save size/structure and field ranges.
+Those checks reject malformed input but cannot guarantee that an arbitrary edition
+uses the same semantics. Preserve unknown bytes and immutable revision history.
+The current Koukai2 adapter targets the DOS PC ten-slot `KOUKAI2.DAT` format;
+administrators must declare its path for native synchronization. The library's
+asset hashes still protect storage integrity and identify releases, not compatibility.
+
 ## Koukai2 PC format
 
 The first module recognizes a candidate layout of exactly 328991 bytes:

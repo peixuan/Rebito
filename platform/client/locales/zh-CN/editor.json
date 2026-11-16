@@ -23,5 +23,7 @@
   "editor.emptyPreview": "没有修改。",
   "editor.unknownValue": "未知 #{value}",
   "editor.columnLabel": "{group} · {field}",
-  "editor.pendingChanges": "{count} 项待保存修改（包含所有文件和存档槽）"
+  "editor.pendingChanges": "{count} 项待保存修改（包含所有文件和存档槽）",
+  "editor.koukaiTitle": "大航海时代 2",
+  "editor.koukaiDescription": "用于 DOS PC 版的 10 槽 KOUKAI2.DAT 存档。请将存档路径加入同步列表；由管理员确认适用的游戏版本。"
 }

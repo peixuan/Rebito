@@ -18,7 +18,8 @@ Systems are `dos`, `nes`, `snes`, `gb`, `gba`, `md`, `sms`, `gg`, `segacd`.
 Cartridge console files are uncompressed ROMs;
 DOS files are `.jsdos` ZIP bundles with `.jsdos/dosbox.conf`. DOS metadata also
 accepts `saveFiles` (portable relative file paths) and optional `editor: "koukai2"`.
-Only enable an editor for a verified compatible release. Each CLI-imported file is
+The operator chooses the appropriate editor; program fingerprints do not gate
+association. Each CLI-imported file is
 limited to 512 MiB; browser cartridge/DOS uploads are limited to 64 MiB. Mega CD
 uses the bounded package format below, up to 1 GiB plus ZIP overhead. Do not put personalized
 saves into shared game bundles.
@@ -70,7 +71,11 @@ The form suggests DOS launch programs, preserves failed drafts and shows shared 
 2. For DOS, choose the launch program and optional arguments/cycles. List each
    native save path on its own line relative to the archive root, using `/` for
    subdirectories. Paths are exact, not wildcards; multiple files are supported.
-3. Publish, then return to the library and create private progress for the game.
+3. Optionally choose **存档修改器**. The list comes from the installed editor registry;
+   follow its save-format instructions. Administrators decide which games use it;
+   program hashes and edition allowlists do not gate association. **不关联修改器**
+   keeps a game playable without editing. Format/field checks run when editing saves.
+4. Publish, then return to the library and create private progress for the game.
    Leaving a running game for management first synchronizes its progress; a failure
    preserves the runtime so the player can retry.
 
@@ -78,10 +83,18 @@ Empty DOS save paths disable automatic native-file change detection; manual save
 still capture the writable collection. Remove unrelated/private files before upload:
 the server removes only the explicitly declared save files. Launch/configuration
 changes reuse the stored game file through **编辑配置**, without another upload.
-Renaming preserves the release ID; changed DOS launch/sync rules create a new release
+Renaming or adding/removing an editor association preserves the release ID and uses
+the existing asset without copying it. Removing an editor leaves all user saves intact.
+The association applies to existing profiles of that release after refresh.
+Changed DOS launch/sync rules create a new release
 and preserve old profiles. Complex legacy launch scripts are not guessed: leaving
 the launch program empty renames only; selecting one replaces the launch script.
 Console save locations are managed by the emulator adapter.
+The configuration API uses `editor: null` to remove an association. Omitting `editor`
+preserves the current association for a metadata-only update, but leaves a newly
+derived release unbound. The browser sends the selected editor explicitly for a
+derived release. Unknown IDs, unsupported system/editor pairs and conflicting
+configuration tokens are rejected without changing the title or association.
 Sega uploads receive bounded header/model checks; ROM bytes are preserved, including
 SMD interleaving. Headers are not a complete compatibility guarantee. 32X,
 Pico, Saturn and Dreamcast are outside this cartridge integration. The selected
@@ -128,8 +141,8 @@ arguments, cycles and explicit save paths. DOS archives are streamed, limited to
 5,000 entries and 256 MiB expanded, and repackaged with generated configuration.
 Existing `.jsdos` settings are replaced; declared save files are omitted. Each
 changed DOS launch/sync configuration produces a new immutable release; existing
-profiles and editor bindings are not reassigned. Arbitrary uploads cannot enable
-the Koukai2 editor. Successful publication appears without restarting the server.
+profiles and their release bindings are not reassigned. Only administrators can
+choose editor associations. Successful publication appears without restarting the server.
 
 **删除** shows affected users, profiles, revision count, logical save bytes and
 estimated recoverable file bytes. The administrator must type the exact title and,

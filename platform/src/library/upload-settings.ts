@@ -11,6 +11,7 @@ export const gameUploadSchema = z
     title: shape.title,
     system: shape.system,
     saveFiles: shape.saveFiles,
+    editor: shape.editor,
     executable: z.string().max(240).default(""),
     arguments: z
       .string()
@@ -32,6 +33,7 @@ export const gameUploadSchema = z
       title: value.title,
       system: value.system,
       saveFiles: value.saveFiles,
+      editor: value.editor,
       file: "upload.asset",
       size: 1,
       sha256: "0".repeat(64),

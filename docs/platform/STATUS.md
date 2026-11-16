@@ -17,6 +17,12 @@ and optional pure save editors. See [architecture](ARCHITECTURE.md).
 - Administrator uploads, launch/save configuration, no-upload updates and confirmed
   deletion are implemented. Shared assets and affected user histories are guarded
   by storage leases, impact checks and durable retryable cleanup.
+- Upload/configuration forms can associate or remove an installed save editor.
+  Each game adapter lives under `src/editors/<game>/`, with shared registry metadata.
+  Administrators choose associations without program hashes or edition allowlists.
+  Save structure/fields remain validated at use time, without claiming universal
+  compatibility. Association-only changes reuse assets and retain profiles/saves; open
+  editors recheck catalog changes before preview/publication, including across servers.
 - Accounts have isolated profiles and immutable revision checks. Password sessions
   and OIDC/PKCE were tested with an independent provider; LDAP is an external
   identity-provider federation option, not a built-in LDAP password service.
@@ -77,16 +83,19 @@ repository's first hosted CI run and private vulnerability-reporting setup.
 
 - All 23 root policy tests, including baseline ancestry, rename/copy budgets and
   three-second author/committer chronology; dependency metadata and artifact rules.
-- Current Windows/Node 26 lint, types, build and 327 unit/integration tests pass;
+- Current Windows/Node 26 lint, types, build and 331 unit/integration tests pass;
   nine material-collection tests cover corruption, network failures, path safety,
   stale receipts, bounded output and actual HTTP delivery. Coverage remains
-  98.16% lines / 92.54% branches; thresholds were not lowered.
+  98.17% lines / 92.62% branches; thresholds were not lowered.
 - Administrator initialization passes concurrent startup, interrupted creation,
   existing-account rejection, login/authorization and restart tests. A fresh
   Node 24 container retained its initial administrator and exact saved bytes after
   recreation with bootstrap credentials removed. No production data was used.
-- The current 12-case runtime/security browser regression passes for DOS, NES,
-  SNES, GB, GBA, MD, SMS, GG and Mega CD with Chromium sandboxing enabled.
+- The administrator/editor change passes 17 targeted browser flows, including DOS
+  writeback, console uploads, association changes and editor conflicts, with Chromium
+  sandboxing enabled. The preceding 44-flow run passed 43; its new dropdown exposed
+  an ambiguous status locator, corrected without weakening the publication assertions.
+  The failed flow and all affected management/editor flows passed on retest.
 - The Node 24 Docker build and in-image checks pass using the verified material
   cache; all packaged excerpts are served over HTTP as identical plain-text bytes.
   The first clean network attempt failed on GitHub API rate limiting after the

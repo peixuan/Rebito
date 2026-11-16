@@ -3,6 +3,7 @@ import { mkdir, open, rm } from "node:fs/promises";
 import { extname, join } from "node:path";
 import type { FastifyInstance } from "fastify";
 import { type GameSystem, gameSystems } from "../domain/systems.ts";
+import { listEditors } from "../editors/registry.ts";
 import { requireAdministrator } from "../identity/administrator.ts";
 import type { ServerConfig } from "../server/config.ts";
 import { message } from "../shared/messages.ts";
@@ -52,6 +53,7 @@ export function registerGameAdministration(
     const games = library.list();
     return {
       games,
+      editors: listEditors(),
       usedBytes: games.reduce((total, game) => total + game.size, 0),
       maximumBytes: config.maximumLibraryBytes,
     };
@@ -90,6 +92,7 @@ export function registerGameAdministration(
               title: settings.title,
               system: settings.system,
               saveFiles: settings.saveFiles,
+              editor: settings.editor,
             },
             config.maximumLibraryBytes,
           );

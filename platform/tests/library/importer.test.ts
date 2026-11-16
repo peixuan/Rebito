@@ -60,6 +60,13 @@ describe("operator game import", () => {
     await expect(readFile(join(library, ".import.lock"))).rejects.toMatchObject({ code: "ENOENT" });
   });
 
+  it("accepts an operator-selected editor without requiring a recognized program", async () => {
+    const selected = { ...metadata, system: "dos", editor: "koukai2", saveFiles: ["SAVE.DAT"] };
+    const id = await importGame(library, source, selected);
+    expect((await LocalLibrary.load(library)).get(id)?.editor).toBe("koukai2");
+    await expect(importGame(library, source, { ...selected, editor: "unknown" })).rejects.toThrow();
+  });
+
   it("enforces the shared library quota under the publication lock and leaves no temporary files", async () => {
     const size = (await readFile(source)).length;
     await importGame(library, source, metadata, size);

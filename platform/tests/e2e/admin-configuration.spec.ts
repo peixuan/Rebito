@@ -63,10 +63,34 @@ test("edits an uploaded game without uploading again and runs the derived DOS re
   );
   await expect(page.getByLabel("Launch executable", { exact: true })).toHaveValue("PLAY.BAT");
   await page.getByLabel("Game title", { exact: true }).fill("Original configuration");
+  await page.getByLabel("Save editor", { exact: true }).click();
+  await page.getByRole("option", { name: "Uncharted Waters II", exact: true }).click();
   await page.getByRole("button", { name: "Save configuration", exact: true }).click();
   await expect(page.getByRole("status").filter({ hasText: "Saved" })).toContainText(
     "Original configuration",
   );
+  const associated = await (
+    await page.request.get(`/api/admin/games/${upload.id}/configuration`)
+  ).json();
+  expect(associated.game.id).toBe(upload.id);
+  expect(associated.game.editor).toBe("koukai2");
+  await page.getByLabel("Search published games").fill("Original configuration");
+  await page
+    .getByRole("row")
+    .filter({ hasText: "Original configuration" })
+    .getByRole("button", { name: "Edit configuration" })
+    .click();
+  await page.getByLabel("Save editor", { exact: true }).click();
+  await page.getByRole("option", { name: "No save editor", exact: true }).click();
+  await page.getByRole("button", { name: "Save configuration", exact: true }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Saved" })).toContainText(
+    "Original configuration",
+  );
+  const cleared = await (
+    await page.request.get(`/api/admin/games/${upload.id}/configuration`)
+  ).json();
+  expect(cleared.game.id).toBe(upload.id);
+  expect(cleared.game.editor).toBeUndefined();
   await page.getByLabel("Search published games").fill("Original configuration");
   await page
     .getByRole("row")

@@ -23,5 +23,7 @@
   "editor.emptyPreview": "No edits.",
   "editor.unknownValue": "Unknown #{value}",
   "editor.columnLabel": "{group} · {field}",
-  "editor.pendingChanges": "{count} unsaved edit across all files and slots | {count} unsaved edits across all files and slots"
+  "editor.pendingChanges": "{count} unsaved edit across all files and slots | {count} unsaved edits across all files and slots",
+  "editor.koukaiTitle": "Uncharted Waters II",
+  "editor.koukaiDescription": "For the DOS PC edition's 10-slot KOUKAI2.DAT save format. Add the save path to the synchronization list. Administrators must confirm that the game version is suitable."
 }

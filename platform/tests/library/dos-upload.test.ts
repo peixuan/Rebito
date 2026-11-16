@@ -104,11 +104,15 @@ it.each([
   { saveFiles: ["SAVE", "save/slot"] },
   { saveFiles: ["SAVE.DAT", "save.dat"] },
   { system: "nes" },
-  { editor: "koukai2" },
+  { editor: "unknown" },
 ])("rejects invalid upload configuration %j", (change) => {
   expect(gameUploadSchema.safeParse({ ...settings, ...change }).success).toBe(false);
 });
 
 it("allows console uploads without DOS-only configuration", () => {
   expect(gameUploadSchema.parse({ title: "Console", system: "gba" }).saveFiles).toEqual([]);
+  expect(
+    gameUploadSchema.safeParse({ title: "Console", system: "gba", editor: "koukai2" }).success,
+  ).toBe(false);
+  expect(gameUploadSchema.parse({ ...settings, editor: "koukai2" }).editor).toBe("koukai2");
 });

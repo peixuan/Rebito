@@ -5,6 +5,7 @@ import { isAbsolute, join, relative, sep } from "node:path";
 import { z } from "zod";
 import { assertArtifactName, progressLimits } from "../domain/artifacts.ts";
 import { systemIds } from "../domain/systems.ts";
+import { editorIds } from "../editors/registry.ts";
 
 const portablePath = z.string().refine((value) => {
   try {
@@ -31,7 +32,7 @@ const entrySchema = z
       .array(portablePath)
       .max(progressLimits.files - 1)
       .default([]),
-    editor: z.literal("koukai2").optional(),
+    editor: z.enum(editorIds).optional(),
   })
   .superRefine((entry, context) => {
     if (entry.system !== "segacd" && entry.size > 512 * 1024 ** 2)

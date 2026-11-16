@@ -34,14 +34,21 @@ test("publishes a DOS game from the administrator page and retains a rejected dr
     "Browser upload validation",
   );
   await page.getByLabel("Launch executable", { exact: true }).fill("PLAY.BAT");
-  await page.getByRole("button", { name: "Publish to library", exact: true }).click();
-  await expect(page.getByRole("status")).toContainText("Published Browser upload validation");
-  await expect(page.getByRole("status")).toContainText("Removed bundled saves: SAVE.DAT");
-  await page.getByLabel("Search published games").fill("Browser upload validation");
+  await page.getByLabel("Save editor", { exact: true }).click();
+  await page.getByRole("option", { name: "Uncharted Waters II", exact: true }).click();
   await expect(
-    page.getByRole("cell", { name: "Browser upload validation", exact: true }),
+    page.getByText(/Administrators must confirm that the game version is suitable/),
   ).toBeVisible();
+  await page.getByRole("button", { name: "Publish to library", exact: true }).click();
+  const published = page.getByRole("status").filter({ hasText: "Published" });
+  await expect(published).toContainText("Published Browser upload validation");
+  await expect(published).toContainText("Removed bundled saves: SAVE.DAT");
+  await page.getByLabel("Search published games").fill("Browser upload validation");
+  await expect(page.getByRole("cell", { name: /Browser upload validation/ })).toContainText(
+    "Editor: Uncharted Waters II",
+  );
   await expect(page.getByLabel("Game title", { exact: true })).toHaveValue("");
+  await expect(page.getByLabel("Save editor", { exact: true })).toContainText("No save editor");
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   await page.screenshot({ path: info.outputPath("admin-mobile.png") });

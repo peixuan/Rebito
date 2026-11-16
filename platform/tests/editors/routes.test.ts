@@ -3,6 +3,8 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, expect, it } from "vitest";
+import { changeConfiguration, entryToken, findEntry } from "../../src/library/configuration.ts";
+import { withCatalog, writeCatalog } from "../../src/library/transaction.ts";
 import { SaveService } from "../../src/saves/service.ts";
 import { loadConfig } from "../../src/server/config.ts";
 import { createPlatform } from "../../src/server/platform.ts";
@@ -82,6 +84,30 @@ function request(id: string, body: unknown, publish = false, user = 0) {
 const batch = (money: number) => ({
   file: "KOUKAI2.DAT",
   edits: [{ slot: 0, changes: { money } }],
+});
+it("rejects an open editor after another instance removes its game association", async () => {
+  const initial = await original();
+  expect((await request(initial.id, {})).statusCode).toBe(200);
+  const library = join(directory, "library");
+  const current = await withCatalog(library, async (catalog) => findEntry(catalog, releaseId));
+  await changeConfiguration(
+    library,
+    releaseId,
+    { token: entryToken(current), title: current.title, editor: null },
+    1e9,
+    0,
+  );
+  try {
+    expect((await request(initial.id, {})).json().error).toBe("unsupported_editor");
+    expect((await request(initial.id, batch(9), true)).json().error).toBe("unsupported_editor");
+    expect(await saves.revisions.history(users[0]?.id ?? "", initial.profileId)).toHaveLength(1);
+  } finally {
+    // Restore the trusted synthetic fixture for the remaining independent API cases.
+    await withCatalog(library, async (catalog) => {
+      findEntry(catalog, releaseId).editor = "koukai2";
+      await writeCatalog(library, catalog);
+    });
+  }
 });
 it("previews without writing and atomically publishes several slots as a new private revision", async () => {
   const bytes = editorFixture();

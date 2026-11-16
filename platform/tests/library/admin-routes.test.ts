@@ -10,6 +10,7 @@ import { beginDeletion, deletionImpact } from "../../src/library/deletion-record
 import { withCatalog } from "../../src/library/transaction.ts";
 import { loadConfig } from "../../src/server/config.ts";
 import { createPlatform } from "../../src/server/platform.ts";
+import { message } from "../../src/shared/messages.ts";
 import { testDatabase } from "../database.ts";
 import { mdFixture, sega8Fixture, smdFixture } from "./sega-fixtures.ts";
 import { discArchive, discBios } from "./segacd-fixtures.ts";
@@ -111,17 +112,22 @@ it("requires an authenticated administrator and same-origin mutation before acce
   expect((await upload({ cookie: player })).statusCode).toBe(403);
   expect((await upload({ site: "https://elsewhere.test" })).statusCode).toBe(403);
   expect((await readdir(directory)).includes("library")).toBe(false);
+  const catalog = await app.inject({ url: "/api/admin/games", headers: { cookie: admin } });
+  expect(catalog.statusCode).toBe(200);
+  expect(catalog.json().editors).toEqual([
+    expect.objectContaining({ id: "koukai2", label: message("editor.koukaiTitle"), system: "dos" }),
+  ]);
 });
 
 it("publishes sanitized DOS bytes immediately, reloads other instances and rejects duplicate versions", async () => {
   const second = await createPlatform(config, fixture.database);
   try {
-    const response = await upload();
+    const response = await upload({ metadata: { ...settings, editor: "koukai2" } });
     expect(response.statusCode).toBe(201);
     const { game, removed } = response.json();
     expect(removed).toEqual(["SAVE.DAT"]);
     expect(game.saveFiles).toEqual(settings.saveFiles);
-    expect(game).not.toHaveProperty("editor");
+    expect(game.editor).toBe("koukai2");
     const games = await second.inject({ url: "/api/games", headers: { cookie: player } });
     expect(games.json().map((entry: { id: string }) => entry.id)).toContain(game.id);
     const asset = await second.inject({
@@ -135,6 +141,7 @@ it("publishes sanitized DOS bytes immediately, reloads other instances and rejec
     expect((await upload()).statusCode).toBe(409);
     const changed = await upload({ metadata: { ...settings, saveFiles: ["SAVE.DAT"] } });
     expect(changed.statusCode).toBe(201);
+    expect(changed.json().game).not.toHaveProperty("editor");
     expect(changed.json().game.id).not.toBe(game.id);
     expect(await readdir(join(directory, "library", ".uploads"))).toEqual([]);
   } finally {
@@ -144,7 +151,7 @@ it("publishes sanitized DOS bytes immediately, reloads other instances and rejec
 
 it("rejects malformed settings, bad archive data, wrong formats and oversized input", async () => {
   for (const options of [
-    { metadata: { ...settings, editor: "koukai2" } },
+    { metadata: { ...settings, editor: "unknown" } },
     { bytes: Uint8Array.of(1) },
     { filename: "game.exe" },
     { fileFirst: true },

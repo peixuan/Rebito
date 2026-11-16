@@ -24,6 +24,7 @@
   "library.configurationConflict": "The game configuration has changed. Reopen it before editing.",
   "library.firmwareUnsupported": "This game does not support BIOS configuration.",
   "library.invalidLaunch": "The launch configuration is invalid.",
+  "library.editorMismatch": "The selected editor does not support this platform.",
   "library.deletionPending": "A game deletion is incomplete. Retry its cleanup first.",
   "library.deletionConflict": "The game or saves have changed. Review the deletion impact again and confirm.",
   "library.deletionConfirmation": "Check the game title and explicitly confirm deletion of its progress for all users.",

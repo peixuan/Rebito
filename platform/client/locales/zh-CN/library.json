@@ -24,6 +24,7 @@
   "library.configurationConflict": "游戏配置已变化，请重新打开后修改。",
   "library.firmwareUnsupported": "此游戏不支持 BIOS 配置。",
   "library.invalidLaunch": "启动配置无效。",
+  "library.editorMismatch": "此游戏平台不支持所选修改器。",
   "library.deletionPending": "有游戏删除尚未完成，请先重试清理。",
   "library.deletionConflict": "游戏或存档已变化，请重新查看删除影响并确认。",
   "library.deletionConfirmation": "请核对游戏名称，并明确确认删除所有用户的相关进度。",

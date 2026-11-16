@@ -9,6 +9,7 @@ import Textarea from "primevue/textarea";
 import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { discUploadLimits, gameUploadLimits } from "../src/domain/game-import.ts";
 import { gameSystems, systemOptions as systems } from "../src/domain/systems.ts";
+import type { listEditors } from "../src/editors/registry.ts";
 import type { Game } from "../src/library/catalog.ts";
 import type { describeConfiguration } from "../src/library/configuration.ts";
 import type { DeletionPreview } from "../src/library/deletion-records.ts";
@@ -17,17 +18,32 @@ import { api, errorText } from "./api.ts";
 import BiosFile from "./BiosFile.vue";
 import { formatBytes as size } from "./format-bytes.ts";
 import GameDeletion from "./GameDeletion.vue";
-import { t, translate } from "./i18n.ts";
+import { localize, t, translate } from "./i18n.ts";
 import { inspectDosArchive } from "./library-archive.ts";
 
 const emit = defineEmits<{ back: [] }>();
-const catalog = ref<{ games: Game[]; usedBytes: number; maximumBytes: number } | null>(null);
+const catalog = ref<{
+  games: Game[];
+  usedBytes: number;
+  maximumBytes: number;
+  editors: ReturnType<typeof listEditors>;
+} | null>(null);
 const title = ref("");
 const system = ref<Game["system"]>("dos");
 const executable = ref("");
 const args = ref("");
 const cycles = ref("auto");
 const savePaths = ref("");
+const editor = ref<Game["editor"] | "">("");
+const editorOptions = computed(() =>
+  localize([
+    { id: "", label: message("admin.noEditor") },
+    ...(catalog.value?.editors ?? []).filter((item) => item.system === system.value),
+  ]),
+);
+const selectedEditor = computed(() =>
+  catalog.value?.editors.find((item) => item.id === editor.value),
+);
 const file = ref<File | null>(null);
 const firmware = ref("");
 const biosGeneration = ref(0);
@@ -50,6 +66,7 @@ const draft = () =>
     args.value,
     cycles.value,
     savePaths.value,
+    editor.value,
     firmware.value,
   ]);
 const dirty = computed(() =>
@@ -62,6 +79,7 @@ const dirty = computed(() =>
           executable.value ||
           args.value ||
           savePaths.value ||
+          editor.value ||
           cycles.value !== "auto",
       ),
 );
@@ -111,6 +129,7 @@ async function selectFile(event: Event) {
   }
 }
 function resetFile() {
+  editor.value = "";
   biosGeneration.value++;
   firmware.value = "";
   file.value = null;
@@ -133,6 +152,7 @@ async function publish() {
             executable: executable.value,
             arguments: args.value,
             cycles: cycles.value,
+            editor: editor.value || undefined,
             saveFiles: savePaths.value
               .split(/\r?\n/)
               .map((path) => path.trim())
@@ -141,18 +161,24 @@ async function publish() {
         : {}),
     };
     if (editing.value) {
-      const { title: gameTitle, system: _, ...launch } = settings;
+      const { title: gameTitle, system: _, editor: chosenEditor, ...launch } = settings;
       const result = await api<{ game: Game; created: boolean }>(
         `admin/games/${editing.value.id}/configuration`,
         {
           token: editing.value.token,
           title: gameTitle,
+          ...(system.value === "dos" ? { editor: chosenEditor ?? null } : {}),
           ...(system.value === "segacd" && firmware.value ? { firmware: firmware.value } : {}),
           ...(system.value === "dos" && executable.value ? { launch } : {}),
         },
       );
       notice.value = result.created
-        ? message("admin.reconfiguredLegacy", { title: result.game.title })
+        ? message("admin.reconfigured", {
+            title: result.game.title,
+            association: message(
+              result.game.editor ? "admin.editorLinked" : "admin.editorNotLinked",
+            ),
+          })
         : message("admin.configured", { title: result.game.title });
     } else {
       const form = new FormData();
@@ -203,6 +229,7 @@ async function edit(game: Game) {
     args.value = detail.settings?.arguments ?? "";
     cycles.value = detail.settings?.cycles ?? "auto";
     savePaths.value = current.saveFiles.join("\n");
+    editor.value = current.editor ?? "";
     legacyConfiguration.value = current.system === "dos" && !detail.settings;
     firmwareRegion.value = detail.firmware?.region ?? "";
     initialDraft.value = draft();
@@ -280,7 +307,7 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
             @click="cancelEdit"
           />
         </div>
-        <p v-if="editing" class="muted">{{ t("admin.reuseLegacyHelp") }}</p>
+        <p v-if="editing" class="muted">{{ t("admin.reuseHelp") }}</p>
         <label for="admin-title"
           >{{ t("admin.gameTitle")
           }}<InputText
@@ -317,6 +344,23 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
             @change="selectFile"
           ></label
         >
+        <label for="admin-editor"
+          >{{ t("editor.title")
+          }}<Select
+            v-model="editor"
+            input-id="admin-editor"
+            :aria-label="t('editor.title')"
+            :placeholder="t('admin.noEditor')"
+            :options="editorOptions"
+            option-label="label"
+            option-value="id"
+            :disabled="busy || editorOptions.length === 1"
+          /></label
+        >
+        <p v-if="selectedEditor" class="muted">{{ translate(selectedEditor.instructions) }}</p>
+        <p v-else class="muted">
+          {{ editorOptions.length === 1 ? t("admin.editorUnavailable") : t("admin.editorHelp") }}
+        </p>
         <template v-if="system === 'segacd'">
           <p v-if="editing" class="muted">
             {{ t("admin.firmwareRegion", { region: firmwareRegion }) }}
@@ -330,7 +374,7 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
           <p class="muted">{{ t("admin.discHelp") }}</p>
         </template>
         <p v-else-if="!editing" class="muted">{{ t("admin.fileHelp") }}</p>
-        <p v-if="legacyConfiguration" class="muted">{{ t("admin.launchLegacyHelp") }}</p>
+        <p v-if="legacyConfiguration" class="muted">{{ t("admin.legacyLaunchHelp") }}</p>
         <template v-if="system === 'dos'">
           <label for="admin-executable"
             >{{ t("admin.executable")
@@ -439,7 +483,21 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
           :sort-order="1"
         >
           <template #empty>{{ t("admin.noMatches") }}</template>
-          <Column field="title" :header="t('library.game')" sortable />
+          <Column field="title" :header="t('library.game')" sortable>
+            <template #body="{ data }">
+              <div>{{ data.title }}</div>
+              <small v-if="data.editor" class="muted">
+                {{
+                  t("admin.editorLabel", {
+                    editor: translate(
+                      catalog?.editors.find((item) => item.id === data.editor)?.label ??
+                        data.editor,
+                    ),
+                  })
+                }}
+              </small>
+            </template>
+          </Column>
           <Column field="system" :header="t('common.platform')" sortable />
           <Column field="size" :header="t('common.size')" sortable
             ><template #body="{ data }">{{ size(data.size) }}</template></Column

@@ -51,14 +51,17 @@ because an upstream documentation page lists a feature.
 - Live DOS edits replace only the declared native file group after verifying each
   member's base bytes. Keep failed writeback paused and retry the published revision; never
   republish or upload stale runtime bytes. File changes do not update game RAM.
-- Bind editor support to verified game/format versions; preserve unknown bytes.
+- Administrators choose game/editor associations; do not gate them on game hashes.
+  Validate save structure and edits at use time, preserve unknown bytes and do not
+  claim that structural checks prove compatibility with every game edition.
+- Keep each editor in `platform/src/editors/<game>/` with central adapter metadata.
 - Authorize every private resource on the server and publish revisions atomically.
 - Retry save admission failures with the original capture and base revision only.
   Never blindly retry uncertain publication results or rebase a stale upload.
   An aborted client must not free an active upload slot before its write settles.
 - Check administrator authority before reading game uploads. Stream bounded archive
   preparation and publish immutable releases; launch/sync changes must not reassign
-  existing profiles or enable an editor for an unverified game.
+  existing profiles. Only administrators may change installed editor associations.
 - Online deletion must hold the exclusive storage activity lease, recheck the
   confirmed impact, and durably record cleanup before removing history. All live
   handlers/import entrypoints must participate; retries must recheck shared references.

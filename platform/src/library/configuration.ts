@@ -6,7 +6,8 @@ import { z } from "zod";
 import { discUploadLimits, dosExecutablePattern } from "../domain/game-import.ts";
 import { message } from "../shared/messages.ts";
 import { DiskCapacity } from "../storage/capacity.ts";
-import { type LibraryEntry, releaseId } from "./catalog.ts";
+import { catalogSchema, type LibraryEntry, releaseId } from "./catalog.ts";
+import { parseDosLaunch } from "./dos-launch.ts";
 import { prepareDosUpload } from "./dos-upload.ts";
 import { importGame } from "./importer.ts";
 import { inspectDiscFirmware, prepareDiscUpload } from "./segacd-upload.ts";
@@ -21,6 +22,7 @@ import {
 export const configurationChange = z.strictObject({
   token: z.string().regex(/^[a-f0-9]{64}$/),
   title: gameUploadSchema.shape.title,
+  editor: gameUploadSchema.shape.editor.nullable(),
   firmware: gameUploadSchema.shape.firmware,
   launch: z
     .object(gameUploadSchema.shape)
@@ -36,35 +38,6 @@ export function findEntry(catalog: Catalog, id: string) {
   const entry = catalog.games.find((game) => releaseId(game) === id);
   if (!entry) throw new LibraryError(message("library.releaseMissing"), 404);
   return entry;
-}
-
-/** Only recognize our simple launch sequence; do not guess complex legacy scripts. */
-function parseLaunch(configuration: string, entry: LibraryEntry): GameUploadSettings | null {
-  const sections = configuration.split(/^\s*\[autoexec\]\s*$/im);
-  const commands = sections[1]
-    ?.split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line && !line.startsWith("#"));
-  if (
-    !commands ||
-    !/^mount c \.$/i.test(commands.shift() ?? "") ||
-    !/^c:$/i.test(commands.shift() ?? "")
-  )
-    return null;
-  let directory = "";
-  if (/^cd /i.test(commands[0] ?? ""))
-    directory = `${commands.shift()?.slice(3).replaceAll("\\", "/")}/`;
-  if (commands.length !== 1) return null;
-  const [executable, ...args] = (commands[0] ?? "").split(/\s+/);
-  const parsed = gameUploadSchema.safeParse({
-    title: entry.title,
-    system: entry.system,
-    saveFiles: entry.saveFiles,
-    executable: directory + executable,
-    arguments: args.join(" "),
-    cycles: configuration.match(/^\s*cycles\s*=\s*(\S+)\s*$/im)?.[1] ?? "auto",
-  });
-  return parsed.success ? parsed.data : null;
 }
 
 async function inspectConfiguration(directory: string, entry: LibraryEntry) {
@@ -93,7 +66,7 @@ async function inspectConfiguration(directory: string, entry: LibraryEntry) {
       }
       configuration = Buffer.concat(chunks).toString("utf8");
     }
-    return { settings: parseLaunch(configuration, entry), executables, configuration };
+    return { settings: parseDosLaunch(configuration, entry), executables, configuration };
   } finally {
     archive.close();
   }
@@ -162,6 +135,13 @@ export async function changeConfiguration(
           settings = undefined;
       }
       if (!settings) {
+        if (change.editor !== undefined) {
+          const editor = change.editor ?? undefined;
+          if (!catalogSchema.shape.games.element.safeParse({ ...entry, editor }).success)
+            throw new LibraryError(message("library.editorMismatch"));
+          if (editor) entry.editor = editor;
+          else delete entry.editor;
+        }
         entry.title = change.title;
         await writeCatalog(directory, catalog);
         return;
@@ -194,7 +174,8 @@ export async function changeConfiguration(
         title: settings.title,
         system: settings.system,
         saveFiles: settings.saveFiles,
-        // Deliberately do not inherit a verified editor binding onto a changed release.
+        // Only an explicit administrator selection associates a newly derived release.
+        editor: change.editor ?? undefined,
       },
       maximumBytes,
     );

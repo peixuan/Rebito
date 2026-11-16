@@ -1,10 +1,9 @@
 import type { LocalLibrary } from "../library/catalog.ts";
 import type { SaveService } from "../saves/service.ts";
 import { message } from "../shared/messages.ts";
-import { koukaiAdapter } from "./koukai2/adapter.ts";
-import { type EditorAdapter, type EditorDraft, EditorError } from "./types.ts";
+import { findEditor } from "./registry.ts";
+import { type EditorDraft, EditorError } from "./types.ts";
 
-const adapters: ReadonlyMap<string, EditorAdapter> = new Map([["koukai2", koukaiAdapter]]);
 export interface EditorQuery extends EditorDraft {
   file?: string | undefined;
 }
@@ -23,8 +22,10 @@ export class EditorService {
 
   private async open(owner: string, revisionId: string, file?: string) {
     const revision = await this.saves.revisions.read(owner, revisionId);
+    // Another server instance may have removed the association since our last request.
+    await this.library.refresh();
     const game = this.library.get(revision.manifest.releaseId);
-    const adapter = game?.editor ? adapters.get(game.editor) : undefined;
+    const adapter = findEditor(game?.editor)?.adapter;
     if (!adapter || !game || revision.manifest.kind === "snapshot")
       throw new EditorError("unsupported_editor", message("editor.unsupported"));
     const paths = new Set(game.saveFiles.map((name) => name.normalize("NFC").toLowerCase()));
