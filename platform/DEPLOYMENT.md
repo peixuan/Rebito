@@ -41,6 +41,19 @@ Its PostgreSQL role owns only its application database and is not a superuser.
 
 ## Creating accounts
 
+For first deployment, set `INITIAL_ADMIN_EMAIL` and `INITIAL_ADMIN_PASSWORD` in
+the private `.env` or the container environment before starting the app. Login
+uses that email address. `INITIAL_ADMIN_NAME` optionally sets the display name
+(default `Administrator`). The password must contain 12-128 characters; there
+is no built-in password. Compose passes all three settings to the application.
+
+Initialization creates a stable administrator identity, serializes concurrent
+startups and can resume an interrupted creation. It never promotes an existing
+ordinary account with the same email. After success, remove the initial credentials
+from the deployment environment; the account and its authority persist in the
+database. Reintroducing or changing these settings does not reset credentials or
+create another administrator. Registration remains closed unless enabled separately.
+
 Public registration is off by default. Supply a JSON object containing `email`,
 `name` and `password` through stdin to the operator-only command:
 

@@ -13,6 +13,7 @@ describe("server configuration", () => {
     const config = loadConfig(environment);
     expect(config.allowRegistration).toBe(false);
     expect(config.adminUserIds).toEqual([]);
+    expect(config.initialAdmin).toBeUndefined();
     expect(config.maximumLibraryBytes).toBe(10 * 1024 ** 3);
     expect(config.host).toBe("127.0.0.1");
     expect(config.port).toBe(3000);
@@ -58,6 +59,36 @@ describe("server configuration", () => {
     expect(config.maximumLibraryBytes).toBe(2048);
     expect(config.storageLimits).toEqual({ profiles: 20, revisions: 100, bytes: 1073741824 });
     expect(config.oidc?.clientId).toBe("retro");
+  });
+
+  it("validates initial administrator settings without exposing the password", () => {
+    const credentials = {
+      INITIAL_ADMIN_EMAIL: " Operator@Example.test ",
+      INITIAL_ADMIN_PASSWORD: "unit-test-only-password",
+      INITIAL_ADMIN_NAME: " Operator ",
+    };
+    expect(loadConfig({ ...environment, ...credentials }).initialAdmin).toEqual({
+      email: "operator@example.test",
+      password: credentials.INITIAL_ADMIN_PASSWORD,
+      name: "Operator",
+    });
+    for (const change of [
+      { INITIAL_ADMIN_EMAIL: "" },
+      { INITIAL_ADMIN_EMAIL: "not-an-email" },
+      { INITIAL_ADMIN_PASSWORD: "" },
+      { INITIAL_ADMIN_PASSWORD: "short" },
+      { INITIAL_ADMIN_PASSWORD: "private-value".repeat(20) },
+      { INITIAL_ADMIN_NAME: "a".repeat(101) },
+    ]) {
+      expect(() => loadConfig({ ...environment, ...credentials, ...change })).toThrow(
+        "Initial administrator requires",
+      );
+    }
+    expect(() => loadConfig({ ...environment, INITIAL_ADMIN_NAME: "Operator" })).toThrow();
+    expect(
+      loadConfig({ ...environment, INITIAL_ADMIN_EMAIL: "", INITIAL_ADMIN_PASSWORD: "" })
+        .initialAdmin,
+    ).toBeUndefined();
   });
 
   it.each([

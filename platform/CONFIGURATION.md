@@ -37,12 +37,27 @@ Filesystem probe failures reject writes rather than bypassing the check.
 
 ## Administrator access
 
+`INITIAL_ADMIN_EMAIL` and `INITIAL_ADMIN_PASSWORD` optionally create the initial
+administrator at startup. Both are required together; the login name is an email
+address, and the password must contain 12-128 characters. `INITIAL_ADMIN_NAME`
+sets the display name (default `Administrator`, maximum 100 characters).
+Empty settings disable initialization. Invalid or partial settings fail startup
+without printing their values. Never commit these credentials or expose them to
+the browser; provide them through private deployment environment configuration.
+
+Creation is serialized and bound to a reserved stable ID. An existing ordinary
+account is never promoted by matching its email. A completed initialization is
+recorded in the database and survives removal of these environment variables.
+Their later values do not rename the account or reset its password. If creation
+was interrupted, retain the original email and credentials until a retry succeeds.
+
 `ADMIN_USER_IDS` is an optional comma-separated list of authenticated account IDs
 allowed to manage the shared game library. It is empty by default. Use stable IDs
 from `/api/session`, not email addresses, display names or provider group names.
 An operator sets this once in deployment configuration; normal signups and OIDC
 logins never grant administrator privileges. Restart the app after changing it.
-Every management request checks the list server-side, before reading uploads.
+Every management request checks the configured IDs plus the persisted initial
+administrator ID server-side, before reading uploads.
 This role can permanently delete a game and all associated users' progress after
 an impact preview and explicit confirmation. It cannot read private save contents.
 

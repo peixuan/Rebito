@@ -3,6 +3,7 @@ import type { Pool } from "pg";
 import { registerEditors } from "../editors/routes.ts";
 import { EditorService } from "../editors/service.ts";
 import { createAuth } from "../identity/auth.ts";
+import { initializeAdministrator } from "../identity/bootstrap.ts";
 import { migrateIdentity } from "../identity/migrate.ts";
 import { privateApi } from "../identity/private-api.ts";
 import { registerIdentity } from "../identity/routes.ts";
@@ -44,6 +45,9 @@ export async function createPlatform(config: ServerConfig, database: Pool) {
 
 async function createServices(config: ServerConfig, database: Pool, activity: StorageActivity) {
   await migrateIdentity(config, database);
+  const administratorId = await initializeAdministrator(config, database);
+  if (administratorId)
+    config = { ...config, adminUserIds: [...new Set([...config.adminUserIds, administratorId])] };
   await migrateStorage(database);
   const auth = createAuth(config, database);
   const app = createApp();

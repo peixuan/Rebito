@@ -20,6 +20,9 @@ and optional pure save editors. See [architecture](ARCHITECTURE.md).
 - Accounts have isolated profiles and immutable revision checks. Password sessions
   and OIDC/PKCE were tested with an independent provider; LDAP is an external
   identity-provider federation option, not a built-in LDAP password service.
+- Optional `INITIAL_ADMIN_EMAIL` / `INITIAL_ADMIN_PASSWORD` initialize a stable
+  administrator identity. Concurrent startup is serialized; retries cannot adopt
+  an existing ordinary account or replace credentials after successful setup.
 - Save admission permits two active uploads and eight queued requests. Explicit
   busy responses get bounded automatic retries using the same bytes/base revision.
   Conflicts and uncertain responses preserve local progress without blind replay.
@@ -72,12 +75,16 @@ repository's first hosted CI run and private vulnerability-reporting setup.
 
 ## Checks and next work
 
-- All 21 root policy tests, including baseline ancestry, rename/copy budgets and
+- All 23 root policy tests, including baseline ancestry, rename/copy budgets and
   three-second author/committer chronology; dependency metadata and artifact rules.
-- Current Windows/Node 26 lint, types, build and 320 unit/integration tests pass;
+- Current Windows/Node 26 lint, types, build and 327 unit/integration tests pass;
   nine material-collection tests cover corruption, network failures, path safety,
   stale receipts, bounded output and actual HTTP delivery. Coverage remains
-  98.12% lines / 92.51% branches; thresholds were not lowered.
+  98.16% lines / 92.54% branches; thresholds were not lowered.
+- Administrator initialization passes concurrent startup, interrupted creation,
+  existing-account rejection, login/authorization and restart tests. A fresh
+  Node 24 container retained its initial administrator and exact saved bytes after
+  recreation with bootstrap credentials removed. No production data was used.
 - The current 12-case runtime/security browser regression passes for DOS, NES,
   SNES, GB, GBA, MD, SMS, GG and Mega CD with Chromium sandboxing enabled.
 - The Node 24 Docker build and in-image checks pass using the verified material

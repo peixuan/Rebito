@@ -15,6 +15,11 @@ export interface ServerConfig {
   readonly minimumFreeBytes: number;
   readonly adminUserIds: readonly string[];
   readonly maximumLibraryBytes: number;
+  readonly initialAdmin?: {
+    readonly email: string;
+    readonly password: string;
+    readonly name: string;
+  };
   readonly oidc?: {
     readonly discoveryUrl: string;
     readonly clientId: string;
@@ -72,6 +77,26 @@ export function loadConfig(environment: Environment): ServerConfig {
         clientSecret: required(environment, oidcKeys[2]),
       }
     : undefined;
+  const administratorKeys = ["INITIAL_ADMIN_EMAIL", "INITIAL_ADMIN_PASSWORD", "INITIAL_ADMIN_NAME"];
+  let initialAdmin: ServerConfig["initialAdmin"];
+  if (administratorKeys.some((key) => Boolean(environment[key]))) {
+    const parsed = z
+      .object({
+        email: z.email().max(254),
+        password: z.string().min(12).max(128),
+        name: z.string().min(1).max(100),
+      })
+      .safeParse({
+        email: environment.INITIAL_ADMIN_EMAIL?.trim().toLowerCase(),
+        password: environment.INITIAL_ADMIN_PASSWORD,
+        name: environment.INITIAL_ADMIN_NAME?.trim() || "Administrator",
+      });
+    if (!parsed.success)
+      throw new Error(
+        "Initial administrator requires a valid email, a 12-128 character password and a name of at most 100 characters",
+      );
+    initialAdmin = parsed.data;
+  }
   return {
     origin: origin.origin,
     databaseUrl,
@@ -102,5 +127,6 @@ export function loadConfig(environment: Environment): ServerConfig {
       bytes: Number(environment.MAX_SAVE_BYTES_PER_USER ?? 2 * 1024 ** 3),
     }),
     ...(oidc ? { oidc } : {}),
+    ...(initialAdmin ? { initialAdmin } : {}),
   };
 }

@@ -52,8 +52,11 @@ docker compose up -d --build --wait
 
 Open <http://localhost:3000>. Initial configuration generates independent random
 secrets. Registration is disabled by default, and there are no built-in credentials.
-Follow the [deployment guide](platform/DEPLOYMENT.md) to create an account and
-configure its administrator identity, then import games through the administrator page.
+Set `INITIAL_ADMIN_EMAIL` and `INITIAL_ADMIN_PASSWORD` before deployment to create
+the initial administrator; the email is the sign-in name. Restarts preserve existing
+accounts and passwords. Follow the [deployment guide](platform/DEPLOYMENT.md), then
+import games you are entitled to use through the administrator page.
+
 The build downloads pinned emulator assets. Their licenses differ from the project's
 own code; see below. Internet-facing deployments need an HTTPS reverse proxy and a
 correct `APP_ORIGIN`.
