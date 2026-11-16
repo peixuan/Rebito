@@ -39,6 +39,27 @@ the exact HTTPS origin. Keep the database port private. The application runs as
 the non-root `node` user with a read-only root filesystem and no Linux capabilities.
 Its PostgreSQL role owns only its application database and is not a superuser.
 
+## Project names and earlier deployments
+
+The default Compose project is `rebito`: containers are `rebito-app-1` and
+`rebito-database-1`, the network is `rebito_default`, and persistent volumes are
+`rebito_saves` and `rebito_database`. The test stack uses `rebito-tests`.
+The `-1` suffix is Compose's instance number. Keep generated names: a fixed
+[`container_name`](https://docs.docker.com/reference/compose-file/services/#container_name)
+prevents that service from scaling beyond one container.
+An explicit `-p` or `COMPOSE_PROJECT_NAME` overrides the default; update deployment
+automation deliberately and use a distinct project name for each separate instance.
+
+The earlier default was `retro-portal`. A name change does not move its data:
+starting `rebito` directly would create empty volumes. For an existing deployment,
+stop its app, make a consistent database/save backup, and follow the
+[restore drill](OPERATIONS.md#restore-drill) into the new project.
+Preserve its `.env` secrets, administrator IDs and origin during migration. Confirm
+login, game assets and exact save bytes before switching traffic. Keep the old
+volumes stopped for rollback; never use `down --volumes` or volume pruning to rename
+a deployment. On failure, stop the new app and restart the old project with its
+original configuration. No automatic migration or deletion runs during startup.
+
 ## Creating accounts
 
 For first deployment, set `INITIAL_ADMIN_EMAIL` and `INITIAL_ADMIN_PASSWORD` in

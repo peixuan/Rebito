@@ -6,6 +6,10 @@ when completing a milestone or handing work to another agent.
 
 ## Product scope
 
+The project is Rebito · 晚回舟. Keep this name consistent in user-facing text.
+Compose uses the `rebito` namespace; upgrades from earlier project names require
+explicit data migration as described in `platform/DEPLOYMENT.md`.
+
 Build a single-page retro gaming platform for DOS, FC/NES, SFC/SNES, GB, GBA,
 Sega Mega Drive/Genesis, Master System, Game Gear and Mega CD/Sega CD.
 Games run in browser emulators. The server owns authentication, private saves,
