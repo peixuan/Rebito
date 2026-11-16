@@ -13,6 +13,18 @@ archive-set digest binds the review to the selected runtime package bytes.
 The records distinguish release source, revisions embedded in binaries and a
 candidate build recipe. None means a clean, reproducible native build was proved.
 
+`npm run runtimes` verifies and caches these materials without executing them.
+The ordinary production build includes them in `dist/client/runtimes/legal`,
+and Docker copies the same directory. `inventory.json` maps each upstream path
+to its `<sha256>.txt` download in that directory. Text names keep build code inert
+and make hidden-path materials accessible without permitting dotfile requests.
+Only the pinned GitHub raw domain and official contents API are used; an offline
+build can reuse `.runtime-cache/materials` after every cached hash is rechecked.
+Network errors, HTTP failures, oversized responses and bad hashes fail the build.
+The API fallback is rate-limited by GitHub; preserve the verified cache or retry
+after the limit resets, never skip verification. These excerpts do not replace
+the complete corresponding-source archives still required for binary releases.
+
 All 24 console archives were extracted privately: normal, threaded, legacy and
 threaded-legacy variants of six cores. Every WASM contains its listed core revision
 and RetroArch `6dd4353`. Each archive's `license.txt` is byte-identical to the

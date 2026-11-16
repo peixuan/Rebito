@@ -94,6 +94,32 @@ Historical browser/container deployments were not rerun at every commit; those
 runtime checks apply to the reviewed final application. Temporary verification
 worktrees, containers and volumes were cleaned up after acceptance.
 
+## 2026-11-16 source-material follow-up
+
+The owner clarified that contributing project source is the immediate objective,
+without a commercial-use requirement. No core was replaced. Original code remains
+AGPL-3.0-or-later, component grants remain distinct, and runtime/image redistribution
+still requires the evidence listed in [the runtime review](RUNTIME_SOURCE_REVIEW.md).
+
+Eleven source records now bind license/build excerpts to immutable revisions and
+the runtime archive set. All 24 console variants match their embedded core/frontend
+revision markers and exact core license bytes. Builds preserve 33 unique verified
+text files (837,662 bytes), rather than committing downloaded upstream files.
+This material is not a complete corresponding-source archive.
+
+Current checks: 21 root policy tests, 320 Windows unit/integration tests, lint,
+types/build, nine material failure/HTTP tests within that suite and 12 real runtime/
+sandbox browser tests pass. The Node 24 image builds from a verified cache and
+serves every material with its expected bytes/type under the existing web policy.
+The first network-only image build failed on GitHub's anonymous API limit; the raw
+domain was unreachable. Cache-backed success does not erase that failed attempt.
+The earlier 44-case browser and full deployment results above remain dated evidence.
+
+The full post-baseline history passes size, subject and author/committer chronology
+checks. Gitleaks and reachable-blob inspection include the retained template;
+no secret findings, binary blobs or workstation paths were found. The original
+desktop work and production service/data were not modified.
+
 ## Publication handoff
 
 The prepared local branch is `codex/open-source`. No push or hosted GitHub CI run

@@ -84,6 +84,10 @@ because an upstream documentation page lists a feature.
 - Preserve project/dependency notices and read [licensing](docs/platform/LICENSING.md)
   before distribution. Original work uses AGPL-3.0-or-later; dependency terms remain
   separate. Publish source only; free hosting still conveys browser runtime copies.
+- Runtime upgrades must update the archive-bound `platform/runtime-materials.json`
+  review and preserve verified notices/build materials. Read the
+  [source review](docs/platform/RUNTIME_SOURCE_REVIEW.md); its excerpts are not
+  complete corresponding source or clearance to publish binaries/images.
 
 ## Verification
 

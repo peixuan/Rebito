@@ -3,6 +3,7 @@ import { cp, mkdir, mkdtemp, readdir, readFile, rename, rm, writeFile } from "no
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { x } from "tar";
+import { installMaterials } from "./runtime-materials.mjs";
 
 export function verifyArchive(bytes, integrity) {
   const actual = `sha512-${createHash("sha512").update(bytes).digest("base64")}`;
@@ -96,5 +97,12 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
     await installRuntime(record, resolve(".runtime-cache/archives"), output);
     console.log(`Verified runtime: ${record.id}`);
   }
+  const materials = JSON.parse(await readFile("runtime-materials.json", "utf8"));
+  await installMaterials(
+    materials,
+    lock,
+    resolve(".runtime-cache/materials"),
+    join(output, "legal"),
+  );
   await writeFile(join(output, "inventory.json"), `${JSON.stringify(lock, null, 2)}\n`);
 }

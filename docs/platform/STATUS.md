@@ -53,6 +53,11 @@ The [runtime source review](RUNTIME_SOURCE_REVIEW.md) now records 11 pinned sour
 records and verifies all 24 console variants' core/frontend markers and license
 bytes. Combined GPL/noncommercial WASM permissions, complete nested sources and
 actual native build provenance remain unresolved; no binary release is approved.
+The owner's immediate objective is contributing project source. Retain the current
+cores while keeping source publication separate from assembled runtime/image
+redistribution; changing the project license cannot resolve incompatible terms.
+Verified upstream license/build excerpts are now retained in browser builds and
+images, with archive-bound hashes, bounded downloads and rechecked offline caches.
 
 The candidate is reviewed in an isolated worktree; the original platform branch
 and pre-existing uncommitted desktop files are preserved. No remote has been
@@ -69,13 +74,29 @@ repository's first hosted CI run and private vulnerability-reporting setup.
 
 - All 21 root policy tests, including baseline ancestry, rename/copy budgets and
   three-second author/committer chronology; dependency metadata and artifact rules.
-- `cd platform && npm run check`: 311 unit/integration tests, lint, types and build;
-  Windows line coverage 98.12%, Linux 98.60%; both have 92.51% branch coverage.
-- `npm run test:e2e`: 44 browser cases, explicitly sandboxed Chromium; real DOS,
-  console, OIDC, editor, management and save-conflict/retry flows.
-- Linux image notice/dependency checks, login/upload/download, app/database restart
-  and exact saved-byte recovery passed in isolated fresh volumes, then cleaned up.
+- Current Windows/Node 26 lint, types, build and 320 unit/integration tests pass;
+  nine material-collection tests cover corruption, network failures, path safety,
+  stale receipts, bounded output and actual HTTP delivery. Coverage remains
+  98.12% lines / 92.51% branches; thresholds were not lowered.
+- The current 12-case runtime/security browser regression passes for DOS, NES,
+  SNES, GB, GBA, MD, SMS, GG and Mega CD with Chromium sandboxing enabled.
+- The Node 24 Docker build and in-image checks pass using the verified material
+  cache; all packaged excerpts are served over HTTP as identical plain-text bytes.
+  The first clean network attempt failed on GitHub API rate limiting after the
+  raw-file domain was blocked. It is not recorded as a passed clean network build.
+- Previous complete acceptance: 311 tests on Linux/Node 24 (98.60% lines), all 44
+  browser flows, fresh-container login/save/restart persistence. The current
+  material-only change did not rerun that complete deployment scenario.
 - Hosted GitHub CI and target-cloud TLS/network/disk acceptance have not run.
+
+The 2026-11-16 licensing decision is applied from the first platform commit after
+the exact retained baseline. Root/Docker licenses and package metadata agree.
+The approved size exception covers only the hash-verified initial 661-line legal
+body in each build context; authored notices and all code still count. Read
+[the decision](ENGINEERING_LOG.md) and the source review before further replay.
+Before public hosting, provide a prominent corresponding-source offer for a
+modified network version and resolve emulator distribution blockers. No public
+source URL is configured until the publication destination is chosen.
 
 Start from [development](../../platform/README.md), [deployment](../../platform/DEPLOYMENT.md),
 [game management](../../platform/LIBRARY.md) and [operations](../../platform/OPERATIONS.md).
