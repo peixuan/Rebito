@@ -27,6 +27,8 @@ because an upstream documentation page lists a feature.
 ## Changes and commits
 
 - One independently reviewable change per commit, with its relevant tests/docs.
+- During pre-publication history review, fold immediate corrections into their
+  owning change; preserve independent behavior changes and verify retained trees.
 - Commit messages are one concise Conventional Commits line, at most 72 characters.
 - Keep each commit at or below 500 added plus deleted lines. Do not split a change
   into broken intermediate commits or compress code to evade the limit.
@@ -103,6 +105,8 @@ ownership, concurrent updates and failures, not only the successful path. Emulat
 and persistence require real runtime integration checks in addition to mocks.
 Do not describe a mock, documentation review or generated config as a passed
 deployment test. Record the exact checks and any remaining limitations.
+`npm --prefix platform run lint` checks both application files and root `scripts/`;
+keep repository tooling under the same formatting and lint rules.
 
 Keep Chromium's sandbox enabled for both manual validation and browser tests.
 Playwright launches must explicitly set `chromiumSandbox: true`; do not work around

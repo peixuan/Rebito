@@ -22,6 +22,11 @@ Each commit must be atomic, buildable and independently reviewable. Count added
 Refactoring and behavior changes should be separate commits when each can stand alone. Do not minify code or split
 an incomplete implementation merely to meet the budget.
 
+Before first publication, fold immediate corrections and abandoned approaches into
+their owning change when the result remains atomic and within budget. Repeated
+edits to a file alone are not a reason to squash independent features or fixes.
+Report both the total diff and any documented size exceptions when reviewing history.
+
 The checker uses Git's 50% similarity rename detection with no rename limit.
 Pure moves consume zero lines; edits inside moves count normally. Copies count
 as additions. Do not override this by enabling copy detection locally.
@@ -71,7 +76,8 @@ scanning still covers the entire reachable history, including the template.
 
 ## Quality gates
 
-- Formatting, lint and type checks for production and test code.
+- Formatting and lint for application, tests and root repository scripts; run
+  `npm --prefix platform run lint`. Type checks cover server and browser separately.
 - Unit tests for domain rules and malformed binary inputs.
 - Integration tests for authentication, ownership, storage and revision conflicts.
 - Browser tests for the user flows; real-emulator smoke checks before a release.

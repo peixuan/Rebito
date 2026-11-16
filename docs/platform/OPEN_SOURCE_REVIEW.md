@@ -1,135 +1,126 @@
 # Public source readiness review
 
-Initial review: 2026-11-15; ancestry correction: 2026-11-16. Scope: the tracked web platform, repository automation,
-original test generators and documentation. Proprietary games, BIOS, saves,
-legacy executables, local desktop experiments and private diagnostics are excluded.
+Reviewed: 2026-11-17. Scope: public main at `b927ddc` and the owner's
+baseline-preserving history correction. Hosted acceptance must match the exact
+published commit; local evidence does not replace GitHub's checks.
 
-The reviewed source is prepared for publication under AGPL-3.0-or-later for original
-work. This is not clearance to redistribute the complete runtime/container bundle.
-See [licensing boundaries](LICENSING.md) for noncommercial cores and outstanding
-native corresponding-source/build inventories. An archive hash or a successful
-emulation test does not settle those distribution obligations.
+The independent 159-commit review also checks intermediate license statements.
+An MIT project-license sentence was corrected in the status document's original
+introduction, removing the following commit's redundant license correction.
 
-The publication scope is source only; no prebuilt bundles or images are released.
-The selected cores retain their noncommercial restrictions. Original code uses
-AGPL-3.0-or-later; this does not resolve conflicts within combined emulator builds.
+Original source uses AGPL-3.0-or-later. This source review does not clear emulator
+binaries, container releases or public runtime hosting. Read [licensing](LICENSING.md)
+and [runtime evidence](RUNTIME_SOURCE_REVIEW.md).
 
-## Final code and repository changes
+## History and code review
 
-- Kept the existing service/runtime/editor boundaries and established libraries.
-  No extra service, queue broker, ORM or C++ bridge was introduced.
-- Corrected a shared error-message bug: administrator uploads no longer claim
-  that automatic save retries were exhausted. Save retry exhaustion has its own
-  error identifier; tests distinguish the two cases.
-- Added the project AGPL grant and retained it in the container and emitted browser
-  notices. A policy test prevents the two build-context license copies from drifting.
-- Added pinned Gitleaks history scanning, with an exact identifier/path exception
-  for the adapter fixture and its scanner self-test. Both files are tested with a
-  generated secret-like value to prove that other findings remain detectable.
-- Expanded artifact exclusions to game/disc packages, firmware, emulator bundles,
-  databases, private keys and downloaded/build outputs. Empty commits are rejected.
-- Replaced template-facing documentation, removed the empty template changelog,
-  condensed stale status notes and documented private vulnerability reporting.
+Baseline `a20553aaf4bd0c506c8ddf8066ab74af6f9fdc03` and its ancestors remain
+unchanged. The 109 original platform steps retain their chronology; five later
+publication repairs are folded into their owning changes. Internationalization
+accompanies the original features, as requested by the owner.
 
-## Publication history
+The reviewed lineage has 142 post-baseline changes. Scope review separates legal
+text from project/community guidance, input controls from record browsing,
+container logging from disk admission, dependency proposals from security updates,
+and source licensing from secret scanning. Necessary tests, catalogs and operational
+instructions remain with their implementation. Repeated file edits alone are not
+a reason to merge independent behaviors.
 
-The public history was curated from private development after reviewing the final
-code. The original history and uncommitted desktop work are retained locally;
-neither is part of the branch intended for publication.
+The follow-up also preserves the editor guide across adjacent modules, introduces
+its format explanation with the basic editor, and retains locale precompilation
+when DOS/runtime build configuration changes. Immediate type/comment corrections
+are folded into their original changes. The final application files are unchanged
+from public main; the root commit guard now rejects any unrelated file accompanying
+an approved license-text exception.
 
-The publication branch descends from the exact retained template baseline
-`a20553aaf4bd0c506c8ddf8066ab74af6f9fdc03`, including all of its ancestors.
-The earlier new-root candidate was superseded; it is not the publication history.
-Platform work starts with a focused scope/contribution change after that baseline.
-Recommended lint, erasable server TypeScript, explicit browser sandboxing and
-historical formatting fixes were moved to their relevant introduction points.
-The browser launch assertion and save-retry message correction were folded into
-their owning changes. Meaningful feature evolution, fixes and acceptance records
-remain independently reviewable; author attribution is retained.
+Review covers individual diffs, module boundaries, malformed-input/failure tests,
+imports, formatting, documentation and dependencies. Editors remain independent of
+HTTP, identity, storage and UI libraries. Stable message descriptors separate
+translation from services. English/Simplified Chinese catalogs accompany features;
+switching languages preserves games, drafts and table state. Chinese application
+text stays in locale resources; README instructions and source/comments are English.
 
-The restored development sequence contains 108 nonempty, single-line Conventional
-Commits after the baseline, followed by the current policy/source-inventory work.
-Before the AGPL replay, each historical application tree matched the verified candidate.
-The adjacent license and secret-scanner preparation changes were combined into one
-source-publication change: their genuine author times were only one second apart.
-Other original author dates were retained; committer dates record actual replay
-times after per-commit checks, with no invented/backdated timestamp sequence.
-The license test checks the canonical project grant and official legal-text hashes,
-accepting LF or CRLF without changing the license wording.
+## Verification
 
-Authored diffs retain the 500 added/deleted line limit. The owner-approved exception
-is the initial complete 661-line AGPL body in each of the two build contexts;
-authored grant prefixes still count. Four generated dependency-lock updates also
-exceed the total budget and have
-their reasons recorded in the same commits' [engineering log](ENGINEERING_LOG.md).
-Locks were never omitted or split away from the dependencies that require them.
+The original 136 snapshots retain their 108 verified application inputs. Four added
+dependency preparations pass application checks; two npm bootstrap steps pass
+installation. Lint, server/browser type checks, production builds
+and full unit/integration tests with real PostgreSQL cover those inputs. Reuse
+requires matching platform files, configuration, lockfiles and the README consumed
+by catalog tests. Repository scripts are verified separately for the changed historical input
+variants; their current suite contains 26 tests. No assertions or gates were weakened.
 
-Older acceptance reports retain explicitly marked **private development** commit
-labels. They identify the originally measured snapshots, not resolvable commits
-in the curated public history. Their measurements have not been relabeled as
-tests of newly created commit IDs. CI verifies baseline ancestry and checks
-subsequent commits, including rename-aware size accounting and both timestamp
-sequences. Inherited template commits remain unchanged, not relabeled as platform
-features. Secret scanning covers them too.
+An initial storage-UI split failed formatting and was corrected before acceptance;
+the failure remains recorded. Its corrected intermediate version passes seven real
+account, storage, library and language browser flows. The earlier DOS configuration
+passes three real DOS/i18n flows with locale precompilation restored. Chromium's
+sandbox remains enabled. Source-language boundaries and relative document paths
+and heading anchors are checked across all snapshots.
 
-## Verification performed
+For the unchanged final application, Windows Node 26 and Linux Node 24.22.3 each
+passed 376 tests, lint, types and production builds. Line coverage was 98.20% and
+98.65%, with 92.69% branch coverage. All 48 browser flows passed together. Earlier
+runs found a stale Mega CD control-ID assertion and a DOS writeback wait timeout;
+the assertion was corrected, and the unchanged DOS flow passed three repeats and
+the complete run. Neither assertions nor timeouts were relaxed.
 
-| Check | Result |
-| --- | --- |
-| Historical application states | All 96 distinct `platform` trees passed lint, type checks, their full unit/integration suites and production builds |
-| History coverage | Every published commit's application tree matched a verified tree; the three initial documentation/policy commits have no application yet |
-| Current Windows / Node 26 and Linux / Node 24 | 311 tests each, lint, types and builds passed |
-| Current browser suite | All 44 tests passed in Chrome with Chromium sandboxing explicitly enabled |
-| Container acceptance | Image notices/dependency checks, fresh-volume startup, accounts, save upload/download and app/database restart with exact saved bytes passed |
-| Repository policies | 21 tests passed, including required ancestry, rename/copy accounting, timestamps, empty commits, artifact rejection and license consistency |
-| Dependency licenses | Current 280 lock records and all 10 historical lock snapshots / 2,327 records passed the metadata policy |
-| Production dependency audit | `npm audit --omit=dev --audit-level=high` reported zero known vulnerabilities at review time |
-| Public Git contents | Complete reachable-history policy, secret and blob inspection found no binary artifacts, embedded workstation paths or unaddressed secret findings |
+Ten historical lockfiles passed license review. Shared installed dependencies match
+historical versions/integrity records, except the earlier compiler: all 11 pre-UI
+TypeScript 7.0.2 inputs also passed checks using that exact compiler. Imports declare
+their external dependencies. This is not a fresh installation, browser acceptance
+or deployment test at every historical version. The separated administrator-upload
+feature also passed its two real browser flows before catalog browsing was added.
 
-Historical checks ran in disposable checkouts with real PostgreSQL. Results were
-bound to complete application-tree IDs, including tests/configuration/locks; only
-byte-identical trees reused a prior result. Coverage thresholds were retained.
-Windows line/branch coverage was 98.12% / 92.51%; Linux was 98.60% / 92.51%.
-Historical browser/container deployments were not rerun at every commit; those
-runtime checks apply to the reviewed final application. Temporary verification
-worktrees, containers and volumes were cleaned up after acceptance.
+A fresh Node 24 image passed admin bootstrap/authority, anonymous access rejection,
+notice delivery and byte-exact save recovery after recreation without bootstrap
+credentials. Browser/compiler dependencies were absent from the server install.
+Verified caches were used; this is not an uncached online build or cloud deployment.
+Disposable review containers and data were removed without changing the user's app.
 
-## 2026-11-16 source-material follow-up
+Reachable history and candidate source inspections found no prohibited binary,
+temporary/private-path artifact or unresolved secret. Gitleaks also passed the
+source export. Synthetic saves and original generated programs are test fixtures;
+ROMs, vendor BIOS, private saves and investigation output stay outside Git.
 
-The owner clarified that contributing project source is the immediate objective,
-without a commercial-use requirement. No core was replaced. Original code remains
-AGPL-3.0-or-later, component grants remain distinct, and runtime/image redistribution
-still requires the evidence listed in [the runtime review](RUNTIME_SOURCE_REVIEW.md).
+Dependency review covers 340 locked records. Vue I18n and its Vite plugin add 60
+without changing prior versions. Bundled notices are retained and there is no CSP
+relaxation or eval exception. Distribution obligations remain separate below.
 
-Eleven source records now bind license/build excerpts to immutable revisions and
-the runtime archive set. All 24 console variants match their embedded core/frontend
-revision markers and exact core license bytes. Builds preserve 33 unique verified
-text files (837,662 bytes), rather than committing downloaded upstream files.
-This material is not a complete corresponding-source archive.
+## Commit accounting and dates
 
-Current checks: 21 root policy tests, 320 Windows unit/integration tests, lint,
-types/build, nine material failure/HTTP tests within that suite and 12 real runtime/
-sandbox browser tests pass. The Node 24 image builds from a verified cache and
-serves every material with its expected bytes/type under the existing web policy.
-The first network-only image build failed on GitHub's anonymous API limit; the raw
-domain was unreachable. Cache-backed success does not erase that failed attempt.
-The earlier 44-case browser and full deployment results above remain dated evidence.
+Subjects are concise, single-line Conventional Commits. Identity is preserved.
+Original author and committer dates are recovered from source history, not the
+previous replay's timestamps. All 109 source anchors remain unchanged; 33 split
+parts have owner-authorized ordering offsets of at most 36 seconds. These offsets
+are not measurements of development duration. See the [timestamp ledger](REPLAY_TIMESTAMPS.tsv).
+Both sequences still advance at least three seconds; author time never follows
+committer time. No chronology waiver was added. Recovery refs remain private.
 
-The full post-baseline history passes size, subject and author/committer chronology
-checks. Gitleaks and reachable-blob inspection include the retained template;
-no secret findings, binary blobs or workstation paths were found. The original
-desktop work and production service/data were not modified.
+Count additions/deletions using 50% rename detection, unlimited rename search and
+no copy detection. Ordinary commits count every changed line, including lockfiles.
+Only the approved canonical legal texts and `platform/package-lock.json` may exceed
+500 lines in single-file commits; companion files always prevent the exception. Each initial
+661-line canonical AGPL copy is the only file in its commit; the hash-bound
+exception does not cover other changes. Authored notices count. Dependency preparation
+remains installable; its purpose is recorded in the [engineering log](ENGINEERING_LOG.md).
 
-## Publication handoff
+## GitHub and distribution
 
-The prepared local branch is `codex/open-source`. No push or hosted GitHub CI run
-has occurred. The configured template remote is not the publication destination.
-Select the actual repository, enable private vulnerability reporting and push only
-the reviewed branch. Do not mirror private backup refs. Require the platform CI
-checks before merging contributions; local acceptance does not replace that first
-hosted run or target-cloud TLS/network/disk verification.
+At review, public main `b927ddc` had passing platform and CodeQL checks. GitHub
+recognized AGPL-3.0; `NOTICE` retains the or-later grant. Private reporting,
+dependency/malware alerts, secret scanning and push protection were enabled, with
+zero open security alerts. Three verified private-route rate-limit false positives
+remain closed with real database tests; the CodeQL query remains enabled.
 
-Publish reviewed source only until the runtime distribution inventory is complete.
-AGPL permits commercial use of original code, but does not remove third-party
-copyleft, source-delivery or noncommercial terms. Keep game/BIOS upload rights and
-runtime distribution rights separate from the application's own license.
+Main requires the Node 24/26 application, commit policy, secrets and container
+checks, current branches and linear history. It blocks deletion/force pushes with
+no bypass actors. Require exact candidate checks before replacement, then restore
+and verify protection after any owner-approved scoped exception. [GitHub Actions](https://github.com/peixuan/Rebito/actions)
+is the live exact-commit acceptance record.
+
+There are no binary releases. Eleven runtime source records and 33 retained review
+materials are evidence, not complete corresponding source. Combined GPL/noncommercial
+WASM permission, nested source completeness and native build provenance remain
+unresolved. Resolve these blockers before runtime hosting or binary/container
+distribution, and provide required source for modified network versions. Game/BIOS
+rights and cloud TLS, network and disk acceptance remain operator responsibilities.

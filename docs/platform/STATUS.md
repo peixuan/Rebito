@@ -1,121 +1,107 @@
 # Platform work status
 
-Updated: 2026-11-16 (Asia/Shanghai).
+Updated: 2026-11-17 (Asia/Shanghai).
 
-## Current implementation
+## Reviewed source and history
 
-Rebito is a TypeScript/Vue/Fastify/PostgreSQL application. Games run in the
-browser; the server owns authentication, private revision history, game management
-and optional pure save editors. See [architecture](ARCHITECTURE.md).
+The owner authorized a baseline-preserving replay and a follow-up review of public
+main `b927ddc`. Preserve exact baseline `a20553aa`, contributor identity and unrelated
+desktop changes. Never publish recovery refs, diagnostics or downloaded assets.
+Original source dates are restored; 33 split parts use recorded ordering offsets
+of at most 36 seconds, while all 109 source anchors remain unchanged. Both author
+and committer sequences still advance at least three seconds. See the
+[timestamp ledger](REPLAY_TIMESTAMPS.tsv); offsets are not original edit times.
+
+The 159 source commits and six added dependency preparations were checked for
+chronology, scope and size. License corrections and stricter size gates are folded
+into their owning changes, with source author/committer metadata retained.
+
+The interface supports English/Simplified Chinese, browser selection with English
+fallback and a persisted manual choice. Stable message descriptors separate
+translation from services/editors. Switching language preserves games, drafts and
+table state. README instructions and source/comments are English; Chinese application
+text lives in locale resources. See [internationalization](INTERNATIONALIZATION.md).
+
+The replay contains 142 independently reviewable changes, with at most 495
+added/deleted lines each outside dedicated license/lockfile commits.
+Windows Node 26 and Linux Node 24 passed
+376 tests, lint, types and builds; all 48 sandboxed browser flows passed together.
+Historical builds and database suites cover 108 distinct application inputs;
+changed historical policy inputs and the current 26-test policy suite pass separately.
+Both complete legal texts are introduced in single-file commits. Intermediate
+DOS/i18n and storage-UI flows pass three and seven real browser tests respectively. The [source review](OPEN_SOURCE_REVIEW.md)
+records the exact scope and limitations. Require passing checks for the exact
+published commit; [GitHub Actions](https://github.com/peixuan/Rebito/actions) is the
+live hosted acceptance record.
+
+## Implemented boundaries
+
+Rebito uses TypeScript, Vue, Fastify and PostgreSQL. Games run in browsers; the
+server owns identity, private revisions, game management and optional pure editors.
+See [architecture](ARCHITECTURE.md).
 
 - DOS, NES, SNES, GB, GBA, MD, Master System, Game Gear and Mega CD adapters have
-  real browser tests with original generated programs. Six console cores cover
-  native persistence and snapshots; this is not universal game compatibility.
-- Koukai2 has eight editor modules, independent expected-byte tests and 13 legacy
-  whole-file comparisons. Real-game editing/playback was checked privately; no
-  proprietary samples or old editor executables are distribution fixtures.
-- Administrator uploads, launch/save configuration, no-upload updates and confirmed
-  deletion are implemented. Shared assets and affected user histories are guarded
-  by storage leases, impact checks and durable retryable cleanup.
-- Upload/configuration forms can associate or remove an installed save editor.
-  Each game adapter lives under `src/editors/<game>/`, with shared registry metadata.
-  Administrators choose associations without program hashes or edition allowlists.
-  Save structure/fields remain validated at use time, without claiming universal
-  compatibility. Association-only changes reuse assets and retain profiles/saves; open
-  editors recheck catalog changes before preview/publication, including across servers.
-- Accounts have isolated profiles and immutable revision checks. Password sessions
-  and OIDC/PKCE were tested with an independent provider; LDAP is an external
-  identity-provider federation option, not a built-in LDAP password service.
-- Optional `INITIAL_ADMIN_EMAIL` / `INITIAL_ADMIN_PASSWORD` initialize a stable
-  administrator identity. Concurrent startup is serialized; retries cannot adopt
-  an existing ordinary account or replace credentials after successful setup.
-- Save admission permits two active uploads and eight queued requests. Explicit
-  busy responses get bounded automatic retries using the same bytes/base revision.
-  Conflicts and uncertain responses preserve local progress without blind replay.
-  See [synchronization invariants](../../platform/SYNCHRONIZATION.md).
+  real browser tests with original generated programs, not universal compatibility.
+  Snapshots remain bound to their game and emulator identities.
+- Koukai2 has eight modules, expected-byte tests and 13 private legacy whole-file
+  comparisons. Proprietary samples and executables are not distribution fixtures.
+- Admin uploads, launch/save configuration, updates without upload and confirmed
+  deletion use storage leases, shared-reference checks and durable cleanup.
+- Administrators associate installed editors without executable fingerprints or
+  edition allowlists. Save structures/fields are validated at use time; profiles
+  remain stable and open editors recheck associations before publication.
+- Password sessions and OIDC/PKCE have independent-provider acceptance. LDAP is an
+  external identity-provider federation option, not a built-in password service.
+- `INITIAL_ADMIN_EMAIL` / `INITIAL_ADMIN_PASSWORD` bootstrap one stable admin with
+  serialized startup. Restarts cannot adopt an ordinary account or replace credentials.
+- Two active uploads and eight queued requests bound save admission. Retries keep
+  original bytes/base revisions; conflicts and uncertain results preserve progress.
+  DOS edits replace declared native files, without updating game RAM. Read
+  [synchronization](../../platform/SYNCHRONIZATION.md).
 
-## Verified deployment and capacity
+Windows games, persistent offline upload queues, automatic history pruning and
+arbitrary third-party editors are not implemented. DOSBox-X remains a future
+Windows 95/98/ME candidate, not evidence of general Win32 support.
 
-The local Linux deployment uses pinned Node 24.22.3 and PostgreSQL 18.7 images.
-A backup/restore drill preserved all 28 physical files and 25 existing revisions
-before the save-queue update. Production data and the rollback image are retained.
+## Deployment evidence
 
-The repeated five-user experiment shares two logical CPUs and 1.5 GiB between
-app/database, reserving 512 MiB for the host. All 120 API saves succeeded on their
-first attempt; five real Mega CD players also recovered injected busy responses
-without manual retry. Ordinary-save p95 was 0.28 s; 64 MiB saves with concurrent
-large downloads reached 5.38 s. Peak aggregate memory was 1,116.5 MiB including
-initial copy cache, with no OOM. Restart verified 130 revisions. Disposable test
-volumes were removed. See [current capacity acceptance](CAPACITY_SAVE_QUEUE.md);
-[earlier measurements](CAPACITY.md) document the superseded rejection behavior.
+Images pin Node 24.22.3 and PostgreSQL 18.7. Compose uses `rebito` and isolated
+`rebito-tests` resources. Earlier deployments need the [migration](../../platform/DEPLOYMENT.md#project-names-and-earlier-deployments).
+This review has not changed the user's deployed containers/data.
 
-## Public source review
+The five-user experiment shared two CPUs and 1.5 GiB between app/database, reserving
+512 MiB for the host. All 120 API saves succeeded first try; five real Mega CD
+players recovered injected busy responses. Ordinary-save p95 was 0.28 s; 64 MiB saves
+with large downloads reached 5.38 s. Peak memory was 1,116.5 MiB including initial
+cache, without OOM. Restart verified 130 revisions. See [capacity acceptance](CAPACITY_SAVE_QUEUE.md);
+these private development measurements are not relabeled as results for this replay.
 
-Original code, documentation and original test programs use AGPL-3.0-or-later.
-The project publishes source only, with no prebuilt runtime or container releases.
-Third-party licenses remain separate, and some console cores prohibit commercial
-use. Noncommercial intent does not resolve incompatible terms in combined WASM.
-Public source review does not clear assembled binary/container redistribution:
-exact native corresponding-source/build inventories remain required. Read
-[licensing boundaries](LICENSING.md) and [dependency policy](DEPENDENCIES.md).
-The [runtime source review](RUNTIME_SOURCE_REVIEW.md) now records 11 pinned source
-records and verifies all 24 console variants' core/frontend markers and license
-bytes. Combined GPL/noncommercial WASM permissions, complete nested sources and
-actual native build provenance remain unresolved; no binary release is approved.
-The owner's immediate objective is contributing project source. Retain the current
-cores while keeping source publication separate from assembled runtime/image
-redistribution; changing the project license cannot resolve incompatible terms.
-Verified upstream license/build excerpts are now retained in browser builds and
-images, with archive-bound hashes, bounded downloads and rechecked offline caches.
+A fresh review image passed administrator authority, notices and exact save recovery
+after recreation without bootstrap secrets. Disposable containers/volumes were
+removed. Verified caches were used; cloud HTTPS/network/disk and an uncached online
+build remain separate checks.
 
-The candidate is reviewed in an isolated worktree; the original platform branch
-and pre-existing uncommitted desktop files are preserved. No remote has been
-pushed. Do not push to the template remote; select the intended repository first.
-The `codex/open-source` publication branch retains the exact `a20553a` baseline
-and its ancestors, followed by 108 restored development commits and subsequent
-review work. The earlier new-root candidate is superseded. All 96
-distinct historical application trees passed their complete checks. See the
-[source readiness review](OPEN_SOURCE_REVIEW.md) for scope, results and remaining
-binary-distribution requirements. The next external step is the selected GitHub
-repository's first hosted CI run and private vulnerability-reporting setup.
+## Source licensing and GitHub
 
-## Checks and next work
+Original source/docs/test programs use AGPL-3.0-or-later from the first platform
+commit. Canonical `LICENSE` and separate `NOTICE` agree across source, Docker and
+browser notices. GitHub's AGPL-3.0 display does not narrow the explicit or-later grant.
 
-- All 23 root policy tests, including baseline ancestry, rename/copy budgets and
-  three-second author/committer chronology; dependency metadata and artifact rules.
-- Current Windows/Node 26 lint, types, build and 331 unit/integration tests pass;
-  nine material-collection tests cover corruption, network failures, path safety,
-  stale receipts, bounded output and actual HTTP delivery. Coverage remains
-  98.17% lines / 92.62% branches; thresholds were not lowered.
-- Administrator initialization passes concurrent startup, interrupted creation,
-  existing-account rejection, login/authorization and restart tests. A fresh
-  Node 24 container retained its initial administrator and exact saved bytes after
-  recreation with bootstrap credentials removed. No production data was used.
-- The administrator/editor change passes 17 targeted browser flows, including DOS
-  writeback, console uploads, association changes and editor conflicts, with Chromium
-  sandboxing enabled. The preceding 44-flow run passed 43; its new dropdown exposed
-  an ambiguous status locator, corrected without weakening the publication assertions.
-  The failed flow and all affected management/editor flows passed on retest.
-- The Node 24 Docker build and in-image checks pass using the verified material
-  cache; all packaged excerpts are served over HTTP as identical plain-text bytes.
-  The first clean network attempt failed on GitHub API rate limiting after the
-  raw-file domain was blocked. It is not recorded as a passed clean network build.
-- Previous complete acceptance: 311 tests on Linux/Node 24 (98.60% lines), all 44
-  browser flows, fresh-container login/save/restart persistence. The current
-  material-only change did not rerun that complete deployment scenario.
-- Hosted GitHub CI and target-cloud TLS/network/disk acceptance have not run.
+Public main has passing platform/CodeQL checks. Private reporting, dependency and
+malware alerts, secret scanning and push protection are enabled, with zero open
+alerts. Three verified private-route rate-limit false positives remain closed with
+real database regression tests. Main requires all five application/policy/container
+checks, current branches and linear history; force pushes/deletion are blocked with
+no bypass actors. The authorized replay needs exact candidate checks before a scoped
+publication exception, followed by protection restoration and verification.
 
-The 2026-11-16 licensing decision is applied from the first platform commit after
-the exact retained baseline. Root/Docker licenses and package metadata agree.
-The approved size exception covers only the hash-verified initial 661-line legal
-body in each build context; authored notices and all code still count. Read
-[the decision](ENGINEERING_LOG.md) and the source review before further replay.
-Before public hosting, provide a prominent corresponding-source offer for a
-modified network version and resolve emulator distribution blockers. No public
-source URL is configured until the publication destination is chosen.
+Source is the only publication scope. Some cores prohibit commercial use, and
+noncommercial intent does not resolve combined GPL/noncommercial WASM conflicts.
+Corresponding-source/build provenance and combination permission remain blockers to
+binary/container distribution and public runtime hosting. Read [licensing](LICENSING.md),
+[runtime evidence](RUNTIME_SOURCE_REVIEW.md) and [dependencies](DEPENDENCIES.md).
+Operators must provide required source access for modified network versions; game
+and BIOS rights remain separate.
 
-Start from [development](../../platform/README.md), [deployment](../../platform/DEPLOYMENT.md),
+Start with [development](../../platform/README.md), [deployment](../../platform/DEPLOYMENT.md),
 [game management](../../platform/LIBRARY.md) and [operations](../../platform/OPERATIONS.md).
-Windows games are planned, not implemented; DOSBox-X assets alone do not establish
-Win32 support. History is quota-limited but never automatically pruned. Offline
-persistent save queues and arbitrary third-party editor plugins are not implemented.
