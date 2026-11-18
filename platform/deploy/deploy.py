@@ -220,6 +220,16 @@ class Host:
                 run("docker", "image", "rm", f"rebito-app:{tag}")
 
 
+def deploy_admitted(host, candidate):
+    """Retry preparation outages later; only a failed cutover blocks a revision."""
+    current = host.load()["current"]
+    host.prepare(candidate, current)
+    if next_release(host.repository, current) != candidate:
+        raise ValueError("Main or checks changed during preparation")
+    publish(host, candidate)
+    host.cleanup()
+
+
 def main():
     import fcntl  # Linux-only locking; pure policy tests also run on Windows.
 
@@ -246,18 +256,7 @@ def main():
             backup = host.state / "backups" / candidate
             if backup.exists():
                 shutil.rmtree(backup)
-        try:
-            host.prepare(candidate, state["current"])
-            if next_release(args.repository, state["current"]) != candidate:
-                raise ValueError("Main or checks changed during preparation")
-            publish(host, candidate)
-        except Exception:
-            state = host.load()
-            if not state.get("pending") and state["current"] != candidate:
-                state["failed"] = candidate
-                host.save(state)
-            raise
-        host.cleanup()
+        deploy_admitted(host, candidate)
         print("Published " + candidate)
 
 

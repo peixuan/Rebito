@@ -18,7 +18,8 @@ old release. A durable journal allows the next invocation to recover interruptio
 If recovery fails, traffic stays closed and the backup/journal remain available.
 The successful revision is recorded before opening traffic: subsequent recovery
 must never restore old data over saves accepted by a published release.
-Failed candidates require an operator retry; the timer must not loop over them.
+Failed cutovers require an operator retry; the timer must not loop over them.
+Fetch/build outages occur before cutover and can retry on the next timer tick.
 
 `deploy.py` serializes deployments with a host lock. It fetches the admitted commit,
 builds before stopping the old release, refuses automatic PostgreSQL image changes,

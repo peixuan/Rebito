@@ -4,15 +4,33 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
-from deploy import Host, revision, storage_layout
+from deploy import Host, deploy_admitted, revision, storage_layout
 
 
 SHA = "a" * 40
 
 
 class HostBoundaryTests(unittest.TestCase):
+    def test_preparation_outages_retry_without_mutating_the_release_journal(self):
+        host = Mock(repository="owner/repo")
+        host.load.return_value = {"current": SHA}
+        host.prepare.side_effect = TimeoutError("Image download unavailable")
+        with patch("deploy.publish") as publish, self.assertRaises(TimeoutError):
+            deploy_admitted(host, "b" * 40)
+        host.save.assert_not_called()
+        publish.assert_not_called()
+
+    def test_changed_admission_after_build_never_stops_the_running_release(self):
+        host = Mock(repository="owner/repo")
+        host.load.return_value = {"current": SHA}
+        with patch("deploy.next_release", return_value=None), \
+                patch("deploy.publish") as publish, self.assertRaises(ValueError):
+            deploy_admitted(host, "b" * 40)
+        host.save.assert_not_called()
+        publish.assert_not_called()
+
     def test_storage_layout_preserves_targets_and_ignores_checkout_bind_paths(self):
         volume = {"type": "volume", "source": "saves", "target": "/data"}
         config = {"services": {"app": {"volumes": [volume, {"type": "bind", "source": "/checkout"}]}}}

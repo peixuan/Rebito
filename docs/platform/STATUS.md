@@ -85,7 +85,7 @@ A fresh AlmaLinux 9.5 installation completed an online image build, HTTPS access
 administrator login after removing bootstrap credentials, and a certificate renewal
 dry run. The optional [single-host deployer](../../platform/deploy/README.md) polls
 protected main over outbound HTTPS; no webhook or GitHub token is installed.
-Its 26 policy/transaction/host tests pass on Windows and Linux. An isolated real
+Its 28 policy/transaction/host tests pass on Windows and Linux. An isolated real
 PostgreSQL/file-volume drill restored startup mutations, then passed a successful
 cutover and restart. Nginx maintenance returned 503 before reopening healthy traffic.
 The deployer checks exact CI evidence and retains current/previous/failed artifacts;
