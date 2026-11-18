@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, globSync, readFileSync } from "node:fs";
 
 // Run through stdin inside the built image; this also checks a clean omit install.
 for (const name of [
@@ -16,6 +16,15 @@ for (const name of [
   assert.equal(existsSync(`node_modules/${name}`), false, `Build-only dependency: ${name}`);
 }
 const notices = readFileSync("dist/client/THIRD_PARTY_NOTICES.txt", "utf8");
+// Check nested installations as well as bundled browser modules.
+for (const path of globSync("node_modules/**/package.json")) {
+  const metadata = JSON.parse(readFileSync(path, "utf8"));
+  assert.notEqual(metadata.name, "picomatch", `Build matcher shipped in image: ${path}`);
+}
+const browser = JSON.parse(readFileSync("dist/client/BROWSER_DEPENDENCIES.json", "utf8"));
+assert.equal(browser.version, 1);
+assert.ok(browser.packages.length > 0);
+assert.ok(browser.packages.every((item) => item.name !== "picomatch"));
 const project = JSON.parse(readFileSync("package.json", "utf8"));
 const license = readFileSync("LICENSE", "utf8");
 const notice = readFileSync("NOTICE", "utf8");

@@ -39,6 +39,19 @@ export function browserNotices(): Plugin {
       }
       const notices = await Promise.all([...directories].sort().map(packageNotice));
       if (!notices.length) throw new Error("No bundled browser dependencies were inventoried");
+      const packages = await Promise.all(
+        [...directories].sort().map(async (directory) => {
+          const { name, version } = JSON.parse(
+            await readFile(join(directory, "package.json"), "utf8"),
+          );
+          return { name, version };
+        }),
+      );
+      this.emitFile({
+        type: "asset",
+        fileName: "BROWSER_DEPENDENCIES.json",
+        source: JSON.stringify({ version: 1, packages }),
+      });
       this.emitFile({
         type: "asset",
         fileName: "THIRD_PARTY_NOTICES.txt",

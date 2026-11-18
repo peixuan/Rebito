@@ -20,6 +20,9 @@ The Vite build inventories bundled npm modules and emits their full license/noti
 files as `dist/client/THIRD_PARTY_NOTICES.txt`, served at `/THIRD_PARTY_NOTICES.txt`.
 Missing notice files fail the build. Keep this artifact with browser releases;
 emulator notices and corresponding-source obligations remain separate below.
+The same bundled-module inventory emits `dist/client/BROWSER_DEPENDENCIES.json`
+with exact package versions. Container checks reject Picomatch anywhere in the
+installed server dependency tree or this browser inventory.
 
 PrimeVue is pinned to MIT-licensed 4.5.5 and PrimeUI themes to 1.2.5. Their newer
 major versions require a key and recurring eligibility confirmation. Do not
