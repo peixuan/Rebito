@@ -116,6 +116,16 @@ results; neither user data nor host credentials belong in this repository.
 The exception expires at 2026-12-18 03:13:54 UTC. Next: replace the affected
 dependency when a verified fix is available, review its license/lock changes,
 remove the exception and repeat the full release checks. Do not renew it silently.
+The initial automatic attempt was safely rejected before cutover because Docker
+CLI tried to write beneath the protected home directory. The service now directs
+that state to `/var/lib/rebito/docker-cli`; home protection remains enabled.
+With this service configuration, the timer automatically deployed `1031d62` on
+2026-11-18. Post-cutover acceptance preserved all four existing revision records,
+all six baseline file hashes and all eight authenticated downloads. Both rollback
+archives passed checksum verification; HTTPS, administrator access and both
+containers were healthy, bootstrap credentials were absent, and branch protection
+was unchanged. The installed runtime audit found zero vulnerabilities without
+exceptions. Subsequent revisions still require their own checks and acceptance.
 
 ## Source licensing and GitHub
 

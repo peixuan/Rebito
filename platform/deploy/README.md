@@ -82,6 +82,9 @@ headroom or swap. Limits in `compose.prod.yaml` reserve 512 MiB for the app and
    When updating these modules, stop the timer, wait for the active service to
    finish, install all reviewed modules (including `security_window.py`), run their
    tests on the host, and restart the timer.
+   The service keeps Docker CLI/buildx state in `/var/lib/rebito/docker-cli`;
+   `ProtectHome=true` deliberately leaves the default home directory inaccessible.
+   Preserve the service's private umask and do not copy registry credentials there.
 7. Put `REBITO_REPOSITORY=owner/repository` in `/etc/rebito/deploy.env`. Install the
    service/timer in `/etc/systemd/system`, run `systemd-analyze verify` on them,
    then `systemctl daemon-reload` and `systemctl enable --now rebito-deploy.timer`.

@@ -9,6 +9,7 @@ ConditionPathExists=/var/lib/rebito/release.json
 Type=oneshot
 EnvironmentFile=/etc/rebito/deploy.env
 Environment=PYTHONUNBUFFERED=1
+Environment=DOCKER_CONFIG=/var/lib/rebito/docker-cli
 ExecStart=/usr/bin/python3 -B /opt/rebito/deployer/deploy.py ${REBITO_REPOSITORY}
 UMask=0077
 Nice=10
