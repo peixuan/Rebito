@@ -64,3 +64,29 @@ for modified redistribution. The same release obligations apply; this is not an
 OSI-approved license. No vendor BIOS is distributed. EmulatorJS's old warning
 links to [issue 579](https://github.com/EmulatorJS/EmulatorJS/issues/579); actual
 browser acceptance, rather than that warning or a feature list, gates this binding.
+
+## Temporary build dependency exception
+
+On 2026-11-18 the maintainer approved a thirty-day exception for
+[GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) in Picomatch
+4.0.7. No published fixed version was verified on that date. This is an accepted
+temporary build risk, not a vulnerability fix or a blanket build-tool exemption.
+The approval expires at **2026-12-18 03:13:54 UTC**, with no automatic renewal.
+
+`platform/security-exception.json` binds that advisory/version to the reviewed
+lockfile hash and approval window. After building, run `npm run audit:dependencies`
+from `platform/`. It audits the complete dependency graph, prints every finding,
+and resolves transitive causes, including cycles. Only this exact high-severity
+cause may pass; other high/critical findings, changed locks, incomplete reports,
+audit outages and an expired approval fail the gate. CI visibly warns when used.
+Setting the policy to `null` removes the exception; an upstream fix requires a
+reviewed dependency update, license checks and removal of this temporary policy.
+
+Builds process repository-controlled patterns; uploaded games and user saves do
+not enter the build pipeline. CI has read-only repository permissions and bounded
+job durations. The matcher must be absent from both the actual browser chunks'
+package inventory and every installed server package. Container CI also audits
+the installed runtime dependencies without any exception. Authentication,
+ownership, persistence, secret scanning, license, CodeQL and branch protection
+gates remain unchanged. These boundaries reduce exposure without claiming that
+build-time denial of service is impossible.

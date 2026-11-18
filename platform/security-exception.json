@@ -1,0 +1,8 @@
+{
+  "advisory": "https://github.com/advisories/GHSA-fc5q-39xc-vjpf",
+  "package": "picomatch",
+  "version": "4.0.7",
+  "approvedAt": "2026-11-18T03:13:54Z",
+  "expiresAt": "2026-12-18T03:13:54Z",
+  "lockfileSha256": "b690e7fad495c2a476c031ceabc93513cd1658e1ba6513eb7c7372b5a5a03c32"
+}

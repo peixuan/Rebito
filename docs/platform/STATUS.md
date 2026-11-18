@@ -92,18 +92,18 @@ The deployer checks exact CI evidence and retains current/previous/failed artifa
 host secrets, rollback copies and deployment receipts remain outside Git. Promotion
 still requires successful hosted checks for the exact candidate revision.
 
-Cloud deployment promotion is blocked by `npm audit --omit=dev --audit-level=high`:
-[GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) affects
-Picomatch through 4.0.7, with no published fixed version verified on 2026-11-18.
-The application checks completed before audit; the container/rollback and repository
-policy/secret checks passed. Browser acceptance did not run after the failed audit,
-and the other Node matrix job was cancelled. These are not passing full CI results.
-The running image excludes Picomatch/Vite/Vitest; its actual installed dependency
-audit reports no vulnerabilities. The owner explicitly chose to retain the existing
-gate and wait for an upstream fix, rather than narrow the audit. Keep main and the
-running application at `b3b1aad`; retain deployment work on `codex/aliyun-deployment`.
-Next: verify a fixed upstream release, update the lockfile with license review, run
-all exact-revision checks, then promote and verify a real automatic cloud update.
+The maintainer approved a thirty-day, build-only exception on 2026-11-18 for
+[GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) in
+Picomatch 4.0.7, superseding the earlier decision to wait. No published fix was
+verified that day. The exact lockfile, advisory and expiry are enforced by the
+[dependency policy](DEPENDENCIES.md#temporary-build-dependency-exception).
+Full audit output remains visible; every other high/critical finding still blocks.
+The browser inventory and installed runtime checks reject the affected package;
+the actual runtime audit has no exceptions. Targeted policy tests and a real
+browser build pass locally. Hosted checks and cloud promotion remain pending;
+earlier cancelled or skipped jobs are not counted as passes. Next: complete the
+deployment expiry guard, run all candidate checks, then verify automatic deployment
+and preservation of existing private save revisions and file hashes.
 
 ## Source licensing and GitHub
 

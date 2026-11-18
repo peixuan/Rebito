@@ -57,6 +57,7 @@ jobs:
 
   application:
     runs-on: ubuntu-24.04
+    timeout-minutes: 25
     services:
       postgres:
         image: public.ecr.aws/docker/library/postgres:18.7-bookworm@sha256:ece55f7868da684e400f82f1030a050718adbdd65c23aa500c486f6e2950dc0f
@@ -87,7 +88,7 @@ jobs:
           cache-dependency-path: platform/package-lock.json
       - run: npm ci --ignore-scripts
       - run: npm run check
-      - run: npm audit --omit=dev --audit-level=high
+      - run: npm run audit:dependencies
       - if: matrix.node == '24'
         # Ubuntu's AppArmor profile permits Chrome's sandbox at its system path.
         run: npx playwright install --with-deps chrome
@@ -98,6 +99,7 @@ jobs:
 
   container:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: platform
@@ -111,6 +113,8 @@ jobs:
       - run: node scripts/configure.mjs
       - run: docker compose up -d --build --wait --wait-timeout 180
       - run: docker compose exec -T app node --input-type=module < scripts/check-runtime-image.mjs
+      - name: Audit installed runtime dependencies without exceptions
+        run: docker compose exec -T app npm audit --omit=dev --omit=optional --audit-level=high --cache=/tmp/npm-audit
       - run: docker compose exec -T app node --input-type=module < scripts/seed-container-game.mjs
       - name: Provision and verify a disposable account
         run: |

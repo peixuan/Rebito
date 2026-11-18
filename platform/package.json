@@ -8,6 +8,7 @@
     "node": ">=24 <27"
   },
   "scripts": {
+    "audit:dependencies": "node scripts/audit-dependencies.mjs",
     "configure": "node scripts/configure.mjs",
     "build": "npm run runtimes && tsc -p tsconfig.build.json && vite build",
     "runtimes": "node scripts/runtime-assets.mjs",
