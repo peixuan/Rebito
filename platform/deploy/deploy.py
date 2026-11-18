@@ -11,6 +11,7 @@ import subprocess
 
 from check_release import next_release
 from release_transaction import publish, recover
+from security_window import check_security_window
 
 
 def run(*args, **options):
@@ -106,6 +107,7 @@ class Host:
             raise ValueError("Checkout does not match its release directory")
         if run("git", "-C", str(target), "status", "--porcelain"):
             raise ValueError("Deployment checkout contains local changes")
+        self.check_security_window(sha)
         before = json.loads(self.compose(current, "config", "--format", "json"))
         after = json.loads(self.compose(sha, "config", "--format", "json"))
         if before["services"]["database"]["image"] != after["services"]["database"]["image"]:
@@ -117,6 +119,9 @@ class Host:
             f"org.opencontainers.image.revision={sha}", "--label",
             f"org.opencontainers.image.source=https://github.com/{self.repository}",
             str(target / "platform"))
+
+    def check_security_window(self, sha):
+        check_security_window(self.checkout(sha) / "platform")
 
     def maintenance(self, enabled):
         marker = self.state / "maintenance"
@@ -226,6 +231,7 @@ def deploy_admitted(host, candidate):
     host.prepare(candidate, current)
     if next_release(host.repository, current) != candidate:
         raise ValueError("Main or checks changed during preparation")
+    host.check_security_window(candidate)
     publish(host, candidate)
     host.cleanup()
 

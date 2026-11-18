@@ -20,6 +20,11 @@ The successful revision is recorded before opening traffic: subsequent recovery
 must never restore old data over saves accepted by a published release.
 Failed cutovers require an operator retry; the timer must not loop over them.
 Fetch/build outages occur before cutover and can retry on the next timer tick.
+The host also checks a candidate's temporary security exception before building
+and immediately before cutover. An expired approval or changed dependency lock
+leaves the running release untouched, even if CI passed earlier or the image is
+cached. This guard does not stop an already running release when approval expires.
+See the [bounded exception](../../docs/platform/DEPENDENCIES.md#temporary-build-dependency-exception).
 
 `deploy.py` serializes deployments with a host lock. It fetches the admitted commit,
 builds before stopping the old release, refuses automatic PostgreSQL image changes,
@@ -74,6 +79,9 @@ headroom or swap. Limits in `compose.prod.yaml` reserve 512 MiB for the app and
    state and backup files stay private. Initialize root-only `release.json` with
    `{"current":"FULL_SHA"}`. Copy the reviewed Python modules into root-owned
    `/opt/rebito/deployer/`. The timer deliberately does not self-update its code.
+   When updating these modules, stop the timer, wait for the active service to
+   finish, install all reviewed modules (including `security_window.py`), run their
+   tests on the host, and restart the timer.
 7. Put `REBITO_REPOSITORY=owner/repository` in `/etc/rebito/deploy.env`. Install the
    service/timer in `/etc/systemd/system`, run `systemd-analyze verify` on them,
    then `systemctl daemon-reload` and `systemctl enable --now rebito-deploy.timer`.

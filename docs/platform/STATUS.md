@@ -85,7 +85,7 @@ A fresh AlmaLinux 9.5 installation completed an online image build, HTTPS access
 administrator login after removing bootstrap credentials, and a certificate renewal
 dry run. The optional [single-host deployer](../../platform/deploy/README.md) polls
 protected main over outbound HTTPS; no webhook or GitHub token is installed.
-Its 28 policy/transaction/host tests pass on Windows and Linux. An isolated real
+Its policy/transaction/host tests pass on Windows and Linux. An isolated real
 PostgreSQL/file-volume drill restored startup mutations, then passed a successful
 cutover and restart. Nginx maintenance returned 503 before reopening healthy traffic.
 The deployer checks exact CI evidence and retains current/previous/failed artifacts;
@@ -101,8 +101,10 @@ Full audit output remains visible; every other high/critical finding still block
 The browser inventory and installed runtime checks reject the affected package;
 the actual runtime audit has no exceptions. Targeted policy tests and a real
 browser build pass locally. Hosted checks and cloud promotion remain pending;
-earlier cancelled or skipped jobs are not counted as passes. Next: complete the
-deployment expiry guard, run all candidate checks, then verify automatic deployment
+earlier cancelled or skipped jobs are not counted as passes. The host now checks
+the approval window before building and again before cutover; its 33 tests pass
+locally, including rejection of expiry during a build without stopping production.
+Next: run all candidate checks, then verify automatic deployment
 and preservation of existing private save revisions and file hashes.
 
 ## Source licensing and GitHub
