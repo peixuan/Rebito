@@ -120,5 +120,9 @@ jobs:
           docker compose restart
           docker compose up -d --wait --wait-timeout 60
           node scripts/container-smoke.mjs < "$RUNNER_TEMP/retro-account.json"
+      - name: Exercise deployment rollback with isolated volumes
+        run: |
+          sudo python3 -B deploy/restore_drill.py --platform "$PWD" \
+            --image "$(docker compose images --quiet app)"
       - if: always()
         run: docker compose down
