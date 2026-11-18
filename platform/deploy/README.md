@@ -103,6 +103,6 @@ existing connections. Verify an actual HTTP 503 while the marker exists.
 
 Keep the existing [build-cache GC](../OPERATIONS.md#build-cache-retention), bounded
 container logs and host journal/Nginx log rotation. Tune game/save quotas to leave
-space for up to three complete rollback copies and an active build. The free-space
+space for up to three retained rollback copies, an active capture and a build. The free-space
 guard refuses an update instead of deleting user data when capacity is insufficient.
 These copies protect cutovers, not disk loss or mistakes after a release is live.

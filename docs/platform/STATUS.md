@@ -92,6 +92,19 @@ The deployer checks exact CI evidence and retains current/previous/failed artifa
 host secrets, rollback copies and deployment receipts remain outside Git. Promotion
 still requires successful hosted checks for the exact candidate revision.
 
+Cloud deployment promotion is blocked by `npm audit --omit=dev --audit-level=high`:
+[GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) affects
+Picomatch through 4.0.7, with no published fixed version verified on 2026-11-18.
+The application checks completed before audit; the container/rollback and repository
+policy/secret checks passed. Browser acceptance did not run after the failed audit,
+and the other Node matrix job was cancelled. These are not passing full CI results.
+The running image excludes Picomatch/Vite/Vitest; its actual installed dependency
+audit reports no vulnerabilities. The owner explicitly chose to retain the existing
+gate and wait for an upstream fix, rather than narrow the audit. Keep main and the
+running application at `b3b1aad`; retain deployment work on `codex/aliyun-deployment`.
+Next: verify a fixed upstream release, update the lockfile with license review, run
+all exact-revision checks, then promote and verify a real automatic cloud update.
+
 ## Source licensing and GitHub
 
 Original source/docs/test programs use AGPL-3.0-or-later from the first platform
