@@ -48,6 +48,8 @@ jobs:
           node-version: '24'
       - name: Test repository policy
         run: node --test scripts/*.test.mjs
+      - name: Test deployment admission
+        run: python3 -B -m unittest discover -s platform/deploy -p '*_test.py'
       - name: Review locked dependency licenses
         run: node scripts/dependency-policy.mjs
       - name: Check the complete source history
