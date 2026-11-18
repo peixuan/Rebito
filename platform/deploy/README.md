@@ -11,6 +11,15 @@ both CodeQL analyses. It checks the exact revision and rechecks the branch after
 reading results. Missing, pending, failed or incomplete evidence denies admission.
 Changing required job names requires an explicit update to this admission policy.
 
+The cutover transaction closes proxy traffic, stops both services and captures
+both persistent volumes. Only then may the candidate start and migrate data.
+An unsuccessful startup restores that unpublished attempt before restarting the
+old release. A durable journal allows the next invocation to recover interruptions.
+If recovery fails, traffic stays closed and the backup/journal remain available.
+The successful revision is recorded before opening traffic: subsequent recovery
+must never restore old data over saves accepted by a published release.
+Failed candidates require an operator retry; the timer must not loop over them.
+
 Run the deployment tests from the repository root:
 
 ```sh
