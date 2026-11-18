@@ -99,13 +99,23 @@ verified that day. The exact lockfile, advisory and expiry are enforced by the
 [dependency policy](DEPENDENCIES.md#temporary-build-dependency-exception).
 Full audit output remains visible; every other high/critical finding still blocks.
 The browser inventory and installed runtime checks reject the affected package;
-the actual runtime audit has no exceptions. Targeted policy tests and a real
-browser build pass locally. Hosted checks and cloud promotion remain pending;
-earlier cancelled or skipped jobs are not counted as passes. The host now checks
-the approval window before building and again before cutover; its 33 tests pass
-locally, including rejection of expiry during a build without stopping production.
-Next: run all candidate checks, then verify automatic deployment
-and preservation of existing private save revisions and file hashes.
+the actual runtime audit has no exceptions. Candidate `1031d62` passed both hosted
+Node application checks, all 48 browser flows, container persistence/rollback,
+secret scanning and the complete commit policy; both CodeQL analyses also passed
+on main. Local checks include the full database suite, build and 48 browser flows
+with Chromium's sandbox enabled. The host checks the approval window before
+building and again before cutover; its 33 tests pass on Windows and Linux,
+including expiry during a build without stopping production.
+
+The cloud acceptance baseline contains one existing profile, four revisions and
+six files; eight authenticated artifact downloads match their recorded hashes.
+Each actual promotion must repeat this read-only comparison, check both rollback
+archive hashes, confirm the deployed revision matches protected main, and verify
+health and unchanged branch protection. Private deployment receipts retain these
+results; neither user data nor host credentials belong in this repository.
+The exception expires at 2026-12-18 03:13:54 UTC. Next: replace the affected
+dependency when a verified fix is available, review its license/lock changes,
+remove the exception and repeat the full release checks. Do not renew it silently.
 
 ## Source licensing and GitHub
 
@@ -115,11 +125,12 @@ browser notices. GitHub's AGPL-3.0 display does not narrow the explicit or-later
 
 Public main has passing platform/CodeQL checks. Private reporting, dependency and
 malware alerts, secret scanning and push protection are enabled, with zero open
-alerts. Three verified private-route rate-limit false positives remain closed with
+alerts at the earlier publication review. Three verified private-route rate-limit false positives remain closed with
 real database regression tests. Main requires all five application/policy/container
 checks, current branches and linear history; force pushes/deletion are blocked with
-no bypass actors. The authorized replay needs exact candidate checks before a scoped
-publication exception, followed by protection restoration and verification.
+no bypass actors. Cloud promotion uses a normal fast-forward after required checks;
+it does not weaken or bypass protection. The temporary audit approval does not
+dismiss GitHub alerts or change these settings.
 
 Source is the only publication scope. Some cores prohibit commercial use, and
 noncommercial intent does not resolve combined GPL/noncommercial WASM conflicts.
