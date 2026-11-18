@@ -1,0 +1,7 @@
+services:
+  app:
+    image: ${REBITO_IMAGE:?Set the verified release image}
+    cpus: 1.5
+  database:
+    cpus: 0.5
+    mem_limit: 384m

@@ -1,6 +1,6 @@
 # Platform work status
 
-Updated: 2026-11-17 (Asia/Shanghai).
+Updated: 2026-11-18 (Asia/Shanghai).
 
 ## Reviewed source and history
 
@@ -67,7 +67,7 @@ Windows 95/98/ME candidate, not evidence of general Win32 support.
 
 Images pin Node 24.22.3 and PostgreSQL 18.7. Compose uses `rebito` and isolated
 `rebito-tests` resources. Earlier deployments need the [migration](../../platform/DEPLOYMENT.md#project-names-and-earlier-deployments).
-This review has not changed the user's deployed containers/data.
+Historical review evidence below is separate from the new cloud installation.
 
 The five-user experiment shared two CPUs and 1.5 GiB between app/database, reserving
 512 MiB for the host. All 120 API saves succeeded first try; five real Mega CD
@@ -80,6 +80,17 @@ A fresh review image passed administrator authority, notices and exact save reco
 after recreation without bootstrap secrets. Disposable containers/volumes were
 removed. Verified caches were used; cloud HTTPS/network/disk and an uncached online
 build remain separate checks.
+
+A fresh AlmaLinux 9.5 installation completed an online image build, HTTPS access,
+administrator login after removing bootstrap credentials, and a certificate renewal
+dry run. The optional [single-host deployer](../../platform/deploy/README.md) polls
+protected main over outbound HTTPS; no webhook or GitHub token is installed.
+Its 26 policy/transaction/host tests pass on Windows and Linux. An isolated real
+PostgreSQL/file-volume drill restored startup mutations, then passed a successful
+cutover and restart. Nginx maintenance returned 503 before reopening healthy traffic.
+The deployer checks exact CI evidence and retains current/previous/failed artifacts;
+host secrets, rollback copies and deployment receipts remain outside Git. Promotion
+still requires successful hosted checks for the exact candidate revision.
 
 ## Source licensing and GitHub
 

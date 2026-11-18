@@ -28,3 +28,7 @@ Dockerfile text eol=lf
 .dockerignore text eol=lf
 LICENSE text eol=lf
 *.toml text eol=lf
+*.py text eol=lf
+*.service text eol=lf
+*.timer text eol=lf
+*.example text eol=lf

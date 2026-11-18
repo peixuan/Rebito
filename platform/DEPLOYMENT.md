@@ -4,6 +4,10 @@ Requires Docker Engine with Compose v2. Runtime images are pinned by digest from
 the public Amazon ECR mirror of Docker Official Images; application dependencies
 are pinned by `package-lock.json`. No game data is embedded in the image.
 
+For a small Linux server, the optional [single-host deployer](deploy/README.md)
+polls protected main after CI, takes consistent rollback copies and deploys without
+an incoming webhook or a GitHub credential on the server.
+
 ## Source publication and public hosting
 
 The project publishes source only, not prebuilt application images. These commands
