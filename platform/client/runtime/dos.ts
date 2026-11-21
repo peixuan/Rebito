@@ -1,6 +1,7 @@
 import { unzipSync, zipSync } from "fflate";
 import { MessageError, message } from "../../src/shared/messages.ts";
 import { loadScript, loadStyle } from "./assets.ts";
+import { browserDosConfiguration } from "./dos-configuration.ts";
 import { runtimeIdentity } from "./identity.ts";
 import { pixelScale } from "./pixel-scale.ts";
 import { saveFileAccess } from "./save-files.ts";
@@ -46,6 +47,7 @@ export async function startDos(
     filter: (file) => file.name === ".jsdos/dosbox.conf" && file.originalSize <= 32_768,
   })[".jsdos/dosbox.conf"];
   if (!configuration) throw new MessageError(message("runtime.dosConfiguration"));
+  const dosboxConf = browserDosConfiguration(new TextDecoder().decode(configuration));
   const files = launch.progress?.files ?? [];
   // The core extracts bundles after initFs file writes. A final ZIP is required
   // for edited native files to win over the older filesystem overlay.
@@ -54,13 +56,12 @@ export async function startDos(
   const initFs = [
     new Uint8Array(launch.gameBytes),
     ...(overlay ? [new Uint8Array(overlay.bytes)] : []),
-    ...(nativeFiles.length
-      ? [
-          zipSync(
-            Object.fromEntries(nativeFiles.map((file) => [file.name, new Uint8Array(file.bytes)])),
-          ),
-        ]
-      : []),
+    // Extraction can replace dosboxConf with the archive's original config.
+    // Install the effective config last, including when restoring an old overlay.
+    zipSync({
+      ...Object.fromEntries(nativeFiles.map((file) => [file.name, new Uint8Array(file.bytes)])),
+      ".jsdos/dosbox.conf": new TextEncoder().encode(dosboxConf),
+    }),
   ];
   let resolveReady: (ci: CommandInterface) => void = () => {};
   const ready = new Promise<CommandInterface>((resolve) => {
@@ -68,7 +69,7 @@ export async function startDos(
   });
   const player = dos(element, {
     // Config plus in-memory bundles avoids persistent OPFS copies of blob URLs.
-    dosboxConf: new TextDecoder().decode(configuration),
+    dosboxConf,
     initFs,
     pathPrefix: `${base}emulators/`,
     backend: "dosbox",

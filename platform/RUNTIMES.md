@@ -28,6 +28,23 @@ components retain that identity; changed archives receive a new fingerprint.
 Keep this baseline immutable during upgrades; it is compatibility evidence, not
 a version alias for newly built binaries.
 
+The DOSBox browser adapter defaults `[mixer] prebuffer` to `0`; explicit game
+settings still override this default through DOSBox's ordered section parser.
+It installs the effective config after the game archive and restored overlay,
+since extraction otherwise replaces the startup option. Stored releases and
+private saves are unchanged, and running instances adopt it on their next start.
+This is specific to js-dos 8.5.3/emulators 8.5.2, not DOSBox-X.
+The native prebuffer refill controller otherwise overproduces PCM into the
+separately buffered AudioWorklet, whose bounded queue drops samples. Disabling
+the native controller leaves the browser buffer intact; increasing `blocksize`
+does not fix this build's fixed-block mixer. Recheck this default on upgrades.
+See the pinned [native mixer](https://github.com/caiiiycuk/emulators/blob/6bbf0925d221a7304ea8e0dda1e89b8dc01569b2/native/jsdos/dosbox/jsdos-mixer.cpp)
+and [worklet](https://github.com/caiiiycuk/emulators/blob/6bbf0925d221a7304ea8e0dda1e89b8dc01569b2/src/dos/dosbox/ts/audio-worklet.ts).
+`dos-audio.spec.ts` runs an original PC-speaker program through the production
+adapter and real WASM, measuring sample pacing, overflow and underruns at 44.1/48
+kHz output, and verifying explicit config overrides. It is not a subjective audio
+quality assessment or a guarantee for all games and browser/device combinations.
+
 DOSBox-X assets are intentionally retained for the planned Windows-game scope
 (decision: 2026-11-13). js-dos documents Windows 95/98/ME through its DOSBox-X
 backend; see [upstream support](https://js-dos.com/dosbox-x.html). This is a candidate
