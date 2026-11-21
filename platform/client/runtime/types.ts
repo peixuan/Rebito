@@ -40,6 +40,8 @@ export interface RuntimeHandle {
   pause(): void;
   resume(): void;
   capture(): Promise<RuntimeProgress | null>;
+  /** Running-file observations are change hints only; publish a fresh paused capture. */
+  readNativeFiles?(): Promise<RuntimeFile[]>;
   stop(): Promise<void>;
   setMouseCapture?(enabled: boolean): void;
   setIntegerScaling?(enabled: boolean): void;

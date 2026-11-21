@@ -10,12 +10,23 @@ editors replace a validated group while reusing untouched cloud artifacts.
 DOS checks approximately every 30 seconds. A new version is published only when
 declared native file bytes, names or membership differ from the running base.
 Archive-only differences do not create automatic history entries. Explicit
-**同步并刷新**, Stop, library navigation and logout capture the full collection.
+**Synchronize and refresh**, Stop, library navigation and logout capture the full collection.
 All publication paths use the same ownership checks, quotas and revision guard.
 
 This uploads files already saved by the game. It neither presses the game's save
-command nor records DOS RAM. Each capture pauses the runtime and resumes its prior
-state after success. An upload failure retains the paused runtime for retry.
+command nor records DOS RAM. Automatic checks first observe declared files without
+pausing or compressing the overlay. These reads are only change hints and never
+published: if changed, a fresh paused capture copies the complete collection and
+rechecks the native group. Writes after an unchanged observation wait until the
+next check. There is no claim of a game-level save transaction.
+
+Automatic saves resume a previously running game as soon as the owned capture is
+complete, before hashing/upload/retries. Later game writes remain local until the
+next capture; success advances the base only to the uploaded snapshot. Manual
+saves/exits remain paused through publication. A user-paused game stays paused.
+Any observation, capture or upload failure pauses and preserves the current
+runtime, including play made during the upload. A changed cloud head immediately
+pauses it even while an upload is pending; the original revision guard still applies.
 Background browser throttling may delay timers; closing the page does not complete
 an asynchronous upload. A before-unload warning protects normal reload/close, but
 forced termination or power loss can lose changes after the latest successful sync.
@@ -32,8 +43,9 @@ Browser captures and file imports automatically retry only `503 upload_busy`, at
 most four retries, with exponential backoff, jitter and the server's `Retry-After`
 minimum. A retry is not scheduled beyond 60 seconds from the initial request;
 an already admitted request may take longer to finish. All attempts reuse the
-same captured bytes and base revision. Pending saves keep their runtime paused
-and controls busy; successful autosaves/exit saves proceed without another click.
+same captured bytes and base revision. Pending saves keep controls busy to prevent
+overlapping captures/edits; automatic uploads may keep the runtime running as above.
+Successful autosaves/exit saves proceed without another click.
 Exhaustion preserves the runtime/files for an explicit later attempt. Conflicts,
 quota/authentication errors, network failures and invalid responses are not
 automatically retried: a lost response can hide a successful publication. Never

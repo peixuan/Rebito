@@ -1,9 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { expect, type Page } from "@playwright/test";
 import type { RuntimeHandle, RuntimeHost, RuntimeWindow } from "../../client/runtime/types.ts";
+import { useSession } from "./session.ts";
 
 /** Observe the real runtime without replacing its filesystem or publication path. */
-export async function openDosWorkspace(page: Page, name: string) {
+export async function openDosWorkspace(page: Page, name: string, session?: string) {
   await page.addInitScript(() => {
     const host = window as RuntimeWindow & { testHandle?: RuntimeHandle };
     let runtime: RuntimeHost;
@@ -20,11 +21,14 @@ export async function openDosWorkspace(page: Page, name: string) {
       },
     });
   });
-  const registered = await page.request.post("/api/auth/sign-up/email", {
-    headers: { origin: "http://localhost:4317" },
-    data: { name, email: `${randomUUID()}@example.test`, password: "browser-test-password-123" },
-  });
-  expect(registered.ok()).toBe(true);
+  if (session) await useSession(page.context(), session);
+  else {
+    const registered = await page.request.post("/api/auth/sign-up/email", {
+      headers: { origin: "http://localhost:4317" },
+      data: { name, email: `${randomUUID()}@example.test`, password: "browser-test-password-123" },
+    });
+    expect(registered.ok()).toBe(true);
+  }
   await page.goto("/");
   await page.getByRole("button", { name: /DOS save test/ }).click();
   await page.getByLabel("Profile name").fill(name);

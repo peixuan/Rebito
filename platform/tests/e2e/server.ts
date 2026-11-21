@@ -41,6 +41,7 @@ app.addHook("onClose", async () => {
 const sessions: Record<string, unknown> = {};
 for (const [index, name] of [
   "dos",
+  "autosave",
   "library",
   "other",
   "player",

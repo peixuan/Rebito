@@ -148,19 +148,37 @@ async function save(automatic = false) {
   if (!current || !ready.value || busy.value || pendingSync.value || conflict.value) return false;
   return perform(async () => {
     const resume = !paused.value;
-    paused.value = true;
-    const progress = await current.capture();
-    if (progress && (!automatic || (await nativeProgressChanged(progress, runningRevision)))) {
-      const revision = await publishProgress(props.profileId, props.game.id, base, progress);
-      base = revision.id;
-      runningRevision = revision;
-      emit("saved");
-      synchronizedAt.value = Date.now();
-      notice.value = automatic ? message("player.autosaved") : message("player.saved");
-    } else if (!automatic) notice.value = message("player.unchanged");
-    if (resume) {
-      current.resume();
-      paused.value = false;
+    function resumeCapturedGame() {
+      if (resume && (changedHead === undefined || changedHead === base)) {
+        current?.resume();
+        paused.value = false;
+      }
+    }
+    try {
+      if (automatic && current.readNativeFiles) {
+        const observed = { kind: "filesystem" as const, files: await current.readNativeFiles() };
+        if (!(await nativeProgressChanged(observed, runningRevision))) return;
+      }
+      // The running observation can span game writes. Only this paused, owned
+      // collection may be published, and its complete native group is rechecked.
+      paused.value = true;
+      const progress = await current.capture();
+      if (automatic) resumeCapturedGame();
+      if (progress && (!automatic || (await nativeProgressChanged(progress, runningRevision)))) {
+        const revision = await publishProgress(props.profileId, props.game.id, base, progress);
+        base = revision.id;
+        runningRevision = revision;
+        emit("saved");
+        synchronizedAt.value = Date.now();
+        notice.value = automatic ? message("player.autosaved") : message("player.saved");
+      } else if (!automatic) notice.value = message("player.unchanged");
+      if (!automatic) resumeCapturedGame();
+    } catch (cause) {
+      // Background upload/retries never recapture or rebase. Preserve even the
+      // newer local play made during upload if publication fails or is uncertain.
+      current.pause();
+      paused.value = true;
+      throw cause;
     }
   });
 }
@@ -239,8 +257,11 @@ function togglePixels() {
 }
 function reconcileHead() {
   if (changedHead === base) changedHead = undefined;
-  if (handle && changedHead !== undefined && !busy.value && !pendingSync.value && !conflict.value)
-    markConflict();
+  if (handle && changedHead !== undefined) {
+    handle.pause();
+    paused.value = true;
+    if (!busy.value && !pendingSync.value && !conflict.value) markConflict();
+  }
 }
 async function recover() {
   const current = handle;

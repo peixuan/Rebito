@@ -101,7 +101,17 @@ export async function startDos(
     document.exitPointerLock();
   }
   window.addEventListener("keydown", releasePointer, true);
+  async function readNativeFiles(): Promise<RuntimeFile[]> {
+    const captured: RuntimeFile[] = [];
+    const available = paths((await ci.fsTree()).nodes ?? []);
+    for (const name of launch.game.saveFiles) {
+      const actual = available.find((path) => path.toLowerCase() === name.toLowerCase());
+      if (actual) captured.push({ name, bytes: new Uint8Array(await ci.fsReadFile(actual)) });
+    }
+    return captured;
+  }
   return {
+    readNativeFiles,
     files: saveFileAccess(launch.game.saveFiles, {
       list: async () => paths((await ci.fsTree()).nodes ?? []),
       read: (path) => ci.fsReadFile(path),
@@ -116,12 +126,7 @@ export async function startDos(
     },
     async capture() {
       ci.pause();
-      const captured: RuntimeFile[] = [];
-      const available = paths((await ci.fsTree()).nodes ?? []);
-      for (const name of launch.game.saveFiles) {
-        const actual = available.find((path) => path.toLowerCase() === name.toLowerCase());
-        if (actual) captured.push({ name, bytes: new Uint8Array(await ci.fsReadFile(actual)) });
-      }
+      const captured = await readNativeFiles();
       const changes = await ci.persist(true);
       if (changes) captured.push({ name: changesName, bytes: new Uint8Array(changes) });
       return captured.length

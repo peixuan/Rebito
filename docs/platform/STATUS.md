@@ -1,6 +1,6 @@
 # Platform work status
 
-Updated: 2026-11-18 (Asia/Shanghai).
+Updated: 2026-11-21 (Asia/Shanghai).
 
 ## Reviewed source and history
 
@@ -62,6 +62,31 @@ See [architecture](ARCHITECTURE.md).
 Windows games, persistent offline upload queues, automatic history pruning and
 arbitrary third-party editors are not implemented. DOSBox-X remains a future
 Windows 95/98/ME candidate, not evidence of general Win32 support.
+
+## DOS audio and automatic synchronization
+
+The pinned DOSBox browser backend now defaults the native mixer prebuffer to zero,
+retaining explicit game overrides and the browser's audio buffer. The effective
+configuration is installed after archive/overlay extraction. Real WASM tests at
+44.1/48 kHz output check pacing, overflow, underruns and config precedence.
+A private Koukai2 opening through the production adapter also delivered about
+44,098 samples/second over a 31-second measured interval, with no dropped samples
+or underruns. This is bounded runtime evidence, not an all-game/device guarantee.
+
+Automatic checks observe declared files while running and skip unchanged groups.
+Changed groups are freshly captured while paused; only that owned collection is
+published. Play resumes before background uploads/retries, with later game writes
+retained for the next capture. Errors and changed cloud heads pause and preserve
+the current instance. Manual exits, user pause state, immutable retries, revision
+guards and explicit conflict recovery remain enforced. See [synchronization](../../platform/SYNCHRONIZATION.md).
+
+Local lint, types, build and all 385 database/unit tests pass. The focused real-DOS
+checks cover unchanged observations, transient observation bytes, multi-file
+captures, admission retries during continued play, filesystem failures, quota
+errors, lost responses, concurrent imports, conflict recovery and live edits.
+Complete browser and hosted/container checks remain mandatory for the exact
+candidate before promotion. Private acceptance records compare every pre-existing
+revision and file hash; deployment must not replace the existing data volumes.
 
 ## Deployment evidence
 
