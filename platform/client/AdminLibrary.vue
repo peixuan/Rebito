@@ -143,12 +143,12 @@ async function publish() {
     const settings = {
       title: title.value,
       system: system.value,
+      editor: editor.value || undefined,
       ...(system.value === "dos"
         ? {
             executable: executable.value,
             arguments: args.value,
             cycles: cycles.value,
-            editor: editor.value || undefined,
             saveFiles: savePaths.value
               .split(/\r?\n/)
               .map((path) => path.trim())
@@ -163,7 +163,7 @@ async function publish() {
         {
           token: editing.value.token,
           title: gameTitle,
-          ...(system.value === "dos" ? { editor: chosenEditor ?? null } : {}),
+          editor: chosenEditor ?? null,
           ...(system.value === "segacd" ? { useLibraryFirmware: useLibraryFirmware.value } : {}),
           ...(system.value === "dos" && executable.value ? { launch } : {}),
         },

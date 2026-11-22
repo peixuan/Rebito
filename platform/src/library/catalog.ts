@@ -5,7 +5,7 @@ import { isAbsolute, join, relative, sep } from "node:path";
 import { z } from "zod";
 import { assertArtifactName, progressLimits } from "../domain/artifacts.ts";
 import { systemIds } from "../domain/systems.ts";
-import { editorIds } from "../editors/registry.ts";
+import { editorIds, findEditor } from "../editors/registry.ts";
 
 const portablePath = z.string().refine((value) => {
   try {
@@ -47,9 +47,11 @@ const entrySchema = z
     if (names.some((name) => names.some((other) => other.startsWith(`${name}/`)))) {
       context.addIssue({ code: "custom", message: "Save path is both a file and directory" });
     }
-    if (entry.system !== "dos" && (names.length || entry.editor)) {
+    if (entry.system !== "dos" && names.length) {
       context.addIssue({ code: "custom", message: "DOS-specific settings on a console game" });
     }
+    if (entry.editor && findEditor(entry.editor)?.system !== entry.system)
+      context.addIssue({ code: "custom", message: "Editor does not support this game system" });
   });
 
 export type LibraryEntry = z.infer<typeof entrySchema>;

@@ -1,14 +1,17 @@
 import type { DisplayText } from "../shared/messages.ts";
 import { jinyongRegistration } from "./jinyong/registration.ts";
 import { koukaiRegistration } from "./koukai2/registration.ts";
+import type { SnapshotBinding } from "./snapshots/binding.ts";
 import type { EditorAdapter } from "./types.ts";
 
-export interface EditorRegistration {
+export type EditorRegistration = {
   readonly label: DisplayText;
-  readonly system: "dos";
   readonly instructions: DisplayText;
   readonly adapter: EditorAdapter;
-}
+} & (
+  | { readonly system: "dos"; readonly snapshot?: never }
+  | { readonly system: "md" | "segacd"; readonly snapshot: SnapshotBinding }
+);
 
 export const editorIds = ["koukai2", "jinyong"] as const;
 const registrations: Readonly<Record<(typeof editorIds)[number], EditorRegistration>> = {
