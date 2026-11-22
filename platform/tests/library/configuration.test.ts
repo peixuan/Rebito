@@ -5,6 +5,7 @@ import { unzipSync, zipSync } from "fflate";
 import { afterEach, beforeEach, expect, it } from "vitest";
 import { LocalLibrary } from "../../src/library/catalog.ts";
 import { changeConfiguration, describeConfiguration } from "../../src/library/configuration.ts";
+import { describeFirmware, storeFirmware } from "../../src/library/firmware.ts";
 import { importGame } from "../../src/library/importer.ts";
 import { prepareDiscUpload } from "../../src/library/segacd-upload.ts";
 import { discArchive, discBios } from "./segacd-fixtures.ts";
@@ -91,6 +92,40 @@ it("reuses disc tracks for a BIOS revision and rejects stale or wrong-region cha
   expect(files["track-01.bin"]).toEqual(unzipSync(await readFile(prepared))["track-01.bin"]);
   expect(files["bios_CD_J.bin"]).toEqual(new Uint8Array(bios));
   expect(await readdir(join(directory, ".uploads"))).toEqual([]);
+  const latest = { token: detail.token, title: "Latest BIOS", useLibraryFirmware: true };
+  await expect(changeConfiguration(directory, original, latest, 1e9, 0)).rejects.toThrow(
+    "library.firmwareRequired",
+  );
+  const token = (await describeFirmware(directory)).token;
+  await storeFirmware(directory, bios, token, 0);
+  const same = await changeConfiguration(
+    directory,
+    created,
+    {
+      ...latest,
+      token: (await describeConfiguration(directory, created)).token,
+    },
+    1e9,
+    0,
+  );
+  expect(same).toBe(created);
+  bios[0x1000] = 43;
+  await storeFirmware(directory, bios, (await describeFirmware(directory)).token, 0);
+  const automatic = await changeConfiguration(directory, original, latest, 1e9, 0);
+  expect(automatic).not.toBe(original);
+  expect((await describeConfiguration(directory, original)).firmware).toEqual(detail.firmware);
+  await expect(
+    changeConfiguration(
+      directory,
+      original,
+      {
+        ...latest,
+        firmware: bios.toString("base64"),
+      },
+      1e9,
+      0,
+    ),
+  ).rejects.toThrow("library.firmwareUnsupported");
 });
 
 it("renames in place without changing the release, bytes or verified editor", async () => {

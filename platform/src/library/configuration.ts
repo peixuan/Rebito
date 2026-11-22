@@ -9,6 +9,7 @@ import { DiskCapacity } from "../storage/capacity.ts";
 import { catalogSchema, type LibraryEntry, releaseId } from "./catalog.ts";
 import { parseDosLaunch } from "./dos-launch.ts";
 import { prepareDosUpload } from "./dos-upload.ts";
+import { selectFirmware } from "./firmware.ts";
 import { importGame } from "./importer.ts";
 import { inspectDiscFirmware, prepareDiscUpload } from "./segacd-upload.ts";
 import { type Catalog, withCatalog, writeCatalog } from "./transaction.ts";
@@ -24,6 +25,7 @@ export const configurationChange = z.strictObject({
   title: gameUploadSchema.shape.title,
   editor: gameUploadSchema.shape.editor.nullable(),
   firmware: gameUploadSchema.shape.firmware,
+  useLibraryFirmware: z.boolean().optional(),
   launch: z
     .object(gameUploadSchema.shape)
     .pick({ executable: true, arguments: true, cycles: true, saveFiles: true })
@@ -104,18 +106,23 @@ export async function changeConfiguration(
       const entry = findEntry(catalog, id);
       if (entryToken(entry) !== change.token)
         throw new LibraryError(message("library.configurationConflict"), 409);
-      if (change.firmware) {
-        if (entry.system !== "segacd" || change.launch)
+      if (change.firmware || change.useLibraryFirmware) {
+        if (
+          entry.system !== "segacd" ||
+          change.launch ||
+          (change.firmware && change.useLibraryFirmware)
+        )
           throw new LibraryError(message("library.firmwareUnsupported"));
         const current = await inspectDiscFirmware(join(directory, entry.file));
-        const hash = createHash("sha256")
-          .update(Buffer.from(change.firmware, "base64"))
-          .digest("hex");
+        const bytes = change.useLibraryFirmware
+          ? await selectFirmware(directory, current.region)
+          : Buffer.from(change.firmware ?? "", "base64");
+        const hash = createHash("sha256").update(bytes).digest("hex");
         if (current.sha256 !== hash)
           settings = gameUploadSchema.parse({
             title: change.title,
             system: entry.system,
-            firmware: change.firmware,
+            firmware: bytes.toString("base64"),
           });
       }
       if (change.launch) {

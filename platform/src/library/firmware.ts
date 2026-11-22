@@ -30,6 +30,12 @@ export async function readFirmware(directory: string, region: FirmwareRegion) {
   }
 }
 
+export async function selectFirmware(directory: string, region: FirmwareRegion) {
+  const bytes = await readFirmware(directory, region);
+  if (!bytes) throw new LibraryError(message("library.firmwareRequired", { region }));
+  return bytes;
+}
+
 /** Caller holds the catalog lock so the token describes one consistent library view. */
 export async function describeFirmware(directory: string) {
   const entries = [];

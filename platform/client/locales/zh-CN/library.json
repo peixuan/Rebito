@@ -24,6 +24,7 @@
   "library.configurationConflict": "游戏配置已变化，请重新打开后修改。",
   "library.firmwareUnsupported": "此游戏不支持 BIOS 配置。",
   "library.firmwareConflict": "BIOS 库已更新，请刷新后再上传。",
+  "library.firmwareRequired": "BIOS 库中缺少 {region} 区域固件，请先在公共 BIOS 库上传一次，再重试。",
   "library.invalidLaunch": "启动配置无效。",
   "library.editorMismatch": "此游戏平台不支持所选修改器。",
   "library.deletionPending": "有游戏删除尚未完成，请先重试清理。",

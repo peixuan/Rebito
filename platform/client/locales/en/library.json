@@ -24,6 +24,7 @@
   "library.configurationConflict": "The game configuration has changed. Reopen it before editing.",
   "library.firmwareUnsupported": "This game does not support BIOS configuration.",
   "library.firmwareConflict": "The BIOS library changed. Refresh it before uploading again.",
+  "library.firmwareRequired": "No BIOS is available for region {region}. Upload it once in the shared BIOS library, then retry.",
   "library.invalidLaunch": "The launch configuration is invalid.",
   "library.editorMismatch": "The selected editor does not support this platform.",
   "library.deletionPending": "A game deletion is incomplete. Retry its cleanup first.",

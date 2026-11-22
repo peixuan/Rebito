@@ -95,3 +95,21 @@ it("checks BIOS size, header and region rather than trusting a filename", () => 
   for (const bios of [Buffer.alloc(131072), Buffer.alloc(256), discBios("X"), discBios("JUE")])
     expect(() => validateDiscBios(bios)).toThrow("library.biosFormat");
 });
+
+it.each(["J", "U", "E"])(
+  "selects %s firmware from disc content without a filename hint",
+  async (region) => {
+    const source = join(directory, "unknown.zip");
+    const destination = join(directory, "prepared.zip");
+    await writeFile(source, discArchive(discCue, { "game.bin": discTrack(region) }));
+    let requested = "";
+    await prepareDiscUpload(source, destination, async (detected) => {
+      requested = detected;
+      return discBios(detected);
+    });
+    expect(requested).toBe(region);
+    expect(unzipSync(await readFile(destination))[`bios_CD_${region}.bin`]).toEqual(
+      new Uint8Array(discBios(region)),
+    );
+  },
+);

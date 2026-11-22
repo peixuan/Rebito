@@ -8,6 +8,7 @@ import { ZipFile } from "yazl";
 import { discUploadLimits } from "../domain/game-import.ts";
 import { message } from "../shared/messages.ts";
 import { openGameArchive, verifiedEntry } from "./archive.ts";
+import type { FirmwareRegion } from "./firmware.ts";
 import { parseDiscCue } from "./segacd-cue.ts";
 import { LibraryError } from "./upload-settings.ts";
 
@@ -50,8 +51,11 @@ export async function inspectDiscFirmware(source: string) {
 }
 
 /** Repackage one disc and one region BIOS; unrelated files and bundled saves are excluded. */
-export async function prepareDiscUpload(source: string, destination: string, bios: Buffer) {
-  const firmware = validateDiscBios(bios);
+export async function prepareDiscUpload(
+  source: string,
+  destination: string,
+  resolveBios: Buffer | ((region: FirmwareRegion) => Promise<Buffer>),
+) {
   const { archive, entries } = await openGameArchive(source, discUploadLimits);
   let active: Readable | undefined;
   try {
@@ -66,7 +70,7 @@ export async function prepareDiscUpload(source: string, destination: string, bio
     if (
       disc.files.reduce(
         (sum, file) => sum + file.entry.uncompressedSize,
-        bios.length + Buffer.byteLength(disc.text),
+        131072 + Buffer.byteLength(disc.text),
       ) > discUploadLimits.expanded
     )
       throw new LibraryError(message("library.discSize"));
@@ -85,12 +89,11 @@ export async function prepareDiscUpload(source: string, destination: string, bio
       throw new LibraryError(message("library.discFormat"));
     const region = header.subarray(0x1f0, 0x200).toString("ascii").trim();
     const bootRegion = header[0x20b] === 0xa1 ? "J" : header[0x20b] === 0x64 ? "E" : "U";
-    if (
-      !/^[JUE]+$/.test(region) ||
-      !region.includes(firmware.region) ||
-      bootRegion !== firmware.region
-    )
+    if (!/^[JUE]+$/.test(region) || !region.includes(bootRegion))
       throw new LibraryError(message("library.discRegion"));
+    const bios = typeof resolveBios === "function" ? await resolveBios(bootRegion) : resolveBios;
+    const firmware = validateDiscBios(bios);
+    if (bootRegion !== firmware.region) throw new LibraryError(message("library.discRegion"));
     const output = new ZipFile();
     const target = createWriteStream(destination, { flags: "wx", mode: 0o600 });
     output.on("error", (error: Error) => target.destroy(error));

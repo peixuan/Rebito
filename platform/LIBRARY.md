@@ -129,9 +129,13 @@ The uploaded ZIP and total expanded content are each limited to 1 GiB and 500
 entries; the expanded limit also includes the BIOS and normalized CUE. The first
 track must be MODE1/2048 or MODE1/2352 at index zero, followed by BINARY audio.
 CHD, WAV/MP3 tracks, multi-disc switching and other CD platforms are not supported.
-The metadata-first API additionally supplies `firmware` as base64; the browser
-handles this conversion. For the trusted CLI, supply an already prepared canonical
-package; it does not transform arbitrary CUE/BIN uploads.
+The metadata-first API automatically chooses shared firmware from the disc's boot
+region when `firmware` is omitted. Legacy clients may still send an explicit base64
+`firmware` override. Configuration requests can set `useLibraryFirmware: true`
+to publish a new release with the current shared BIOS for that disc. A missing
+region rejects publication without changing existing games or profiles.
+For the trusted CLI, supply an already prepared canonical package; it does not
+transform arbitrary CUE/BIN uploads.
 
 PicoDrive runs with a RAM cartridge. Platform snapshots retain the cartridge and
 emulator state together: the latter includes internal backup RAM. A downloaded

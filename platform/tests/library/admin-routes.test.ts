@@ -13,7 +13,7 @@ import { createPlatform } from "../../src/server/platform.ts";
 import { message } from "../../src/shared/messages.ts";
 import { testDatabase } from "../database.ts";
 import { mdFixture, sega8Fixture, smdFixture } from "./sega-fixtures.ts";
-import { discArchive, discBios } from "./segacd-fixtures.ts";
+import { discArchive, discBios, discCue, discTrack } from "./segacd-fixtures.ts";
 
 let fixture: Awaited<ReturnType<typeof testDatabase>>;
 let app: Awaited<ReturnType<typeof createPlatform>>;
@@ -263,6 +263,25 @@ it("requires matching BIOS, publishes a private CD package and cleans failed upl
   ]);
   expect((await upload({ metadata, bytes: discArchive() })).statusCode).toBe(409);
   expect(await readdir(join(directory, "library", ".uploads"))).toEqual([]);
+});
+
+it("reuses the detected regional BIOS across distinct discs without another firmware upload", async () => {
+  for (const marker of [17, 18]) {
+    const track = discTrack("E");
+    track[0x1000] = marker;
+    const response = await upload({
+      metadata: { title: `Automatic firmware ${marker}`, system: "segacd" },
+      bytes: discArchive(discCue, { "game.bin": track }),
+    });
+    expect(response.statusCode).toBe(201);
+    const asset = await app.inject({
+      url: `/api/games/${response.json().game.id}/asset`,
+      headers: { cookie: player },
+    });
+    const files = unzipSync(asset.rawPayload);
+    expect(files["bios_CD_E.bin"]).toEqual(new Uint8Array(discBios("E")));
+    expect(files["track-01.bin"]).toEqual(new Uint8Array(track));
+  }
 });
 
 it("preserves the catalog and cleans staging after quota or disk-reserve rejection", async () => {

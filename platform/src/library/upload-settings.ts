@@ -42,7 +42,7 @@ export const gameUploadSchema = z
       value.system === "dos"
         ? dosExecutablePattern.test(value.executable)
         : !value.executable && !value.arguments && value.cycles === "auto";
-    const firmware = value.system === "segacd" ? Boolean(value.firmware) : !value.firmware;
+    const firmware = value.system === "segacd" || !value.firmware;
     if (!entry.success || !launch || !firmware)
       context.addIssue({ code: "custom", message: "Invalid game launch or save settings" });
   });

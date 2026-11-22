@@ -10,6 +10,7 @@ import { message } from "../shared/messages.ts";
 import { DiskCapacity } from "../storage/capacity.ts";
 import type { LocalLibrary } from "./catalog.ts";
 import { prepareDosUpload } from "./dos-upload.ts";
+import { selectFirmware } from "./firmware.ts";
 import { importGame } from "./importer.ts";
 import { receiveGameUpload } from "./receive-upload.ts";
 import { validateSegaRom } from "./sega-rom.ts";
@@ -82,7 +83,9 @@ export function registerGameAdministration(
             await prepareDiscUpload(
               source,
               prepared,
-              Buffer.from(settings.firmware ?? "", "base64"),
+              settings.firmware
+                ? Buffer.from(settings.firmware, "base64")
+                : (region) => selectFirmware(directory, region),
             );
           } else await validateRom(source, filename, settings.system);
           const id = await importGame(
