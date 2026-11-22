@@ -1,4 +1,7 @@
 {
+  "jinyong.inventory": "Inventory and silver",
+  "jinyong.quantity": "Quantity",
+  "jinyong.quantityHelp": "Set a positive quantity to add an item; zero removes it. Silver is an inventory item too.",
   "jinyong.growth": "Development",
   "jinyong.condition": "Condition",
   "jinyong.combat": "Combat",

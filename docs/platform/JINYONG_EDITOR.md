@@ -34,6 +34,11 @@ Equipment ownership, training, animation fields, names and world/quest data are
 not writable. Existing unusual values are retained until that field is edited.
 Every request validates the whole edit batch before writing a separate copy.
 
+Inventory edits select one of the original 200 item definitions, including silver
+(174), and set its quantity to 0–30000. Zero removes the item. Adding/removing entries
+compacts the known inventory section; quantity-only edits change only the selected
+quantity words. Neither operation changes item definitions or other save sections.
+
 ## References and verification
 
 - [The original DOS/PC editor author's release](https://www.cheatmaker.org/archiver/showtopic-2289.aspx)

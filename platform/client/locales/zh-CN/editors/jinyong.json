@@ -1,4 +1,7 @@
 {
+  "jinyong.inventory": "背包和银两",
+  "jinyong.quantity": "数量",
+  "jinyong.quantityHelp": "填写正数可添加物品，填 0 则移除。银两也作为背包物品保存。",
   "jinyong.growth": "成长",
   "jinyong.condition": "状态",
   "jinyong.combat": "战斗能力",
