@@ -4,6 +4,9 @@ const origin = "http://localhost:4320";
 test.use({ baseURL: origin });
 
 async function authorize(page: Page, identity: string) {
+  // The test provider imports Google Fonts. Their availability must not gate
+  // authentication; only decorative font requests are blocked, never OIDC calls.
+  await page.route(/^https:\/\/fonts\.(googleapis|gstatic)\.com\//, (route) => route.abort());
   await page.goto("/");
   await expect(page.getByRole("button", { name: "Create account", exact: true })).toHaveCount(0);
   const authorization = page.waitForRequest((request) =>
