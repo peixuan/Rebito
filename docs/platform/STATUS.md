@@ -72,13 +72,24 @@ association and bilingual guidance. Native filename filtering excludes RANGER.GR
 S/D companions and unknown bytes remain intact. There are no new dependencies,
 HTTP endpoints or persistence paths. See [setup and evidence](JINYONG_EDITOR.md).
 
-All 419 database/unit tests pass, with 98.17% line and 93.17% branch coverage overall.
+The character view also shows the original sex/castration flag read-only. Inventory
+defaults to held items with quantities and actual positions; position edits and
+move buttons reorder item/quantity pairs without changing amounts. Table sorting
+remains display-only. Canonical drafts compose ordering, additions and removals
+against one base revision, with atomic publication and the existing conflict checks.
+
+All 427 database/unit tests pass, with 98.23% line and 93.53% branch coverage overall.
 Lint, browser/server types, production build, focused browser editing and private
 real-DOS edit/load/save checks pass. The browser flow covers three native saves,
 two-file drafts, language switching, input clamping, sorting and complete companion
 preservation. Shared choice controls now expose their translated accessible names.
 The private original game retained ten representative edits after reloading and
 saving again; no proprietary fixture or downloaded editor code is distributed.
+The follow-up original-game check confirmed the castration flag after accepting
+the game's own prompt, displayed a moved item in the first bag slot and retained
+the new order on save. A separate 500-operation mixed-draft check retained order,
+quantities, replay and unrelated bytes. Generated tests cover malformed ordering,
+cancelled additions, stale concurrent writers and failed multi-file batches.
 Every release still requires the complete browser suite, hosted checks and deployed
 save-preservation acceptance for its exact revision, without weakening any gate.
 

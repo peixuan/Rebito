@@ -96,6 +96,12 @@ header bytes differed from the edited file after movement. Original files were
 read-only, and no private files or screenshots are shipped. This is representative
 game-load/save evidence, not every field, game dump, MOD or battle-path coverage.
 
+A subsequent isolated original-game check accepted the castration prompt while
+training item 93, saved through the game, and verified that the protagonist's
+0x360 word changed from 0 to 2. An inventory move then placed that item first via
+guarded R1.GRP replacement. Reloading showed the new order in the actual game;
+saving again retained every inventory pair. Original user files stayed read-only.
+
 Synthetic tests independently check byte offsets, malformed inputs, numeric bounds,
 ownership, stale revisions, concurrent publication and atomic multi-file failures.
 The browser flow verifies administrator association, accessible choices, clamping,
