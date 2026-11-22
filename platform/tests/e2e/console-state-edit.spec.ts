@@ -7,6 +7,11 @@ import { useSession } from "./session.ts";
 type SerializedProgress = Omit<RuntimeProgress, "files"> & {
   files: { name: string; bytes: number[] }[];
 };
+type ObservedEmulator = {
+  play(): void;
+  gameManager: { simulateInput(player: number, index: number, value: number): void };
+};
+type ObservedWindow = Window & { testEmulator?: ObservedEmulator };
 
 for (const system of ["md", "segacd"] as const) {
   test(`confirms a ${system} memory edit without changing native saves`, async ({ page }) => {
@@ -17,6 +22,26 @@ for (const system of ["md", "segacd"] as const) {
     if (!game) throw new Error("Missing console fixture");
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
+    // Observe the real wrapper's public entrypoints without changing their behaviour.
+    await page.addInitScript(() => {
+      let emulatorClass: new (
+        selector: string,
+        options: Record<string, unknown>,
+      ) => ObservedEmulator;
+      Object.defineProperty(window, "EmulatorJS", {
+        configurable: true,
+        get: () => emulatorClass,
+        set(value: typeof emulatorClass) {
+          emulatorClass = new Proxy(value, {
+            construct(target, args) {
+              const emulator = Reflect.construct(target, args) as ObservedEmulator;
+              (window as ObservedWindow).testEmulator = emulator;
+              return emulator;
+            },
+          });
+        },
+      });
+    });
     await page.goto("/runtime.html");
     await page.evaluate(async (game) => {
       const host = window as RuntimeWindow & { testHandle?: RuntimeHandle };
@@ -39,6 +64,19 @@ for (const system of ["md", "segacd"] as const) {
         };
       });
     const previous = await capture();
+    await page.evaluate(async () => {
+      const emulator = (window as ObservedWindow).testEmulator;
+      if (!emulator) throw new Error("Missing real wrapper observation");
+      emulator.play();
+      for (const index of [24, 25]) {
+        emulator.gameManager.simulateInput(0, index, 1);
+        emulator.gameManager.simulateInput(0, index, 0);
+      }
+      await new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      );
+    });
+    expect(await capture()).toEqual(previous);
     const native = previous.files.find((file) => file.name === "save.srm");
     expect(native?.bytes.length).toBeGreaterThan(0);
     const state = previous.files.find((file) => file.name === "__runtime/state.bin");

@@ -1,6 +1,7 @@
 import { MessageError, message } from "../../src/shared/messages.ts";
 import { loadScript, loadStyle } from "./assets.ts";
 import { type ConsoleControls, consoleControls } from "./console-controls.ts";
+import { guardConsolePlayback } from "./console-guard.ts";
 import { consoleLocale } from "./console-locale.ts";
 import { restoreEditedState } from "./console-state.ts";
 import { consoleSystems } from "./console-systems.ts";
@@ -8,8 +9,8 @@ import { runtimeIdentity } from "./identity.ts";
 import type { RuntimeFile, RuntimeHandle, RuntimeLaunch, RuntimeProgress } from "./types.ts";
 
 interface Emulator extends ConsoleControls {
-  pause(): void;
-  play(): void;
+  pause(dontUpdate?: boolean): void;
+  play(dontUpdate?: boolean): void;
   on(event: string, callback: () => void): void;
   gameManager: {
     FS: {
@@ -26,6 +27,7 @@ interface Emulator extends ConsoleControls {
     getSaveFile(): Uint8Array | null;
     getSaveFilePath(): string;
     supportsStates(): boolean;
+    simulateInput(player: number, index: number, value: number): void;
   };
 }
 
@@ -89,6 +91,11 @@ export async function startConsole(launch: RuntimeLaunch): Promise<RuntimeHandle
     disableDatabases: true,
     disableLocalStorage: true,
     buttonOpts: {
+      // The workspace owns pause/resume and revision-aware restarts.
+      playPause: false,
+      restart: false,
+      quickSave: false,
+      quickLoad: false,
       saveState: false,
       loadState: false,
       saveSavFiles: false,
@@ -138,8 +145,9 @@ export async function startConsole(launch: RuntimeLaunch): Promise<RuntimeHandle
     });
   });
   const bindings = consoleControls(emulator, localization.langJson);
+  const playback = guardConsolePlayback(emulator);
   async function capture(): Promise<RuntimeProgress> {
-    emulator.pause();
+    playback.pause();
     const captured: RuntimeFile[] = [];
     const save = emulator.gameManager.getSaveFile();
     if (save?.byteLength) captured.push({ name: "save.srm", bytes: new Uint8Array(save) });
@@ -154,8 +162,8 @@ export async function startConsole(launch: RuntimeLaunch): Promise<RuntimeHandle
   }
   return {
     controls: bindings.controls,
-    pause: () => emulator.pause(),
-    resume: () => emulator.play(),
+    pause: playback.pause,
+    resume: playback.resume,
     capture: async () => {
       const progress = await capture();
       return progress.files.length ? progress : null;
@@ -167,25 +175,10 @@ export async function startConsole(launch: RuntimeLaunch): Promise<RuntimeHandle
             replace: (previous: RuntimeProgress, next: RuntimeProgress) =>
               restoreEditedState(
                 {
-                  pause: () => emulator.pause(),
+                  pause: playback.pause,
                   load: (bytes) => emulator.gameManager.loadState(bytes),
                   capture,
-                  async advance() {
-                    let timer: ReturnType<typeof setTimeout> | undefined;
-                    try {
-                      emulator.play();
-                      await new Promise<void>((resolve, reject) => {
-                        timer = setTimeout(
-                          () =>
-                            reject(new MessageError(message("runtime.snapshotEditUnconfirmed"))),
-                          2000,
-                        );
-                        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-                      });
-                    } finally {
-                      clearTimeout(timer);
-                    }
-                  },
+                  advance: playback.advance,
                 },
                 previous,
                 next,
@@ -195,7 +188,7 @@ export async function startConsole(launch: RuntimeLaunch): Promise<RuntimeHandle
       : {}),
     async stop() {
       bindings.dispose();
-      emulator.pause();
+      playback.pause();
       for (const value of urls) URL.revokeObjectURL(value);
     },
   };
