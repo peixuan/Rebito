@@ -20,11 +20,7 @@ export async function withCatalog<T>(
   directory: string,
   action: (catalog: Catalog, library: LocalLibrary) => Promise<T>,
 ): Promise<T> {
-  await mkdir(directory, { recursive: true, mode: 0o700 });
-  const path = join(directory, ".import.lock");
-  // An interrupted process leaves the lock for inspection, never a timed takeover.
-  const lock = await open(path, "wx", 0o600);
-  try {
+  return withLibraryLock(directory, async () => {
     const library = await LocalLibrary.load(directory);
     let catalog: Catalog;
     try {
@@ -35,7 +31,18 @@ export async function withCatalog<T>(
       if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
       catalog = { version: 1, games: [] };
     }
-    return await action(catalog, library);
+    return action(catalog, library);
+  });
+}
+
+/** Firmware-only operations share publication exclusion without hashing every game asset. */
+export async function withLibraryLock<T>(directory: string, action: () => Promise<T>): Promise<T> {
+  await mkdir(directory, { recursive: true, mode: 0o700 });
+  const path = join(directory, ".import.lock");
+  // An interrupted process leaves the lock for inspection, never a timed takeover.
+  const lock = await open(path, "wx", 0o600);
+  try {
+    return await action();
   } finally {
     await lock.close();
     await rm(path);

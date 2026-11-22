@@ -5,7 +5,7 @@ import { requireAdministrator } from "../identity/administrator.ts";
 import type { ServerConfig } from "../server/config.ts";
 import { message } from "../shared/messages.ts";
 import { describeFirmware, storeFirmware } from "./firmware.ts";
-import { withCatalog } from "./transaction.ts";
+import { withLibraryLock } from "./transaction.ts";
 import { gameUploadSchema, LibraryError } from "./upload-settings.ts";
 
 export function registerFirmware(
@@ -16,7 +16,7 @@ export function registerFirmware(
   const directory = join(config.dataDirectory, "library");
   const options = { onRequest: requireAdministrator(config), config: { exclusiveStorage: true } };
   app.get("/api/admin/firmware", options, () =>
-    withCatalog(directory, () => describeFirmware(directory)),
+    withLibraryLock(directory, () => describeFirmware(directory)),
   );
   app.post("/api/admin/firmware", { ...options, bodyLimit: 180000 }, async (request) => {
     await assertMutable();

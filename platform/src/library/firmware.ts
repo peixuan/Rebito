@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { message } from "../shared/messages.ts";
 import { DiskCapacity } from "../storage/capacity.ts";
 import { readDiscFirmware, validateDiscBios } from "./segacd-upload.ts";
-import { syncDirectory, withCatalog } from "./transaction.ts";
+import { syncDirectory, withCatalog, withLibraryLock } from "./transaction.ts";
 import { LibraryError } from "./upload-settings.ts";
 
 export const firmwareRegions = ["J", "U", "E"] as const;
@@ -78,7 +78,7 @@ export async function storeFirmware(
   minimumFreeBytes: number,
 ) {
   const { region } = validateDiscBios(bytes);
-  return withCatalog(directory, async () => {
+  return withLibraryLock(directory, async () => {
     const current = await describeFirmware(directory);
     if (current.token !== token) throw new LibraryError(message("library.firmwareConflict"), 409);
     if (current.entries.find((entry) => entry.region === region)?.sha256 !== digest(bytes))

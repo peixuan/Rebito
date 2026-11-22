@@ -10,7 +10,7 @@ import {
 } from "../../src/library/firmware.ts";
 import { importGame } from "../../src/library/importer.ts";
 import { prepareDiscUpload } from "../../src/library/segacd-upload.ts";
-import { withCatalog } from "../../src/library/transaction.ts";
+import { withLibraryLock } from "../../src/library/transaction.ts";
 import { discArchive, discBios } from "./segacd-fixtures.ts";
 
 let directory: string;
@@ -20,7 +20,7 @@ beforeEach(async () => {
 afterEach(async () => {
   await rm(directory, { recursive: true, force: true });
 });
-const snapshot = () => withCatalog(directory, () => describeFirmware(directory));
+const snapshot = () => withLibraryLock(directory, () => describeFirmware(directory));
 async function upload(bytes: Buffer) {
   return storeFirmware(directory, bytes, (await snapshot()).token, 0);
 }
@@ -45,6 +45,13 @@ it("recognizes regions, deduplicates uploads and bounds replacements to three sl
     statusCode: 409,
   });
   expect(await readFirmware(directory, "J")).toEqual(changed);
+});
+
+it("keeps firmware management independent of game catalog parsing and asset reads", async () => {
+  await writeFile(join(directory, "catalog.json"), "invalid catalog");
+  await upload(discBios());
+  expect(await readFirmware(directory, "J")).toEqual(discBios());
+  expect((await snapshot()).entries[0]?.sha256).toMatch(/^[a-f0-9]{64}$/);
 });
 
 it("preserves the library on invalid firmware, full disks and concurrent publication", async () => {
