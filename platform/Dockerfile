@@ -1,7 +1,7 @@
 ARG NODE_IMAGE=public.ecr.aws/docker/library/node:24.22.3-bookworm-slim@sha256:dc26ae92c9fb15cf6b1d63e20f0944b2efe0f115b20e00be48fb23fceb061c54
 FROM ${NODE_IMAGE} AS build
 WORKDIR /app
-COPY package.json package-lock.json LICENSE NOTICE ./
+COPY package.json package-lock.json LICENSE NOTICE NOTICE.PSTAR ./
 RUN --mount=type=cache,target=/root/.npm npm ci --ignore-scripts
 COPY tsconfig.json tsconfig.build.json tsconfig.client.json vite.config.ts index.html runtime.html ./
 COPY src ./src
@@ -16,7 +16,7 @@ RUN --mount=type=cache,target=/app/.runtime-cache npm run build
 FROM ${NODE_IMAGE} AS runtime
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=3000 DATA_DIR=/data
 WORKDIR /app
-COPY package.json package-lock.json LICENSE NOTICE ./
+COPY package.json package-lock.json LICENSE NOTICE NOTICE.PSTAR ./
 # Better Auth's optional UI peers must not reinstall the build-only Vue tree.
 RUN --mount=type=cache,target=/root/.npm npm ci --omit=dev --omit=optional --ignore-scripts
 RUN mkdir /data && chown node:node /data

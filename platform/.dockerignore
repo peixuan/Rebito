@@ -3,6 +3,7 @@
 !package-lock.json
 !LICENSE
 !NOTICE
+!NOTICE.PSTAR
 !tsconfig.json
 !tsconfig.build.json
 !tsconfig.client.json

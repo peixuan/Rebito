@@ -35,6 +35,12 @@ assert.ok(notice.includes("AGPL-3.0-or-later"));
 assert.ok(notices.includes(`${project.name}@${project.version}`));
 assert.ok(notices.includes(license.trim()));
 assert.ok(notices.includes(notice.trim()));
+const catalogNotice = readFileSync("NOTICE.PSTAR", "utf8");
+assert.ok(catalogNotice.includes("Copyright (c) 2017 Fuindin"));
+assert.ok(
+  notices.includes(catalogNotice.trim()),
+  "Missing item catalog license in browser notices",
+);
 for (const name of ["@vue/runtime-core", "primevue", "vue-i18n", "fflate"]) {
   assert.ok(notices.includes(`${name}@`), `Missing bundled notice: ${name}`);
 }

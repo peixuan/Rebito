@@ -7,3 +7,10 @@ condition = "AND"
 paths = ['''^(platform/tests/editors/adapter\.test\.ts|scripts/check-secret-scan\.mjs)$''']
 regexTarget = "match"
 regexes = ['''key:\s*"companion\.0\.salary"''']
+
+[[allowlists]]
+description = "Exact item catalog identifiers following Escapipe and Control Key"
+condition = "AND"
+paths = ['''^platform/client/locales/shared/editors/phantasyStar4Names\.json$''']
+regexTarget = "secret"
+regexes = ['''^phantasyStar4\.items\.(134|154)$''']
