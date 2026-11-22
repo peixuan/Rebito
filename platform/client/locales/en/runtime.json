@@ -1,4 +1,5 @@
 {
+  "runtime.snapshotEditConflict": "The running game differs from this checkpoint. Your draft is retained. Review and discard the stale draft, then use Capture for editing and enter the changes again.",
   "runtime.loadFailed": "Could not load emulator resources.",
   "runtime.dosRequired": "DOS games require the DOS emulator.",
   "runtime.consoleSaveType": "This filesystem save cannot be used by the console emulator.",

@@ -1,4 +1,5 @@
 {
+  "runtime.snapshotEditConflict": "当前游戏状态与此即时存档不同，草稿已保留。请核对并放弃旧草稿，再点击“暂停并取档修改”，重新填写修改。",
   "runtime.loadFailed": "模拟器资源加载失败。",
   "runtime.dosRequired": "DOS 游戏需要 DOS 模拟器。",
   "runtime.consoleSaveType": "此文件系统存档不适用于主机模拟器。",
