@@ -54,6 +54,20 @@ export class SaveService {
 
   /** Publish a whole edit group once, reusing all unchanged immutable blobs. */
   async replaceFiles(owner: string, revisionId: string, files: readonly SaveFile[]) {
+    return this.replaceArtifacts(owner, revisionId, files, false);
+  }
+
+  /** A verified state transform preserves its native saves and runtime identity. */
+  async replaceSnapshot(owner: string, revisionId: string, bytes: Uint8Array) {
+    return this.replaceArtifacts(owner, revisionId, [{ name: "__runtime/state.bin", bytes }], true);
+  }
+
+  private async replaceArtifacts(
+    owner: string,
+    revisionId: string,
+    files: readonly SaveFile[],
+    snapshot: boolean,
+  ) {
     const revision = await this.revisions.read(owner, revisionId);
     if (!files.length || new Set(files.map((file) => file.name)).size !== files.length)
       throw new Error("Empty or duplicate replacement files");
@@ -64,8 +78,8 @@ export class SaveService {
     )
       throw new ProgressError("not_found");
     // A stale snapshot would restore old memory over the changed native file.
-    if (revision.manifest.kind === "snapshot")
-      throw new Error("Extract native progress before editing a snapshot");
+    if ((revision.manifest.kind === "snapshot") !== snapshot)
+      throw new Error("Use the matching native or snapshot editing path");
     await this.preflight(owner, revision.profileId, revisionId, revision.manifest.releaseId);
     const replacements = files.map(({ name, bytes }) => ({
       name,

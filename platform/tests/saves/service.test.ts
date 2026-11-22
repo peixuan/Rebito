@@ -187,6 +187,91 @@ describe("save publication service", () => {
     ).rejects.toThrow("snapshot");
   });
 
+  it("publishes only the state of a snapshot and retains all companion identities", async () => {
+    const profile = await repository.create("alice", metadata.releaseId, "State edit");
+    const native = await service.publish("alice", profile.id, null, metadata, files, "game");
+    await expect(service.replaceSnapshot("alice", native.id, Uint8Array.of(9))).rejects.toThrow();
+    const runtime = { adapter: "emulatorjs", core: "test", version: "pinned-test" };
+    const original = await service.publish(
+      "alice",
+      profile.id,
+      native.id,
+      { ...metadata, kind: "snapshot", runtime },
+      [
+        { name: "__runtime/state.bin", bytes: Uint8Array.of(3, 4) },
+        { name: "save.srm", bytes: Uint8Array.of(7, 8) },
+        { name: "opaque.dat", bytes: Uint8Array.of(5) },
+      ],
+      "game",
+    );
+    const put = vi.spyOn(blobs, "put");
+    try {
+      await expect(
+        service.replaceSnapshot("bob", original.id, Uint8Array.of(9)),
+      ).rejects.toMatchObject({ code: "not_found" });
+      await expect(
+        service.replaceFiles("alice", original.id, [{ name: "save.srm", bytes: Uint8Array.of(9) }]),
+      ).rejects.toThrow("snapshot");
+      expect(put).not.toHaveBeenCalled();
+      const edited = await service.replaceSnapshot("alice", original.id, Uint8Array.of(9, 4));
+      expect(edited).toMatchObject({
+        parentId: original.id,
+        source: "editor",
+        manifest: { ...metadata, kind: "snapshot", runtime },
+      });
+      expect(edited.manifest.artifacts.slice(1)).toEqual(original.manifest.artifacts.slice(1));
+      expect(put).toHaveBeenCalledTimes(1);
+      expect(await service.file("alice", original.id, "__runtime/state.bin")).toEqual(
+        Buffer.from([3, 4]),
+      );
+      expect(await service.file("alice", edited.id, "__runtime/state.bin")).toEqual(
+        Buffer.from([9, 4]),
+      );
+      put.mockClear();
+      await expect(
+        service.replaceSnapshot("alice", original.id, Uint8Array.of(1)),
+      ).rejects.toMatchObject({ code: "conflict" });
+      expect(put).not.toHaveBeenCalled();
+      put.mockRejectedValueOnce(new Error("disk full"));
+      await expect(service.replaceSnapshot("alice", edited.id, Uint8Array.of(2))).rejects.toThrow(
+        "disk full",
+      );
+      expect((await repository.list("alice")).find(({ id }) => id === profile.id)?.headId).toBe(
+        edited.id,
+      );
+    } finally {
+      put.mockRestore();
+    }
+  });
+
+  it("keeps one winning snapshot edit when two writers share the same base", async () => {
+    const profile = await repository.create("alice", metadata.releaseId, "Concurrent state edit");
+    const original = await service.publish(
+      "alice",
+      profile.id,
+      null,
+      {
+        ...metadata,
+        kind: "snapshot",
+        runtime: { adapter: "test", core: "test", version: "test" },
+      },
+      [{ name: "__runtime/state.bin", bytes: Uint8Array.of(1) }],
+      "game",
+    );
+    const outcomes = await Promise.allSettled([
+      service.replaceSnapshot("alice", original.id, Uint8Array.of(2)),
+      service.replaceSnapshot("alice", original.id, Uint8Array.of(3)),
+    ]);
+    expect(outcomes.filter(({ status }) => status === "fulfilled")).toHaveLength(1);
+    expect(outcomes.find(({ status }) => status === "rejected")).toMatchObject({
+      reason: { code: "conflict" },
+    });
+    expect(await repository.history("alice", profile.id)).toHaveLength(2);
+    expect(await service.file("alice", original.id, "__runtime/state.bin")).toEqual(
+      Buffer.from([1]),
+    );
+  });
+
   it("does not publish partial uploads when storage fails or input changes", async () => {
     const profile = await repository.create("alice", metadata.releaseId, "Failure");
     const put = vi.spyOn(blobs, "put").mockRejectedValueOnce(new Error("disk full"));
