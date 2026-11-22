@@ -54,6 +54,7 @@ function options(field: EditorField) {
         <Select
           v-else-if="field.choices"
           :input-id="`field-${field.key}`"
+          :aria-label="translate(field.label)"
           :model-value="field.value"
           size="small"
           :options="options(field)"

@@ -49,6 +49,7 @@ for (const [index, name] of [
   "editor",
   "admin",
   "admin-cd",
+  "admin-jinyong",
   ...["nes", "md", "smd", "sms", "gg", "zip"].map((extension) => `admin-console-${extension}`),
 ].entries()) {
   // Fixture setup represents distinct clients; keep the real public rate limits enabled.
