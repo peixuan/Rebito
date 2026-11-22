@@ -1,4 +1,9 @@
 {
+  "jinyong.sex": "Sex / castration status",
+  "jinyong.male": "Male (not castrated)",
+  "jinyong.female": "Female",
+  "jinyong.castrated": "Castrated",
+  "jinyong.sexHelp": "Read from the original character flag, not inferred from learned arts. This status is read-only.",
   "jinyong.characters": "Characters",
   "jinyong.skills": "Learned martial arts",
   "jinyong.saveData": "Selected save file",

@@ -1,4 +1,9 @@
 {
+  "jinyong.sex": "性别／自宫状态",
+  "jinyong.male": "男性（未自宫）",
+  "jinyong.female": "女性",
+  "jinyong.castrated": "已自宫",
+  "jinyong.sexHelp": "直接读取原版人物标记，不根据已学武功推断。此状态仅供查看。",
   "jinyong.characters": "人物属性",
   "jinyong.skills": "已学武功",
   "jinyong.saveData": "所选存档文件",

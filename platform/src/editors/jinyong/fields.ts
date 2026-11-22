@@ -9,6 +9,7 @@ export interface JinyongField extends EditorField {
 
 // Offsets are relative to an original 182-byte character, not a remake record.
 const attributes = [
+  ["sex", 28, 2, "condition"],
   ["level", 30, 30, "growth"],
   ["experience", 32, 65_535, "growth"],
   ["health", 34, 999, "condition"],
@@ -54,6 +55,16 @@ export function personFields(document: JinyongDocument, index: number): JinyongF
       value: document.word(offset, id === "experience"),
       min: id === "level" || id === "maxHealth" ? 1 : 0,
       max,
+      ...(id === "sex"
+        ? {
+            readonly: true,
+            help: message("jinyong.sexHelp"),
+            choices: ["male", "female", "castrated"].map((id, value) => ({
+              value,
+              label: message(`jinyong.${id}`),
+            })),
+          }
+        : {}),
       ...(id === "dualAttack" ? { boolean: true } : {}),
       ...(id === "energyType"
         ? {
@@ -111,7 +122,7 @@ export function findCharacterField(document: JinyongDocument, key: string): Jiny
 export function editCharacters(document: JinyongDocument, changes: Record<string, number>) {
   const edits = Object.entries(changes).map(([key, value]) => {
     const field = findCharacterField(document, key);
-    if (!Number.isSafeInteger(value) || value < field.min || value > field.max)
+    if (field.readonly || !Number.isSafeInteger(value) || value < field.min || value > field.max)
       throw new EditorError("invalid_edit", message("editor.invalidEdit"));
     return { field, before: field.value, after: value };
   });

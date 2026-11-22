@@ -22,7 +22,7 @@ it("provides sortable character values and public fields without binary offsets"
   expect(view.records[0]).toMatchObject({ id: "0", label: "Test0", cells: { health: 32 } });
   expect(view.records[0]?.summary).toEqual(message("jinyong.partyMember"));
   expect(view.records[1]?.summary).toBe("");
-  expect(view.fields).toHaveLength(28);
+  expect(view.fields).toHaveLength(29);
   expect(view.fields.every((field) => !("offset" in field) && !("unsigned" in field))).toBe(true);
   expect(view.modules.map(({ id }) => id)).toEqual(["characters", "skills", "inventory"]);
   expect(view.preview).toEqual([]);

@@ -6,7 +6,30 @@ import {
   personFields,
   skillFields,
 } from "../../src/editors/jinyong/fields.ts";
+import { message } from "../../src/shared/messages.ts";
 import { jinyongFixture } from "./jinyong-fixture.ts";
+
+it("reads the original sex flag independently of learned arts without permitting writes", () => {
+  for (const [value, label] of [
+    [0, "male"],
+    [1, "female"],
+    [2, "castrated"],
+  ] as const) {
+    const bytes = jinyongFixture();
+    new DataView(bytes.buffer).setInt16(0x360, value, true);
+    const document = new JinyongDocument(bytes);
+    const field = findCharacterField(document, "person.0.sex");
+    expect(field.value).toBe(value);
+    expect(field.readonly).toBe(true);
+    expect(field.choices?.find((choice) => choice.value === value)?.label).toEqual(
+      message(`jinyong.${label}`),
+    );
+    expect(() => editCharacters(document, { "person.0.sex": value })).toThrow();
+    expect(editCharacters(document, { "skill.0.0.id": 92 }).output.slice(0x360, 0x362)).toEqual(
+      bytes.slice(0x360, 0x362),
+    );
+  }
+});
 
 it("writes independently specified original DOS offsets and preserves every other byte", () => {
   const source = jinyongFixture();

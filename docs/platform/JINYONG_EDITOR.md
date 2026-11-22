@@ -34,6 +34,11 @@ Equipment ownership, training, animation fields, names and world/quest data are
 not writable. Existing unusual values are retained until that field is edited.
 Every request validates the whole edit batch before writing a separate copy.
 
+The read-only sex/castration field reads the original character word at relative
+offset 28 (the protagonist's absolute offset is 0x360): 0 male, 1 female, 2 castrated.
+It does not infer status from learned arts or claim to reverse related events.
+Unknown flag values remain visible as unknown and are never normalized.
+
 Inventory edits select one of the original 200 item definitions, including silver
 (174), and set its quantity to 0–30000. Zero removes the item. Adding/removing entries
 compacts the known inventory section; quantity-only edits change only the selected
