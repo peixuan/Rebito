@@ -53,7 +53,21 @@ it("reuses disc tracks for a BIOS revision and rejects stale or wrong-region cha
       0,
     ),
   ).rejects.toMatchObject({ statusCode: 422 });
-  const change = { token: detail.token, title: "CD", firmware: discBios().toString("base64") };
+  const change = {
+    token: detail.token,
+    title: "CD",
+    firmware: discBios().toString("base64"),
+    allowUnrecognizedFirmware: true,
+  };
+  await expect(
+    changeConfiguration(
+      directory,
+      original,
+      { ...change, allowUnrecognizedFirmware: false },
+      1e9,
+      0,
+    ),
+  ).rejects.toThrow("library.biosUnrecognized");
   expect(await changeConfiguration(directory, original, change, 1e9, 0)).toBe(original);
   await expect(
     changeConfiguration(directory, original, { ...change, token: "0".repeat(64) }, 1e9, 0),
@@ -97,7 +111,7 @@ it("reuses disc tracks for a BIOS revision and rejects stale or wrong-region cha
     "library.firmwareRequired",
   );
   const token = (await describeFirmware(directory)).token;
-  await storeFirmware(directory, bios, token, 0);
+  await storeFirmware(directory, bios, token, 0, true);
   const same = await changeConfiguration(
     directory,
     created,
@@ -110,7 +124,7 @@ it("reuses disc tracks for a BIOS revision and rejects stale or wrong-region cha
   );
   expect(same).toBe(created);
   bios[0x1000] = 43;
-  await storeFirmware(directory, bios, (await describeFirmware(directory)).token, 0);
+  await storeFirmware(directory, bios, (await describeFirmware(directory)).token, 0, true);
   const automatic = await changeConfiguration(directory, original, latest, 1e9, 0);
   expect(automatic).not.toBe(original);
   expect((await describeConfiguration(directory, original)).firmware).toEqual(detail.firmware);

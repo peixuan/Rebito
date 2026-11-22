@@ -124,6 +124,11 @@ for (const [system, extension, fixture] of [
         buffer: bios,
       });
       await page.getByRole("button", { name: "Store BIOS", exact: true }).click();
+      await expect(page.getByRole("alert")).toContainText("unrecognized MD5");
+      await page
+        .getByLabel("I trust this unrecognized BIOS and accept unconfirmed compatibility")
+        .check();
+      await page.getByRole("button", { name: "Store BIOS", exact: true }).click();
       await expect(page.getByRole("status").filter({ hasText: "BIOS stored" })).toBeVisible();
     }
     await page.getByLabel("Game file", { exact: true }).setInputFiles({

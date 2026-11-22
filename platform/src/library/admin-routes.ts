@@ -8,6 +8,7 @@ import { requireAdministrator } from "../identity/administrator.ts";
 import type { ServerConfig } from "../server/config.ts";
 import { message } from "../shared/messages.ts";
 import { DiskCapacity } from "../storage/capacity.ts";
+import { verifyBios } from "./bios-verification.ts";
 import type { LocalLibrary } from "./catalog.ts";
 import { prepareDosUpload } from "./dos-upload.ts";
 import { selectFirmware } from "./firmware.ts";
@@ -84,7 +85,10 @@ export function registerGameAdministration(
               source,
               prepared,
               settings.firmware
-                ? Buffer.from(settings.firmware, "base64")
+                ? verifyBios(
+                    Buffer.from(settings.firmware, "base64"),
+                    settings.allowUnrecognizedFirmware,
+                  )
                 : (region) => selectFirmware(directory, region),
             );
           } else await validateRom(source, filename, settings.system);

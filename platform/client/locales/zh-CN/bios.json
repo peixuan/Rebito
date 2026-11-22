@@ -11,6 +11,9 @@
   "bios.missing": "未上传",
   "bios.upload": "保存 BIOS",
   "bios.refresh": "刷新 BIOS",
+  "bios.recognized": "校验值已识别",
+  "bios.unrecognized": "校验值未识别",
+  "bios.allowUnrecognized": "我信任此未知 BIOS，并接受兼容性尚未确认",
   "bios.saved": "BIOS 已保存，新增游戏时将按区域自动匹配。",
   "bios.automatic": "系统根据光盘区域自动选用上方公共库中的 BIOS，无需为每个游戏重复上传。",
   "bios.useLatest": "使用公共库中该区域的当前 BIOS"

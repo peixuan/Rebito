@@ -42,6 +42,7 @@
   "library.cueTracks": "CUE 轨道配置无效；支持单碟 MODE1 数据轨和 BINARY 音频轨。",
   "library.cueFiles": "CUE 引用的 BIN 文件缺失、重复或格式不支持。",
   "library.biosFormat": "请选择 128 KiB 的日版、美版或欧版 Mega CD BIOS。",
+  "library.biosUnrecognized": "{region} 区域 BIOS 的 MD5 未被识别：{md5}。请核对文件；仅在信任该固件时明确允许使用，其兼容性尚未确认。",
   "library.cueSize": "光盘配置文件过大。",
   "library.biosMissing": "游戏版本缺少唯一的 BIOS。",
   "library.singleCue": "ZIP 中必须有且只有一个 CUE 光盘目录。",

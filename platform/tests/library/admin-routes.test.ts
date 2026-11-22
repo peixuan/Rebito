@@ -141,7 +141,11 @@ it("protects regional firmware uploads and rejects stale or malformed requests",
   const current = (
     await app.inject({ url: "/api/admin/firmware", headers: { cookie: admin } })
   ).json();
-  const payload = { token: current.token, firmware: discBios("E").toString("base64") };
+  const payload = {
+    token: current.token,
+    firmware: discBios("E").toString("base64"),
+    allowUnrecognized: true,
+  };
   const send = (body: unknown, site = origin) =>
     app.inject({
       method: "POST",
@@ -150,14 +154,18 @@ it("protects regional firmware uploads and rejects stale or malformed requests",
       payload: body as object,
     });
   expect((await send(payload, "https://elsewhere.test")).statusCode).toBe(403);
+  expect((await send({ ...payload, allowUnrecognized: false })).statusCode).toBe(422);
   expect((await send({ ...payload, firmware: "bad" })).statusCode).toBe(422);
   expect((await send({ ...payload, firmware: "x".repeat(180000) })).statusCode).toBe(413);
   const saved = await send(payload);
   expect(saved.statusCode).toBe(200);
-  expect(saved.json().entries).toContainEqual({
-    region: "E",
-    sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
-  });
+  expect(saved.json().entries).toContainEqual(
+    expect.objectContaining({
+      region: "E",
+      sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+      recognized: false,
+    }),
+  );
   expect((await send(payload)).statusCode).toBe(409);
 });
 
@@ -232,8 +240,17 @@ it("requires matching BIOS, publishes a private CD package and cleans failed upl
     title: "Mega CD fixture",
     system: "segacd",
     firmware: discBios().toString("base64"),
+    allowUnrecognizedFirmware: true,
   };
   expect((await upload({ metadata, bytes: discArchive(), cookie: player })).statusCode).toBe(403);
+  expect(
+    (
+      await upload({
+        metadata: { ...metadata, allowUnrecognizedFirmware: false },
+        bytes: discArchive(),
+      })
+    ).statusCode,
+  ).toBe(422);
   expect(
     (await upload({ metadata: { ...metadata, firmware: undefined }, bytes: discArchive() }))
       .statusCode,

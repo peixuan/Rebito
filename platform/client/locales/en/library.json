@@ -42,6 +42,7 @@
   "library.cueTracks": "The CUE track configuration is invalid. Single-disc MODE1 data tracks and BINARY audio tracks are supported.",
   "library.cueFiles": "A BIN file referenced by the CUE is missing, duplicated or in an unsupported format.",
   "library.biosFormat": "Select a 128 KiB Japanese, US or European Mega CD BIOS.",
+  "library.biosUnrecognized": "Region {region} BIOS has an unrecognized MD5: {md5}. Check your file. Only explicitly allow it if you trust this firmware; compatibility is not confirmed.",
   "library.cueSize": "The disc configuration file is too large.",
   "library.biosMissing": "The game release does not contain exactly one BIOS.",
   "library.singleCue": "The ZIP must contain exactly one CUE disc sheet.",

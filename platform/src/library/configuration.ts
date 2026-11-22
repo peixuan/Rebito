@@ -6,6 +6,7 @@ import { z } from "zod";
 import { discUploadLimits, dosExecutablePattern } from "../domain/game-import.ts";
 import { message } from "../shared/messages.ts";
 import { DiskCapacity } from "../storage/capacity.ts";
+import { verifyBios } from "./bios-verification.ts";
 import { catalogSchema, type LibraryEntry, releaseId } from "./catalog.ts";
 import { parseDosLaunch } from "./dos-launch.ts";
 import { prepareDosUpload } from "./dos-upload.ts";
@@ -26,6 +27,7 @@ export const configurationChange = z.strictObject({
   editor: gameUploadSchema.shape.editor.nullable(),
   firmware: gameUploadSchema.shape.firmware,
   useLibraryFirmware: z.boolean().optional(),
+  allowUnrecognizedFirmware: z.boolean().optional(),
   launch: z
     .object(gameUploadSchema.shape)
     .pick({ executable: true, arguments: true, cycles: true, saveFiles: true })
@@ -116,7 +118,10 @@ export async function changeConfiguration(
         const current = await inspectDiscFirmware(join(directory, entry.file));
         const bytes = change.useLibraryFirmware
           ? await selectFirmware(directory, current.region)
-          : Buffer.from(change.firmware ?? "", "base64");
+          : verifyBios(
+              Buffer.from(change.firmware ?? "", "base64"),
+              change.allowUnrecognizedFirmware,
+            );
         const hash = createHash("sha256").update(bytes).digest("hex");
         if (current.sha256 !== hash)
           settings = gameUploadSchema.parse({

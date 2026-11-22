@@ -3,6 +3,7 @@ import { access, type FileHandle, mkdir, open, rename, rm } from "node:fs/promis
 import { join } from "node:path";
 import { message } from "../shared/messages.ts";
 import { DiskCapacity } from "../storage/capacity.ts";
+import { describeBios, verifyBios } from "./bios-verification.ts";
 import { readDiscFirmware, validateDiscBios } from "./segacd-upload.ts";
 import { syncDirectory, withCatalog, withLibraryLock } from "./transaction.ts";
 import { LibraryError } from "./upload-settings.ts";
@@ -41,7 +42,13 @@ export async function describeFirmware(directory: string) {
   const entries = [];
   for (const region of firmwareRegions) {
     const bytes = await readFirmware(directory, region);
-    entries.push({ region, sha256: bytes ? digest(bytes) : null });
+    const bios = bytes ? describeBios(bytes) : null;
+    entries.push({
+      region,
+      sha256: bytes ? digest(bytes) : null,
+      md5: bios?.md5 ?? null,
+      recognized: bios?.recognized ?? false,
+    });
   }
   return { entries, token: digest(JSON.stringify(entries)) };
 }
@@ -76,7 +83,9 @@ export async function storeFirmware(
   bytes: Buffer,
   token: string,
   minimumFreeBytes: number,
+  allowUnrecognized = false,
 ) {
+  verifyBios(bytes, allowUnrecognized);
   const { region } = validateDiscBios(bytes);
   return withLibraryLock(directory, async () => {
     const current = await describeFirmware(directory);

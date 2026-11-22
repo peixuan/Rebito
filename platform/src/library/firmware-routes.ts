@@ -24,6 +24,7 @@ export function registerFirmware(
       .strictObject({
         token: z.string().regex(/^[a-f0-9]{64}$/),
         firmware: gameUploadSchema.shape.firmware.nonoptional(),
+        allowUnrecognized: z.boolean().optional(),
       })
       .safeParse(request.body);
     if (!parsed.success) throw new LibraryError(message("library.biosFormat"));
@@ -32,6 +33,7 @@ export function registerFirmware(
       Buffer.from(parsed.data.firmware, "base64"),
       parsed.data.token,
       config.minimumFreeBytes,
+      parsed.data.allowUnrecognized,
     );
   });
 }

@@ -74,7 +74,15 @@ a derived release with the current shared BIOS. No vendor firmware is distribute
 The registry is bounded to 384 KiB and does not retain replacement history.
 Firmware-only requests do not read or hash game assets. See [library management](../../platform/LIBRARY.md).
 
-Local lint, types, build and 395 unit/database tests pass. Focused browser checks
+MD5 recognition covers the documented J/U/E dumps, both common US revisions and
+the additional Japanese dump used by the operator. New unknown uploads require an
+explicit administrator acknowledgment; malformed files and mismatched regions
+remain rejected. Existing packages keep their identities. Private copies of all
+three operator BIOS files matched the registry; one-byte mutations were rejected
+without modifying originals. Public tests use original synthetic firmware and the
+same explicit acknowledgment, never vendor firmware or a test-only bypass.
+
+Local lint, types, build and 396 unit/database tests pass. Focused browser checks
 cover regional reuse across distinct discs, rejected files, configuration updates,
 private progress and real emulator save/restore. Private J/U/E firmware headers
 were recognized read-only; this is not an all-firmware compatibility claim.

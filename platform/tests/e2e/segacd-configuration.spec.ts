@@ -14,6 +14,7 @@ test("replaces BIOS without a disc upload and preserves old private profiles", a
         title: "Original disc configuration",
         system: "segacd",
         firmware: bios.toString("base64"),
+        allowUnrecognizedFirmware: true,
       }),
       file: { name: "disc.zip", mimeType: "application/zip", buffer: Buffer.from(discArchive()) },
     },
@@ -51,6 +52,11 @@ test("replaces BIOS without a disc upload and preserves old private profiles", a
   bios[0x1001] = 4;
   await select(bios);
   await page.getByRole("button", { name: "Store BIOS", exact: true }).click();
+  await expect(page.getByRole("alert")).toContainText("unrecognized MD5");
+  await page
+    .getByLabel("I trust this unrecognized BIOS and accept unconfirmed compatibility")
+    .check();
+  await page.getByRole("button", { name: "Store BIOS", exact: true }).click();
   await expect(page.getByRole("status").filter({ hasText: "BIOS stored" })).toBeVisible();
   const originalAsset = unzipSync(
     await (await page.request.get(`/api/games/${original.id}/asset`)).body(),
@@ -87,6 +93,11 @@ test("uploads two discs with one automatically identified regional BIOS", async 
     mimeType: "application/octet-stream",
     buffer: discBios("U"),
   });
+  await shared.getByRole("button", { name: "Store BIOS", exact: true }).click();
+  await expect(shared.getByRole("alert")).toContainText("unrecognized MD5");
+  await shared
+    .getByLabel("I trust this unrecognized BIOS and accept unconfirmed compatibility")
+    .check();
   await shared.getByRole("button", { name: "Store BIOS", exact: true }).click();
   await expect(shared.getByRole("status")).toContainText("BIOS stored");
   await expect(shared).toContainText("USA: Available");

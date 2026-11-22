@@ -22,7 +22,7 @@ afterEach(async () => {
 });
 const snapshot = () => withLibraryLock(directory, () => describeFirmware(directory));
 async function upload(bytes: Buffer) {
-  return storeFirmware(directory, bytes, (await snapshot()).token, 0);
+  return storeFirmware(directory, bytes, (await snapshot()).token, 0, true);
 }
 
 it("recognizes regions, deduplicates uploads and bounds replacements to three slots", async () => {
@@ -41,9 +41,11 @@ it("recognizes regions, deduplicates uploads and bounds replacements to three sl
   expect(next.entries.slice(1)).toEqual(previous.entries.slice(1));
   expect(await readdir(join(directory, "firmware"))).toHaveLength(3);
   expect(await readdir(join(directory, ".uploads"))).toEqual([]);
-  await expect(storeFirmware(directory, discBios(), previous.token, 0)).rejects.toMatchObject({
-    statusCode: 409,
-  });
+  await expect(storeFirmware(directory, discBios(), previous.token, 0, true)).rejects.toMatchObject(
+    {
+      statusCode: 409,
+    },
+  );
   expect(await readFirmware(directory, "J")).toEqual(changed);
 });
 
@@ -56,12 +58,16 @@ it("keeps firmware management independent of game catalog parsing and asset read
 
 it("preserves the library on invalid firmware, full disks and concurrent publication", async () => {
   const current = await upload(discBios());
+  await expect(storeFirmware(directory, discBios("U"), current.token, 0)).rejects.toThrow(
+    "library.biosUnrecognized",
+  );
+  expect(await readFirmware(directory, "U")).toBeNull();
   await expect(upload(Buffer.alloc(131072))).rejects.toThrow("library.biosFormat");
   await expect(
-    storeFirmware(directory, discBios("U"), current.token, Number.MAX_SAFE_INTEGER),
+    storeFirmware(directory, discBios("U"), current.token, Number.MAX_SAFE_INTEGER, true),
   ).rejects.toThrow("Insufficient");
   const outcomes = await Promise.allSettled(
-    ["U", "E"].map((region) => storeFirmware(directory, discBios(region), current.token, 0)),
+    ["U", "E"].map((region) => storeFirmware(directory, discBios(region), current.token, 0, true)),
   );
   expect(outcomes.filter((outcome) => outcome.status === "fulfilled")).toHaveLength(1);
   expect(await readFirmware(directory, "J")).toEqual(discBios());

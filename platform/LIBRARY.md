@@ -112,6 +112,35 @@ catalog order. It never overwrites an administrator's selection or changes a rel
 Back up this directory with the rest of application data. BIOS files are operator
 content, never source-code or distribution artifacts.
 
+#### BIOS checksums
+
+Files must be exactly **131072 bytes (128 KiB)** with a recognized regional header.
+Upload names are unrestricted; published files use the canonical names below.
+The registry recognizes these MD5 identities:
+
+| Region | Canonical filename | Recognized MD5                     |
+| ------ | ------------------ | ---------------------------------- |
+| Japan  | `bios_CD_J.bin`    | `278a9397d192149e84e820ac621a8edd` |
+| Japan  | `bios_CD_J.bin`    | `bdeb4c47da613946d422d97d98b21cda` |
+| USA    | `bios_CD_U.bin`    | `2efd74e3232ff260e371b99f84024f7f` |
+| USA    | `bios_CD_U.bin`    | `854b9150240a198070150e4566ae1290` |
+| Europe | `bios_CD_E.bin`    | `e66fa1dc5820d254611fdcdba0662372` |
+
+Sources: [PicoDrive](https://docs.libretro.com/library/picodrive/#bios),
+[Genesis Plus GX](https://docs.libretro.com/library/genesis_plus_gx/#bios),
+[webRcade's version table](https://docs.webrcade.com/apps/emulators/segacd/), and
+[Provenance's additional Japanese dump](https://github.com/Provenance-Emu/wiki/blob/master/installation-and-usage/bios-requirements.md).
+The US entries represent different revisions; one checksum is not a universal
+requirement. Identity recognition does not guarantee compatibility with every game.
+
+Unknown checksums are rejected by default, even with a valid size and header.
+An administrator may explicitly accept unconfirmed compatibility after reviewing
+the displayed MD5. The registry API uses `allowUnrecognized: true`; legacy per-game
+uploads/configuration overrides use `allowUnrecognizedFirmware: true`. Neither
+option bypasses size, header, region, authorization or revision checks. Existing
+installed firmware remains usable and is labeled when unrecognized. SHA-256, not
+MD5, continues to identify immutable releases and protect storage integrity.
+
 In **Game management**, select **Mega CD / Sega CD**, then use **Shared Mega CD BIOS**
 to upload each needed region once. The page shows Japan, USA and Europe availability,
 regardless of file names. Upload a ZIP containing exactly one CUE and all its

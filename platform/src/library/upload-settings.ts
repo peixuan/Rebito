@@ -27,6 +27,7 @@ export const gameUploadSchema = z
       .length(174764)
       .regex(/^[A-Za-z0-9+/]+=$/)
       .optional(),
+    allowUnrecognizedFirmware: z.boolean().optional(),
   })
   .superRefine((value, context) => {
     const entry = catalogSchema.shape.games.element.safeParse({
@@ -42,7 +43,9 @@ export const gameUploadSchema = z
       value.system === "dos"
         ? dosExecutablePattern.test(value.executable)
         : !value.executable && !value.arguments && value.cycles === "auto";
-    const firmware = value.system === "segacd" || !value.firmware;
+    const firmware =
+      (value.system === "segacd" || !value.firmware) &&
+      (!value.allowUnrecognizedFirmware || (value.system === "segacd" && Boolean(value.firmware)));
     if (!entry.success || !launch || !firmware)
       context.addIssue({ code: "custom", message: "Invalid game launch or save settings" });
   });

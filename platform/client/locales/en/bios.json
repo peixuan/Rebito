@@ -11,6 +11,9 @@
   "bios.missing": "Not uploaded",
   "bios.upload": "Store BIOS",
   "bios.refresh": "Refresh BIOS",
+  "bios.recognized": "Known checksum",
+  "bios.unrecognized": "Unrecognized checksum",
+  "bios.allowUnrecognized": "I trust this unrecognized BIOS and accept unconfirmed compatibility",
   "bios.saved": "BIOS stored. New games will select it automatically by region.",
   "bios.automatic": "The disc region automatically selects a BIOS from the shared library above. No per-game BIOS upload is needed.",
   "bios.useLatest": "Use the current shared BIOS for this region"
