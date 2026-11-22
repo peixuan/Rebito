@@ -87,3 +87,32 @@ world, character and index files or know when an arbitrary game finishes saving.
 Verify related-file completeness and open-handle/cache behavior for each game.
 Dynamic file discovery and live creation/deletion are not yet supported by editing.
 Do not equate a coherent paused filesystem capture with a completed in-game save.
+
+## Console memory editing
+
+Supported console editors modify a paused emulator checkpoint. Return to the
+game's supported field or strategic menu, then choose **Capture for editing**.
+The capture remains paused after publication. Changing language or navigating
+editor records preserves the draft; resume, upload and stop remain blocked while
+a console draft is pending. The editor displays its game-specific instructions.
+
+Before publishing an edit, the browser verifies every captured artifact against
+the selected revision, including native SRAM. The server authorizes the owner,
+checks the installed editor and exact reviewed runtime identity, extracts the
+editor's memory domain, transforms it and replaces only `__runtime/state.bin`.
+Companion artifacts remain unchanged in the same atomic revision. Existing
+ownership, storage leases, quotas and compare-and-swap checks still apply.
+
+The browser downloads and verifies the published state. The pinned cores queue
+state loading, so writeback briefly advances the core, pauses again, then checks
+the changed bytes and surrounding scalar bytes plus every native companion.
+Unrelated state may advance during those frames. Ignored loads, changed values,
+download failures and timeouts retain the published revision and a paused game.
+Retry uses that same revision and original capture; it does not republish, rebase
+or capture stale local bytes. A known newer cloud head prevents automatic resume.
+Wrapper play controls and local quick-state shortcuts cannot bypass this pause.
+
+A checkpoint edit changes RAM, not the game's native save. Use the game's own
+save command after resuming to retain changes there. Mega-CD internal BRAM and
+RAM cartridge files remain distinct; keep both checkpoint artifacts. This path
+does not provide arbitrary browser memory writes or support unreviewed cores.

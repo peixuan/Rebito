@@ -68,8 +68,20 @@ has already passed this review.
 Runtime adapters must isolate browser persistence by profile and load the chosen
 server revision before play. History restores and external imports invalidate an
 active instance. DOS editor saves use the guarded native-file capability below;
-adapters without it still require a fresh instance after an editor publication.
+reviewed MD/Mega-CD editors use guarded checkpoint replacement. Other adapters
+still require a fresh instance after an editor publication.
 Real game acceptance checks are separate from installer and manifest tests.
+
+Console editing parses the pinned RetroArch `RASTATE` envelope and a selected
+Genesis Plus GX or PicoDrive memory domain. It preserves unknown state blocks,
+padding and unrelated memory. Genesis Plus GX work RAM and PicoDrive main/program
+RAM are word-swapped in these builds and converted to guest byte order before
+game-specific editing. The server accepts only explicitly reviewed runtime
+fingerprints; an emulator upgrade needs fresh format and actual load/readback
+evidence. Snapshot size or magic alone does not establish compatibility.
+See [snapshot synchronization](SYNCHRONIZATION.md#console-memory-editing),
+[Phantasy Star IV](src/editors/phantasy-star4/README.md) and
+[Romance of the Three Kingdoms III](src/editors/san3/README.md).
 
 The player shows an expanded keyboard-to-controller guide for player one after
 startup. The optional `RuntimeControls` capability keeps the page independent of

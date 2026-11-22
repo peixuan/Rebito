@@ -82,6 +82,14 @@ of the complete edited file group. Failed writeback retains the published revisi
 blocks stale uploads. Game memory and filesystem state remain distinct; users reload
 the save inside the game. See [runtime details](../../platform/RUNTIMES.md).
 
+An independent snapshot capability supports reviewed console memory editors.
+The runtime owns capture/load acknowledgement; a format adapter owns the pinned
+state envelope and byte order; each game editor sees only canonical guest RAM.
+The save service replaces one checkpoint artifact while retaining native-save
+companions. No server process attaches to a desktop emulator and clients cannot
+submit arbitrary offsets or choose a parser. Publication and failed-writeback
+recovery reuse the existing ownership and revision boundaries.
+
 Blob storage has a local-directory implementation initially. The service publishes
 metadata only after blobs are durable; failed publication can leave reclaimable
 unreferenced blobs, never a visible revision referencing an incomplete upload.

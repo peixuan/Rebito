@@ -57,6 +57,10 @@ because an upstream documentation page lists a feature.
 - Live DOS edits replace only the declared native file group after verifying each
   member's base bytes. Keep failed writeback paused and retry the published revision; never
   republish or upload stale runtime bytes. File changes do not update game RAM.
+- Console memory edits require a paused captured revision and a reviewed runtime
+  format. Preserve native-save companions, verify actual load/readback, and keep
+  failed writeback paused. Wrapper controls must not bypass workspace pauses.
+  Retrying a published edit reuses its original capture and revision.
 - Administrators choose game/editor associations; do not gate them on game hashes.
   Validate save structure and edits at use time, preserve unknown bytes and do not
   claim that structural checks prove compatibility with every game edition.

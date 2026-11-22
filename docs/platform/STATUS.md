@@ -93,6 +93,38 @@ cancelled additions, stale concurrent writers and failed multi-file batches.
 Every release still requires the complete browser suite, hosted checks and deployed
 save-preservation acceptance for its exact revision, without weakening any gate.
 
+## Console memory editors
+
+Reviewed Genesis Plus GX and PicoDrive snapshots now expose canonical guest RAM
+to pure game editors. Runtime identities are pinned separately from administrator
+game associations. Capture for editing pauses and publishes one base; writeback
+checks the complete capture, publishes atomically, verifies the actual queued
+load and preserves failures paused for retry of the same revision. Native SRAM,
+opaque state blocks and unrelated bytes remain unchanged. Wrapper controls cannot
+bypass the workspace pause. See [synchronization](../../platform/SYNCHRONIZATION.md#console-memory-editing).
+
+The [Phantasy Star IV adapter](../../platform/src/editors/phantasy-star4/README.md)
+supports the supplied Ken Tse Chinese 1.6 Original mode: money, experience,
+current HP/TP, learned skill uses and forty-slot inventory with actual reordering.
+Equipment, learned ability IDs, maximum stats and derived combat values remain
+read-only. Its attributed MIT name catalog is separate from the independently
+implemented parser; the local reference editor supplied no reusable license.
+
+The [Japanese Mega-CD SAN3 adapter](../../platform/src/editors/san3/README.md)
+edits strategic population, gold, food, soldiers, loyalty, training and morale.
+Cities, officers and read-only faction totals share the compact bilingual editor.
+Ownership changes, battle data and historical base-attribute editing are excluded.
+Both games passed private original-game edit, in-game save and fresh native-save
+boot checks. This is evidence for those editions and tested fields, not universal
+ROM compatibility; proprietary samples and diagnostic output are not published.
+
+All 495 database/unit tests pass (98.41% line and 94.43% branch coverage), along
+with the 26 repository policy tests and dependency/license checks. Real MD/CD
+runtime tests verify load acknowledgement, native-save preservation and pause
+ownership. All 63 sandboxed browser flows pass, including console writeback
+recovery and the existing DOS workflows. Hosted checks and production preservation
+acceptance remain mandatory for each exact revision before promotion.
+
 ## Shared Mega CD BIOS
 
 Administrators maintain one 128 KiB BIOS per J/U/E region. Content headers identify
