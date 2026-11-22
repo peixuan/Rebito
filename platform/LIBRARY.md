@@ -17,7 +17,9 @@ Create a metadata JSON file, for example:
 Systems are `dos`, `nes`, `snes`, `gb`, `gba`, `md`, `sms`, `gg`, `segacd`.
 Cartridge console files are uncompressed ROMs;
 DOS files are `.jsdos` ZIP bundles with `.jsdos/dosbox.conf`. DOS metadata also
-accepts `saveFiles` (portable relative file paths) and optional `editor: "koukai2"`.
+accepts `saveFiles` (portable relative file paths) and an optional installed editor:
+`"koukai2"` or `"jinyong"`. For original DOS Heroes of Jin Yong, follow the
+[editor and nine-file synchronization guide](../docs/platform/JINYONG_EDITOR.md).
 The operator chooses the appropriate editor; program fingerprints do not gate
 association. Each CLI-imported file is
 limited to 512 MiB; browser cartridge/DOS uploads are limited to 64 MiB. Mega CD

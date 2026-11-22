@@ -71,4 +71,19 @@ The implementation is original code based on independently checked format facts;
 no reference implementation, game resource or private save is copied into tests.
 Public fixtures are synthetic. Private read-only inspection confirmed the original
 index boundaries, all record identifiers, names and byte-identical read/copy output.
-This format check alone is not a passed game-load or deployment test.
+
+On 2026-11-22, private acceptance ran the local DOS game through Rebito's js-dos
+8.5.3 adapter in Chrome with its sandbox enabled. Initial data was copied into an
+isolated save, loaded and saved through the game's menu. The adapter then changed
+ten fields and replaced only R1.GRP through guarded live writeback. Reloading in
+the game displayed health 876/888, energy 555/777, attack 90, level-10 art, item
+quantity 8 and silver 12345. Saving again retained all ten edits; only two position
+header bytes differed from the edited file after movement. Original files were
+read-only, and no private files or screenshots are shipped. This is representative
+game-load/save evidence, not every field, game dump, MOD or battle-path coverage.
+
+Synthetic tests independently check byte offsets, malformed inputs, numeric bounds,
+ownership, stale revisions, concurrent publication and atomic multi-file failures.
+The browser flow verifies administrator association, accessible choices, clamping,
+sorting, language retention and byte-exact downloads of all nine files after edits
+to two slots. No emulator, database or revision protocol is replaced by this editor.

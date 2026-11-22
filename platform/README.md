@@ -24,7 +24,9 @@ same application. The game library supports private profiles, file imports,
 downloads and history restoration. See [LIBRARY.md](LIBRARY.md) for game assets.
 DOS, NES, SNES, GB and GBA run on the same page with cloud-save publication and
 revision checks. The Koukai2 editor provides eight modules, compact bounded inputs,
-sortable tables and multi-slot edits; see [editor verification](EDITORS.md).
+sortable tables and multi-slot edits. The original DOS Heroes of Jin Yong editor
+adds characters, learned martial arts and inventory/silver, with three native save
+files and unchanged companion files; see [editor verification](EDITORS.md).
 Console snapshots retain emulator state and native battery saves when available;
 games without battery saves can use snapshots. A runtime upgrade may require
 importing a native save instead of loading an old snapshot. Back up before upgrades.

@@ -63,6 +63,25 @@ Windows games, persistent offline upload queues, automatic history pruning and
 arbitrary third-party editors are not implemented. DOSBox-X remains a future
 Windows 95/98/ME candidate, not evidence of general Win32 support.
 
+## Original DOS Heroes of Jin Yong editor
+
+The `jinyong` adapter adds characters, ten learned-art slots and inventory/silver
+for the original 114242-byte R1/R2/R3.GRP format. MODs and remakes are outside scope;
+record validation is not proof of provenance. The registry supplies administrator
+association and bilingual guidance. Native filename filtering excludes RANGER.GRP;
+S/D companions and unknown bytes remain intact. There are no new dependencies,
+HTTP endpoints or persistence paths. See [setup and evidence](JINYONG_EDITOR.md).
+
+All 419 database/unit tests pass, with 98.17% line and 93.17% branch coverage overall.
+Lint, browser/server types, production build, focused browser editing and private
+real-DOS edit/load/save checks pass. The browser flow covers three native saves,
+two-file drafts, language switching, input clamping, sorting and complete companion
+preservation. Shared choice controls now expose their translated accessible names.
+The private original game retained ten representative edits after reloading and
+saving again; no proprietary fixture or downloaded editor code is distributed.
+Every release still requires the complete browser suite, hosted checks and deployed
+save-preservation acceptance for its exact revision, without weakening any gate.
+
 ## Shared Mega CD BIOS
 
 Administrators maintain one 128 KiB BIOS per J/U/E region. Content headers identify

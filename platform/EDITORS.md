@@ -27,6 +27,15 @@ The current Koukai2 adapter targets the DOS PC ten-slot `KOUKAI2.DAT` format;
 administrators must declare its path for native synchronization. The library's
 asset hashes still protect storage integrity and identify releases, not compatibility.
 
+## Original DOS Heroes of Jin Yong
+
+The `jinyong` adapter edits original `R1.GRP`, `R2.GRP` and `R3.GRP` saves through
+character, learned-art and inventory modules. It does not support MODs or remakes.
+All nine R/S/D files belong to the synchronized collection; only R files are writable
+through the editor. Its filename boundary excludes similarly structured initial
+resources such as `RANGER.GRP`. Names are decoded from the user's save rather than
+shipped as game data. See [format, setup and verification](../docs/platform/JINYONG_EDITOR.md).
+
 ## Koukai2 PC format
 
 The first module recognizes a candidate layout of exactly 328991 bytes:

@@ -30,7 +30,8 @@ save revisions and optional game-specific save editors.
 - DOS supports groups of native save files. Consoles support battery saves and
   snapshots provided by their emulator core.
 - Uncharted Waters II (Koukai2) is the first game-specific editor, not a universal
-  save format for the platform.
+  save format for the platform. Original DOS Heroes of Jin Yong also has character,
+  martial-art and inventory editing; MODs and remakes are outside its scope.
 - English and Simplified Chinese interfaces follow the browser's language on first
   use, fall back to English, and remember manual language changes.
 
