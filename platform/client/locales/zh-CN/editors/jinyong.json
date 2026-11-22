@@ -1,4 +1,13 @@
 {
+  "jinyong.position": "背包位置",
+  "jinyong.positionHelp": "保存并在游戏内读档后，按此顺序排列。点击表头排序只影响此列表。新增物品后才能移动。",
+  "jinyong.ownedOnly": "只看已持有",
+  "jinyong.bagSlot": "背包第 {index} 格",
+  "jinyong.emptySlot": "空位",
+  "jinyong.top": "置顶",
+  "jinyong.up": "上移",
+  "jinyong.down": "下移",
+  "jinyong.bottom": "置底",
   "jinyong.sex": "性别／自宫状态",
   "jinyong.male": "男性（未自宫）",
   "jinyong.female": "女性",

@@ -28,7 +28,24 @@ export function fieldsFor(
   module: JinyongModule,
   index: number,
 ): EditorField[] {
-  if (module === "inventory") return [inventoryField(document, index)];
+  if (module === "inventory") {
+    const held = document.inventory().filter(({ id }) => id !== -1);
+    const position = held.findIndex(({ id }) => id === index) + 1;
+    return [
+      inventoryField(document, index),
+      {
+        key: `inventory.${index}.position`,
+        label: message("jinyong.position"),
+        group: message("jinyong.inventory"),
+        columnId: "position",
+        value: position,
+        min: position ? 1 : 0,
+        max: held.length,
+        readonly: !position,
+        help: message("jinyong.positionHelp"),
+      },
+    ];
+  }
   const fields =
     module === "characters" ? personFields(document, index) : skillFields(document, index);
   return fields.map(({ offset: _offset, unsigned: _unsigned, ...field }) => field);
@@ -53,13 +70,16 @@ export function rowsFor(document: JinyongDocument, module: JinyongModule): Edito
       label: recordLabel(document, module, index),
       summary:
         module !== "inventory" && document.inParty(index) ? message("jinyong.partyMember") : "",
-      tags: [],
+      tags: module === "inventory" && Number(cells.position) > 0 ? ["owned"] : [],
       available: true,
       cells,
     };
   });
-  // Keep silver easy to find without changing stable item identifiers.
+  // Held items follow the native bag; the remaining catalog is available for adding.
   return module === "inventory"
-    ? rows.sort((left, right) => Number(right.id === "174") - Number(left.id === "174"))
+    ? rows.sort(
+        (left, right) =>
+          (Number(left.cells.position) || Infinity) - (Number(right.cells.position) || Infinity),
+      )
     : rows;
 }

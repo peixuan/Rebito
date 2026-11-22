@@ -54,6 +54,7 @@ test("associates the original editor and preserves bilingual drafts across nativ
   await page.getByRole("button", { name: "Create profile", exact: true }).click();
   await page.getByRole("button", { name: "Open profile", exact: true }).click();
   const original = Buffer.from(jinyongFixture());
+  original.writeInt16LE(2, 0x360);
   const files = [1, 2, 3].flatMap((slot) => [
     { name: `R${slot}.GRP`, mimeType: "application/octet-stream", buffer: original },
     { name: `S${slot}.GRP`, mimeType: "application/octet-stream", buffer: Buffer.from([slot, 2]) },
@@ -63,6 +64,9 @@ test("associates the original editor and preserves bilingual drafts across nativ
   await page.getByRole("button", { name: "Upload save", exact: true }).click();
   const editor = page.getByRole("region", { name: "Save editor" });
   const health = editor.getByLabel("Health", { exact: true });
+  const sex = editor.getByRole("combobox", { name: "Sex / castration status" });
+  await expect(sex).toBeDisabled();
+  await expect(sex).toHaveText("Castrated");
   await expect(health).toHaveValue("32");
   expect((await health.boundingBox())?.width).toBeLessThan(150);
   await health.fill("999999");
@@ -77,12 +81,15 @@ test("associates the original editor and preserves bilingual drafts across nativ
   await firstArt.getByLabel("Proficiency", { exact: true }).fill("900");
   await firstArt.getByLabel("Proficiency", { exact: true }).press("Tab");
   await editor.getByRole("button", { name: "Inventory and silver", exact: true }).click();
+  const owned = editor.getByRole("checkbox", { name: "Owned items only" });
+  await expect(owned).toBeChecked();
+  await expect(editor.locator(".record-table tbody tr")).toHaveCount(1);
+  await expect(
+    editor.getByRole("columnheader", { name: "Bag position", exact: true }),
+  ).toBeVisible();
   await editor.getByLabel("Quantity", { exact: true }).fill("30001");
   await editor.getByLabel("Quantity", { exact: true }).press("Tab");
   await expect(editor.getByLabel("Quantity", { exact: true })).toHaveValue("30000");
-  await editor.getByLabel("Visible columns").press("Space");
-  await page.getByRole("option", { name: "Quantity", exact: true }).click();
-  await page.keyboard.press("Escape");
   await editor.getByRole("columnheader", { name: "Quantity", exact: true }).click();
   await editor.getByRole("columnheader", { name: "Quantity", exact: true }).click();
   await expect(editor.locator(".record-table tbody tr").first()).toContainText("Silver");
@@ -92,10 +99,31 @@ test("associates the original editor and preserves bilingual drafts across nativ
   await editor.getByLabel("File to edit").click();
   await page.getByRole("option", { name: "R2.GRP", exact: true }).click();
   await expect(editor.getByLabel("Quantity", { exact: true })).toHaveValue("100");
+  await owned.uncheck();
   await editor.getByLabel("Search records").fill("Test199");
   await editor.getByRole("row").filter({ hasText: "Test199" }).click();
   await editor.getByLabel("Quantity", { exact: true }).fill("8");
   await editor.getByLabel("Quantity", { exact: true }).press("Tab");
+  // Navigating validates the addition, then moving it expands into stable draft keys.
+  await editor.getByRole("button", { name: "Characters", exact: true }).click();
+  await editor.getByRole("button", { name: "Inventory and silver", exact: true }).click();
+  await editor.getByRole("button", { name: "Move to top", exact: true }).click();
+  await expect(editor.getByLabel("Bag position", { exact: true })).toHaveValue("1");
+  await editor.getByLabel("Search records").fill("");
+  await owned.check();
+  await expect(editor.locator(".record-table tbody tr")).toHaveCount(2);
+  // Quantity sorting stays independent of the actual bag positions.
+  await expect(editor.locator(".record-table tbody tr").first()).toContainText("Silver");
+  await editor.getByRole("columnheader", { name: "Bag position", exact: true }).click();
+  await expect(editor.locator(".record-table tbody tr").first()).toContainText("Test199");
+  await editor.getByLabel("Bag position", { exact: true }).fill("2");
+  await editor.getByLabel("Bag position", { exact: true }).press("Tab");
+  await editor.getByRole("button", { name: "Characters", exact: true }).click();
+  await editor.getByRole("button", { name: "Inventory and silver", exact: true }).click();
+  await editor.getByRole("button", { name: "Move up", exact: true }).click();
+  await page.getByRole("combobox", { name: "Language" }).selectOption("zh-CN");
+  await expect(page.getByLabel(chinese("jinyong.position"), { exact: true })).toHaveValue("1");
+  await page.getByRole("combobox", { name: chinese("app.language") }).selectOption("en");
   await editor.getByRole("button", { name: "Save edits", exact: true }).click();
   await expect(editor.getByRole("status")).toContainText("Edits were saved as a new revision");
   const profiles: Profile[] = await (await page.request.get("/api/profiles")).json();
@@ -115,8 +143,10 @@ test("associates the original editor and preserves bilingual drafts across nativ
       expected.writeInt16LE(30000, 38);
     }
     if (file.name === "R2.GRP") {
-      expected.writeInt16LE(199, 40);
-      expected.writeInt16LE(8, 42);
+      expected.writeInt16LE(199, 36);
+      expected.writeInt16LE(8, 38);
+      expected.writeInt16LE(174, 40);
+      expected.writeInt16LE(100, 42);
     }
     const response = await page.request.get(
       `/api/revisions/${history[0]?.id}/file?name=${file.name}`,

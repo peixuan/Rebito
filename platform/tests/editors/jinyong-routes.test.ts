@@ -3,6 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, expect, it } from "vitest";
+import { jinyongAdapter } from "../../src/editors/jinyong/adapter.ts";
 import { findEntry } from "../../src/library/configuration.ts";
 import { withCatalog, writeCatalog } from "../../src/library/transaction.ts";
 import { SaveService } from "../../src/saves/service.ts";
@@ -152,4 +153,40 @@ it("admits only one writer and does not merge conflicting saves", async () => {
   const bytes = Buffer.from(await saves.file(users[0]?.id ?? "", winner?.json().id, "R1.GRP"));
   expect([12, 34]).toContain(bytes.readInt16LE(38));
   expect(await saves.revisions.history(users[0]?.id ?? "", revision.profileId)).toHaveLength(2);
+});
+
+it("publishes an expanded bag order atomically and rejects a competing draft", async () => {
+  const revision = await original();
+  const batches = [];
+  for (const quantity of [5, 9]) {
+    const preview = await request(revision.id, {
+      file: "R1.GRP",
+      module: "inventory",
+      changes: { "inventory.1.quantity": quantity },
+      action: { id: "top", record: "1" },
+    });
+    expect(preview.statusCode).toBe(200);
+    batches.push({ file: "R1.GRP", edits: [{ slot: 0, changes: preview.json().changes }] });
+  }
+  expect((await request(revision.id, { files: [batches[0]] }, true, 1)).statusCode).toBe(404);
+  const invalid = { file: "R2.GRP", edits: [{ slot: 0, changes: { "inventory.order.0": 200 } }] };
+  expect((await request(revision.id, { files: [batches[0], invalid] }, true)).statusCode).toBe(422);
+  expect(await saves.revisions.history(users[0]?.id ?? "", revision.profileId)).toHaveLength(1);
+  const results = await Promise.all(
+    batches.map((batch) => request(revision.id, { files: [batch] }, true)),
+  );
+  expect(results.map(({ statusCode }) => statusCode).sort()).toEqual([201, 409]);
+  const winner = results.findIndex(({ statusCode }) => statusCode === 201);
+  const expected = jinyongAdapter.apply(jinyongFixture(), {
+    changes: batches[winner]?.edits[0]?.changes,
+  });
+  const published = results[winner]?.json().id;
+  for (const artifact of revision.manifest.artifacts) {
+    const before = await saves.file(users[0]?.id ?? "", revision.id, artifact.name);
+    const after = await saves.file(users[0]?.id ?? "", published, artifact.name);
+    expect(Buffer.from(after)).toEqual(Buffer.from(artifact.name === "R1.GRP" ? expected : before));
+  }
+  expect(Buffer.from(await saves.file(users[0]?.id ?? "", revision.id, "R1.GRP"))).toEqual(
+    Buffer.from(jinyongFixture()),
+  );
 });

@@ -88,3 +88,76 @@ it("rejects invalid selections, unsupported actions, MOD fields and empty edits"
   );
   expect(() => adapter.view(new Uint8Array(114242), {})).toThrow("editor.invalidSave");
 });
+
+it("shows owned items in native order and replays moves across modules", () => {
+  const bytes = adapter.apply(jinyongFixture(), {
+    changes: { "inventory.1.quantity": 3, "inventory.199.quantity": 8 },
+  });
+  const view = adapter.view(bytes, { module: "inventory", record: "199" });
+  expect(view.filter).toEqual({
+    tag: "owned",
+    label: message("jinyong.ownedOnly"),
+    defaultEnabled: true,
+  });
+  expect(view.columns.every(({ defaultVisible }) => defaultVisible)).toBe(true);
+  expect(view.records.filter(({ tags }) => tags.includes("owned")).map(({ id }) => id)).toEqual([
+    "174",
+    "1",
+    "199",
+  ]);
+  expect(view.fields[1]).toMatchObject({ value: 3, min: 1, max: 3, readonly: false });
+  expect(view.actions.map(({ id }) => id)).toEqual(["top", "up"]);
+  const moved = adapter.view(bytes, {
+    module: "inventory",
+    record: "199",
+    action: { id: "top", record: "199" },
+  });
+  expect(moved.records.slice(0, 3).map(({ id }) => id)).toEqual(["199", "174", "1"]);
+  expect(moved.actions.map(({ id }) => id)).toEqual(["down", "bottom"]);
+  expect(moved.preview[0]).toMatchObject({
+    label: message("jinyong.bagSlot", { index: 1 }),
+    after: "Test199",
+  });
+  const changes = { ...moved.changes, "person.0.health": 88 };
+  const refreshed = adapter.view(bytes, { module: "characters", changes });
+  expect(refreshed.changes).toEqual(changes);
+  const result = adapter.apply(bytes, { changes: refreshed.changes });
+  expect(new DataView(result.buffer).getInt16(36, true)).toBe(199);
+  expect(new DataView(result.buffer).getInt16(0x366, true)).toBe(88);
+  expect(adapter.view(result, { module: "inventory" }).selected).toBe("199");
+});
+
+it("normalizes position commands and removes cancelled additions and moves from drafts", () => {
+  const bytes = jinyongFixture();
+  const moved = adapter.view(bytes, {
+    module: "inventory",
+    changes: {
+      "inventory.199.quantity": 8,
+      "inventory.199.position": 1,
+    },
+  });
+  expect(moved.changes).not.toHaveProperty("inventory.199.position");
+  expect(moved.records[0]?.id).toBe("199");
+  expect(adapter.view(bytes, { changes: moved.changes }).changes).toEqual(moved.changes);
+  const removed = adapter.view(bytes, {
+    changes: { ...moved.changes, "inventory.199.quantity": 0 },
+  });
+  expect(removed.changes).toEqual({});
+  expect(removed.preview).toEqual([]);
+  const empty = adapter.view(bytes, {
+    module: "inventory",
+    changes: { "inventory.174.quantity": 0 },
+  });
+  expect(empty.records.every(({ tags }) => tags.length === 0)).toBe(true);
+  expect(empty.actions).toEqual([]);
+  expect(empty.fields[1]).toMatchObject({ value: 0, readonly: true });
+  expect(adapter.apply(bytes, { changes: empty.changes })).toEqual(
+    adapter.apply(bytes, { changes: { "inventory.174.quantity": 0 } }),
+  );
+  for (const draft of [
+    { changes: { "inventory.invalid": 1 } },
+    { module: "characters", action: { id: "top", record: "174" } },
+    { module: "inventory", action: { id: "top", record: "199" } },
+  ])
+    expect(() => adapter.view(bytes, draft)).toThrow();
+});

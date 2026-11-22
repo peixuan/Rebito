@@ -44,6 +44,15 @@ Inventory edits select one of the original 200 item definitions, including silve
 compacts the known inventory section; quantity-only edits change only the selected
 quantity words. Neither operation changes item definitions or other save sections.
 
+The inventory table initially shows held items in native order with quantity and
+position columns. Disable **Owned items only** to add from the full catalog.
+After adding, preview the draft or switch records to refresh its position controls.
+**Bag position** and the move buttons reorder actual item/quantity pairs; sorting
+a column only changes the table. Preview lists changed bag slots by item name.
+Moves replay against the original revision alongside quantity edits: removed items
+leave the order and new items append. No move changes quantities or other sections.
+The normal revision check rejects stale publication instead of rebasing the order.
+
 ## Library configuration
 
 Choose **Heroes of Jin Yong (original DOS)** in the administrator's editor selector.

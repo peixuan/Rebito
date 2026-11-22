@@ -1,4 +1,13 @@
 {
+  "jinyong.position": "Bag position",
+  "jinyong.positionHelp": "Changes the actual in-game order after saving and reloading. Column sorting only changes this table. Add an item before moving it.",
+  "jinyong.ownedOnly": "Owned items only",
+  "jinyong.bagSlot": "Backpack slot {index}",
+  "jinyong.emptySlot": "Empty",
+  "jinyong.top": "Move to top",
+  "jinyong.up": "Move up",
+  "jinyong.down": "Move down",
+  "jinyong.bottom": "Move to bottom",
   "jinyong.sex": "Sex / castration status",
   "jinyong.male": "Male (not castrated)",
   "jinyong.female": "Female",
