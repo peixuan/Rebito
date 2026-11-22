@@ -11,6 +11,7 @@ const props = defineProps<{ fields: EditorField[]; disabled?: boolean }>();
 const emit = defineEmits<{
   change: [key: string, value: number];
   valid: [key: string, value: boolean];
+  pending: [key: string, value: boolean];
 }>();
 const groups = computed(() => [
   ...new Map(props.fields.map((field) => [textIdentity(field.group), field.group])),
@@ -78,6 +79,7 @@ function options(field: EditorField) {
           :disabled="Boolean(disabled || field.readonly)"
           @update:model-value="emit('change', field.key, $event)"
           @valid="emit('valid', field.key, $event)"
+          @pending="emit('pending', field.key, $event)"
         />
         <small v-if="field.help" class="field-help">{{ translate(field.help) }}</small>
       </div>

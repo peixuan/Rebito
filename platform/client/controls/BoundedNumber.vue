@@ -11,7 +11,11 @@ const props = defineProps<{
   id: string;
   disabled?: boolean;
 }>();
-const emit = defineEmits<{ "update:modelValue": [value: number]; valid: [value: boolean] }>();
+const emit = defineEmits<{
+  "update:modelValue": [value: number];
+  valid: [value: boolean];
+  pending: [value: boolean];
+}>();
 const text = ref(displayNumber(props.modelValue, props.spec));
 const dirty = ref(false);
 const error = ref<DisplayText>("");
@@ -43,6 +47,7 @@ function commit() {
     notice.value = result.adjusted ? message("controls.adjusted") : "";
     emit("update:modelValue", result.raw);
     emit("valid", true);
+    emit("pending", false);
   } catch (cause) {
     error.value = displayMessage(cause) ?? message("controls.enterNumber");
     emit("valid", false);
@@ -63,7 +68,10 @@ function commit() {
       :invalid="Boolean(error)"
       :aria-invalid="Boolean(error)"
       :aria-describedby="`${id}-feedback`"
-      @input="dirty = true"
+      @input="
+        dirty = true;
+        emit('pending', true);
+      "
       @blur="commit"
       @keydown.enter.prevent="commit"
     />

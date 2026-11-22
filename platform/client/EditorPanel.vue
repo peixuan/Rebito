@@ -19,7 +19,7 @@ const props = defineProps<{
   revisionId: string;
   publish?: (revisionId: string, batch: EditorBatch) => Promise<Revision>;
 }>();
-const emit = defineEmits<{ saved: []; dirty: [value: boolean] }>();
+const emit = defineEmits<{ saved: [revision: Revision]; dirty: [value: boolean] }>();
 const view = ref<EditorResponse | null>(null);
 const base = ref(props.revisionId);
 const running = ref(0);
@@ -30,6 +30,7 @@ const error = ref<DisplayText>("");
 const notice = ref<DisplayText>("");
 const showPreview = ref(false);
 const invalid = reactive(new Set<string>());
+const pendingInput = reactive(new Set<string>());
 type Changes = Record<string, number>;
 const drafts = reactive(new Map<string, Map<number, Changes>>());
 const previews = reactive(new Map<string, Map<number, EditorResponse["preview"]>>());
@@ -41,10 +42,12 @@ function draft(file: string, slot: number): Changes {
   if (!slots.has(slot)) slots.set(slot, {});
   return slots.get(slot) ?? {};
 }
-const dirty = computed(() =>
-  [...drafts.values()].some((slots) =>
-    [...slots.values()].some((values) => Object.keys(values).length),
-  ),
+const dirty = computed(
+  () =>
+    Boolean(invalid.size || pendingInput.size) ||
+    [...drafts.values()].some((slots) =>
+      [...slots.values()].some((values) => Object.keys(values).length),
+    ),
 );
 const count = computed(() =>
   [...drafts.values()]
@@ -152,8 +155,8 @@ async function save() {
   base.value = revision.id;
   drafts.clear();
   previews.clear();
+  emit("saved", revision);
   await refresh();
-  emit("saved");
   notice.value = message("editor.saved");
 }
 async function discard() {
@@ -161,6 +164,7 @@ async function discard() {
   previews.clear();
   selections.clear();
   invalid.clear();
+  pendingInput.clear();
   view.value = null;
   base.value = props.revisionId;
   stale.value = false;
@@ -230,6 +234,7 @@ onBeforeUnmount(() => {
     <Message v-if="notice" severity="success" role="status">{{ translate(notice) }}</Message>
     <Message v-if="stale" severity="warn" role="alert">{{ t("editor.stale") }}</Message>
     <template v-if="view">
+      <p class="editor-guidance">{{ translate(view.instructions) }}</p>
       <nav class="editor-tabs" :aria-label="t('editor.modules')">
         <Button
           v-for="module in view.modules"
@@ -263,6 +268,9 @@ onBeforeUnmount(() => {
             :disabled="busy || stale"
             @change="change"
             @valid="(key, valid) => (valid ? invalid.delete(key) : invalid.add(key))"
+            @pending="
+              (key, pending) => (pending ? pendingInput.add(key) : pendingInput.delete(key))
+            "
           />
           <div class="editor-actions">
             <Button
@@ -298,7 +306,7 @@ onBeforeUnmount(() => {
           :label="t('editor.save')"
           size="small"
           :loading="busy"
-          :disabled="busy || !count || stale || Boolean(invalid.size)"
+          :disabled="busy || (!count && !pendingInput.size) || stale || Boolean(invalid.size)"
           @click="perform(save)"
         />
       </div>
@@ -329,6 +337,10 @@ onBeforeUnmount(() => {
 }
 .editor h3 {
   margin: 0;
+}
+.editor-guidance {
+  margin: 8px 0;
+  font-size: 12px;
 }
 .editor-tabs,
 .editor-actions,

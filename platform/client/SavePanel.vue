@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import Message from "primevue/message";
-import { defineAsyncComponent, onMounted, ref } from "vue";
+import { computed, defineAsyncComponent, onMounted, ref } from "vue";
 import type { EditorBatch } from "../src/editors/service.ts";
 import type { Game } from "../src/library/catalog.ts";
 import { type DisplayText, message } from "../src/shared/messages.ts";
@@ -24,11 +24,21 @@ const error = ref<DisplayText>("");
 const notice = ref<DisplayText>("");
 const editorDirty = ref(false);
 const player = ref<InstanceType<typeof PlayerPanel> | null>(null);
+const consoleEditLocked = computed(
+  () =>
+    props.game.system !== "dos" &&
+    Boolean(editorDirty.value || player.value?.pendingSync || player.value?.busy),
+);
 async function refresh() {
   revisions.value = await api<Revision[]>(`profiles/${props.profile.id}/revisions`);
   const profiles = await api<Profile[]>("profiles");
   head.value = profiles.find((profile) => profile.id === props.profile.id)?.headId ?? null;
   emit("changed");
+}
+function edited(revision: Revision) {
+  head.value = revision.id;
+  revisions.value = [revision, ...revisions.value.filter((entry) => entry.id !== revision.id)];
+  void perform(refresh);
 }
 async function perform(action: () => Promise<void>) {
   busy.value = true;
@@ -58,7 +68,7 @@ async function publishEdit(revisionId: string, batch: EditorBatch) {
     : publish();
 }
 async function upload() {
-  if (!files.value.length) return;
+  if (!files.value.length || busy.value || consoleEditLocked.value) return;
   await perform(async () => {
     const body = new FormData();
     body.append(
@@ -74,6 +84,7 @@ async function upload() {
   });
 }
 async function restore(revision: Revision) {
+  if (busy.value || consoleEditLocked.value) return;
   await perform(async () => {
     await api(`profiles/${props.profile.id}/restore`, {
       baseRevision: head.value,
@@ -117,7 +128,13 @@ onMounted(() => perform(refresh));
         variant="text"
         :loading="busy || player?.busy"
         :disabled="
-          Boolean(player?.active && (!player.ready || player.pendingSync || player.conflict))
+          Boolean(
+            player?.active &&
+              (!player.ready ||
+                player.pendingSync ||
+                player.conflict ||
+                (game.system !== 'dos' && editorDirty)),
+          )
         "
         @click="refreshWorkspace"
       />
@@ -138,8 +155,8 @@ onMounted(() => perform(refresh));
       v-if="game.editor && head"
       :revision-id="head"
       :publish="publishEdit"
-      @saved="perform(refresh)"
       @dirty="editorDirty = $event"
+      @saved="edited"
     />
     <section class="profile-panel">
       <h3>{{ t("saves.import") }}</h3>
@@ -151,7 +168,7 @@ onMounted(() => perform(refresh));
           type="file"
           :multiple="game.system === 'dos'"
           :aria-label="t('saves.files')"
-          :disabled="busy"
+          :disabled="busy || consoleEditLocked"
           @change="selectFiles"
         >
         <Button
@@ -159,7 +176,7 @@ onMounted(() => perform(refresh));
           :label="t('saves.upload')"
           size="small"
           :loading="busy"
-          :disabled="!files.length"
+          :disabled="busy || !files.length || consoleEditLocked"
         />
       </form>
     </section>
@@ -198,7 +215,7 @@ onMounted(() => perform(refresh));
           :label="t('saves.restore')"
           size="small"
           severity="secondary"
-          :disabled="busy"
+          :disabled="busy || consoleEditLocked"
           @click="restore(revision)"
         />
       </article>

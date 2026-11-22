@@ -13,6 +13,7 @@ import { prepareLiveEdit } from "./runtime/live-edit.ts";
 import { assertCompatible, downloadProgress, downloadVerified } from "./runtime/progress.ts";
 import { createProgressRecovery } from "./runtime/progress-recovery.ts";
 import { nativeProgressChanged, publishProgress } from "./runtime/progress-sync.ts";
+import { prepareSnapshotEdit } from "./runtime/snapshot-edit.ts";
 import type { RuntimeControls, RuntimeHandle, RuntimeWindow } from "./runtime/types.ts";
 
 const props = defineProps<{
@@ -143,11 +144,11 @@ async function stop() {
     integerPixels.value = true;
   }
 }
-async function save(automatic = false) {
+async function save(automatic = false, keepPaused = false) {
   const current = handle;
   if (!current || !ready.value || busy.value || pendingSync.value || conflict.value) return false;
   return perform(async () => {
-    const resume = !paused.value;
+    const resume = !paused.value && !keepPaused;
     function resumeCapturedGame() {
       if (resume && (changedHead === undefined || changedHead === base)) {
         current?.resume();
@@ -183,7 +184,13 @@ async function save(automatic = false) {
   });
 }
 async function stopAndSave() {
-  if (busy.value || pendingSync.value || conflict.value) return false;
+  if (
+    busy.value ||
+    pendingSync.value ||
+    conflict.value ||
+    (props.game.system !== "dos" && props.editorDirty)
+  )
+    return false;
   if (!active.value) return true;
   if (!ready.value || (await save())) return perform(stop);
   return false;
@@ -197,8 +204,8 @@ async function applyPendingEdit() {
     base = pending.revision.id;
     runningRevision = pending.revision;
     pendingEdit.value = null;
-    notice.value = message("player.editApplied");
-    if (pending.resume) {
+    notice.value = message(current.snapshot ? "player.snapshotEditApplied" : "player.editApplied");
+    if (pending.resume && (changedHead === undefined || changedHead === base)) {
       current.resume();
       paused.value = false;
     }
@@ -206,7 +213,7 @@ async function applyPendingEdit() {
 }
 async function publishEdit(revisionId: string, files: string[], publish: () => Promise<Revision>) {
   const current = handle;
-  if (!current?.files) return publish();
+  if (!current || (!current.files && !current.snapshot)) return publish();
   if (busy.value || pendingSync.value || conflict.value)
     throw new ApiError("runtime_busy", 422, message("player.syncRequired"));
   if (revisionId !== base || !runningRevision) {
@@ -220,7 +227,12 @@ async function publishEdit(revisionId: string, files: string[], publish: () => P
   current.pause();
   paused.value = true;
   try {
-    const apply = await prepareLiveEdit(current.files, runningRevision, files);
+    const apply = current.snapshot
+      ? await prepareSnapshotEdit(current.snapshot, runningRevision)
+      : current.files
+        ? await prepareLiveEdit(current.files, runningRevision, files)
+        : undefined;
+    if (!apply) throw new MessageError(message("player.syncRequired"));
     const revision = await publish();
     pendingEdit.value = { revision, apply, resume };
     // Publication has succeeded even if local writeback needs a later retry.
@@ -228,7 +240,7 @@ async function publishEdit(revisionId: string, files: string[], publish: () => P
     return revision;
   } catch (cause) {
     if (cause instanceof ApiError && cause.status === 409) markConflict();
-    else if (resume) {
+    else if (resume && !current.snapshot) {
       current.resume();
       paused.value = false;
     }
@@ -343,13 +355,23 @@ defineExpose({ save, active, ready, busy, pendingSync, conflict, publishEdit, le
           :label="paused ? t('player.resume') : t('player.pause')"
           size="small"
           severity="secondary"
-          :disabled="!ready || busy || pendingSync || conflict"
+          :disabled="
+            !ready || busy || pendingSync || conflict || (game.system !== 'dos' && editorDirty)
+          "
           @click="togglePause"
+        />
+        <Button
+          v-if="game.editor && game.system !== 'dos'"
+          :label="t('player.captureEdit')"
+          :title="t('player.captureEditHelp')"
+          size="small"
+          :disabled="!ready || busy || pendingSync || conflict || editorDirty"
+          @click="save(false, true)"
         />
         <Button
           :label="t('player.save')"
           size="small"
-          :disabled="!ready || pendingSync || conflict"
+          :disabled="!ready || pendingSync || conflict || (game.system !== 'dos' && editorDirty)"
           :loading="busy"
           @click="save()"
         />
@@ -400,7 +422,9 @@ defineExpose({ save, active, ready, busy, pendingSync, conflict, publishEdit, le
           :title="t('player.stopHelp')"
           size="small"
           severity="secondary"
-          :disabled="(busy && ready) || pendingSync || conflict"
+          :disabled="
+            (busy && ready) || pendingSync || conflict || (game.system !== 'dos' && editorDirty)
+          "
           @click="stopAndSave"
         />
       </template>

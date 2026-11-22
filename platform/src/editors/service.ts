@@ -50,6 +50,7 @@ export class EditorService {
         throw new EditorError("invalid_save", message("editor.invalidSave"));
       return {
         adapter,
+        instructions: registration.instructions,
         file: name,
         files: [name],
         bytes: memory.bytes,
@@ -72,6 +73,7 @@ export class EditorService {
       throw new EditorError("no_editable_save", message("editor.saveRequired"));
     return {
       adapter,
+      instructions: registration.instructions,
       files,
       file: selected,
       bytes: await this.saves.file(owner, revisionId, selected),
@@ -80,7 +82,12 @@ export class EditorService {
   }
   async preview(owner: string, revisionId: string, query: EditorQuery) {
     const opened = await this.open(owner, revisionId, query.file);
-    return { file: opened.file, files: opened.files, ...opened.adapter.view(opened.bytes, query) };
+    return {
+      file: opened.file,
+      files: opened.files,
+      instructions: opened.instructions,
+      ...opened.adapter.view(opened.bytes, query),
+    };
   }
   async publish(owner: string, revisionId: string, batch: EditorBatch) {
     const files = [];

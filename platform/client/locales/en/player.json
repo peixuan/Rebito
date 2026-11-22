@@ -33,5 +33,8 @@
   "player.dosControls": "Click the display to use the keyboard and mouse. See the game's instructions for controls. In relative mouse mode, press Esc to release the mouse.",
   "player.frame": "Game emulator",
   "player.backupName": "{game} · Local backup {date}",
-  "player.lastSync": "Last synchronized: {time}"
+  "player.lastSync": "Last synchronized: {time}",
+  "player.captureEdit": "Capture for editing",
+  "player.snapshotEditApplied": "Changes were confirmed in the paused game. Resume, then reopen in-game status panels to refresh their display. Use the game's save command to also retain changes in its native save. Capture again before another editing session.",
+  "player.captureEditHelp": "Pause and save the current game state before each editing session. After applying changes, resume and reopen in-game status panels to refresh their display."
 }
