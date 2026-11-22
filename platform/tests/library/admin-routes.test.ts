@@ -116,6 +116,11 @@ it("requires an authenticated administrator and same-origin mutation before acce
   expect(catalog.statusCode).toBe(200);
   expect(catalog.json().editors).toEqual([
     expect.objectContaining({ id: "koukai2", label: message("editor.koukaiTitle"), system: "dos" }),
+    expect.objectContaining({
+      id: "jinyong",
+      label: message("editor.jinyongTitle"),
+      system: "dos",
+    }),
   ]);
 });
 
