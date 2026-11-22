@@ -121,6 +121,11 @@ it("requires an authenticated administrator and same-origin mutation before acce
       label: message("editor.jinyongTitle"),
       system: "dos",
     }),
+    expect.objectContaining({
+      id: "phantasy-star4",
+      label: message("editor.phantasyStar4Title"),
+      system: "md",
+    }),
   ]);
 });
 

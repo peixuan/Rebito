@@ -1,6 +1,7 @@
 import type { DisplayText } from "../shared/messages.ts";
 import { jinyongRegistration } from "./jinyong/registration.ts";
 import { koukaiRegistration } from "./koukai2/registration.ts";
+import { phantasyStar4Registration } from "./phantasy-star4/registration.ts";
 import type { SnapshotBinding } from "./snapshots/binding.ts";
 import type { EditorAdapter } from "./types.ts";
 
@@ -13,10 +14,11 @@ export type EditorRegistration = {
   | { readonly system: "md" | "segacd"; readonly snapshot: SnapshotBinding }
 );
 
-export const editorIds = ["koukai2", "jinyong"] as const;
+export const editorIds = ["koukai2", "jinyong", "phantasy-star4"] as const;
 const registrations: Readonly<Record<(typeof editorIds)[number], EditorRegistration>> = {
   koukai2: koukaiRegistration,
   jinyong: jinyongRegistration,
+  "phantasy-star4": phantasyStar4Registration,
 };
 
 /** Installed adapters and administration labels; association is an operator decision. */
