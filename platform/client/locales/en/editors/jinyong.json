@@ -1,4 +1,11 @@
 {
+  "jinyong.characters": "Characters",
+  "jinyong.skills": "Learned martial arts",
+  "jinyong.saveData": "Selected save file",
+  "jinyong.learned": "Learned arts",
+  "jinyong.partyMember": "Current party",
+  "jinyong.silver": "Silver · {name}",
+  "jinyong.record": "Record #{index}",
   "jinyong.inventory": "Inventory and silver",
   "jinyong.quantity": "Quantity",
   "jinyong.quantityHelp": "Set a positive quantity to add an item; zero removes it. Silver is an inventory item too.",

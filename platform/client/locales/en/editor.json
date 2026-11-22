@@ -1,4 +1,6 @@
 {
+  "editor.jinyongTitle": "Heroes of Jin Yong (original DOS)",
+  "editor.jinyongDescription": "For the original DOS game, not MODs or remakes. Synchronize R1/R2/R3.GRP, S1/S2/S3.GRP and D1/D2/D3.GRP together. Only R files are edited. Reload the in-game save after editing; changes do not update game memory.",
   "editor.unsupported": "Editing is not supported for this game release or progress type.",
   "editor.saveRequired": "Save inside the game and synchronize to your account first, or import a native game save.",
   "editor.invalidSave": "The save format is invalid.",

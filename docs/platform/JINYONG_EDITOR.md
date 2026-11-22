@@ -39,6 +39,21 @@ Inventory edits select one of the original 200 item definitions, including silve
 compacts the known inventory section; quantity-only edits change only the selected
 quantity words. Neither operation changes item definitions or other save sections.
 
+## Library configuration
+
+Choose **Heroes of Jin Yong (original DOS)** in the administrator's editor selector.
+Declare all nine native save paths: `R1.GRP`, `S1.GRP`, `D1.GRP`, `R2.GRP`, `S2.GRP`,
+`D2.GRP`, `R3.GRP`, `S3.GRP`, `D3.GRP`, with the game's directory prefix when needed.
+Keep the original IDX/resource files in the game archive. Do not synchronize or edit
+`RANGER.GRP`. Its size/layout resemble a save, but it is initial game data.
+
+Save inside the game and synchronize before opening the editor. Select the R file
+for the intended slot, edit characters, learned arts or inventory, review and save.
+The platform publishes one private revision, preserving all other files and checking
+the base revision. Reload that slot inside the game afterward: file edits do not
+change the currently running game's memory. The editor does not change save-sync
+conflict or recovery behavior.
+
 ## References and verification
 
 - [The original DOS/PC editor author's release](https://www.cheatmaker.org/archiver/showtopic-2289.aspx)

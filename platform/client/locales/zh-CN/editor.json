@@ -1,4 +1,6 @@
 {
+  "editor.jinyongTitle": "金庸群侠传（DOS 原版）",
+  "editor.jinyongDescription": "适用于 DOS 原版，不支持 MOD 或重制版。请一并同步 R1/R2/R3.GRP、S1/S2/S3.GRP、D1/D2/D3.GRP。修改器只修改 R 文件；修改后须在游戏内重新读档，不会直接改变游戏内存。",
   "editor.unsupported": "此游戏版本或进度类型尚不支持编辑。",
   "editor.saveRequired": "请先在游戏内存档并保存到账号，或导入此游戏的原生存档。",
   "editor.invalidSave": "存档格式无效。",

@@ -32,7 +32,9 @@ export class EditorService {
     const files = revision.manifest.artifacts
       .filter(
         (artifact) =>
-          artifact.size === adapter.size && paths.has(artifact.name.normalize("NFC").toLowerCase()),
+          artifact.size === adapter.size &&
+          paths.has(artifact.name.normalize("NFC").toLowerCase()) &&
+          (adapter.acceptsFile?.(artifact.name) ?? true),
       )
       .map((artifact) => artifact.name);
     const selected = file ?? files[0];

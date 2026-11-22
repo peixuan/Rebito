@@ -50,6 +50,8 @@ export interface EditorView {
 }
 export interface EditorAdapter {
   size: number;
+  /** Optional native filename boundary for formats also used by game resources. */
+  acceptsFile?(name: string): boolean;
   view(bytes: Uint8Array, draft: EditorDraft): EditorView;
   apply(bytes: Uint8Array, draft: EditorDraft): Uint8Array;
 }

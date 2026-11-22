@@ -1,4 +1,11 @@
 {
+  "jinyong.characters": "人物属性",
+  "jinyong.skills": "已学武功",
+  "jinyong.saveData": "所选存档文件",
+  "jinyong.learned": "已学武功数",
+  "jinyong.partyMember": "当前队伍",
+  "jinyong.silver": "银两 · {name}",
+  "jinyong.record": "记录 #{index}",
   "jinyong.inventory": "背包和银两",
   "jinyong.quantity": "数量",
   "jinyong.quantityHelp": "填写正数可添加物品，填 0 则移除。银两也作为背包物品保存。",
