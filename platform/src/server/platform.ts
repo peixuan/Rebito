@@ -12,12 +12,15 @@ import { LocalLibrary } from "../library/catalog.ts";
 import { registerConfiguration } from "../library/configuration-routes.ts";
 import { assertNoPendingDeletion, pendingDeletions } from "../library/deletion-records.ts";
 import { registerDeletions } from "../library/deletion-routes.ts";
+import { seedFirmware } from "../library/firmware.ts";
+import { registerFirmware } from "../library/firmware-routes.ts";
 import { reclaimDeletion } from "../library/reclamation.ts";
 import { registerLibrary } from "../library/routes.ts";
 import { registerSaves } from "../saves/routes.ts";
 import { SaveService } from "../saves/service.ts";
 import { guardStorageRoutes, StorageActivity } from "../storage/activity.ts";
 import { LocalBlobStore } from "../storage/blobs.ts";
+import { DiskSpaceError } from "../storage/capacity.ts";
 import { storageLease } from "../storage/maintenance.ts";
 import { RevisionRepository } from "../storage/revisions.ts";
 import { migrateStorage } from "../storage/schema.ts";
@@ -59,6 +62,14 @@ async function createServices(config: ServerConfig, database: Pool, activity: St
         app.log.error({ err: error }, "Pending game cleanup retained for retry");
       }
     }
+    if (!(await pendingDeletions(database)).length) {
+      try {
+        await seedFirmware(join(config.dataDirectory, "library"), config.minimumFreeBytes);
+      } catch (error) {
+        if (!(error instanceof DiskSpaceError)) throw error;
+        app.log.warn("BIOS adoption deferred until storage has sufficient free space");
+      }
+    }
   });
   const library = await LocalLibrary.load(join(config.dataDirectory, "library"));
   const saves = new SaveService(
@@ -72,6 +83,7 @@ async function createServices(config: ServerConfig, database: Pool, activity: St
     await registerSaves(scope, saves, library, database);
     registerGameAdministration(scope, config, library, () => assertNoPendingDeletion(database));
     registerConfiguration(scope, config, library, () => assertNoPendingDeletion(database));
+    registerFirmware(scope, config, () => assertNoPendingDeletion(database));
     registerDeletions(scope, config, library, database);
     registerEditors(scope, new EditorService(saves, library));
   });

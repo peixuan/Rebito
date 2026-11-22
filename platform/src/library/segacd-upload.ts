@@ -19,7 +19,7 @@ export function validateDiscBios(bytes: Buffer) {
     !/^[JUE]$/.test(region)
   )
     throw new LibraryError(message("library.biosFormat"));
-  return { region, name: `bios_CD_${region}.bin` };
+  return { region: region as "J" | "U" | "E", name: `bios_CD_${region}.bin` };
 }
 
 async function smallEntry(archive: Archive, entry: Entry, maximum: number) {
@@ -29,7 +29,7 @@ async function smallEntry(archive: Archive, entry: Entry, maximum: number) {
   return Buffer.concat(chunks);
 }
 
-export async function inspectDiscFirmware(source: string) {
+export async function readDiscFirmware(source: string) {
   const { archive, entries } = await openGameArchive(source, discUploadLimits);
   try {
     const bios = [...entries.values()].filter((entry) =>
@@ -37,10 +37,16 @@ export async function inspectDiscFirmware(source: string) {
     );
     if (bios.length !== 1 || !bios[0]) throw new LibraryError(message("library.biosMissing"));
     const bytes = await smallEntry(archive, bios[0], 131072);
-    return { ...validateDiscBios(bytes), sha256: createHash("sha256").update(bytes).digest("hex") };
+    validateDiscBios(bytes);
+    return bytes;
   } finally {
     archive.close();
   }
+}
+
+export async function inspectDiscFirmware(source: string) {
+  const bytes = await readDiscFirmware(source);
+  return { ...validateDiscBios(bytes), sha256: createHash("sha256").update(bytes).digest("hex") };
 }
 
 /** Repackage one disc and one region BIOS; unrelated files and bundled saves are excluded. */

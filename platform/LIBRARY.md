@@ -102,6 +102,16 @@ MD/SMS/GG core runs these cartridge formats without a separately supplied BIOS.
 
 ### Mega CD / Sega CD
 
+Administrators can maintain a regional BIOS library through
+`GET /api/admin/firmware` and `POST /api/admin/firmware`. Upload the returned `token`
+and a base64 `firmware` file; the server identifies J/U/E from its contents. A stale
+token returns 409 without replacing a newer upload. Each region retains one 128 KiB
+file in `library/firmware` (384 KiB total), separate from immutable game packages.
+Startup adopts BIOS files from existing releases only for missing regions, in
+catalog order. It never overwrites an administrator's selection or changes a release.
+Back up this directory with the rest of application data. BIOS files are operator
+content, never source-code or distribution artifacts.
+
 Choose **Mega CD / Sega CD**, upload a ZIP containing exactly one CUE and all its
 referenced BIN tracks, then select a separate 128 KiB BIOS matching the disc's
 Japanese, American or European region. A folder containing CUE/BIN files can be

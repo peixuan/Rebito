@@ -119,6 +119,48 @@ it("requires an authenticated administrator and same-origin mutation before acce
   ]);
 });
 
+it("protects regional firmware uploads and rejects stale or malformed requests", async () => {
+  for (const [cookie, status] of [
+    ["", 401],
+    [player, 403],
+  ] as const) {
+    expect((await app.inject({ url: "/api/admin/firmware", headers: { cookie } })).statusCode).toBe(
+      status,
+    );
+    expect(
+      (
+        await app.inject({
+          method: "POST",
+          url: "/api/admin/firmware",
+          headers: { cookie, origin, "content-type": "application/json" },
+          payload: "{",
+        })
+      ).statusCode,
+    ).toBe(status);
+  }
+  const current = (
+    await app.inject({ url: "/api/admin/firmware", headers: { cookie: admin } })
+  ).json();
+  const payload = { token: current.token, firmware: discBios("E").toString("base64") };
+  const send = (body: unknown, site = origin) =>
+    app.inject({
+      method: "POST",
+      url: "/api/admin/firmware",
+      headers: { cookie: admin, origin: site },
+      payload: body as object,
+    });
+  expect((await send(payload, "https://elsewhere.test")).statusCode).toBe(403);
+  expect((await send({ ...payload, firmware: "bad" })).statusCode).toBe(422);
+  expect((await send({ ...payload, firmware: "x".repeat(180000) })).statusCode).toBe(413);
+  const saved = await send(payload);
+  expect(saved.statusCode).toBe(200);
+  expect(saved.json().entries).toContainEqual({
+    region: "E",
+    sha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+  });
+  expect((await send(payload)).statusCode).toBe(409);
+});
+
 it("publishes sanitized DOS bytes immediately, reloads other instances and rejects duplicate versions", async () => {
   const second = await createPlatform(config, fixture.database);
   try {
