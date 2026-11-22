@@ -14,8 +14,8 @@ import type { Game } from "../src/library/catalog.ts";
 import type { describeConfiguration } from "../src/library/configuration.ts";
 import type { DeletionPreview } from "../src/library/deletion-records.ts";
 import { type DisplayText, message } from "../src/shared/messages.ts";
+import AdminFirmware from "./AdminFirmware.vue";
 import { api, errorText } from "./api.ts";
-import BiosFile from "./BiosFile.vue";
 import { formatBytes as size } from "./format-bytes.ts";
 import GameDeletion from "./GameDeletion.vue";
 import { localize, t, translate } from "./i18n.ts";
@@ -45,8 +45,7 @@ const selectedEditor = computed(() =>
   catalog.value?.editors.find((item) => item.id === editor.value),
 );
 const file = ref<File | null>(null);
-const firmware = ref("");
-const biosGeneration = ref(0);
+const useLibraryFirmware = ref(false);
 const firmwareRegion = ref("");
 const input = ref<HTMLInputElement | null>(null);
 const programs = ref<string[]>([]);
@@ -67,14 +66,13 @@ const draft = () =>
     cycles.value,
     savePaths.value,
     editor.value,
-    firmware.value,
+    useLibraryFirmware.value,
   ]);
 const dirty = computed(() =>
   editing.value
     ? draft() !== initialDraft.value
     : Boolean(
         file.value ||
-          firmware.value ||
           title.value ||
           executable.value ||
           args.value ||
@@ -130,8 +128,7 @@ async function selectFile(event: Event) {
 }
 function resetFile() {
   editor.value = "";
-  biosGeneration.value++;
-  firmware.value = "";
+  useLibraryFirmware.value = false;
   file.value = null;
   programs.value = [];
   executable.value = "";
@@ -146,7 +143,6 @@ async function publish() {
     const settings = {
       title: title.value,
       system: system.value,
-      ...(system.value === "segacd" ? { firmware: firmware.value } : {}),
       ...(system.value === "dos"
         ? {
             executable: executable.value,
@@ -168,7 +164,7 @@ async function publish() {
           token: editing.value.token,
           title: gameTitle,
           ...(system.value === "dos" ? { editor: chosenEditor ?? null } : {}),
-          ...(system.value === "segacd" && firmware.value ? { firmware: firmware.value } : {}),
+          ...(system.value === "segacd" ? { useLibraryFirmware: useLibraryFirmware.value } : {}),
           ...(system.value === "dos" && executable.value ? { launch } : {}),
         },
       );
@@ -285,6 +281,7 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
     <p class="muted">{{ t("admin.description") }}</p>
     <Message v-if="error" severity="error" role="alert">{{ translate(error) }}</Message>
     <Message v-if="notice" severity="success" role="status">{{ translate(notice) }}</Message>
+    <AdminFirmware v-if="system === 'segacd'" :disabled="busy" @busy="busy = $event" />
     <div class="admin-layout">
       <GameDeletion
         v-if="deleting"
@@ -365,12 +362,11 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
           <p v-if="editing" class="muted">
             {{ t("admin.firmwareRegion", { region: firmwareRegion }) }}
           </p>
-          <BiosFile
-            :key="biosGeneration"
-            v-model="firmware"
-            :disabled="busy"
-            :required="!editing"
-          />
+          <label v-if="editing" class="firmware-choice">
+            <input v-model="useLibraryFirmware" type="checkbox" :disabled="busy">
+            {{ t("bios.useLatest") }}
+          </label>
+          <p v-else class="muted">{{ t("bios.automatic") }}</p>
           <p class="muted">{{ t("admin.discHelp") }}</p>
         </template>
         <p v-else-if="!editing" class="muted">{{ t("admin.fileHelp") }}</p>
@@ -433,10 +429,7 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
           :label="busy ? t('common.processing') : editing ? t('admin.save') : t('admin.publish')"
           :loading="busy"
           :disabled="
-            (!file && !editing) ||
-            !title.trim() ||
-            (!editing && system === 'dos' && !executable) ||
-            (!editing && system === 'segacd' && !firmware)
+            (!file && !editing) || !title.trim() || (!editing && system === 'dos' && !executable)
           "
         />
       </form>
@@ -580,6 +573,13 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
   display: grid;
   grid-template-columns: 1fr 110px;
   gap: 12px;
+}
+.admin-form .firmware-choice {
+  display: flex;
+  align-items: center;
+}
+.firmware-choice input {
+  width: auto;
 }
 .admin-catalog {
   min-width: 0;

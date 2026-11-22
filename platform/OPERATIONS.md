@@ -105,8 +105,13 @@ the catalog are never removed by this collector.
 Mega CD preparation reserves up to the upload bound plus two expanded packages
 (just over 3 GiB), in addition to the configured free-space margin. This bounds
 concurrent disk activity while receiving, normalizing and publishing large discs.
-Changing a BIOS publishes another immutable package and retains the old release;
-it can consume another full disc's space. Delete an unused old release through
+The shared BIOS library holds at most three regional files (384 KiB); replacing
+one does not grow a separate firmware history. Startup copies missing regions from
+existing releases without altering those releases. If the free-space reserve blocks
+adoption, the server keeps serving existing games and retries on its next startup.
+An explicit game configuration change to use the shared BIOS publishes another
+immutable package and retains the old release; it can consume another full disc's
+space. Delete an unused old release through
 the impact-confirmation screen to reclaim its unshared files and user histories.
 HTTP receipt and socket inactivity both allow 15 minutes: a quiet socket during
 streamed ZIP preparation must not be mistaken for an abandoned upload. Configure

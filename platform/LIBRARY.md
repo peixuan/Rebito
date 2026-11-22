@@ -112,16 +112,19 @@ catalog order. It never overwrites an administrator's selection or changes a rel
 Back up this directory with the rest of application data. BIOS files are operator
 content, never source-code or distribution artifacts.
 
-Choose **Mega CD / Sega CD**, upload a ZIP containing exactly one CUE and all its
-referenced BIN tracks, then select a separate 128 KiB BIOS matching the disc's
-Japanese, American or European region. A folder containing CUE/BIN files can be
-zipped directly; one BIN containing many tracks and separate BINs are both supported.
+In **Game management**, select **Mega CD / Sega CD**, then use **Shared Mega CD BIOS**
+to upload each needed region once. The page shows Japan, USA and Europe availability,
+regardless of file names. Upload a ZIP containing exactly one CUE and all its
+referenced BIN tracks; the server selects the matching BIOS automatically.
+A folder containing CUE/BIN files can be zipped directly; one BIN containing many
+tracks and separate BINs are both supported.
 The server resolves filename case, validates track indexes and regions, streams
 CRC-checked tracks, and publishes a canonical package without unrelated files.
 BIN/BIOS bytes are unchanged. No vendor BIOS is bundled with this project.
 
-**编辑配置** shows the installed BIOS region. Leave the file empty to retain it;
-select another matching BIOS to publish a new release using the stored disc.
+**Edit configuration** shows the installed BIOS region and retains it by default.
+Check **Use the current shared BIOS for this region** to publish a new release
+using the stored disc and the library's current regional BIOS.
 Existing profiles stay on their original release. Supplying the same BIOS bytes
 only updates the title and does not duplicate the package.
 
@@ -140,7 +143,7 @@ transform arbitrary CUE/BIN uploads.
 PicoDrive runs with a RAM cartridge. Platform snapshots retain the cartridge and
 emulator state together: the latter includes internal backup RAM. A downloaded
 `save.srm` alone is only the 72 KiB cartridge format, not complete CD progress or
-a universal Fusion save format. Use **保存到账号** or **停止游戏** before closing the
+a universal Fusion save format. Use **Save to account** or **Stop game** before closing the
 page; console progress is not automatically uploaded on tab close. The first boot
 of a game may ask to initialize its new private backup cartridge.
 

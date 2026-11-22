@@ -106,7 +106,8 @@ for (const [system, extension, fixture] of [
   }) => {
     test.setTimeout(60_000);
     const title = `Console upload ${extension}`;
-    await useSession(page.context(), system === "segacd" ? "admin-cd" : "admin");
+    // Separate flows must not spend another test's per-user request budget.
+    await useSession(page.context(), `admin-console-${extension}`);
     await page.goto("/");
     await page.getByRole("button", { name: "Game management", exact: true }).click();
     await page.getByLabel("Game title", { exact: true }).fill(title);
@@ -122,6 +123,8 @@ for (const [system, extension, fixture] of [
         mimeType: "application/octet-stream",
         buffer: bios,
       });
+      await page.getByRole("button", { name: "Store BIOS", exact: true }).click();
+      await expect(page.getByRole("status").filter({ hasText: "BIOS stored" })).toBeVisible();
     }
     await page.getByLabel("Game file", { exact: true }).setInputFiles({
       name: `fixture.${extension}`,
@@ -153,7 +156,9 @@ for (const [system, extension, fixture] of [
       .first()
       .getAttribute("href");
     if (!nativeUrl) throw new Error("Missing native save download");
-    const native = await (await page.request.get(nativeUrl)).body();
+    const download = await page.request.get(nativeUrl);
+    expect(download.status()).toBe(200);
+    const native = await download.body();
     expect(native[0]).toBe(system === "segacd" ? 0 : 0x42);
     if (system === "segacd") expect(native.length).toBe(73728);
     const stranger = await browser.newContext();
@@ -174,7 +179,9 @@ for (const [system, extension, fixture] of [
       .first()
       .getAttribute("href");
     if (!resumedUrl) throw new Error("Missing resumed save download");
-    expect(await (await page.request.get(resumedUrl)).body()).toEqual(native);
+    const resumed = await page.request.get(resumedUrl);
+    expect(resumed.status()).toBe(200);
+    expect(await resumed.body()).toEqual(native);
   });
 }
 

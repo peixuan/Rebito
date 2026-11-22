@@ -43,7 +43,7 @@
   "admin.configured": "已保存「{title}」的配置。",
   "admin.published": "已发布「{title}」，现在可以返回游戏库游玩。{removed}",
   "admin.removedSaves": "已移除随包存档：{files}。",
-  "admin.firmwareRegion": "当前 BIOS 地区：{region}。留空保留；更换时复用光盘发布新版本，旧版进度保留。",
+  "admin.firmwareRegion": "当前 BIOS 地区：{region}。默认保留；可选用公共库中的 BIOS，以现有光盘发布新版本，旧版进度保留。",
   "admin.usage": "{count} 个版本 · {used} / {maximum}",
   "admin.editorLabel": "修改器：{editor}"
 }

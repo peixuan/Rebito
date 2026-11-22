@@ -2,5 +2,16 @@
   "bios.size": "BIOS 应为 128 KiB 的 BIN 文件。",
   "bios.readFailed": "无法读取 BIOS，请重新选择。",
   "bios.file": "BIOS 文件",
-  "bios.help": "选择与光盘地区一致的 Mega CD BIOS；支持日版、美版和欧版。BIOS 由你提供。"
+  "bios.help": "每个区域上传一次，系统根据文件内容识别区域，无需改名。再次上传会替换该区域供未来版本使用的 BIOS，已有游戏保持不变。",
+  "bios.title": "Mega CD 公共 BIOS 库",
+  "bios.regionJ": "日版",
+  "bios.regionU": "美版",
+  "bios.regionE": "欧版",
+  "bios.available": "已就绪",
+  "bios.missing": "未上传",
+  "bios.upload": "保存 BIOS",
+  "bios.refresh": "刷新 BIOS",
+  "bios.saved": "BIOS 已保存，新增游戏时将按区域自动匹配。",
+  "bios.automatic": "系统根据光盘区域自动选用上方公共库中的 BIOS，无需为每个游戏重复上传。",
+  "bios.useLatest": "使用公共库中该区域的当前 BIOS"
 }

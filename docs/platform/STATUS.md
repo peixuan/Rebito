@@ -63,6 +63,26 @@ Windows games, persistent offline upload queues, automatic history pruning and
 arbitrary third-party editors are not implemented. DOSBox-X remains a future
 Windows 95/98/ME candidate, not evidence of general Win32 support.
 
+## Shared Mega CD BIOS
+
+Administrators maintain one 128 KiB BIOS per J/U/E region. Content headers identify
+the region; new discs select firmware from their boot region without repeated
+uploads. Startup adopts missing regions from existing packages. Shared replacements
+are atomic and reject stale administrator tokens; they never change published
+games, profile bindings or snapshots. An explicit configuration choice can publish
+a derived release with the current shared BIOS. No vendor firmware is distributed.
+The registry is bounded to 384 KiB and does not retain replacement history.
+Firmware-only requests do not read or hash game assets. See [library management](../../platform/LIBRARY.md).
+
+Local lint, types, build and 395 unit/database tests pass. Focused browser checks
+cover regional reuse across distinct discs, rejected files, configuration updates,
+private progress and real emulator save/restore. Private J/U/E firmware headers
+were recognized read-only; this is not an all-firmware compatibility claim.
+An initial combined browser run exposed a shared test account's real 429 limit;
+independent console-management flows now use separate fixture accounts and assert
+download status, without changing production limits. Complete browser and hosted
+container checks remain mandatory for the exact candidate before promotion.
+
 ## DOS audio and automatic synchronization
 
 The DOSBox adapter keeps configuration defaults beside archive restoration. Its

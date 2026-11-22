@@ -43,7 +43,7 @@
   "admin.configured": "Saved the configuration for {title}.",
   "admin.published": "Published {title}. Return to the library to play. {removed}",
   "admin.removedSaves": "Removed bundled saves: {files}.",
-  "admin.firmwareRegion": "Current BIOS region: {region}. Leave empty to keep it. Replacing it reuses the disc to publish a new release and preserves existing progress.",
+  "admin.firmwareRegion": "Current BIOS region: {region}. Keep it by default, or select the shared BIOS to publish a new release using the stored disc. Existing progress stays on the original release.",
   "admin.usage": "{count} release · {used} / {maximum} | {count} releases · {used} / {maximum}",
   "admin.editorLabel": "Editor: {editor}"
 }
