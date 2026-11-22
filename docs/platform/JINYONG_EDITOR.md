@@ -27,6 +27,13 @@ are signed 16-bit item/quantity pairs; `-1` denotes an empty entry. Silver is it
 reads them from the user's file instead of distributing the game's vocabulary.
 Unknown bytes and values outside an edited field remain unchanged.
 
+Character edits cover level/experience, health/energy, injury/poison/stamina,
+combat proficiencies, morality/reputation/aptitude and double attack. Ten learned
+martial-art slots use the original 93-entry art table and 0–999 proficiency words.
+Equipment ownership, training, animation fields, names and world/quest data are
+not writable. Existing unusual values are retained until that field is edited.
+Every request validates the whole edit batch before writing a separate copy.
+
 ## References and verification
 
 - [The original DOS/PC editor author's release](https://www.cheatmaker.org/archiver/showtopic-2289.aspx)
