@@ -14,6 +14,10 @@ test("sorts numeric columns and retains record, search and validation state", as
   for (const [index, value] of [2, 10, 3].entries()) bytes[0x97 + 0x62c + index * 50 + 2] = value;
   const editor = await openEditor(page, "Control regression", bytes);
   await editor.getByRole("button", { name: "Characters", exact: true }).click();
+  const companionFilter = editor.getByRole("checkbox", { name: "Companions only" });
+  await expect(companionFilter).not.toBeChecked();
+  await companionFilter.check();
+  await expect(editor.locator("tbody tr")).toHaveCount(3);
   await editor.getByLabel("Visible columns").press("Space");
   await page.getByRole("option", { name: "Abilities · Leadership", exact: true }).click();
   await page.keyboard.press("Escape");
@@ -37,6 +41,7 @@ test("sorts numeric columns and retains record, search and validation state", as
   );
   await expect(leadership).toHaveValue("10");
   await expect(header).toBeVisible();
+  await expect(companionFilter).toBeChecked();
   await expect(
     editor
       .getByRole("group", { name: "Sailor affiliation", exact: true })

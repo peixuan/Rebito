@@ -28,7 +28,8 @@ export interface EditorView {
   slot: number;
   modules: { id: string; label: DisplayText }[];
   module: string;
-  columns: { id: string; label: DisplayText }[];
+  columns: { id: string; label: DisplayText; defaultVisible?: boolean }[];
+  filter?: { tag: string; label: DisplayText; defaultEnabled?: boolean };
   records: {
     id: string;
     label: DisplayText;

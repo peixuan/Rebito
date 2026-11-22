@@ -247,6 +247,7 @@ onBeforeUnmount(() => {
           v-if="view.records.length > 1"
           :rows="view.records"
           :columns="view.columns"
+          :filter="view.filter"
           :selected="view.selected"
           :view-key="view.module"
           :disabled="busy || stale || Boolean(invalid.size)"

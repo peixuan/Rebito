@@ -94,6 +94,9 @@ export const koukaiAdapter: EditorAdapter = {
       module,
       columns: [...columns].map(([id, label]) => ({ id, label })),
       records: rows,
+      ...(rows.some((row) => row.tags.includes("companion"))
+        ? { filter: { tag: "companion", label: message("records.companionsOnly") } }
+        : {}),
       selected: selected.id,
       fields: selected.fields
         .filter((field) => !field.hidden)

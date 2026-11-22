@@ -11,16 +11,17 @@ import { localize, t, translate } from "../i18n.ts";
 const props = defineProps<{
   rows: EditorView["records"];
   columns: EditorView["columns"];
+  filter?: EditorView["filter"];
   selected?: string;
   viewKey: string;
   disabled?: boolean;
 }>();
 const emit = defineEmits<{ select: [id: string] }>();
-const companionId = useId();
+const filterId = useId();
 interface TableState {
   query: string;
   columns: string[];
-  companions: boolean;
+  filtered: boolean;
   sort: string;
   order: 1 | -1;
 }
@@ -28,7 +29,13 @@ const states = new Map<string, TableState>();
 function stateFor(key: string): TableState {
   let saved = states.get(key);
   if (!saved) {
-    saved = { query: "", columns: [], companions: false, sort: "", order: 1 };
+    saved = {
+      query: "",
+      columns: props.columns.filter((column) => column.defaultVisible).map(({ id }) => id),
+      filtered: props.filter?.defaultEnabled ?? false,
+      sort: "",
+      order: 1,
+    };
     states.set(key, saved);
   }
   return saved;
@@ -59,7 +66,7 @@ const visible = computed(() => {
   return localize(props.rows)
     .filter(
       (row) =>
-        (!state.value.companions || row.tags.includes("companion")) &&
+        (!state.value.filtered || !props.filter || row.tags.includes(props.filter.tag)) &&
         terms.every((term) =>
           [row.label, row.summary, ...Object.values(row.cells)]
             .join(" ")
@@ -102,9 +109,9 @@ const visible = computed(() => {
         :selected-items-label="t('records.selectedColumns', { count: '{0}' })"
         :disabled="disabled"
       />
-      <label v-if="rows.some((row) => row.tags.includes('companion'))" :for="companionId"
-        ><Checkbox v-model="state.companions" :input-id="companionId" binary :disabled="disabled" />
-        {{ t("records.companionsOnly") }}</label
+      <label v-if="filter" :for="filterId"
+        ><Checkbox v-model="state.filtered" :input-id="filterId" binary :disabled="disabled" />
+        {{ translate(filter.label) }}</label
       >
     </div>
     <DataTable
@@ -127,7 +134,12 @@ const visible = computed(() => {
       "
     >
       <Column field="label" :header="t('records.record')" sortable />
-      <Column field="summary" :header="t('records.description')" sortable />
+      <Column
+        v-if="rows.some((row) => row.summary)"
+        field="summary"
+        :header="t('records.description')"
+        sortable
+      />
       <Column
         v-for="column in columns.filter((item) => state.columns.includes(item.id))"
         :key="column.id"

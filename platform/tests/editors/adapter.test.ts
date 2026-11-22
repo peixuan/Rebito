@@ -6,6 +6,7 @@ import { editorFixture } from "./fixture.ts";
 it("returns a compact UI contract, preserving pending values and omitting binary descriptors", () => {
   const view = koukaiAdapter.view(editorFixture(), { changes: { money: 100 } });
   expect(view.modules).toHaveLength(8);
+  expect(view.filter).toBeUndefined();
   expect(view.fields).toHaveLength(14);
   expect(view.preview).toEqual([
     { key: "money", label: message("koukai2.money"), before: 0xa5a5a5a5, after: 100 },
@@ -18,8 +19,11 @@ it("returns a compact UI contract, preserving pending values and omitting binary
     label: message("koukai2.emptySlot", { index: 2 }),
     available: false,
   });
-  const persons = koukaiAdapter.view(editorFixture(), { module: "persons", record: "person.0" });
+  const party = editorFixture();
+  party[0x97 + 0x2177] = 0;
+  const persons = koukaiAdapter.view(party, { module: "persons", record: "person.0" });
   expect(persons.records).toHaveLength(120);
+  expect(persons.filter).toEqual({ tag: "companion", label: message("records.companionsOnly") });
   expect(persons.records[0]?.cells).toMatchObject({
     "koukai2.skills/koukai2.surveying": message("common.no"),
     "koukai2.skills/koukai2.negotiation": message("common.yes"),
