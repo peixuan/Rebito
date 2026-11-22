@@ -1,7 +1,6 @@
 import { unzipSync, zipSync } from "fflate";
 import { MessageError, message } from "../../src/shared/messages.ts";
 import { loadScript, loadStyle } from "./assets.ts";
-import { browserDosConfiguration } from "./dos-configuration.ts";
 import { runtimeIdentity } from "./identity.ts";
 import { pixelScale } from "./pixel-scale.ts";
 import { saveFileAccess } from "./save-files.ts";
@@ -47,17 +46,17 @@ export async function startDos(
     filter: (file) => file.name === ".jsdos/dosbox.conf" && file.originalSize <= 32_768,
   })[".jsdos/dosbox.conf"];
   if (!configuration) throw new MessageError(message("runtime.dosConfiguration"));
-  const dosboxConf = browserDosConfiguration(new TextDecoder().decode(configuration));
+  // Keep buffering in js-dos's AudioWorklet; the native prebuffer overproduces PCM.
+  // DOSBox applies later sections last, so explicit game settings still win.
+  const dosboxConf = `[mixer]\nprebuffer=0\n\n${new TextDecoder().decode(configuration)}`;
   const files = launch.progress?.files ?? [];
-  // The core extracts bundles after initFs file writes. A final ZIP is required
-  // for edited native files to win over the older filesystem overlay.
   const overlay = files.find((file) => file.name === changesName);
   const nativeFiles = files.filter((file) => file.name !== changesName);
+  // The core extracts archives after initFs file writes. A final ZIP lets the
+  // effective config and edited native files win over the game and saved overlay.
   const initFs = [
     new Uint8Array(launch.gameBytes),
     ...(overlay ? [new Uint8Array(overlay.bytes)] : []),
-    // Extraction can replace dosboxConf with the archive's original config.
-    // Install the effective config last, including when restoring an old overlay.
     zipSync({
       ...Object.fromEntries(nativeFiles.map((file) => [file.name, new Uint8Array(file.bytes)])),
       ".jsdos/dosbox.conf": new TextEncoder().encode(dosboxConf),

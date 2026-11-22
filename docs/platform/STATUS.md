@@ -1,6 +1,6 @@
 # Platform work status
 
-Updated: 2026-11-21 (Asia/Shanghai).
+Updated: 2026-11-22 (Asia/Shanghai).
 
 ## Reviewed source and history
 
@@ -65,9 +65,9 @@ Windows 95/98/ME candidate, not evidence of general Win32 support.
 
 ## DOS audio and automatic synchronization
 
-The pinned DOSBox browser backend now defaults the native mixer prebuffer to zero,
-retaining explicit game overrides and the browser's audio buffer. The effective
-configuration is installed after archive/overlay extraction. Real WASM tests at
+The DOSBox adapter keeps configuration defaults beside archive restoration. Its
+native mixer prebuffer defaults to zero, retaining explicit game overrides and the
+browser's audio buffer. The effective config is installed last. Real WASM tests at
 44.1/48 kHz output check pacing, overflow, underruns and config precedence.
 A private Koukai2 opening through the production adapter also delivered about
 44,098 samples/second over a 31-second measured interval, with no dropped samples
