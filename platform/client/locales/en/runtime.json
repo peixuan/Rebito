@@ -28,5 +28,6 @@
   "runtime.writeVerification": "Writeback verification failed.",
   "runtime.restoreVerification": "Restoration verification failed.",
   "runtime.restoreFailed": "The in-game files could not be restored. The cloud revision remains available. Reload the game.",
-  "runtime.writeRolledBack": "Writeback failed. All original files were restored. You can retry synchronizing the edit."
+  "runtime.writeRolledBack": "Writeback failed. All original files were restored. You can retry synchronizing the edit.",
+  "runtime.snapshotEditUnconfirmed": "The edited state could not be confirmed in the game. The game remains paused and the cloud revision is retained. Retry applying it or reload that revision."
 }

@@ -2,9 +2,10 @@ import { MessageError, message } from "../../src/shared/messages.ts";
 import { loadScript, loadStyle } from "./assets.ts";
 import { type ConsoleControls, consoleControls } from "./console-controls.ts";
 import { consoleLocale } from "./console-locale.ts";
+import { restoreEditedState } from "./console-state.ts";
 import { consoleSystems } from "./console-systems.ts";
 import { runtimeIdentity } from "./identity.ts";
-import type { RuntimeFile, RuntimeHandle, RuntimeLaunch } from "./types.ts";
+import type { RuntimeFile, RuntimeHandle, RuntimeLaunch, RuntimeProgress } from "./types.ts";
 
 interface Emulator extends ConsoleControls {
   pause(): void;
@@ -137,24 +138,61 @@ export async function startConsole(launch: RuntimeLaunch): Promise<RuntimeHandle
     });
   });
   const bindings = consoleControls(emulator, localization.langJson);
+  async function capture(): Promise<RuntimeProgress> {
+    emulator.pause();
+    const captured: RuntimeFile[] = [];
+    const save = emulator.gameManager.getSaveFile();
+    if (save?.byteLength) captured.push({ name: "save.srm", bytes: new Uint8Array(save) });
+    if (emulator.gameManager.supportsStates()) {
+      captured.push({
+        name: "__runtime/state.bin",
+        bytes: new Uint8Array(emulator.gameManager.getState()),
+      });
+      return { kind: "snapshot", files: captured, runtime };
+    }
+    return { kind: "game-save", files: captured };
+  }
   return {
     controls: bindings.controls,
     pause: () => emulator.pause(),
     resume: () => emulator.play(),
-    async capture() {
-      emulator.pause();
-      const captured: RuntimeFile[] = [];
-      const save = emulator.gameManager.getSaveFile();
-      if (save?.byteLength) captured.push({ name: "save.srm", bytes: new Uint8Array(save) });
-      if (emulator.gameManager.supportsStates()) {
-        captured.push({
-          name: "__runtime/state.bin",
-          bytes: new Uint8Array(emulator.gameManager.getState()),
-        });
-        return { kind: "snapshot", files: captured, runtime };
-      }
-      return captured.length ? { kind: "game-save", files: captured } : null;
+    capture: async () => {
+      const progress = await capture();
+      return progress.files.length ? progress : null;
     },
+    ...(launch.game.system === "md" || disc
+      ? {
+          snapshot: {
+            read: capture,
+            replace: (previous: RuntimeProgress, next: RuntimeProgress) =>
+              restoreEditedState(
+                {
+                  pause: () => emulator.pause(),
+                  load: (bytes) => emulator.gameManager.loadState(bytes),
+                  capture,
+                  async advance() {
+                    let timer: ReturnType<typeof setTimeout> | undefined;
+                    try {
+                      emulator.play();
+                      await new Promise<void>((resolve, reject) => {
+                        timer = setTimeout(
+                          () =>
+                            reject(new MessageError(message("runtime.snapshotEditUnconfirmed"))),
+                          2000,
+                        );
+                        requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+                      });
+                    } finally {
+                      clearTimeout(timer);
+                    }
+                  },
+                },
+                previous,
+                next,
+              ),
+          },
+        }
+      : {}),
     async stop() {
       bindings.dispose();
       emulator.pause();

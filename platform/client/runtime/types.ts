@@ -2,6 +2,7 @@ import type { ProgressKind, RuntimeIdentity } from "../../src/domain/artifacts.t
 import type { Game } from "../../src/library/catalog.ts";
 import type { DisplayText } from "../../src/shared/messages.ts";
 import type { Locale } from "../locale-preference.ts";
+import type { RuntimeSnapshotAccess } from "./snapshot-edit.ts";
 
 export interface RuntimeFile {
   name: string;
@@ -46,6 +47,7 @@ export interface RuntimeHandle {
   setMouseCapture?(enabled: boolean): void;
   setIntegerScaling?(enabled: boolean): void;
   files?: RuntimeFileAccess;
+  snapshot?: RuntimeSnapshotAccess;
   controls?: RuntimeControls;
 }
 export interface RuntimeHost {

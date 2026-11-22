@@ -28,5 +28,6 @@
   "runtime.writeVerification": "写回校验失败。",
   "runtime.restoreVerification": "恢复校验失败。",
   "runtime.restoreFailed": "无法恢复游戏内文件。云端版本仍保留，请重新载入游戏。",
-  "runtime.writeRolledBack": "写回失败，已恢复全部原文件。可重试同步修改。"
+  "runtime.writeRolledBack": "写回失败，已恢复全部原文件。可重试同步修改。",
+  "runtime.snapshotEditUnconfirmed": "无法确认修改后的状态已在游戏中生效。游戏保持暂停，云端版本已保留。请重试应用，或重新载入该版本。"
 }

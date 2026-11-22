@@ -15,6 +15,8 @@ export default defineConfig({
         "client/runtime/progress.ts",
         "client/runtime/save-files.ts",
         "client/runtime/live-edit.ts",
+        "client/runtime/snapshot-edit.ts",
+        "client/runtime/console-state.ts",
         "client/runtime/progress-sync.ts",
         "client/runtime/progress-recovery.ts",
         "client/controls/numbers.ts",
