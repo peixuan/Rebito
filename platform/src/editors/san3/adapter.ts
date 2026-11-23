@@ -8,6 +8,7 @@ import {
 } from "../types.ts";
 import { San3Document, san3Layout } from "./document.ts";
 import { cityFields, editSan3, officerFields } from "./fields.ts";
+import { san3PresetAdapter } from "./preset-adapter.ts";
 
 const modules = ["cities", "officers", "factions"] as const;
 type Module = (typeof modules)[number];
@@ -137,6 +138,8 @@ function prepare(bytes: Uint8Array, draft: EditorDraft) {
 export const san3Adapter: EditorAdapter = {
   size: san3Layout.size,
   view(bytes, draft) {
+    if (bytes.length === san3Layout.size && bytes[0x4abc4] === 0 && bytes[0x4abc5] === 4)
+      return san3PresetAdapter.view(bytes, draft);
     const { document, data, module, selected, count, edits } = prepare(bytes, draft);
     const selectedFields = fields(document, data, module, Number(selected));
     const preview: EditorView["preview"] = edits.map(({ field, before, after }) => {
@@ -203,6 +206,8 @@ export const san3Adapter: EditorAdapter = {
     };
   },
   apply(bytes, draft) {
+    if (bytes.length === san3Layout.size && bytes[0x4abc4] === 0 && bytes[0x4abc5] === 4)
+      return san3PresetAdapter.apply(bytes, draft);
     const prepared = prepare(bytes, draft);
     if (!prepared.edits.length) throw new EditorError("no_changes", message("editor.noChanges"));
     return prepared.output;

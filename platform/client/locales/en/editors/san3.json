@@ -58,5 +58,13 @@
   "san3.heavyCrossbowPrice": "Heavy crossbow price",
   "san3.warhorsePrice": "Warhorse price",
   "san3.cityDevelopmentHelp": "Changing development preserves existing stocks.",
-  "san3.cityPriceHelp": "Food rates are rice units per gold; equipment prices are gold per unit. Prices must remain positive for trading."
+  "san3.cityPriceHelp": "Food rates are rice units per gold; equipment prices are gold per unit. Prices must remain positive for trading.",
+  "san3.presetStats": "New officer creation defaults",
+  "san3.preset0": "Male, under 30",
+  "san3.preset1": "Female, under 30",
+  "san3.preset2": "Male, 30 or older",
+  "san3.preset3": "Female, 30 or older",
+  "san3.presetBonus": "Points to allocate",
+  "san3.presetSummary": "The game adds {bonus} points; leave room to allocate all of them.",
+  "san3.presetHelp": "Edit before entering ability allocation. These defaults stay in checkpoints while the registration module remains loaded; a cold boot or module reload restores disc defaults. Existing officers are unchanged."
 }

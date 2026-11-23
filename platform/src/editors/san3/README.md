@@ -60,6 +60,20 @@ checks ability drafts, retained changes, failed-download recovery and troop limi
 
 ## Evidence and limits
 
+The registration overlay (`0x4abc4 == 4`) exposes a separate creation-default
+view after verifying both table consumers and the point-allocation instructions.
+Its four six-byte rows at `0x5d0ac` select male/female and age below/at least 30.
+Each ability is 1..100. The game additionally grants 90 or 70 points which must
+all be allocated, so each row leaves that much room below a total of 600.
+Edit before entering allocation. Registered officers are untouched. These defaults
+survive checkpoint restoration but not a cold boot or reloading `SETTEI.PRG`;
+merely closing its dialog does not necessarily unload the module. This extends
+the original editor, whose custom-officer import only replaced names.
+The original-game check displayed edited young male/female defaults, spent the
+90-point grant, saved a completed officer, and restored all 24 template bytes
+from a checkpoint. A native-only cold boot restored disc templates while retaining
+that registered officer's abilities. Older-row selection remains instruction evidence.
+
 The original supplied Japanese disc's first MODE1/2352 track has 4,745 sectors
 and SHA-256 `ed4589ab748e0a8a5cc4796413c751e887b1a4a7536f566a67632e203f997096`.
 Independent local analysis of its table access, clamps and allocation routines
@@ -82,8 +96,9 @@ edited value read back correctly, the paused state remained stable, and all
 writeback path, not parity with every feature of the local reference editor.
 
 The constructor checks both KOEI markers, date, table references, resource limits
-and overlay selector `0x4abc4 == 0` (the `UCOM.PRG` strategic module). Other
-overlays are rejected. This does not prove the game is idle between commands:
+and overlay selector `0x4abc4 == 0` (the `UCOM.PRG` strategic module). Registration
+uses the separate schema above; other overlays are rejected. Neither schema
+proves the game is idle between commands:
 users must return to the strategic command menu before editing. In-game panels
 cache their rendering; reopen a panel to refresh it after editing. Runtime
 writeback must still verify the replacement and preserve a failed update paused.

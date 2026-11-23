@@ -1,6 +1,6 @@
 {
   "editor.san3Title": "Romance of the Three Kingdoms III (Mega-CD)",
-  "editor.san3Description": "For the original Japanese Mega-CD edition. Return to the strategic command menu, then use Capture for editing. Reopen game panels to refresh their display and save inside the game to retain changes in its native save. Battle, ownership and historical base attributes are not editable.",
+  "editor.san3Description": "For the original Japanese Mega-CD edition. Capture at the strategic command menu to edit cities and officers, or in new-officer registration before ability allocation to edit creation defaults. Reopen game panels after editing. Save in the game for native data; keep a checkpoint for historical abilities and creation defaults.",
   "editor.phantasyStar4Title": "Phantasy Star IV (MD)",
   "editor.phantasyStar4Description": "Verified with Ken Tse Chinese 1.6 Original mode. Return to a field/menu outside battle and use Capture for editing before each session. Resume and save inside the game to retain changes in its native save. Later level-ups and hardware events can reset attributes, learned abilities and their limits. Stacked-inventory translations and MODs are not supported.",
   "editor.jinyongTitle": "Heroes of Jin Yong (original DOS)",

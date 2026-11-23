@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import type { RuntimeHandle, RuntimeProgress, RuntimeWindow } from "../../client/runtime/types.ts";
 import { San3Document, san3Layout } from "../../src/editors/san3/document.ts";
+import { San3PresetDocument, san3PresetLayout } from "../../src/editors/san3/presets.ts";
 import { openSnapshotMemory } from "../../src/editors/snapshots/memory.ts";
 import type { Game } from "../../src/library/catalog.ts";
 import type { Profile, Revision } from "../../src/storage/revisions.ts";
@@ -267,5 +268,81 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   expect(Object.values(document.attributes(1))).toEqual([91, 92, 93, 94, 95, 96]);
   expect(document.officer(1).soldierLimit).toBe(19_200);
   expect(result[123]).toBe(219);
+
+  // The same editor selects its registration schema from captured RAM, not a client flag.
+  await page.getByRole("button", { name: "Stop game", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Start game", exact: true })).toBeEnabled();
+  const setup = new Uint8Array(san3Layout.size);
+  const setupView = new DataView(setup.buffer);
+  setupView.setUint16(0x4abc4, 4);
+  for (const offset of [0x58a04, 0x58d6a]) {
+    setupView.setUint16(offset, 0x207c);
+    setupView.setUint32(offset + 2, san3PresetLayout.offset);
+  }
+  for (const [offset, value] of [
+    [0x58a5e, 0x745a],
+    [0x58a62, 0x7446],
+    [0x58d1a, 0x0c32],
+    [0x58d1c, 100],
+  ] as const)
+    setupView.setUint16(offset, value);
+  setup.fill(50, san3PresetLayout.offset, san3PresetLayout.offset + 24);
+  const beforeSetup = (await history())[0];
+  const setupFiles = captured.files.map((file) => ({
+    ...file,
+    bytes: file.name === state.name ? [...memory.replace(setup)] : file.bytes,
+  }));
+  expect(
+    await page.evaluate(
+      async ({ profile, base, runtime, files }) => {
+        const body = new FormData();
+        body.append(
+          "metadata",
+          JSON.stringify({
+            kind: "snapshot",
+            runtime,
+            releaseId: profile.releaseId,
+            baseRevision: base,
+          }),
+        );
+        for (const file of files)
+          body.append("file", new Blob([new Uint8Array(file.bytes)]), file.name);
+        return (await fetch(`/api/profiles/${profile.id}/revisions`, { method: "POST", body }))
+          .status;
+      },
+      { profile, base: beforeSetup?.id, runtime: captured.runtime, files: setupFiles },
+    ),
+  ).toBe(201);
+  await page.reload();
+  await page.getByRole("button", { name: /SAN3 strategic editor fixture/ }).click();
+  await page.getByRole("button", { name: "Open profile", exact: true }).click();
+  await page.getByRole("button", { name: "Start game", exact: true }).click();
+  await capture.click();
+  await expect(
+    editor.getByRole("button", { name: "New officer creation defaults", exact: true }),
+  ).toBeVisible();
+  await expect(editor.getByRole("button", { name: "Cities", exact: true })).toHaveCount(0);
+  await editor.getByLabel("Strength", { exact: true }).fill("73");
+  await editor.getByLabel("Strength", { exact: true }).press("Tab");
+  await editor.getByRole("row").filter({ hasText: "Female, 30 or older" }).click();
+  await editor.getByLabel("Charisma", { exact: true }).fill("81");
+  await editor.getByLabel("Charisma", { exact: true }).press("Tab");
+  await page.getByLabel("Language").selectOption("zh-CN");
+  await expect(page.getByLabel(chinese("san3.charisma"), { exact: true })).toHaveValue("81");
+  await page.getByLabel(chinese("app.language")).selectOption("en");
+  await editor.getByRole("button", { name: "Save edits", exact: true }).click();
+  await expect(editor.getByRole("status")).toContainText("Edits were saved");
+  const setupSaved = (await history())[0];
+  const setupResponse = await page.request.get(
+    `/api/revisions/${setupSaved?.id}/file?name=__runtime%2Fstate.bin`,
+  );
+  const restoredSetup = new San3PresetDocument(
+    openSnapshotMemory(new Uint8Array(await setupResponse.body()), "picodrive", "program").bytes,
+  );
+  expect(restoredSetup.values(0)[2]).toBe(73);
+  expect(restoredSetup.values(3)[5]).toBe(81);
+  expect(setupSaved?.manifest.artifacts.find((file) => file.name === "save.srm")).toEqual(
+    original.manifest.artifacts.find((file) => file.name === "save.srm"),
+  );
   expect(errors).toEqual([]);
 });

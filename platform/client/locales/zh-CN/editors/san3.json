@@ -58,5 +58,13 @@
   "san3.heavyCrossbowPrice": "强弩价格",
   "san3.warhorsePrice": "军马价格",
   "san3.cityDevelopmentHelp": "修改开发不会自动调整现有库存。",
-  "san3.cityPriceHelp": "粮食比率为每金对应的粮食数量；军备价格为每件所需金数。交易价格必须大于零。"
+  "san3.cityPriceHelp": "粮食比率为每金对应的粮食数量；军备价格为每件所需金数。交易价格必须大于零。",
+  "san3.presetStats": "新武将创建默认能力",
+  "san3.preset0": "男性，未满30岁",
+  "san3.preset1": "女性，未满30岁",
+  "san3.preset2": "男性，30岁及以上",
+  "san3.preset3": "女性，30岁及以上",
+  "san3.presetBonus": "待分配点数",
+  "san3.presetSummary": "游戏另给{bonus}点，需保留足够空间全部分配。",
+  "san3.presetHelp": "请在进入能力分配前修改。此默认值随即时存档保留；冷启动或重新加载创建模块会恢复光盘默认值。已有武将不受影响。"
 }
