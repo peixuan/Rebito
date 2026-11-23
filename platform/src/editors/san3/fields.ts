@@ -1,5 +1,6 @@
 import { message } from "../../shared/messages.ts";
 import { EditorError, type EditorField } from "../types.ts";
+import { cityDetailFields } from "./city-fields.ts";
 import { type San3Document, san3Attributes, san3Layout } from "./document.ts";
 
 export interface San3Field extends EditorField {
@@ -38,7 +39,7 @@ export function attributeFields(document: San3Document, index: number): San3Fiel
 /** Population is stored in hundreds; the shared multiplier presents people. */
 export function cityFields(document: San3Document, index: number): San3Field[] {
   const offset = document.offset("cities", index);
-  return (
+  const resources = (
     [
       ["population", 0x0c, 2, 30_000],
       ["gold", 0x0e, 2, 50_000],
@@ -56,6 +57,7 @@ export function cityFields(document: San3Document, index: number): San3Field[] {
     max,
     ...(id === "population" ? { multiplier: 100 } : {}),
   }));
+  return [...resources, ...cityDetailFields(document, index)];
 }
 
 export function officerFields(document: San3Document, index: number): San3Field[] {

@@ -29,6 +29,15 @@ Loyalty, training and morale have a maximum of 100. Ruler loyalty is read-only.
 Disbanding, creating an army and editing inactive officers are deliberately
 excluded because those actions update additional state.
 
+City development, cultivation, irrigation, flood protection, tax and popular
+loyalty use 0..100; commerce and the three weapon stocks use 0..9999. Each of
+the three warship stocks uses 0..100. Five trade prices use 1..255: the game's
+trade routines divide by these values without a zero guard. Food prices are
+rice units per gold; weapon and horse prices are gold per unit. Development
+changes do not rescale existing stocks. City links, ownership and command flags
+are preserved. These offsets and bounds were checked against both reference
+branches and the original game's trade, tax and equipment routines.
+
 Historical names and leadership come from `0x4021e`, 532 records of `0x1e`
 bytes. Custom officers start at `0x78004`, 68 records of `0x1c` bytes. Territory
 names start at `0x44076`, 46 records of `0x1a` bytes. Names are decoded from the
