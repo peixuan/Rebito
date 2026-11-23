@@ -1,6 +1,7 @@
 import { message } from "../../shared/messages.ts";
 import { EditorError, type EditorField } from "../types.ts";
 import { cityDetailFields } from "./city-fields.ts";
+import { customMetadataFields, validateCustomFields } from "./custom-fields.ts";
 import { type San3Document, san3Attributes, san3Layout } from "./document.ts";
 
 export interface San3Field extends EditorField {
@@ -87,12 +88,20 @@ export function officerFields(document: San3Document, index: number): San3Field[
   return [...military, ...attributeFields(document, index)];
 }
 
-export function findSan3Field(document: San3Document, key: string): San3Field {
-  const match = /^(city|officer)\.(0|[1-9]\d{0,2})\./.exec(key);
+export function findSan3Field(
+  document: San3Document,
+  key: string,
+  changes: Record<string, number> = {},
+): San3Field {
+  const match = /^(city|officer|custom)\.(0|[1-9]\d{0,2})\./.exec(key);
   if (match) {
     const index = Number(match[2]);
     const fields =
-      match[1] === "city" ? cityFields(document, index) : officerFields(document, index);
+      match[1] === "city"
+        ? cityFields(document, index)
+        : match[1] === "custom"
+          ? customMetadataFields(document, index, changes)
+          : officerFields(document, index);
     const field = fields.find((candidate) => candidate.key === key);
     if (field) return field;
   }
@@ -101,8 +110,9 @@ export function findSan3Field(document: San3Document, key: string): San3Field {
 
 /** Validate atomically, including troop edits against the final leadership values. */
 export function editSan3(document: San3Document, changes: Record<string, number>) {
+  validateCustomFields(document, changes);
   const edits = Object.entries(changes).map(([key, value]) => {
-    const field = findSan3Field(document, key);
+    const field = findSan3Field(document, key, changes);
     let maximum = field.max;
     if (field.columnId === "soldiers") {
       const index = Number(key.split(".")[1]);

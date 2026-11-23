@@ -66,5 +66,18 @@
   "san3.preset3": "女性，30岁及以上",
   "san3.presetBonus": "待分配点数",
   "san3.presetSummary": "游戏另给{bonus}点，需保留足够空间全部分配。",
-  "san3.presetHelp": "请在进入能力分配前修改。此默认值随即时存档保留；冷启动或重新加载创建模块会恢复光盘默认值。已有武将不受影响。"
+  "san3.presetHelp": "请在进入能力分配前修改。此默认值随即时存档保留；冷启动或重新加载创建模块会恢复光盘默认值。已有武将不受影响。",
+  "san3.custom": "新武将",
+  "san3.customProfile": "新武将资料",
+  "san3.gender": "性别",
+  "san3.male": "男性",
+  "san3.female": "女性",
+  "san3.birthMonth": "出生月份",
+  "san3.birthDay": "出生日期",
+  "san3.age": "年龄",
+  "san3.portrait": "头像",
+  "san3.portraitNumber": "头像 {number}",
+  "san3.unregistered": "未注册",
+  "san3.birthdayHelp": "二月允许29日，其他月份按游戏日历限制。",
+  "san3.portraitHelp": "仅列出本游戏支持的头像。未注册槽位不会因此变成已注册武将，请在游戏中完成创建。"
 }

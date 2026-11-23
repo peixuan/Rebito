@@ -6,11 +6,12 @@ import {
   type EditorField,
   type EditorView,
 } from "../types.ts";
+import { customMetadataFields } from "./custom-fields.ts";
 import { San3Document, san3Layout } from "./document.ts";
-import { cityFields, editSan3, officerFields } from "./fields.ts";
+import { attributeFields, cityFields, editSan3, officerFields } from "./fields.ts";
 import { san3PresetAdapter } from "./preset-adapter.ts";
 
-const modules = ["cities", "officers", "factions"] as const;
+const modules = ["cities", "officers", "custom", "factions"] as const;
 type Module = (typeof modules)[number];
 const invalid = () => new EditorError("invalid_edit", message("editor.invalidEdit"));
 const fallback = (kind: "city" | "officer" | "faction", index: number) =>
@@ -50,6 +51,7 @@ function catalog(document: San3Document) {
 type Catalog = ReturnType<typeof catalog>;
 
 function label(data: Catalog, module: Module, index: number): DisplayText {
+  if (module === "custom") return data.officerName(index + san3Layout.historical.count);
   return module === "cities"
     ? data.cityName(index)
     : module === "officers"
@@ -76,6 +78,11 @@ function fields(
   module: Module,
   index: number,
 ): EditorField[] {
+  if (module === "custom")
+    return [
+      ...customMetadataFields(document, index),
+      ...attributeFields(document, index + san3Layout.historical.count),
+    ].map(({ offset: _offset, width: _width, ...field }) => field);
   if (module === "factions") {
     const faction = data.factions[index];
     if (!faction) throw invalid();
@@ -126,9 +133,11 @@ function prepare(bytes: Uint8Array, draft: EditorDraft) {
   const first =
     module === "officers"
       ? data.officers.find((officer) => officer.available)?.index
-      : module === "factions"
-        ? data.factions.find((faction) => faction.active)?.index
-        : data.cities.find((city) => city.faction !== 0xff)?.index;
+      : module === "custom"
+        ? 0
+        : module === "factions"
+          ? data.factions.find((faction) => faction.active)?.index
+          : data.cities.find((city) => city.faction !== 0xff)?.index;
   const selected = draft.record ?? String(first ?? 0);
   if (!/^(0|[1-9]\d{0,2})$/.test(selected) || Number(selected) >= count) throw invalid();
   return { document, data, module: module as Module, selected, count, output: result.bytes, edits };
@@ -147,7 +156,11 @@ export const san3Adapter: EditorAdapter = {
       return {
         key: field.key,
         label: message("editor.columnLabel", {
-          group: label(data, kind === "city" ? "cities" : "officers", Number(index)),
+          group: label(
+            data,
+            kind === "city" ? "cities" : kind === "custom" ? "custom" : "officers",
+            Number(index),
+          ),
           field: field.label,
         }),
         before: before * (field.multiplier ?? 1),

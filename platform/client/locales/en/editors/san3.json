@@ -66,5 +66,18 @@
   "san3.preset3": "Female, 30 or older",
   "san3.presetBonus": "Points to allocate",
   "san3.presetSummary": "The game adds {bonus} points; leave room to allocate all of them.",
-  "san3.presetHelp": "Edit before entering ability allocation. These defaults stay in checkpoints while the registration module remains loaded; a cold boot or module reload restores disc defaults. Existing officers are unchanged."
+  "san3.presetHelp": "Edit before entering ability allocation. These defaults stay in checkpoints while the registration module remains loaded; a cold boot or module reload restores disc defaults. Existing officers are unchanged.",
+  "san3.custom": "Custom officers",
+  "san3.customProfile": "Custom officer profile",
+  "san3.gender": "Gender",
+  "san3.male": "Male",
+  "san3.female": "Female",
+  "san3.birthMonth": "Birth month",
+  "san3.birthDay": "Birth day",
+  "san3.age": "Age",
+  "san3.portrait": "Portrait",
+  "san3.portraitNumber": "Portrait {number}",
+  "san3.unregistered": "Unregistered",
+  "san3.birthdayHelp": "February permits 29 days; other months follow the game calendar.",
+  "san3.portraitHelp": "Choose a portrait supported by this game. Unregistered slots stay unregistered; use the game to create an officer."
 }

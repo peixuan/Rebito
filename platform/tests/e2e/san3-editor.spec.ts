@@ -20,6 +20,11 @@ function strategicMemory() {
     view.setUint16(san3Layout.factions.offset + index * san3Layout.factions.stride, 0xffff);
   view.setUint16(san3Layout.factions.offset, 0);
   view.setUint32(san3Layout.factions.offset + 2, san3Layout.cities.offset);
+  for (let index = 0; index < san3Layout.custom.count; index++) {
+    const offset = san3Layout.custom.offset + index * san3Layout.custom.stride;
+    view.setUint16(offset, 0xffff);
+    bytes.set([50, 50, 50, 50, 50, 50, 1, 1, 20], offset + 4);
+  }
   for (let index = 0; index < san3Layout.cities.count; index++) {
     const offset = san3Layout.cities.offset + index * san3Layout.cities.stride;
     for (const relative of [4, 6, 8, 10]) view.setUint16(offset + relative, 0xffff);
@@ -207,6 +212,14 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   ).toHaveValue("8765");
   await expect(page.getByLabel(chinese("san3.strength"), { exact: true })).toHaveValue("93");
   await page.getByLabel(chinese("app.language")).selectOption("en");
+  await editor.getByRole("button", { name: "Custom officers", exact: true }).click();
+  await expect(editor.getByLabel("Portrait", { exact: true })).toBeDisabled();
+  await editor.getByLabel("Age", { exact: true }).fill("35");
+  await editor.getByLabel("Age", { exact: true }).press("Tab");
+  await editor.getByLabel("Birth month", { exact: true }).fill("2");
+  await editor.getByLabel("Birth month", { exact: true }).press("Tab");
+  await editor.getByLabel("Birth day", { exact: true }).fill("29");
+  await editor.getByLabel("Birth day", { exact: true }).press("Tab");
   await editor.getByRole("button", { name: "Factions", exact: true }).click();
   await expect(editor.getByLabel("Gold", { exact: true })).toBeDisabled();
   await expect(editor.getByLabel("Gold", { exact: true })).toHaveValue("12345");
@@ -268,6 +281,10 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   expect(Object.values(document.attributes(1))).toEqual([91, 92, 93, 94, 95, 96]);
   expect(document.officer(1).soldierLimit).toBe(19_200);
   expect(result[123]).toBe(219);
+  expect([
+    ...result.subarray(san3Layout.custom.offset + 10, san3Layout.custom.offset + 13),
+  ]).toEqual([2, 29, 35]);
+  expect(new DataView(result.buffer).getUint16(san3Layout.custom.offset)).toBe(0xffff);
 
   // The same editor selects its registration schema from captured RAM, not a client flag.
   await page.getByRole("button", { name: "Stop game", exact: true }).click();

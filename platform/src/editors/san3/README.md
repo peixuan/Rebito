@@ -65,6 +65,13 @@ one custom record, read back all twelve after acknowledged PicoDrive writeback,
 and preserved the 73,728-byte native companion. The bilingual browser flow also
 checks ability drafts, retained changes, failed-download recovery and troop limits.
 
+The custom-officer tab includes all 68 definition slots, even before registration.
+Gender, birthday and age have bounded fields; calendar validation checks the final
+draft so month/day edits are order independent. Portrait choices use verified
+creation IDs plus historical IDs backed by the game's lookup table. The `0xffff`
+unregistered sentinel cannot be changed through this editor. Editing a definition
+does not create a live officer or modify city lists; registration remains in-game.
+
 ## Evidence and limits
 
 The registration overlay (`0x4abc4 == 4`) exposes a separate creation-default

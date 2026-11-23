@@ -34,13 +34,45 @@ function fixture() {
 }
 
 describe("SAN3 editor view", () => {
+  it("edits unused custom defaults without registering an officer or changing its links", () => {
+    const bytes = fixture();
+    const data = new DataView(bytes.buffer);
+    for (let index = 0; index < 68; index++) {
+      const offset = san3Layout.custom.offset + index * san3Layout.custom.stride;
+      data.setUint16(offset, 0xffff);
+      bytes.set([50, 50, 50, 50, 50, 50, 1, 1, 20], offset + 4);
+    }
+    const view = san3Adapter.view(bytes, {
+      module: "custom",
+      record: "67",
+      changes: {
+        "custom.67.birthMonth": 2,
+        "custom.67.birthDay": 29,
+        "custom.67.age": 35,
+        "officer.599.intelligence": 98,
+      },
+    });
+    expect(view.records).toHaveLength(68);
+    expect(view.fields.find(({ columnId }) => columnId === "birthDay")).toMatchObject({
+      value: 29,
+      max: 29,
+    });
+    expect(view.fields.find(({ columnId }) => columnId === "portrait")?.readonly).toBe(true);
+    const result = san3Adapter.apply(bytes, { changes: view.changes });
+    expect(result.subarray(san3Layout.officers.offset)).toEqual(
+      bytes.subarray(san3Layout.officers.offset),
+    );
+    expect(new DataView(result.buffer).getUint16(san3Layout.custom.offset + 67 * 28)).toBe(0xffff);
+    expect(new San3Document(result).attributes(599).intelligence).toBe(98);
+  });
+
   it("binds to CD program RAM and keeps private layout details out of the UI", () => {
     expect(san3Registration).toMatchObject({
       system: "segacd",
       snapshot: { core: "picodrive", domain: "program" },
     });
     const view = san3Adapter.view(fixture(), {});
-    expect(view.modules.map(({ id }) => id)).toEqual(["cities", "officers", "factions"]);
+    expect(view.modules.map(({ id }) => id)).toEqual(["cities", "officers", "custom", "factions"]);
     expect(view).toMatchObject({ slot: 0, selected: "0", actions: [], changes: {}, preview: [] });
     expect(view.records[0]).toMatchObject({
       label: "Town",
