@@ -25,6 +25,7 @@ import { localize, t, translate } from "./i18n.ts";
 const props = defineProps<{
   revisionId: string;
   workspaceBusy: boolean;
+  captureRequired?: boolean;
   publish?: (revisionId: string, batch: EditorBatch) => Promise<Revision>;
 }>();
 const emit = defineEmits<{ saved: [revision: Revision]; dirty: [value: boolean] }>();
@@ -276,6 +277,9 @@ onBeforeUnmount(() => {
     <Message v-if="error" severity="error" role="alert">{{ translate(error) }}</Message>
     <Message v-if="notice" severity="success" role="status">{{ translate(notice) }}</Message>
     <Message v-if="stale" severity="warn" role="alert">{{ t("editor.stale") }}</Message>
+    <Message v-if="captureRequired" severity="info" role="note" aria-live="polite">{{
+      t("editor.captureRequired")
+    }}</Message>
     <template v-if="view">
       <p class="editor-guidance">{{ translate(view.instructions) }}</p>
       <nav class="editor-tabs" :aria-label="t('editor.modules')">
@@ -309,13 +313,13 @@ onBeforeUnmount(() => {
             v-if="view.textFields?.length"
             :fields="view.textFields"
             :changes="textDraft(view.file, view.slot)"
-            :disabled="busy || stale"
+            :disabled="busy || stale || captureRequired"
             @change="changeText"
           />
           <FieldGrid
             :key="`${view.file}:${view.slot}:${view.selected}`"
             :fields="fields"
-            :disabled="busy || stale"
+            :disabled="busy || stale || captureRequired"
             @change="change"
             @valid="(key, valid) => (valid ? invalid.delete(key) : invalid.add(key))"
             @pending="
@@ -329,7 +333,7 @@ onBeforeUnmount(() => {
               :view="view"
               :keys="view.batchKeys"
               :changes="draft(view.file, view.slot)"
-              :disabled="busy || stale || Boolean(invalid.size)"
+              :disabled="busy || stale || captureRequired || Boolean(invalid.size)"
               @apply="
                 (targets) =>
                   perform(() =>
@@ -346,7 +350,7 @@ onBeforeUnmount(() => {
               :title="translate(action.help)"
               size="small"
               severity="secondary"
-              :disabled="busy || stale || Boolean(invalid.size)"
+              :disabled="busy || stale || captureRequired || Boolean(invalid.size)"
               @click="perform(() => runAction(action))"
             />
           </div>
@@ -370,7 +374,13 @@ onBeforeUnmount(() => {
           :label="t('editor.save')"
           size="small"
           :loading="busy"
-          :disabled="busy || (!count && !pendingInput.size) || stale || Boolean(invalid.size)"
+          :disabled="
+            busy ||
+            captureRequired ||
+            (!count && !pendingInput.size) ||
+            stale ||
+            Boolean(invalid.size)
+          "
           @click="perform(save)"
         />
       </div>

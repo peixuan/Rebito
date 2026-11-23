@@ -160,6 +160,8 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   const capture = page.getByRole("button", { name: "Capture for editing", exact: true });
   await expect(capture).toBeEnabled({ timeout: 30_000 });
   const editor = page.getByRole("region", { name: "Save editor", exact: true });
+  await expect(editor.getByLabel("Population", { exact: true })).toBeDisabled();
+  await expect(editor).toContainText("Capture the paused game again before editing");
   let release = () => {};
   const barrier = new Promise<void>((resolve) => {
     release = resolve;
@@ -278,6 +280,14 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   await retry.click();
   await expect(retry).not.toBeVisible();
   await expect(page.getByRole("button", { name: "Resume game", exact: true })).toBeEnabled();
+  await editor.getByRole("button", { name: "Custom officers", exact: true }).click();
+  await expect(editor.getByLabel("Birth month", { exact: true })).toBeDisabled();
+  await expect(
+    editor.getByRole("button", { name: "Preview 68 preset names", exact: true }),
+  ).toBeDisabled();
+  await expect(
+    editor.getByRole("button", { name: "Discard draft and reload", exact: true }),
+  ).toBeEnabled();
   expect(await history()).toEqual(publishedHistory);
   await page.getByRole("button", { name: "Save to account", exact: true }).click();
   await expect.poll(async () => (await history()).length).toBe(4);
@@ -322,7 +332,11 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   await editor.getByRole("button", { name: "Save edits", exact: true }).click();
   await expect(editor.getByRole("status")).toContainText("Edits were saved");
   // Core load acknowledgement may normalize state; a new workflow needs a fresh capture.
+  await editor.getByRole("button", { name: "Factions", exact: true }).click();
+  await expect(editor.getByLabel("New ruler", { exact: true })).toBeDisabled();
   await capture.click();
+  await editor.getByRole("button", { name: "Factions", exact: true }).click();
+  await expect(editor.getByLabel("New ruler", { exact: true })).toBeEnabled();
   await editor.getByRole("button", { name: "Officers", exact: true }).click();
   await editor
     .getByRole("row")

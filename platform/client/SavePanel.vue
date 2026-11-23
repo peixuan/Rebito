@@ -159,6 +159,7 @@ onMounted(() => perform(refresh));
       v-if="game.editor && head"
       :revision-id="head"
       :workspace-busy="busy || Boolean(player?.busy)"
+      :capture-required="Boolean(player?.captureRequired)"
       :publish="publishEdit"
       @dirty="editorDirty = $event"
       @saved="edited"

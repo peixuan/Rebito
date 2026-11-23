@@ -35,5 +35,6 @@
   "editor.batchTargets": "复制到其他记录",
   "editor.batchApply": "复制已修改字段",
   "editor.batchSelected": "已选{count}条",
-  "editor.batchHelp": "仅复制明确修改过的数值字段，不含姓名或关系变更。所有目标都必须有效，保存前可先预览。"
+  "editor.batchHelp": "仅复制明确修改过的数值字段，不含姓名或关系变更。所有目标都必须有效，保存前可先预览。",
+  "editor.captureRequired": "修改前请再次点击“暂停并取档修改”。应用修改或继续游戏后，需要重新获取当前进度。"
 }

@@ -175,6 +175,7 @@ test("associates the MD editor and applies bilingual drafts to the paused runnin
   await editor.getByRole("button", { name: "Save edits", exact: true }).click();
   await expect(editor.getByRole("status")).toContainText("Edits were saved");
   await expect(page.getByRole("button", { name: "Resume game", exact: true })).toBeEnabled();
+  await expect(editor.getByLabel("Meseta", { exact: true })).toBeDisabled();
   const edited = (await history())[0];
   expect(edited?.parentId).toBe(original.id);
   expect(edited?.source).toBe("editor");
@@ -182,6 +183,7 @@ test("associates the MD editor and applies bilingual drafts to the paused runnin
   expect(edited?.manifest.artifacts.find((file) => file.name === "save.srm")).toEqual(nativeSave);
   await page.getByRole("button", { name: "Save to account", exact: true }).click();
   await expect.poll(async () => (await history()).length).toBe(3);
+  await expect(editor.getByLabel("Meseta", { exact: true })).toBeEnabled();
   const captured = (await history())[0];
   const state = await page.request.get(
     `/api/revisions/${captured?.id}/file?name=__runtime%2Fstate.bin`,
@@ -230,5 +232,7 @@ test("associates the MD editor and applies bilingual drafts to the paused runnin
   await expect(editor.getByLabel("Meseta", { exact: true })).toHaveValue("12400");
   await expect(editor.getByRole("alert")).not.toBeVisible();
   await expect(page.getByRole("button", { name: "Resume game", exact: true })).toBeEnabled();
+  await page.getByRole("button", { name: "Resume game", exact: true }).click();
+  await expect(editor.getByLabel("Meseta", { exact: true })).toBeDisabled();
   expect(errors).toEqual([]);
 });

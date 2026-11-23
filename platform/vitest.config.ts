@@ -16,6 +16,7 @@ export default defineConfig({
         "client/runtime/save-files.ts",
         "client/runtime/live-edit.ts",
         "client/runtime/snapshot-edit.ts",
+        "client/runtime/snapshot-edit-session.ts",
         "client/runtime/console-state.ts",
         "client/runtime/console-guard.ts",
         "client/runtime/progress-sync.ts",

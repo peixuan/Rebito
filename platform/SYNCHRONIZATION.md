@@ -95,6 +95,11 @@ game's supported field or strategic menu, then choose **Capture for editing**.
 The capture remains paused after publication. Changing language or navigating
 editor records preserves the draft; resume, upload and stop remain blocked while
 a console draft is pending. The editor displays its game-specific instructions.
+Input remains disabled until a paused capture of the current cloud revision has
+finished. Resuming, loading an edited state, a conflict or restarting the runtime
+ends that editing session. Capture again before the next edit; a late capture
+response cannot reopen an invalidated session. Reading records and discarding
+a draft remain available, and exact byte verification is still required at publication.
 
 Before publishing an edit, the browser verifies every captured artifact against
 the selected revision, including native SRAM. The server authorizes the owner,

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import Message from "primevue/message";
-import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, reactive, ref, shallowRef, watch } from "vue";
 import type { Game } from "../src/library/catalog.ts";
 import { type DisplayText, displayMessage, MessageError, message } from "../src/shared/messages.ts";
 import type { Profile, Revision } from "../src/storage/revisions.ts";
@@ -14,6 +14,7 @@ import { assertCompatible, downloadProgress, downloadVerified } from "./runtime/
 import { createProgressRecovery } from "./runtime/progress-recovery.ts";
 import { nativeProgressChanged, publishProgress } from "./runtime/progress-sync.ts";
 import { prepareSnapshotEdit } from "./runtime/snapshot-edit.ts";
+import { SnapshotEditSession } from "./runtime/snapshot-edit-session.ts";
 import type { RuntimeControls, RuntimeHandle, RuntimeWindow } from "./runtime/types.ts";
 
 const props = defineProps<{
@@ -50,6 +51,16 @@ const pendingEdit = shallowRef<{
   resume: boolean;
 } | null>(null);
 const pendingSync = computed(() => pendingEdit.value !== null);
+const snapshotSession = reactive(new SnapshotEditSession());
+const captureRequired = computed(
+  () =>
+    active.value &&
+    props.game.system !== "dos" &&
+    (!ready.value ||
+      !paused.value ||
+      !snapshotSession.matches(base) ||
+      !snapshotSession.matches(props.baseRevision)),
+);
 let generation = 0;
 function runtimeErrorText(cause: unknown) {
   // Expected runtime errors cross frame boundaries as language-neutral descriptors.
@@ -58,6 +69,7 @@ function runtimeErrorText(cause: unknown) {
     : (displayMessage(cause) ?? message("player.failed"));
 }
 function markConflict() {
+  snapshotSession.invalidate();
   handle?.pause();
   paused.value = true;
   conflict.value = true;
@@ -80,6 +92,7 @@ async function perform(action: () => Promise<void>) {
 }
 async function boot() {
   const ticket = ++generation;
+  snapshotSession.invalidate();
   busy.value = true;
   error.value = "";
   notice.value = "";
@@ -130,6 +143,7 @@ async function boot() {
 }
 async function stop() {
   generation++;
+  snapshotSession.invalidate();
   const current = handle;
   handle = null;
   controls.value = null;
@@ -151,8 +165,10 @@ async function save(automatic = false, keepPaused = false) {
   if (!current || !ready.value || busy.value || pendingSync.value || conflict.value) return false;
   return perform(async () => {
     const resume = !paused.value && !keepPaused;
+    const captureTicket = current.snapshot ? snapshotSession.beginCapture() : null;
     function resumeCapturedGame() {
       if (resume && (changedHead === undefined || changedHead === base)) {
+        snapshotSession.invalidate();
         current?.resume();
         paused.value = false;
       }
@@ -171,6 +187,13 @@ async function save(automatic = false, keepPaused = false) {
         const revision = await publishProgress(props.profileId, props.game.id, base, progress);
         base = revision.id;
         runningRevision = revision;
+        if (
+          captureTicket !== null &&
+          progress.kind === "snapshot" &&
+          !resume &&
+          (changedHead === undefined || changedHead === base)
+        )
+          snapshotSession.acceptCapture(captureTicket, revision.id);
         emit("saved");
         synchronizedAt.value = Date.now();
         notice.value = automatic ? message("player.autosaved") : message("player.saved");
@@ -209,6 +232,7 @@ async function applyPendingEdit() {
   const current = handle;
   if (!pending || !current) return;
   await perform(async () => {
+    if (current.snapshot) snapshotSession.invalidate();
     await pending.apply(pending.revision);
     base = pending.revision.id;
     runningRevision = pending.revision;
@@ -222,6 +246,8 @@ async function applyPendingEdit() {
 }
 async function publishEdit(revisionId: string, files: string[], publish: () => Promise<Revision>) {
   const current = handle;
+  if (!current && captureRequired.value)
+    throw new ApiError("runtime_capture_required", 422, message("player.captureRequired"));
   if (!current || (!current.files && !current.snapshot)) return publish();
   if (busy.value || pendingSync.value || conflict.value)
     throw new ApiError("runtime_busy", 422, message("player.syncRequired"));
@@ -229,7 +255,10 @@ async function publishEdit(revisionId: string, files: string[], publish: () => P
     markConflict();
     throw new ApiError("conflict", 409);
   }
+  if (current.snapshot && captureRequired.value)
+    throw new ApiError("runtime_capture_required", 422, message("player.captureRequired"));
   const resume = !paused.value;
+  let prepared = false;
   busy.value = true;
   error.value = "";
   notice.value = "";
@@ -242,12 +271,14 @@ async function publishEdit(revisionId: string, files: string[], publish: () => P
         ? await prepareLiveEdit(current.files, runningRevision, files)
         : undefined;
     if (!apply) throw new MessageError(message("player.syncRequired"));
+    prepared = true;
     const revision = await publish();
     pendingEdit.value = { revision, apply, resume };
     // Publication has succeeded even if local writeback needs a later retry.
     await applyPendingEdit();
     return revision;
   } catch (cause) {
+    if (current.snapshot && !prepared) snapshotSession.invalidate();
     if (cause instanceof ApiError && cause.status === 409) markConflict();
     else if (resume && !current.snapshot) {
       current.resume();
@@ -264,7 +295,10 @@ function togglePause() {
   if (!handle) return;
   paused.value = !paused.value;
   if (paused.value) handle.pause();
-  else handle.resume();
+  else {
+    snapshotSession.invalidate();
+    handle.resume();
+  }
 }
 function toggleMouse() {
   if (!handle?.setMouseCapture) return;
@@ -279,6 +313,7 @@ function togglePixels() {
 function reconcileHead() {
   if (changedHead === base) changedHead = undefined;
   if (handle && changedHead !== undefined) {
+    snapshotSession.invalidate();
     handle.pause();
     paused.value = true;
     if (!busy.value && !pendingSync.value && !conflict.value) markConflict();
@@ -354,6 +389,7 @@ defineExpose({
   stopping,
   pendingSync,
   conflict,
+  captureRequired,
   publishEdit,
   leave: stopAndSave,
 });

@@ -36,5 +36,6 @@
   "player.lastSync": "Last synchronized: {time}",
   "player.captureEdit": "Capture for editing",
   "player.snapshotEditApplied": "Changes were confirmed in the paused game. Resume, then reopen in-game status panels to refresh their display. Use the game's save command to also retain changes in its native save. Capture again before another editing session.",
-  "player.captureEditHelp": "Pause and save the current game state before each editing session. After applying changes, resume and reopen in-game status panels to refresh their display."
+  "player.captureEditHelp": "Pause and save the current game state before each editing session. After applying changes, resume and reopen in-game status panels to refresh their display.",
+  "player.captureRequired": "Capture the paused game again before editing. Applying changes or resuming play ends the previous editing session."
 }
