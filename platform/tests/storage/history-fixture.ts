@@ -19,6 +19,7 @@ export async function historyFixture() {
     DATABASE_URL: "postgresql://unused/unused",
     AUTH_SECRET: randomBytes(32).toString("hex"),
     DATA_DIR: directory,
+    ALLOW_REGISTRATION: "true",
   });
   await migrateIdentity(config, fixture.database);
   await migrateStorage(fixture.database);

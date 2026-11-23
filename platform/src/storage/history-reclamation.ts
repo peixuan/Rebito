@@ -4,6 +4,14 @@ import type { Pool } from "pg";
 import { removeOwnedFile, syncDirectory } from "./files.ts";
 import { referencedBlobs } from "./references.ts";
 
+export async function pendingHistoryFiles(database: Pick<Pool, "query">, owner?: string) {
+  const pending = await database.query(
+    "SELECT count(*) FROM history_cleanup WHERE $1::text IS NULL OR owner_id=$1",
+    [owner ?? null],
+  );
+  return Number(pending.rows[0].count);
+}
+
 /** Exclusive online lease required. Interrupted batches retain durable candidates;
  * references are rechecked on every retry, including newly published shared files.
  */
@@ -28,9 +36,5 @@ export async function reclaimHistory(
     }
     await database.query("DELETE FROM history_cleanup WHERE sha256=$1", [sha256]);
   }
-  const pending = await database.query(
-    "SELECT count(*) FROM history_cleanup WHERE $1::text IS NULL OR owner_id=$1",
-    [owner ?? null],
-  );
-  return { reclaimedBytes, pendingFiles: Number(pending.rows[0].count) };
+  return { reclaimedBytes, pendingFiles: await pendingHistoryFiles(database, owner) };
 }
