@@ -31,5 +31,9 @@
   "editor.columnLabel": "{group} · {field}",
   "editor.pendingChanges": "{count} 项待保存修改（包含所有文件和存档槽）",
   "editor.koukaiTitle": "大航海时代 2",
-  "editor.koukaiDescription": "用于 DOS PC 版的 10 槽 KOUKAI2.DAT 存档。请将存档路径加入同步列表；由管理员确认适用的游戏版本。"
+  "editor.koukaiDescription": "用于 DOS PC 版的 10 槽 KOUKAI2.DAT 存档。请将存档路径加入同步列表；由管理员确认适用的游戏版本。",
+  "editor.batchTargets": "复制到其他记录",
+  "editor.batchApply": "复制已修改字段",
+  "editor.batchSelected": "已选{count}条",
+  "editor.batchHelp": "仅复制明确修改过的数值字段，不含姓名或关系变更。所有目标都必须有效，保存前可先预览。"
 }

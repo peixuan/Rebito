@@ -6,6 +6,7 @@ import {
   type EditorField,
   type EditorView,
 } from "../types.ts";
+import { san3BatchDraft } from "./batch-action.ts";
 import { factionContextFields, historicalContextFields } from "./context-fields.ts";
 import { customMetadataFields } from "./custom-fields.ts";
 import { customNameFields, editCustomNames } from "./custom-names.ts";
@@ -152,11 +153,19 @@ function fields(
   ];
 }
 function prepare(bytes: Uint8Array, draft: EditorDraft) {
-  if ((draft.slot !== undefined && draft.slot !== 0) || draft.action) throw invalid();
+  if (draft.slot !== undefined && draft.slot !== 0) throw invalid();
   const module = draft.module ?? "cities";
   if (!modules.includes(module as Module)) throw invalid();
+  if (module === "factions" && draft.action) throw invalid();
   const original = new San3Document(bytes);
-  const result = editSan3Campaign(original, draft.changes ?? {});
+  const result = editSan3Campaign(
+    original,
+    san3BatchDraft(
+      original,
+      draft,
+      module === "cities" ? "city" : module === "custom" ? "custom" : "officer",
+    ),
+  );
   const edits = result.edits.filter(({ before, after }) => before !== after);
   const names = editCustomNames(new San3Document(result.bytes), draft.textChanges ?? {});
   const document = new San3Document(names.bytes);
@@ -278,6 +287,9 @@ export const san3Adapter: EditorAdapter = {
       }),
       selected,
       fields: [...selectedFields, ...san3OperationFields(document, module, Number(selected))],
+      ...(module === "factions"
+        ? {}
+        : { batchKeys: selectedFields.filter((field) => !field.readonly).map(({ key }) => key) }),
       ...(module === "custom" ? { textFields: customNameFields(document, Number(selected)) } : {}),
       actions: module === "custom" ? [san3NamePresetAction] : [],
       changes: {

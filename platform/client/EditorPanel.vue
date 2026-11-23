@@ -11,6 +11,7 @@ import type { EditorBatch, EditorQuery, EditorResponse } from "../src/editors/se
 import { type DisplayText, message } from "../src/shared/messages.ts";
 import type { Revision } from "../src/storage/revisions.ts";
 import { api, errorText } from "./api.ts";
+import EditorBatchControls from "./controls/EditorBatch.vue";
 import {
   changeEditorField,
   previewedEditorChanges,
@@ -322,6 +323,22 @@ onBeforeUnmount(() => {
             "
           />
           <div class="editor-actions">
+            <EditorBatchControls
+              v-if="view.batchKeys?.length"
+              :key="`${view.file}:${view.slot}:${view.module}`"
+              :view="view"
+              :keys="view.batchKeys"
+              :changes="draft(view.file, view.slot)"
+              :disabled="busy || stale || Boolean(invalid.size)"
+              @apply="
+                (targets) =>
+                  perform(() =>
+                    refresh({
+                      action: { id: 'copy-fields', record: view?.selected ?? '', targets },
+                    }),
+                  )
+              "
+            />
             <Button
               v-for="action in view.actions"
               :key="action.id"

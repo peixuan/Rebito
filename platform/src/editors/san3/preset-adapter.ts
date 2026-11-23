@@ -1,5 +1,6 @@
 import { message } from "../../shared/messages.ts";
 import { type EditorAdapter, type EditorDraft, EditorError } from "../types.ts";
+import { san3BatchDraft } from "./batch-action.ts";
 import { editSan3Presets, presetFields, San3PresetDocument, san3PresetLayout } from "./presets.ts";
 
 const rowLabel = (index: number) => message(`san3.preset${index}`);
@@ -7,12 +8,12 @@ function prepare(bytes: Uint8Array, draft: EditorDraft) {
   if (
     (draft.slot !== undefined && draft.slot !== 0) ||
     (draft.module !== undefined && draft.module !== "presets") ||
-    draft.action ||
     Object.keys(draft.textChanges ?? {}).length ||
     !/^[0-3]$/.test(draft.record ?? "0")
   )
     throw new EditorError("invalid_edit", message("editor.invalidEdit"));
-  const result = editSan3Presets(new San3PresetDocument(bytes), draft.changes ?? {});
+  const original = new San3PresetDocument(bytes);
+  const result = editSan3Presets(original, san3BatchDraft(original, draft, "preset"));
   return {
     ...result,
     edits: result.edits.filter(({ before, after }) => before !== after),
@@ -54,6 +55,7 @@ export const san3PresetAdapter: EditorAdapter = {
       })),
       selected,
       fields,
+      batchKeys: fields.map(({ key }) => key),
       actions: [],
       changes: Object.fromEntries(edits.map(({ field, after }) => [field.key, after])),
       preview: edits.map(({ field, before, after }) => ({

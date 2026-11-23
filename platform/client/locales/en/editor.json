@@ -31,5 +31,9 @@
   "editor.columnLabel": "{group} · {field}",
   "editor.pendingChanges": "{count} unsaved edit across all files and slots | {count} unsaved edits across all files and slots",
   "editor.koukaiTitle": "Uncharted Waters II",
-  "editor.koukaiDescription": "For the DOS PC edition's 10-slot KOUKAI2.DAT save format. Add the save path to the synchronization list. Administrators must confirm that the game version is suitable."
+  "editor.koukaiDescription": "For the DOS PC edition's 10-slot KOUKAI2.DAT save format. Add the save path to the synchronization list. Administrators must confirm that the game version is suitable.",
+  "editor.batchTargets": "Copy to records",
+  "editor.batchApply": "Copy changed fields",
+  "editor.batchSelected": "{count} selected",
+  "editor.batchHelp": "Only explicitly changed numeric fields are copied. Names and structural operations are excluded. Every target must be valid; review before saving."
 }

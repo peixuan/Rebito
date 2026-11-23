@@ -28,7 +28,7 @@ export interface EditorDraft {
   record?: string | undefined;
   changes?: Record<string, number> | undefined;
   textChanges?: Record<string, string> | undefined;
-  action?: { id: string; record: string } | undefined;
+  action?: { id: string; record: string; targets?: string[] | undefined } | undefined;
 }
 /** Text uses adapter-owned encoding and validation; it is never a raw byte write. */
 export interface EditorTextField {
@@ -56,6 +56,8 @@ export interface EditorView {
   }[];
   selected: string;
   fields: EditorField[];
+  /** Numeric source keys that this adapter permits copying to other records. */
+  batchKeys?: string[];
   textFields?: EditorTextField[];
   actions: {
     id: string;

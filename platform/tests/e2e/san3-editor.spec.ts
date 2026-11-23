@@ -192,6 +192,10 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
     await editor.getByLabel(label, { exact: true }).fill(value);
     await editor.getByLabel(label, { exact: true }).press("Tab");
   }
+  await editor.getByLabel("Copy to records", { exact: true }).press("Space");
+  await page.getByRole("option", { name: "City 2", exact: true }).click();
+  await page.keyboard.press("Escape");
+  await editor.getByRole("button", { name: "Copy changed fields", exact: true }).click();
   await editor.getByRole("button", { name: "Officers", exact: true }).click();
   await expect(editor.getByLabel("Loyalty", { exact: true })).toBeDisabled();
   await editor.getByRole("row").filter({ hasText: "General" }).click();
@@ -288,6 +292,7 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   ).bytes;
   const document = new San3Document(result);
   expect(document.city(0)).toMatchObject({ population: 123_400, gold: 12_345, food: 234_567 });
+  expect(document.city(1)).toMatchObject({ population: 123_400, gold: 12_345, food: 234_567 });
   expect(document.officer(1)).toMatchObject({
     soldiers: 8765,
     loyalty: 89,
@@ -403,6 +408,10 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   await expect(editor.getByRole("button", { name: "Cities", exact: true })).toHaveCount(0);
   await editor.getByLabel("Strength", { exact: true }).fill("73");
   await editor.getByLabel("Strength", { exact: true }).press("Tab");
+  await editor.getByLabel("Copy to records", { exact: true }).press("Space");
+  await page.getByRole("option", { name: "Female, under 30", exact: true }).click();
+  await page.keyboard.press("Escape");
+  await editor.getByRole("button", { name: "Copy changed fields", exact: true }).click();
   await editor.getByRole("row").filter({ hasText: "Female, 30 or older" }).click();
   await editor.getByLabel("Charisma", { exact: true }).fill("81");
   await editor.getByLabel("Charisma", { exact: true }).press("Tab");
@@ -419,6 +428,7 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
     openSnapshotMemory(new Uint8Array(await setupResponse.body()), "picodrive", "program").bytes,
   );
   expect(restoredSetup.values(0)[2]).toBe(73);
+  expect(restoredSetup.values(1)[2]).toBe(73);
   expect(restoredSetup.values(3)[5]).toBe(81);
   expect(setupSaved?.manifest.artifacts.find((file) => file.name === "save.srm")).toEqual(
     original.manifest.artifacts.find((file) => file.name === "save.srm"),

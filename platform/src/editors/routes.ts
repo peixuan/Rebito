@@ -19,7 +19,14 @@ const preview = z.strictObject({
   record: identifier.optional(),
   changes: changes.optional(),
   textChanges: textChanges.optional(),
-  action: z.strictObject({ id: identifier, record: identifier }).optional(),
+  action: z
+    .strictObject({
+      id: identifier,
+      record: identifier,
+      targets: z.array(identifier).min(1).max(599).optional(),
+    })
+    .refine((action) => action.targets === undefined || action.id === "copy-fields")
+    .optional(),
 });
 const fileEdits = z.strictObject({
   file,

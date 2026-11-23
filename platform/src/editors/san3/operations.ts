@@ -16,7 +16,7 @@ export function editSan3Campaign(document: San3Document, changes: Record<string,
   const moves = new Map<number, number[]>();
   const rulers = new Map<number, number>();
   const touched = new Set<number>();
-  const scalar: Record<string, number> = {};
+  const scalar: Record<string, number> = Object.create(null);
   const operationChanges: Record<string, number> = {};
   for (const [key, value] of Object.entries(changes)) {
     const move = /^move\.(0|[1-9]\d{0,2})\.city$/.exec(key);

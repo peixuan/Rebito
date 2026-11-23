@@ -60,6 +60,9 @@ from the later reference branch. It fills a previewable text draft, preserves
 abilities and registration state, and uses the same encoding checks as manual
 names. It does not create officers or publish automatically. Both language packs
 carry identical game-name data so changing UI language cannot rename a character.
+Numeric batches copy only explicitly changed source fields to selected records;
+names and structural operations are excluded. The complete expanded draft must
+pass every target's bounds, dates and eligibility before anything is published.
 
 Six base abilities (land/naval leadership, strength, intelligence, politics and
 charisma) are editable at historical offsets `+5..+10` and custom offsets
