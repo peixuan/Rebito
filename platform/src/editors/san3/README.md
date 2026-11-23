@@ -1,7 +1,7 @@
 # Romance of the Three Kingdoms III: Japanese Mega-CD memory
 
-This adapter handles the initialized strategic-game data in the sub-68000's
-512 KiB program RAM. It does not handle the Mega Drive cartridge edition, mods,
+This adapter handles strategic-game data and verified registration defaults in
+the sub-68000's 512 KiB program RAM. It does not handle the Mega Drive cartridge edition, mods,
 raw BRAM files, native save containers or arbitrary emulator versions. Runtime
 and game identity must be checked separately by the snapshot binding.
 
@@ -20,15 +20,15 @@ to persist changes in its native format; reopen cached game panels to see them.
 | ------------- | --------- | ----- | ------ | ----------------------------------------------------------------------- |
 | Cities        | `0x787c4` | 46    | `0x34` | Population `+0x0c` u16, gold `+0x0e` u16, food `+0x10` u32              |
 | Live officers | `0x79562` | 600   | `0x1e` | Soldiers `+2` u16, loyalty `+0x0f`, training `+0x15`, morale `+0x16` u8 |
-| Factions      | `0x79148` | 21    | `0x32` | None; ruler IDs and city ownership are read-only                        |
+| Factions      | `0x79148` | 21    | `0x32` | Same-capital ruler replacement; other relationships remain context      |
 
 Population is stored in hundreds of people, capped at 30,000 stored units.
 Gold is capped at 50,000 and food at 3,000,000. Soldier capacity follows the
 game's allocation routine: `10000 + 100 * max(land leadership, naval leadership)`.
 Loyalty and training have a maximum of 100; morale can reach 120 through the
 game's battle routines. Ruler loyalty is read-only.
-Disbanding, creating an army and editing inactive officers are deliberately
-excluded because those actions update additional state.
+Direct troop-number editing excludes disbanding, recruitment and inactive armies;
+those transitions involve additional state. Relocation below explicitly disbands.
 
 City development, cultivation, irrigation, flood protection, tax and popular
 loyalty use 0..100; commerce and the three weapon stocks use 0..9999. Each of
@@ -141,5 +141,21 @@ users must return to the strategic command menu before editing. In-game panels
 cache their rendering; reopen a panel to refresh it after editing. Runtime
 writeback must still verify the replacement and preserve a failed update paused.
 
-City ownership, officer lists, role changes, alliances, birth/death and officer
-creation are not yet supported. Base-ability editing does not change those relationships.
+Relocation validates all reachable city/officer/faction lists before rewriting
+membership. It rejects rulers, governors, assigned equipment and ongoing actions.
+Arrivals serve the destination faction as civil officers, or become free officers
+in a neutral city. Troops, training, morale and the action flag are cleared;
+advisor references are repaired. The preview shows those effects. Raw list pointers
+never become writable intents. A failed batch returns no partial result.
+The original-game transfer check updated both city lists and displayed the reduced
+source army/count. In-game saving and a fresh native-only load retained the new
+city, faction, civil role, loyalty and cleared army statistics.
+
+Ruler replacement selects an idle, unequipped officer already in the capital.
+It preserves both armies and the capital, updates the governor and advisor links,
+and gives the former ruler a military/civil role with loyalty 100. This is an
+explicit editor policy, not the game's death/succession command. The original-game
+UI and a fresh native-only load both retained the new ruler, roles and armies.
+Relocation and ruler changes cannot share a draft or silently overwrite separate
+live-trait edits on the affected officers. City ownership, arbitrary role changes,
+alliances, birth/death and live officer creation remain guarded game transitions.

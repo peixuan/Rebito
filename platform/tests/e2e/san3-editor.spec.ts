@@ -36,8 +36,12 @@ function strategicMemory() {
     view.setUint16(offset + 0x0e, 1500);
     view.setUint32(offset + 0x10, 25_000);
   }
-  for (let index = 0; index < san3Layout.officers.count; index++)
+  for (let index = 0; index < san3Layout.officers.count; index++) {
     bytes[san3Layout.officers.offset + index * san3Layout.officers.stride + 0x0c] = 7;
+    view.setUint16(san3Layout.officers.offset + index * san3Layout.officers.stride, 0xffff);
+  }
+  view.setUint16(san3Layout.cities.offset + 4, 0);
+  view.setUint16(san3Layout.officers.offset, 1);
   for (const [index, name] of ["Ruler", "General"].entries()) {
     const offset = san3Layout.officers.offset + index * san3Layout.officers.stride;
     const base = san3Layout.historical.offset + index * san3Layout.historical.stride;
@@ -302,6 +306,47 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   expect([
     ...result.subarray(san3Layout.custom.offset + 20, san3Layout.custom.offset + 25),
   ]).toEqual([0xb6, 0xde, 0xca, 0xdf, 0]);
+
+  await capture.click();
+  await editor.getByRole("button", { name: "Factions", exact: true }).click();
+  await editor.getByLabel("New ruler", { exact: true }).click();
+  await page.getByRole("option", { name: "General", exact: true }).click();
+  await editor.getByRole("button", { name: "Preview edits", exact: true }).click();
+  await expect(page.getByRole("dialog")).toContainText("New ruler");
+  await page.getByRole("dialog").getByRole("button", { name: "Close", exact: true }).click();
+  await editor.getByRole("button", { name: "Save edits", exact: true }).click();
+  await expect(editor.getByRole("status")).toContainText("Edits were saved");
+  // Core load acknowledgement may normalize state; a new workflow needs a fresh capture.
+  await capture.click();
+  await editor.getByRole("button", { name: "Officers", exact: true }).click();
+  await editor
+    .getByRole("row")
+    .filter({ hasText: /^Ruler/ })
+    .click();
+  await editor.getByLabel("Move to city", { exact: true }).click();
+  await page.getByRole("option", { name: "City 2", exact: true }).click();
+  await editor.getByRole("button", { name: "Save edits", exact: true }).click();
+  await expect(editor.getByRole("status")).toContainText("Edits were saved");
+  const relocated = (await history())[0];
+  const relocatedResponse = await page.request.get(
+    `/api/revisions/${relocated?.id}/file?name=__runtime%2Fstate.bin`,
+  );
+  const relocatedMemory = new San3Document(
+    openSnapshotMemory(new Uint8Array(await relocatedResponse.body()), "picodrive", "program")
+      .bytes,
+  );
+  expect(relocatedMemory.faction(0).ruler).toBe(1);
+  expect(relocatedMemory.officer(0)).toMatchObject({
+    city: 1,
+    faction: 255,
+    role: 5,
+    soldiers: 0,
+    training: 0,
+    morale: 0,
+  });
+  expect(relocated?.manifest.artifacts.find((file) => file.name === "save.srm")).toEqual(
+    original.manifest.artifacts.find((file) => file.name === "save.srm"),
+  );
 
   // The same editor selects its registration schema from captured RAM, not a client flag.
   await page.getByRole("button", { name: "Stop game", exact: true }).click();

@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { san3Adapter } from "../../src/editors/san3/adapter.ts";
 import { San3Document, san3Layout } from "../../src/editors/san3/document.ts";
+import { editSan3Campaign } from "../../src/editors/san3/operations.ts";
 import { relocateSan3Officers } from "../../src/editors/san3/relocation.ts";
 
 const city = (index: number) => san3Layout.cities.offset + index * 0x34;
@@ -52,6 +54,7 @@ function fixture() {
       bytes[base + 16] = location;
       bytes[base + 17] = head === 4 ? location : 0xff;
       bytes[base + 21] = 77;
+      bytes[base + 22] = 88;
     }
   }
   data.setUint16(city(0) + 10, 1);
@@ -60,6 +63,58 @@ function fixture() {
 }
 
 describe("Japanese Mega-CD atomic officer relocation", () => {
+  it("previews coherent relocation intents and revalidates them during publication", () => {
+    const bytes = fixture();
+    const view = san3Adapter.view(bytes, {
+      module: "officers",
+      record: "1",
+      changes: { "move.1.city": 1, "city.0.gold": 123 },
+    });
+    expect(view.changes).toEqual({ "city.0.gold": 123, "move.1.city": 1 });
+    expect(view.preview).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ key: "move.1.soldiers", before: 1500, after: 0 }),
+        expect.objectContaining({ key: "move.1.training", before: 77, after: 0 }),
+        expect.objectContaining({ key: "move.1.morale", before: 88, after: 0 }),
+      ]),
+    );
+    expect(view.fields.find(({ columnId }) => columnId === "moveTo")).toMatchObject({
+      value: 1,
+      readonly: false,
+    });
+    const result = new San3Document(san3Adapter.apply(bytes, { changes: view.changes }));
+    expect(result.officer(1)).toMatchObject({
+      city: 1,
+      soldiers: 0,
+      training: 0,
+      morale: 0,
+      role: 4,
+    });
+    expect(result.city(0).gold).toBe(123);
+    expect(
+      san3Adapter
+        .view(bytes, { module: "officers", record: "0" })
+        .fields.find(({ columnId }) => columnId === "moveTo")?.readonly,
+    ).toBe(true);
+    for (const changes of [
+      { "move.1.city": 1, "officer.1.loyalty": 80 },
+      { "move.1.city": 1, "officer.1.actionComplete": 0 },
+      { "move.1.city": 1, "ruler.0.officer": 2 },
+      { "move.01.city": 1 },
+      { "move.1.city": 46 },
+      { "move.1.city": 0.5 },
+    ])
+      expect(() => san3Adapter.apply(bytes, { changes })).toThrow();
+    expect(() => san3Adapter.apply(bytes, { changes: { "move.1.city": 0 } })).toThrow(
+      "editor.noChanges",
+    );
+    const draft = { "move.1.city": 2, "move.2.city": 1 };
+    expect(editSan3Campaign(new San3Document(bytes), draft).bytes).toEqual(
+      editSan3Campaign(new San3Document(bytes), Object.fromEntries(Object.entries(draft).reverse()))
+        .bytes,
+    );
+  });
+
   it("relinks a batch, replaces its advisor and previews every changed byte", () => {
     const original = fixture();
     const document = new San3Document(original);
@@ -77,7 +132,8 @@ describe("Japanese Mega-CD atomic officer relocation", () => {
         new Uint8Array([100, 1, 1]),
       );
       expect(result.bytes[officer(index) + 12]).toBe(4);
-      expect(result.bytes[officer(index) + 21]).toBe(77);
+      expect(result.bytes[officer(index) + 21]).toBe(0);
+      expect(result.bytes[officer(index) + 22]).toBe(0);
     }
     expect(result.moves.map(({ soldiersRemoved }) => soldiersRemoved)).toEqual([1500, 1500]);
     const restored = result.bytes.slice();

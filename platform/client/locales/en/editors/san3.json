@@ -114,5 +114,14 @@
   "san3.nomadicGold": "Nomadic mission gold",
   "san3.nomadicFood": "Nomadic mission food",
   "san3.applyNamePresets": "Preview 68 preset names",
-  "san3.namePresetsHelp": "Replace the names and readings in all 68 custom slots. Preview first; abilities and registration stay unchanged."
+  "san3.namePresetsHelp": "Replace the names and readings in all 68 custom slots. Preview first; abilities and registration stay unchanged.",
+  "san3.role": "Role",
+  "san3.moveTo": "Move to city",
+  "san3.relocation": "Officer relocation",
+  "san3.succession": "Ruler replacement",
+  "san3.replaceRuler": "New ruler",
+  "san3.relocationHelp": "Return to the strategic menu and remove equipment first. Moving disbands troops, clears training/morale/action, and repairs city lists. Rulers, governors and busy officers cannot move. Apply separately from their other live traits or ruler changes.",
+  "san3.rulerChangeHelp": "Choose an idle, unequipped officer already in the capital. Armies stay intact; the former ruler becomes an officer with loyalty 100. City leadership and advisor links are updated.",
+  "san3.invalidRelocation": "Cannot move this officer: check city lists, ruler/governor status, assigned equipment and ongoing actions.",
+  "san3.invalidRulerChange": "Choose an idle, unequipped successor in the same capital; delegated or inconsistent leadership cannot be replaced."
 }

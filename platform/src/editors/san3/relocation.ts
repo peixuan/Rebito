@@ -176,6 +176,8 @@ export function relocateSan3Officers(
   for (const index of indices) {
     const base = document.offset("officers", index);
     write(base + 2, 2, 0);
+    write(base + 0x15, 1, 0);
+    write(base + 0x16, 1, 0);
     write(base + 8, 1, document.read(base + 8, 1) & ~1);
     write(base + 12, 1, destinationRole);
     write(base + 16, 1, destination);

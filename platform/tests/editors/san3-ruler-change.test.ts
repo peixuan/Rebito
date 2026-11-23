@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { san3Adapter } from "../../src/editors/san3/adapter.ts";
 import { San3Document, san3Layout } from "../../src/editors/san3/document.ts";
 import { replaceSan3Ruler } from "../../src/editors/san3/ruler-change.ts";
 
@@ -40,6 +41,31 @@ function fixture() {
 }
 
 describe("Japanese Mega-CD same-capital ruler replacement", () => {
+  it("offers eligible successors and keeps relationship effects out of writable changes", () => {
+    const bytes = fixture();
+    const initial = san3Adapter.view(bytes, { module: "factions", record: "0" });
+    const field = initial.fields.find(({ columnId }) => columnId === "replaceRuler");
+    expect(field?.choices?.map(({ value }) => value)).toEqual([0, 1, 2, 3]);
+    expect(field?.readonly).toBe(false);
+    const view = san3Adapter.view(bytes, { changes: { "ruler.0.officer": 1 } });
+    expect(view.changes).toEqual({ "ruler.0.officer": 1 });
+    expect(view.preview).toContainEqual(
+      expect.objectContaining({ key: "ruler.0.0.loyalty", before: 0, after: 100 }),
+    );
+    expect(
+      new San3Document(san3Adapter.apply(bytes, { changes: view.changes })).faction(0).ruler,
+    ).toBe(1);
+    for (const changes of [
+      { "ruler.0.officer": 1, "officer.1.loyalty": 10 },
+      { "ruler.0.officer": 600 },
+      { "ruler.21.officer": 1 },
+    ])
+      expect(() => san3Adapter.apply(bytes, { changes })).toThrow();
+    expect(() => san3Adapter.apply(bytes, { changes: { "ruler.0.officer": 0 } })).toThrow(
+      "editor.noChanges",
+    );
+  });
+
   it("repairs leadership and advisor links while retaining both armies and the capital", () => {
     const original = fixture();
     const document = new San3Document(original);
