@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
-import { randomBytes } from "node:crypto";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
@@ -58,12 +57,12 @@ try {
     await writeFile(file, contents[files.indexOf(file)]);
   }
   assert.equal(scan(), 0, "The known editor field and exact item identifiers must remain allowed");
+  // A balanced synthetic hex value stays above the pinned detector's entropy
+  // threshold without randomly matching its extensive English stopword list.
+  const probe = Array.from({ length: 64 }, (_, index) => ((index * 7) % 16).toString(16)).join("");
   for (const file of files) {
     const content = contents[files.indexOf(file)];
-    await writeFile(
-      file,
-      `${content}\nconst api_key = ${JSON.stringify(randomBytes(48).toString("base64url"))};\n`,
-    );
+    await writeFile(file, `${content}\nconst api_key = ${JSON.stringify(probe)};\n`);
     assert.equal(
       scan(),
       1,
