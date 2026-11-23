@@ -13,6 +13,7 @@ import { customMetadataFields } from "./custom-fields.ts";
 import { customNameFields, editCustomNames } from "./custom-names.ts";
 import { San3Document, san3Layout } from "./document.ts";
 import { attributeFields, cityFields, officerFields } from "./fields.ts";
+import { lifecycleFields } from "./lifecycle.ts";
 import { san3NamePresetAction } from "./name-presets.ts";
 import { san3OperationFields } from "./operation-fields.ts";
 import { editSan3Campaign } from "./operations.ts";
@@ -185,6 +186,7 @@ function prepare(bytes: Uint8Array, draft: EditorDraft) {
   const selected = draft.record ?? String(first ?? 0);
   if (!/^(0|[1-9]\d{0,2})$/.test(selected) || Number(selected) >= count) throw invalid();
   return {
+    original,
     document,
     data,
     module: module as Module,
@@ -206,6 +208,7 @@ export const san3Adapter: EditorAdapter = {
     if (bytes.length === san3Layout.size && bytes[0x4abc4] === 0 && bytes[0x4abc5] === 4)
       return san3PresetAdapter.view(bytes, draft);
     const {
+      original,
       document,
       data,
       module,
@@ -289,7 +292,16 @@ export const san3Adapter: EditorAdapter = {
         };
       }),
       selected,
-      fields: [...selectedFields, ...san3OperationFields(document, module, Number(selected))],
+      fields: [
+        ...selectedFields,
+        ...san3OperationFields(document, module, Number(selected)),
+        ...(module === "officers"
+          ? lifecycleFields(original, Number(selected)).map((field) => ({
+              ...field,
+              value: operationChanges[field.key] ?? field.value,
+            }))
+          : []),
+      ],
       ...(module === "factions"
         ? {}
         : { batchKeys: selectedFields.filter((field) => !field.readonly).map(({ key }) => key) }),

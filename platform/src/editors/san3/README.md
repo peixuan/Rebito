@@ -103,6 +103,17 @@ Cities show their governor, strategist, serving/free/undiscovered counts and tro
 total. These totals come from one validated list traversal per view; malformed
 lists leave the scalar editor available without inventing relationship totals.
 
+Eligible idle officers can finish recovery, set the independent 0..3 turncoat
+countdown, or end covert affiliation. Recovery also clears its associated hold.
+Ending infiltration removes the previous covert faction and elapsed months while
+preserving the current city/faction and previous service years; it is not a return
+or transfer. Unknown infiltration states remain locked. These transitions cannot
+mix with structural operations or other live traits of the same officer, and
+numeric batches exclude them. Death, rebellion and mission flags remain unavailable.
+An original-game save and fresh native-only boot retained an editor-set turncoat
+countdown; clearing it changed only its two bits. Recovery/infiltration cleanup
+has instruction and synthetic-test evidence, not an observed affected-game case.
+
 ## Evidence and limits
 
 The registration overlay (`0x4abc4 == 4`) exposes a separate creation-default

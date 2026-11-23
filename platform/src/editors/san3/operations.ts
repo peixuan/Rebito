@@ -2,6 +2,7 @@ import { type DisplayText, message } from "../../shared/messages.ts";
 import { EditorError, type EditorView } from "../types.ts";
 import { San3Document, san3Layout } from "./document.ts";
 import { editSan3, findSan3Field } from "./fields.ts";
+import { editSan3Lifecycle } from "./lifecycle.ts";
 import { relocateSan3Officers } from "./relocation.ts";
 import { replaceSan3Ruler } from "./ruler-change.ts";
 
@@ -17,10 +18,15 @@ export function editSan3Campaign(document: San3Document, changes: Record<string,
   const rulers = new Map<number, number>();
   const touched = new Set<number>();
   const scalar: Record<string, number> = Object.create(null);
+  const lifecycle: Record<string, number> = Object.create(null);
   const operationChanges: Record<string, number> = {};
   for (const [key, value] of Object.entries(changes)) {
     const move = /^move\.(0|[1-9]\d{0,2})\.city$/.exec(key);
     const ruler = /^ruler\.(0|[1-9]\d?)\.officer$/.exec(key);
+    if (key.startsWith("lifecycle.")) {
+      lifecycle[key] = value;
+      continue;
+    }
     if (move) {
       const index = Number(move[1]);
       document.offset("cities", value);
@@ -41,20 +47,38 @@ export function editSan3Campaign(document: San3Document, changes: Record<string,
     }
     operationChanges[key] = value;
   }
+  const transitions = Object.keys(lifecycle).length
+    ? editSan3Lifecycle(document, lifecycle)
+    : { changes: {} };
+  const lifecycleKeys = Object.keys(transitions.changes);
+  if (lifecycleKeys.length && (moves.size || rulers.size)) throw invalid();
+  for (const key of lifecycleKeys) touched.add(Number(key.split(".")[1]));
+  Object.assign(operationChanges, transitions.changes);
   // These operations can change eligibility and roles. Apply each workflow separately.
   if (moves.size && rulers.size) throw invalid();
   for (const key of Object.keys(scalar)) {
     const match = /^officer\.(\d+)\./.exec(key);
-    if (
-      match &&
-      touched.has(Number(match[1])) &&
-      findSan3Field(document, key).offset >= san3Layout.officers.offset
-    )
-      throw invalid();
+    if (!match || !touched.has(Number(match[1]))) continue;
+    const field = findSan3Field(document, key, scalar);
+    if (scalar[key] !== field.value && field.offset >= san3Layout.officers.offset) throw invalid();
   }
   const result = editSan3(document, scalar);
   let current = new San3Document(result.bytes);
   const operationPreview: EditorView["preview"] = [];
+  if (lifecycleKeys.length) {
+    const updated = editSan3Lifecycle(current, transitions.changes);
+    for (const entry of updated.preview) {
+      const index = Number(entry.key.split(".")[1]);
+      operationPreview.push({
+        ...entry,
+        label: message("editor.columnLabel", {
+          group: officerName(current, index),
+          field: entry.label,
+        }),
+      });
+    }
+    current = new San3Document(updated.bytes);
+  }
   for (const [destination, indices] of [...moves].sort(([a], [b]) => a - b)) {
     const moved = relocateSan3Officers(
       current,
