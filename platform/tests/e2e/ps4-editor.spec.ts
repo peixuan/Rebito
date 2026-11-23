@@ -12,6 +12,9 @@ test("associates the MD editor and applies bilingual drafts to the paused runnin
   await useSession(page.context(), "admin-ps4");
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
+  const fixture = ps4FixtureRom();
+  fixture[0x8000 + 0xf54c] = 2;
+  fixture.set([2, 5, 3, 0, 8, 4, 6], 0x2aa288 + 22 + 11);
   const uploaded = await page.request.post("/api/admin/games", {
     headers: { origin: "http://localhost:4317" },
     multipart: {
@@ -19,7 +22,7 @@ test("associates the MD editor and applies bilingual drafts to the paused runnin
       file: {
         name: "fixture.bin",
         mimeType: "application/octet-stream",
-        buffer: Buffer.from(ps4FixtureRom()),
+        buffer: Buffer.from(fixture),
       },
     },
   });
@@ -94,6 +97,29 @@ test("associates the MD editor and applies bilingual drafts to the paused runnin
     await editor.getByLabel(label, { exact: true }).press("Tab");
     await expect(editor.getByLabel(label, { exact: true })).toHaveValue(value);
   }
+  await expect(editor.getByLabel("Target Attack", { exact: true })).toHaveValue("190");
+  await expect(editor.getByLabel("Target Defence", { exact: true })).toHaveValue("167");
+  await expect(editor.getByLabel("Target Magic defence", { exact: true })).toHaveValue("181");
+  await expect(editor).toContainText("Equipment: 2 (Strength) + 8 (Attack) = 10");
+  for (const [label, value, base, expected] of [
+    ["Target Attack", "9999", "Base Strength", "255"],
+    ["Target Attack", "215", "Base Strength", "205"],
+    ["Target Defence", "211", "Base Agility", "204"],
+    ["Target Magic defence", "222", "Base Mental", "211"],
+  ] as const) {
+    await editor.getByLabel(label, { exact: true }).fill(value);
+    await editor.getByLabel(label, { exact: true }).press("Tab");
+    await expect(editor.getByLabel(base, { exact: true })).toHaveValue(expected);
+  }
+  await editor.getByLabel("Base Strength", { exact: true }).fill("200");
+  await editor.getByLabel("Base Strength", { exact: true }).press("Tab");
+  await expect(editor.getByLabel("Target Attack", { exact: true })).toHaveValue("210");
+  await editor.getByLabel("Target Attack", { exact: true }).fill("215");
+  await editor.getByLabel("Target Attack", { exact: true }).press("Tab");
+  await page.getByLabel("Language").selectOption("zh-CN");
+  await expect(page.locator('[id="field-person.0.attack"]')).toHaveValue("215");
+  await expect(page.locator('[id="field-person.0.strength"]')).toHaveValue("205");
+  await page.getByLabel(chinese("app.language")).selectOption("en");
   await editor.getByRole("button", { name: "Techniques and skills", exact: true }).click();
   await editor
     .getByRole("group", { name: "Technique 3", exact: true })
@@ -125,6 +151,9 @@ test("associates the MD editor and applies bilingual drafts to the paused runnin
   const preview = page.getByRole("dialog");
   await expect(preview).toContainText("Res");
   await expect(preview).toContainText("Flaeli");
+  await expect(preview).toContainText("Base Strength");
+  await expect(preview).toContainText("Equipped Strength");
+  await expect(preview).toContainText("Target Attack");
   await preview.getByRole("button", { name: "Close", exact: true }).click();
   await expect(skill.getByLabel("Remaining uses", { exact: true })).toHaveValue("20");
   await expect(cleared.getByLabel("Maximum uses", { exact: true })).toHaveValue("0");
@@ -161,10 +190,10 @@ test("associates the MD editor and applies bilingual drafts to the paused runnin
   expect(data.getUint16(0xf512)).toBe(80);
   expect(data.getUint16(0xf514)).toBe(90);
   expect([0x18, 0x1b, 0x1e, 0x21].map((offset) => memory[0xf500 + offset])).toEqual([
-    180, 170, 160, 150,
+    205, 211, 204, 150,
   ]);
   expect([0x24, 0x28, 0x2c].map((offset) => data.getUint16(0xf500 + offset))).toEqual([
-    180, 160, 170,
+    215, 211, 222,
   ]);
   expect(memory[0xf554]).toBe(24);
   expect(memory[0xf564]).toBe(4);

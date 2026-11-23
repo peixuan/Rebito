@@ -131,6 +131,13 @@ The fixed-slot placement leaves capacity for later natural learning; its story
 event can still replace that technique. A value of 255 displayed as 55 in the
 skill menu, confirming the supported edited maximum of 99.
 
+Further acceptance entered target attack/defence/magic defence 245/230/220,
+which set base strength/agility/mental to 235/227/220. Native menu recalculation,
+weapon removal/restoration (attack 245/240/245) and helmet removal/restoration
+(defence 230/229/230) retained those bases. A new native save and SRAM-only fresh
+boot retained all six values. Magic defence was checked in actual game RAM;
+the native Status menu does not display it.
+
 This verifies the tested field-menu edits, ability uses and native-save/load cycles. It does not
 establish correctness for every item, skill, combat transition, later translation,
 native slot, remote deployment or arbitrary emulator version. Battle-dependent

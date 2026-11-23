@@ -108,7 +108,11 @@ supports the supplied Ken Tse Chinese 1.6 Original mode: money, experience,
 current HP/TP, maximum HP/TP up to 999, skill-use limits up to 99, four base
 attributes and selectable learned abilities, plus forty-slot inventory reordering.
 Reviewed rules are read from the authorized immutable game asset with bounded size
-and digest checks. Equipment-adjusted totals are recalculated; capacity guards
+and digest checks. Direct target attack, defence and magic-defence inputs subtract
+current equipment bonuses to update their linked base attributes. Controls show the bonus breakdown
+and attainable ranges; previews include equipment-adjusted effects. Inconsistent
+API intents are rejected, and stale-cache corrections survive canonical replay.
+Equipment-adjusted totals are recalculated; capacity guards
 reserve future level-up and fixed story/hardware slots. Equipment and level remain
 read-only. Chinese character, item and ability labels match the supplied translation;
 the English catalog retains its MIT attribution. Neither binary tables nor fonts
@@ -129,7 +133,14 @@ Both games passed private original-game edit, in-game save and fresh native-save
 boot checks. This is evidence for those editions and tested fields, not universal
 ROM compatibility; proprietary samples and diagnostic output are not published.
 
-All 522 database/unit tests pass (98.50% line and 94.33% branch coverage), along
+Further original-game acceptance entered targets 245/230/220 and verified base
+strength/agility/mental 235/227/220. Removing and restoring the weapon changed
+attack 245/240/245; the helmet changed defence 230/229/230, without changing bases.
+All six values survived native saving and a fresh SRAM-only boot. Synthetic
+browser checks cover target/base edits in both orders, range clamping, translated
+drafts, effect previews, actual snapshot writeback and unchanged native SRAM.
+
+All 532 database/unit tests pass (98.53% line and 94.49% branch coverage), along
 with the 26 repository policy tests and dependency/license checks. Real MD/CD
 runtime tests verify load acknowledgement, native-save preservation and pause
 ownership. All 63 sandboxed browser flows pass, including console writeback
