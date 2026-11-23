@@ -404,6 +404,33 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
     original.manifest.artifacts.find((file) => file.name === "save.srm"),
   );
 
+  await capture.click();
+  await editor.getByRole("button", { name: "Officers", exact: true }).click();
+  await editor
+    .getByRole("row")
+    .filter({ hasText: /^General/ })
+    .click();
+  await editor.getByLabel("Turncoat months remaining", { exact: true }).fill("3");
+  await editor.getByLabel("Turncoat months remaining", { exact: true }).press("Tab");
+  await editor.getByRole("button", { name: "Preview edits", exact: true }).click();
+  await expect(page.getByRole("dialog")).toContainText("Turncoat months remaining");
+  await page.getByRole("dialog").getByRole("button", { name: "Close", exact: true }).click();
+  await editor.getByRole("button", { name: "Cities", exact: true }).click();
+  await editor.getByRole("button", { name: "Officers", exact: true }).click();
+  await expect(editor.getByLabel("Turncoat months remaining", { exact: true })).toHaveValue("3");
+  await editor.getByRole("button", { name: "Save edits", exact: true }).click();
+  await expect(editor.getByRole("status")).toContainText("Edits were saved");
+  const lifecycleRevision = (await history())[0];
+  const lifecycleResponse = await page.request.get(
+    `/api/revisions/${lifecycleRevision?.id}/file?name=__runtime%2Fstate.bin`,
+  );
+  const lifecycleMemory = openSnapshotMemory(
+    new Uint8Array(await lifecycleResponse.body()),
+    "picodrive",
+    "program",
+  ).bytes;
+  expect((lifecycleMemory[san3Layout.officers.offset + 30 + 9] ?? 0) & 0x30).toBe(0x30);
+
   // The same editor selects its registration schema from captured RAM, not a client flag.
   await page.getByRole("button", { name: "Stop game", exact: true }).click();
   await expect(page.getByRole("button", { name: "Start game", exact: true })).toBeEnabled();
