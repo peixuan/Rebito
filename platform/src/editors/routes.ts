@@ -7,6 +7,9 @@ const identifier = z.string().min(1).max(96);
 const changes = z
   .record(identifier, z.number().int().safe())
   .refine((value) => Object.keys(value).length <= 6000);
+const textChanges = z
+  .record(identifier, z.string().max(128))
+  .refine((value) => Object.keys(value).length <= 256);
 const slot = z.number().int().min(0).max(9);
 const file = z.string().min(1).max(240);
 const preview = z.strictObject({
@@ -15,12 +18,13 @@ const preview = z.strictObject({
   module: identifier.optional(),
   record: identifier.optional(),
   changes: changes.optional(),
+  textChanges: textChanges.optional(),
   action: z.strictObject({ id: identifier, record: identifier }).optional(),
 });
 const fileEdits = z.strictObject({
   file,
   edits: z
-    .array(z.strictObject({ slot, changes }))
+    .array(z.strictObject({ slot, changes, textChanges: textChanges.optional() }))
     .min(1)
     .max(10)
     .refine((edits) => new Set(edits.map((edit) => edit.slot)).size === edits.length),

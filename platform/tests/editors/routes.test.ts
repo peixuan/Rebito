@@ -210,6 +210,46 @@ it("allows only one concurrent editor to advance a revision", async () => {
   expect(results.map((response) => response.statusCode).sort()).toEqual([201, 409]);
 });
 
+it("bounds text drafts and rejects text unsupported by the selected adapter atomically", async () => {
+  const initial = await original();
+  for (const textChanges of [
+    { name: 42 },
+    { name: "a".repeat(129) },
+    Object.fromEntries(Array.from({ length: 257 }, (_, index) => [String(index), "a"])),
+  ]) {
+    expect((await request(initial.id, { textChanges })).statusCode).toBe(400);
+    expect(
+      (
+        await request(
+          initial.id,
+          {
+            file: "KOUKAI2.DAT",
+            edits: [{ slot: 0, changes: { money: 123 }, textChanges }],
+          },
+          true,
+        )
+      ).statusCode,
+    ).toBe(400);
+  }
+  const textChanges = { name: "new name" };
+  expect((await request(initial.id, { textChanges })).json().error).toBe("invalid_edit");
+  expect(
+    (
+      await request(
+        initial.id,
+        {
+          file: "KOUKAI2.DAT",
+          edits: [{ slot: 0, changes: { money: 123 }, textChanges }],
+        },
+        true,
+      )
+    ).json().error,
+  ).toBe("invalid_edit");
+  expect((await request(initial.id, { textChanges }, false, 1)).statusCode).toBe(404);
+  expect(await saves.revisions.history(users[0]?.id ?? "", initial.profileId)).toHaveLength(1);
+  expect((await request(initial.id, { textChanges: {} })).statusCode).toBe(200);
+});
+
 it("publishes multiple editable files once and rejects an invalid later file atomically", async () => {
   const owner = users[0]?.id ?? "";
   const profile = await saves.revisions.create(owner, releaseId, "Grouped edits");

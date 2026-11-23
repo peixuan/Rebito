@@ -27,7 +27,17 @@ export interface EditorDraft {
   module?: string | undefined;
   record?: string | undefined;
   changes?: Record<string, number> | undefined;
+  textChanges?: Record<string, string> | undefined;
   action?: { id: string; record: string } | undefined;
+}
+/** Text uses adapter-owned encoding and validation; it is never a raw byte write. */
+export interface EditorTextField {
+  key: string;
+  label: DisplayText;
+  value: string;
+  maxLength: number;
+  readonly?: boolean;
+  help?: DisplayText;
 }
 export interface EditorView {
   slots: { index: number; label: DisplayText; available: boolean }[];
@@ -46,9 +56,11 @@ export interface EditorView {
   }[];
   selected: string;
   fields: EditorField[];
+  textFields?: EditorTextField[];
   actions: { id: string; label: DisplayText; help?: DisplayText }[];
   /** Writable intents; preview may also include derived read-only effects. */
   changes: Record<string, number>;
+  textChanges?: Record<string, string>;
   preview: {
     key: string;
     label: DisplayText;
@@ -58,6 +70,7 @@ export interface EditorView {
 }
 export interface EditorAdapter {
   size: number;
+  supportsText?: boolean;
   /** Optional native filename boundary for formats also used by game resources. */
   acceptsFile?(name: string): boolean;
   view(bytes: Uint8Array, draft: EditorDraft): EditorView;

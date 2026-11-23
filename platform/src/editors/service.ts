@@ -5,13 +5,25 @@ import { bindGameData } from "./game-data.ts";
 import { findEditor } from "./registry.ts";
 import { assertSnapshotBinding } from "./snapshots/binding.ts";
 import { openSnapshotMemory } from "./snapshots/memory.ts";
-import { type EditorDraft, EditorError } from "./types.ts";
+import { type EditorAdapter, type EditorDraft, EditorError } from "./types.ts";
 
 export interface EditorQuery extends EditorDraft {
   file?: string | undefined;
 }
 export interface EditorBatch {
-  files: { file: string; edits: { slot: number; changes: Record<string, number> }[] }[];
+  files: {
+    file: string;
+    edits: {
+      slot: number;
+      changes: Record<string, number>;
+      textChanges?: Record<string, string> | undefined;
+    }[];
+  }[];
+}
+
+function assertTextSupport(adapter: EditorAdapter, draft: EditorDraft) {
+  if (Object.keys(draft.textChanges ?? {}).length && !adapter.supportsText)
+    throw new EditorError("invalid_edit", message("editor.invalidEdit"));
 }
 
 /** Release configuration selects the adapter; clients cannot choose a binary parser. */
@@ -83,6 +95,7 @@ export class EditorService {
   }
   async preview(owner: string, revisionId: string, query: EditorQuery) {
     const opened = await this.open(owner, revisionId, query.file);
+    assertTextSupport(opened.adapter, query);
     return {
       file: opened.file,
       files: opened.files,
@@ -97,7 +110,10 @@ export class EditorService {
     for (const entry of batch.files) {
       const opened = await this.open(owner, revisionId, entry.file);
       let bytes = opened.bytes;
-      for (const edit of entry.edits) bytes = opened.adapter.apply(bytes, edit);
+      for (const edit of entry.edits) {
+        assertTextSupport(opened.adapter, edit);
+        bytes = opened.adapter.apply(bytes, edit);
+      }
       if (opened.replaceState) {
         if (batch.files.length !== 1)
           throw new EditorError("invalid_edit", message("editor.invalidEdit"));

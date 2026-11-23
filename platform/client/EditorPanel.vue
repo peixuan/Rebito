@@ -18,6 +18,7 @@ import {
 } from "./controls/editor-fields.ts";
 import FieldGrid from "./controls/FieldGrid.vue";
 import RecordTable from "./controls/RecordTable.vue";
+import TextFields from "./controls/TextFields.vue";
 import { localize, t, translate } from "./i18n.ts";
 
 const props = defineProps<{
@@ -39,6 +40,7 @@ const invalid = reactive(new Set<string>());
 const pendingInput = reactive(new Set<string>());
 type Changes = Record<string, number>;
 const drafts = reactive(new Map<string, Map<number, Changes>>());
+const textDrafts = reactive(new Map<string, Map<number, Record<string, string>>>());
 const previews = reactive(new Map<string, Map<number, EditorResponse["preview"]>>());
 const selections = new Map<string, string>();
 function draft(file: string, slot: number): Changes {
@@ -48,15 +50,23 @@ function draft(file: string, slot: number): Changes {
   if (!slots.has(slot)) slots.set(slot, {});
   return slots.get(slot) ?? {};
 }
+function textDraft(file: string, slot: number) {
+  if (!textDrafts.has(file)) textDrafts.set(file, new Map());
+  const slots = textDrafts.get(file);
+  if (!slots) throw new Error("Missing text draft collection");
+  if (!slots.has(slot)) slots.set(slot, {});
+  return slots.get(slot) ?? {};
+}
+const allDrafts = computed(() => [...drafts.values(), ...textDrafts.values()]);
 const dirty = computed(
   () =>
     Boolean(invalid.size || pendingInput.size) ||
-    [...drafts.values()].some((slots) =>
+    allDrafts.value.some((slots) =>
       [...slots.values()].some((values) => Object.keys(values).length),
     ),
 );
 const count = computed(() =>
-  [...drafts.values()]
+  allDrafts.value
     .flatMap((slots) => [...slots.values()])
     .reduce((sum, values) => sum + Object.keys(values).length, 0),
 );
@@ -101,12 +111,15 @@ async function refresh(selection: EditorQuery = {}) {
     module,
     record: selection.record ?? remembered,
     changes: file && slot !== undefined ? draft(file, slot) : {},
+    textChanges: file && slot !== undefined ? textDraft(file, slot) : {},
     ...selection,
   });
   if (ticket !== requestId || revision !== base.value) return;
   // Drop semantic no-ops while retaining the server-expanded linked actions.
   draft(response.file, response.slot);
   drafts.get(response.file)?.set(response.slot, previewedEditorChanges(response));
+  textDraft(response.file, response.slot);
+  textDrafts.get(response.file)?.set(response.slot, response.textChanges ?? {});
   if (!previews.has(response.file)) previews.set(response.file, new Map());
   previews.get(response.file)?.set(response.slot, response.preview);
   view.value = response;
@@ -135,6 +148,11 @@ function change(key: string, value: number) {
           : (value * (field.multiplier ?? 1)) / (field.divisor ?? 1);
     }
 }
+function changeText(key: string, value: string) {
+  const current = view.value;
+  const field = current?.textFields?.find((field) => field.key === key);
+  if (current && field && !field.readonly) textDraft(current.file, current.slot)[key] = value;
+}
 async function navigate(selection: EditorQuery) {
   await refresh(); // Preserve and validate the previous slot before switching.
   await refresh(selection);
@@ -146,8 +164,11 @@ async function save() {
     .map(([file, slots]) => ({
       file,
       edits: [...slots]
-        .filter(([, changes]) => Object.keys(changes).length)
-        .map(([slot, changes]) => ({ slot, changes })),
+        .map(([slot, changes]) => ({ slot, changes, textChanges: textDraft(file, slot) }))
+        .filter(
+          ({ changes, textChanges }) =>
+            Object.keys(changes).length || Object.keys(textChanges).length,
+        ),
     }))
     .filter((entry) => entry.edits.length);
   if (!files.length) {
@@ -159,6 +180,7 @@ async function save() {
     : await api<Revision>(`revisions/${base.value}/editor`, { files });
   base.value = revision.id;
   drafts.clear();
+  textDrafts.clear();
   previews.clear();
   emit("saved", revision);
   await refresh();
@@ -166,6 +188,7 @@ async function save() {
 }
 async function discard() {
   drafts.clear();
+  textDrafts.clear();
   previews.clear();
   selections.clear();
   invalid.clear();
@@ -267,6 +290,13 @@ onBeforeUnmount(() => {
           <h4>
             {{ translate(view.records.find((record) => record.id === view?.selected)?.label) }}
           </h4>
+          <TextFields
+            v-if="view.textFields?.length"
+            :fields="view.textFields"
+            :changes="textDraft(view.file, view.slot)"
+            :disabled="busy || stale"
+            @change="changeText"
+          />
           <FieldGrid
             :key="`${view.file}:${view.slot}:${view.selected}`"
             :fields="fields"
