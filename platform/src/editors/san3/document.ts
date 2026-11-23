@@ -1,5 +1,6 @@
 import { message } from "../../shared/messages.ts";
 import { EditorError } from "../types.ts";
+import { decodeSan3Name } from "./names.ts";
 
 /** Japanese Mega-CD edition: guest-order sub-68000 program RAM, not main RAM. */
 export const san3Layout = {
@@ -23,7 +24,6 @@ export const san3Attributes = [
 
 const invalid = () => new EditorError("invalid_save", message("editor.invalidSave"));
 const invalidRecord = () => new EditorError("invalid_edit", message("editor.selectRecord"));
-const decoder = new TextDecoder("shift_jis");
 
 /** Copies its input; relationship pointers and unverified fields remain opaque. */
 export class San3Document {
@@ -95,16 +95,7 @@ export class San3Document {
   }
 
   private name(offset: number, length = 7): string {
-    const bytes = this.bytes.subarray(offset, offset + length);
-    const end = bytes.indexOf(0);
-    // The game also has private glyphs. Do not invent names for undecodable text.
-    const name = decoder.decode(end < 0 ? bytes : bytes.subarray(0, end));
-    return name.includes("\ufffd")
-      ? ""
-      : name
-          .replace(/[\p{Cc}\p{Cf}]/gu, "")
-          .normalize("NFKC")
-          .trim();
+    return decodeSan3Name(this.bytes.subarray(offset, offset + length)).trim();
   }
 
   city(index: number) {
@@ -162,7 +153,7 @@ export class San3Document {
       naval <= 100;
     return {
       index,
-      name: this.name(base + (historical ? 15 : 13)) || (historical ? this.name(base + 22, 8) : ""),
+      name: this.name(base + (historical ? 15 : 13)) || this.name(base + (historical ? 22 : 20), 8),
       role,
       city,
       faction,

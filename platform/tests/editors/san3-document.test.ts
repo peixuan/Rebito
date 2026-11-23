@@ -126,10 +126,12 @@ describe("Japanese Mega-CD strategic memory", () => {
     }
   });
 
-  it("uses the game's phonetic name when its private kanji cannot be decoded", () => {
+  it("decodes private glyphs and uses the reading only for unknown name bytes", () => {
     const bytes = fixture();
     bytes.set([0xeb, 0x9f, 0], san3Layout.historical.offset + 15);
     bytes.set(new TextEncoder().encode("Reading"), san3Layout.historical.offset + 22);
+    expect(new San3Document(bytes).officer(0).name).toBe("\u74d2");
+    bytes.set([0xeb, 0xaa, 0], san3Layout.historical.offset + 15);
     expect(new San3Document(bytes).officer(0).name).toBe("Reading");
   });
 

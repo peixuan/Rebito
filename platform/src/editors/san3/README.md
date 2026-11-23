@@ -41,8 +41,15 @@ branches and the original game's trade, tax and equipment routines.
 Historical names and leadership come from `0x4021e`, 532 records of `0x1e`
 bytes. Custom officers start at `0x78004`, 68 records of `0x1c` bytes. Territory
 names start at `0x44076`, 46 records of `0x1a` bytes. Names are decoded from the
-user's game data; unsupported private glyphs fall back to the game's phonetic
-reading when available. No extracted names, fonts or game data are distributed.
+user's game data, including its private glyph assignments and single-byte phonetic
+reading. Unknown bytes fall back to the other name field when available. The
+writable alphabet comes from the user's sorted 2,173-entry RAM index at `0x3f124`.
+No extracted names, fonts or glyph repertoire are distributed. The codec enforces
+three double-byte name characters or seven reading bytes, including separate
+voicing marks. Semantic no-ops must preserve bytes: one character has two valid
+game encodings. All 1,064 historical name/reading fields round-tripped as text in
+the supplied original-game memory; synthetic fixtures cover malformed alphabets,
+private codes, aliases, unsupported characters and overflow.
 
 Six base abilities (land/naval leadership, strength, intelligence, politics and
 charisma) are editable at historical offsets `+5..+10` and custom offsets
