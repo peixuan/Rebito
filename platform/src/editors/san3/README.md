@@ -10,6 +10,12 @@ and game identity must be checked separately by the snapshot binding.
 All integers below use the guest's big-endian byte order. The shared snapshot
 adapter converts PicoDrive's word-swapped representation before parsing.
 
+This is a memory editor carried by an emulator checkpoint: capture and pause the
+running game, edit only its program RAM, then restore the checkpoint and verify
+the edited bytes through PicoDrive. Native SRAM accompanies the checkpoint but
+is not rewritten by the editor. Use the game's own Save command after resuming
+to persist changes in its native format; reopen cached game panels to see them.
+
 | Table         | Address   | Count | Stride | Editable fields                                                         |
 | ------------- | --------- | ----- | ------ | ----------------------------------------------------------------------- |
 | Cities        | `0x787c4` | 46    | `0x34` | Population `+0x0c` u16, gold `+0x0e` u16, food `+0x10` u32              |
@@ -45,6 +51,12 @@ command, then loaded in a fresh emulator session supplied only with native SRAM:
 population 123400, gold 23456, food 123456, soldiers 8765, training 67, morale 78,
 and loyalty 89 all survived. Private captures and disassembly are not fixtures.
 Unit tests use an independently generated minimal structure.
+
+The 2026-11-23 runtime-boundary recheck used the public snapshot read/replace
+interface and all seven editable fields. PicoDrive acknowledged the load, every
+edited value read back correctly, the paused state remained stable, and all
+73,728 native-save companion bytes remained identical. This confirms the memory
+writeback path, not parity with every feature of the local reference editor.
 
 The constructor checks both KOEI markers, date, table references, resource limits
 and overlay selector `0x4abc4 == 0` (the `UCOM.PRG` strategic module). Other

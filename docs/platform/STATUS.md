@@ -159,6 +159,11 @@ The [Japanese Mega-CD SAN3 adapter](../../platform/src/editors/san3/README.md)
 edits strategic population, gold, food, soldiers, loyalty, training and morale.
 Cities, officers and read-only faction totals share the compact bilingual editor.
 Ownership changes, battle data and historical base-attribute editing are excluded.
+The 2026-11-23 real PicoDrive recheck confirmed that the checkpoint path edits
+program RAM: all seven values read back after an acknowledged load, while all
+73,728 native-save companion bytes stayed identical and the runtime stayed paused.
+Native persistence still requires the game's Save command after resuming. This
+verifies the current memory-editing boundary, not full reference-editor parity.
 Both games passed private original-game edit, in-game save and fresh native-save
 boot checks. This is evidence for those editions and tested fields, not universal
 ROM compatibility; proprietary samples and diagnostic output are not published.
