@@ -215,4 +215,37 @@ describe("transactional revision publication", () => {
       await broken.close();
     }
   });
+
+  it("protects pre-existing history exactly once when upgrading the schema", async () => {
+    const isolated = await testDatabase();
+    try {
+      await migrateIdentity(
+        loadConfig({
+          APP_ORIGIN: "http://localhost:3000",
+          DATABASE_URL: "postgresql://unused/unused",
+          AUTH_SECRET: randomBytes(32).toString("hex"),
+        }),
+        isolated.database,
+      );
+      await migrateStorage(isolated.database);
+      await isolated.database.query(
+        `INSERT INTO "user"(id,name,email,"emailVerified","createdAt","updatedAt") VALUES ('legacy','Legacy','legacy@example.test',false,now(),now())`,
+      );
+      const upgraded = new RevisionRepository(isolated.database);
+      const profile = await upgraded.create("legacy", "test-game", "Existing progress");
+      const before = await upgraded.publish("legacy", profile.id, null, manifest, "game");
+      await isolated.database.query(
+        "ALTER TABLE revisions DROP COLUMN protected; DELETE FROM schema_versions WHERE version=3",
+      );
+      await Promise.all([migrateStorage(isolated.database), migrateStorage(isolated.database)]);
+      expect(await upgraded.read("legacy", before.id)).toEqual({ ...before, protected: true });
+      const next = await upgraded.publish("legacy", profile.id, before.id, manifest, "game");
+      expect(next.protected).toBe(false);
+      await upgraded.protect("legacy", before.id, true, false);
+      await migrateStorage(isolated.database);
+      expect((await upgraded.read("legacy", before.id)).protected).toBe(false);
+    } finally {
+      await isolated.close();
+    }
+  });
 });

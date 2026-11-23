@@ -53,6 +53,16 @@ export async function migrateStorage(database: Pool): Promise<void> {
         INSERT INTO schema_versions VALUES (2);
       `);
     }
+    const protectionSchema = await client.query(
+      "SELECT version FROM schema_versions WHERE version = 3",
+    );
+    if (protectionSchema.rowCount === 0) {
+      await client.query(`
+        ALTER TABLE revisions ADD COLUMN protected boolean NOT NULL DEFAULT true;
+        ALTER TABLE revisions ALTER COLUMN protected SET DEFAULT false;
+        INSERT INTO schema_versions VALUES (3);
+      `);
+    }
     await client.query("COMMIT");
   } catch (error) {
     await client.query("ROLLBACK");

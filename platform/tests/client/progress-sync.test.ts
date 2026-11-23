@@ -18,6 +18,7 @@ const revision: Revision = {
   parentId: null,
   source: "game",
   createdAt: new Date(),
+  protected: false,
   manifest: {
     kind: "filesystem",
     releaseId: "game",

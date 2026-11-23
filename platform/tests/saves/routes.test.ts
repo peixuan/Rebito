@@ -362,4 +362,61 @@ describe("authenticated save HTTP API", () => {
       publish.mockRestore();
     }
   });
+  it("protects owned history without changing progress and rejects stale toggles", async () => {
+    const id = await profile();
+    const first = (await upload(id)).json();
+    const url = `/api/revisions/${first.id}/protection`;
+    const before = (
+      await app.inject({ url: `/api/profiles/${id}/revisions`, headers: { cookie: alice } })
+    ).json();
+    const toggle = (cookie: string, expected: boolean, protectedPoint: boolean) =>
+      app.inject({
+        method: "POST",
+        url,
+        headers: { origin, cookie },
+        payload: { expected, protected: protectedPoint },
+      });
+    expect((await toggle(bob, false, true)).statusCode).toBe(404);
+    expect(
+      (
+        await app.inject({
+          method: "POST",
+          url,
+          headers: { origin },
+          payload: { expected: false, protected: true },
+        })
+      ).statusCode,
+    ).toBe(401);
+    expect(
+      (
+        await app.inject({
+          method: "POST",
+          url,
+          headers: { origin, cookie: alice },
+          payload: { protected: true },
+        })
+      ).statusCode,
+    ).toBe(400);
+    expect(
+      (
+        await app.inject({
+          method: "POST",
+          url,
+          headers: { origin: "https://foreign.example", cookie: alice },
+          payload: { expected: false, protected: true },
+        })
+      ).statusCode,
+    ).toBe(403);
+    const concurrent = await Promise.all([toggle(alice, false, true), toggle(alice, false, true)]);
+    expect(concurrent.map((response) => response.statusCode).sort()).toEqual([200, 409]);
+    const after = (
+      await app.inject({ url: `/api/profiles/${id}/revisions`, headers: { cookie: alice } })
+    ).json();
+    expect(after).toEqual(before.map((entry: object) => ({ ...entry, protected: true })));
+    expect((await toggle(alice, true, false)).json()).toEqual(first);
+    const profiles = (
+      await app.inject({ url: "/api/profiles", headers: { cookie: alice } })
+    ).json();
+    expect(profiles.find((entry: { id: string }) => entry.id === id).headId).toBe(first.id);
+  });
 });

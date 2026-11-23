@@ -25,6 +25,7 @@ function revision(id: string, bytes: Uint8Array<ArrayBuffer>): Revision {
     parentId: id === "before" ? null : "before",
     source: id === "before" ? "game" : "editor",
     createdAt: new Date(),
+    protected: false,
     manifest: {
       kind: "snapshot",
       runtime,

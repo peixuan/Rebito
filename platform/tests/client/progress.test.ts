@@ -29,6 +29,7 @@ const revision: Revision = {
   parentId: null,
   source: "game",
   createdAt: new Date(),
+  protected: false,
   manifest: { kind: "game-save", releaseId: game.id, artifacts: [artifact] },
 };
 afterEach(() => vi.unstubAllGlobals());

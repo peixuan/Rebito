@@ -109,6 +109,27 @@ export async function registerSaves(
     { schema: { params: idParameters } },
     async (request) => service.revisions.history(request.ownerId, request.params.id),
   );
+  app.post<Params & { Body: { expected: boolean; protected: boolean } }>(
+    "/api/revisions/:id/protection",
+    {
+      schema: {
+        params: idParameters,
+        body: {
+          type: "object",
+          additionalProperties: false,
+          required: ["expected", "protected"],
+          properties: { expected: { type: "boolean" }, protected: { type: "boolean" } },
+        },
+      },
+    },
+    async (request) =>
+      service.revisions.protect(
+        request.ownerId,
+        request.params.id,
+        request.body.expected,
+        request.body.protected,
+      ),
+  );
   app.get<Params & { Querystring: { name: string } }>(
     "/api/revisions/:id/file",
     {

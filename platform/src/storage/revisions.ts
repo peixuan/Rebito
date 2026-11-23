@@ -18,6 +18,7 @@ export interface Revision {
   readonly source: RevisionSource;
   readonly manifest: ProgressManifest;
   readonly createdAt: Date;
+  readonly protected: boolean;
 }
 
 export class ProgressError extends Error {
@@ -30,7 +31,7 @@ export class ProgressError extends Error {
 
 const profileColumns = 'id, release_id AS "releaseId", name, head_id AS "headId"';
 const revisionColumns = `r.id, r.profile_id AS "profileId", r.parent_id AS "parentId",
-  r.source, r.manifest, r.created_at AS "createdAt"`;
+  r.source, r.manifest, r.created_at AS "createdAt", r.protected`;
 
 /** The caller supplies a server-authenticated owner, never a submitted user identifier. */
 export class RevisionRepository {
@@ -103,6 +104,25 @@ export class RevisionRepository {
     const revision = result.rows[0];
     if (!revision) throw new ProgressError("not_found");
     return revision;
+  }
+
+  /** Protection changes neither the head nor save bytes; reject stale UI toggles. */
+  async protect(owner: string, revisionId: string, expected: boolean, protectedPoint: boolean) {
+    return this.transaction(owner, async (client) => {
+      const result = await client.query<Revision>(
+        `SELECT ${revisionColumns} FROM revisions r JOIN profiles p ON p.id=r.profile_id
+         WHERE p.owner_id=$1 AND r.id=$2`,
+        [owner, revisionId],
+      );
+      const revision = result.rows[0];
+      if (!revision) throw new ProgressError("not_found");
+      if (revision.protected !== expected) throw new ProgressError("conflict");
+      await client.query("UPDATE revisions SET protected=$1 WHERE id=$2", [
+        protectedPoint,
+        revisionId,
+      ]);
+      return { ...revision, protected: protectedPoint };
+    });
   }
 
   /** Blobs must already be durable. Row locking serializes updates to the same profile. */

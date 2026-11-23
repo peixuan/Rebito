@@ -12,6 +12,7 @@ function revision(id: string, bytes: Uint8Array): Revision {
     parentId: id === "before" ? null : "before",
     source: id === "before" ? "game" : "editor",
     createdAt: new Date(),
+    protected: false,
     manifest: {
       kind: "filesystem",
       releaseId: "game",
