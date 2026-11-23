@@ -67,37 +67,34 @@ it("disables unresolved dependencies while keeping unrelated controls usable", (
   expect(result[1]?.max).toBe(255);
 });
 
-it("links totals to bases in either edit order without mutating drafts or stale captures", () => {
+it("previews derived totals from bases without accepting writes or mutating stale captures", () => {
   const fields = [
     field("base", 20),
-    field("target", 999, { derivedFrom: { key: "base", offset: 10 } }),
+    field("computed", 999, { derivedFrom: { key: "base", offset: 10 } }),
   ];
   const original = { unrelated: 4 };
-  expect(resolveEditorFields(fields)[1]?.value).toBe(999);
-  const target = changeEditorField(fields, original, "target", 70);
-  expect(target).toEqual({ unrelated: 4, target: 70, base: 60 });
-  expect(resolveEditorFields(fields, target).map(({ value }) => value)).toEqual([60, 70]);
-  const base = changeEditorField(fields, target, "base", 25);
+  expect(resolveEditorFields(fields)[1]).toMatchObject({ value: 999, readonly: true });
+  expect(changeEditorField(fields, original, "computed", 70)).toEqual(original);
+  const base = changeEditorField(fields, original, "base", 25);
   expect(base).toEqual({ unrelated: 4, base: 25 });
   expect(resolveEditorFields(fields, base)[1]?.value).toBe(35);
-  expect(changeEditorField(fields, base, "target", 10)).toEqual({
-    unrelated: 4,
-    base: 0,
-    target: 10,
-  });
+  expect(changeEditorField(fields, base, "computed", 10)).toEqual(base);
+  expect(resolveEditorFields(fields, { base: 0 })[1]?.value).toBe(10);
   expect(original).toEqual({ unrelated: 4 });
   expect(fields.map(({ value }) => value)).toEqual([20, 999]);
 });
 
-it("shows wrapped stored totals while refusing edits through missing or readonly bases", () => {
+it("shows wrapped totals while keeping derived controls read-only for every base state", () => {
   const base = field("base", 20);
-  const target = field("target", 19, { derivedFrom: { key: "base", offset: -1, modulus: 65536 } });
-  const fields = [base, target];
+  const computed = field("computed", 19, {
+    derivedFrom: { key: "base", offset: -1, modulus: 65536 },
+  });
+  const fields = [base, computed];
   expect(resolveEditorFields(fields, { base: 0 })[1]?.value).toBe(65535);
   const next = { unrelated: 1 };
-  for (const broken of [[target], [{ ...base, readonly: true }, target]]) {
-    expect(resolveEditorFields(broken).at(-1)?.readonly).toBe(true);
-    expect(changeEditorField(broken, next, "target", 5)).toEqual(next);
+  for (const configuration of [fields, [computed], [{ ...base, readonly: true }, computed]]) {
+    expect(resolveEditorFields(configuration).at(-1)?.readonly).toBe(true);
+    expect(changeEditorField(configuration, next, "computed", 5)).toEqual(next);
   }
   expect(changeEditorField(fields, next, "missing", 5)).toEqual(next);
 });

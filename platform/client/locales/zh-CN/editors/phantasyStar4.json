@@ -52,9 +52,7 @@
   "phantasyStar4.rulesRequiredHelp": "修改基础属性和选择能力需要已核对的中文 1.6 原版模式游戏数据。",
   "phantasyStar4.learningSpaceRequired": "请为该角色后续升级和剧情新增的{ability}保留{count}个位置；剧情指定的位置仍可能被游戏替换。",
   "phantasyStar4.skillVariant": "{name}（变体 {id}）",
-  "phantasyStar4.targetStat": "目标{stat}",
-  "phantasyStar4.targetHelp": "装备加成：{attributeBonus}（{attribute}）＋{combatBonus}（{stat}）＝{total}。联动基础及装备后的{attribute}。目标范围 {min}–{max}；基础范围 0–255。",
-  "phantasyStar4.targetConflict": "目标值与基础{attribute}不一致，请修改其中一项并预览联动结果。",
+  "phantasyStar4.computedHelp": "由基础{attribute}计算，只读。装备加成：{attributeBonus}（{attribute}）＋{combatBonus}（{stat}）＝{total}。修改基础{attribute}后，此结果随之更新。",
   "phantasyStar4.equippedAttribute": "装备后{attribute}",
   "phantasyStar4.baseAttribute": "基础{attribute}"
 }

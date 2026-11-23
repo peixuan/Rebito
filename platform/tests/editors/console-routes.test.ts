@@ -135,16 +135,13 @@ const batch = (money: number) => ({
 });
 const history = (profileId: string) => saves.revisions.history(users[0]?.id ?? "", profileId);
 
-it("publishes canonical combat targets and rejects inconsistent or unauthorized drafts", async () => {
+it("publishes base attributes and rejects derived or unauthorized writes", async () => {
   const initial = await original();
-  const changes = { "person.0.attack": 200, "person.0.defence": 180, "person.0.magicDefence": 160 };
+  const changes = { "person.0.strength": 200, "person.0.agility": 180, "person.0.mental": 160 };
   const preview = await request(initial.id, { changes });
   expect(preview.statusCode).toBe(200);
-  expect(preview.json().changes).toMatchObject({
-    "person.0.strength": 200,
-    "person.0.agility": 180,
-    "person.0.mental": 160,
-  });
+  expect(preview.json().changes).toEqual(changes);
+  expect((await request(initial.id, { changes: { "person.0.attack": 200 } })).statusCode).toBe(422);
   const payload = { file: stateFile, edits: [{ slot: 0, changes: preview.json().changes }] };
   expect((await request(initial.id, payload, true, 1)).statusCode).toBe(404);
   expect(
@@ -153,7 +150,7 @@ it("publishes canonical combat targets and rejects inconsistent or unauthorized 
         initial.id,
         {
           file: stateFile,
-          edits: [{ slot: 0, changes: { ...changes, "person.0.strength": 100 } }],
+          edits: [{ slot: 0, changes: { ...changes, "person.0.attack": 200 } }],
         },
         true,
       )
@@ -165,8 +162,8 @@ it("publishes canonical combat targets and rejects inconsistent or unauthorized 
   const revision = published.json();
   const after = await request(revision.id, {});
   expect(
-    after.json().fields.find((field: { columnId: string }) => field.columnId === "attack").value,
-  ).toBe(200);
+    after.json().fields.find((field: { columnId: string }) => field.columnId === "attack"),
+  ).toMatchObject({ value: 200, readonly: true });
   expect(Buffer.from(await saves.file(users[0]?.id ?? "", revision.id, "save.srm"))).toEqual(
     Buffer.from([1, 2, 3, 4]),
   );

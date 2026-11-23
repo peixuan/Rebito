@@ -56,17 +56,15 @@ not the storage width. The skill menu displays only two digits, so edited use
 maxima are limited to 99 even though the byte stores more. Larger existing values
 survive unrelated edits.
 
-Target attack, defence and magic defence invert to base strength, agility and
-mental respectively. Each target subtracts both the equipment's base-attribute
-bonus and its combat bonus; the result must fit 0–255. Controls show both bonuses,
-the attainable nonnegative range and the linked attribute. Unequipping first is
-optional. The last edited control updates its counterpart; inconsistent base and
-target values submitted directly to the API are rejected. Previews also show
-equipment-adjusted attributes, including clipping, without making these effects
-writable. Existing wrapped totals remain preserved during unrelated edits.
-Explicit target corrections survive canonical replay even when only a stale
-cached total needs refreshing. Later equipment changes recalculate from the new
-base; this feature does not freeze combat totals or change equipment definitions.
+Attack, defence and magic defence are read-only results of base strength, agility
+and mental respectively. Each adds both the equipment's base-attribute bonus and
+its combat bonus. Controls show both bonuses and update as the base changes;
+only the four base attributes accept edits. The API also rejects direct writes
+to derived totals, even when consistent with a submitted base. Previews include
+equipment-adjusted attributes and combat totals without making them writable.
+Existing wrapped or stale totals remain intact during unrelated edits and base
+no-ops. An actual base change recalculates the equipment caches; later equipment
+changes recalculate from that base. This does not freeze totals or change equipment.
 
 The game appends future learned abilities without a bounds check. Edits therefore
 reserve capacity for both natural learning and still-empty fixed story/hardware
@@ -131,8 +129,8 @@ The fixed-slot placement leaves capacity for later natural learning; its story
 event can still replace that technique. A value of 255 displayed as 55 in the
 skill menu, confirming the supported edited maximum of 99.
 
-Further acceptance entered target attack/defence/magic defence 245/230/220,
-which set base strength/agility/mental to 235/227/220. Native menu recalculation,
+Earlier acceptance of base strength/agility/mental 235/227/220 produced
+attack/defence/magic defence 245/230/220. Native menu recalculation,
 weapon removal/restoration (attack 245/240/245) and helmet removal/restoration
 (defence 230/229/230) retained those bases. A new native save and SRAM-only fresh
 boot retained all six values. Magic defence was checked in actual game RAM;

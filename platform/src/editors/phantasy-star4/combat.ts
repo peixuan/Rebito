@@ -5,7 +5,7 @@ import type { EquipmentBonuses } from "./rules.ts";
 
 export const attributes = ["strength", "mental", "agility", "dexterity"] as const;
 const invalid = () => new EditorError("invalid_edit", message("editor.invalidEdit"));
-export const combatTargets = [
+export const combatStats = [
   ["attack", "strength", 0x24],
   ["defence", "agility", 0x28],
   ["magicDefence", "mental", 0x2c],
@@ -32,34 +32,6 @@ export function equipmentBonuses(document: PhantasyStar4Document, index: number)
   return mutable;
 }
 
-/** Preserve target intents for replay even if their underlying base was already correct. */
-export function expandCombatTargets(
-  document: PhantasyStar4Document,
-  changes: Record<string, number>,
-) {
-  for (const [key, value] of Object.entries(changes)) {
-    const match = /^person\.(0|[1-9]\d?)\.(attack|defence|magicDefence)$/.exec(key);
-    if (!match) continue;
-    const index = Number(match[1]);
-    const target = combatTargets.find(([id]) => id === match[2]);
-    const bonus = equipmentBonuses(document, index);
-    if (!target || !bonus || !Number.isSafeInteger(value) || value < 0 || value > 65535)
-      throw invalid();
-    const [stat, attribute] = target;
-    const base = value - bonus[stat] - bonus[attribute];
-    const baseKey = `person.${index}.${attribute}`;
-    if (base < 0 || base > 255) throw invalid();
-    if (changes[baseKey] !== undefined && changes[baseKey] !== base)
-      throw new EditorError(
-        "invalid_edit",
-        message("phantasyStar4.targetConflict", {
-          attribute: message(`phantasyStar4.${attribute}`),
-        }),
-      );
-    changes[baseKey] = base;
-  }
-}
-
 /** Include recalculated display values in previews without turning them into writable intents. */
 export function combatEffects(before: PhantasyStar4Document, after: PhantasyStar4Document) {
   const result = [];
@@ -67,7 +39,7 @@ export function combatEffects(before: PhantasyStar4Document, after: PhantasyStar
     const base = before.personOffset(index);
     for (const [stat, offset, width, modified] of [
       ...attributes.map((stat, slot) => [stat, 0x19 + slot * 3, 1, true] as const),
-      ...combatTargets.map(([stat, , offset]) => [stat, offset, 2, false] as const),
+      ...combatStats.map(([stat, , offset]) => [stat, offset, 2, false] as const),
     ]) {
       const previous = before.read(base + offset, width);
       const current = after.read(base + offset, width);

@@ -52,9 +52,7 @@
   "phantasyStar4.rulesRequiredHelp": "Attribute and ability selection editing requires the reviewed Chinese 1.6 Original-mode game data.",
   "phantasyStar4.learningSpaceRequired": "Reserve {count} slots for this character's future {ability} from level-ups and story events; fixed event slots can be replaced later by the game.",
   "phantasyStar4.skillVariant": "{name} (variant {id})",
-  "phantasyStar4.targetStat": "Target {stat}",
-  "phantasyStar4.targetHelp": "Equipment: {attributeBonus} ({attribute}) + {combatBonus} ({stat}) = {total}. Links base and equipped {attribute}. Target range: {min}–{max}; base range: 0–255.",
-  "phantasyStar4.targetConflict": "The target and base {attribute} disagree. Edit one value and preview the linked result.",
+  "phantasyStar4.computedHelp": "Calculated from base {attribute}; read-only. Equipment: {attributeBonus} ({attribute}) + {combatBonus} ({stat}) = {total}. Edit base {attribute} to update this result.",
   "phantasyStar4.equippedAttribute": "Equipped {attribute}",
   "phantasyStar4.baseAttribute": "Base {attribute}"
 }

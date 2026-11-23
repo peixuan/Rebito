@@ -1,12 +1,6 @@
 import { message } from "../../shared/messages.ts";
 import { EditorError, type EditorField } from "../types.ts";
-import {
-  attributes,
-  combatTargets,
-  equipmentBonuses,
-  expandCombatTargets,
-  refreshAttributes,
-} from "./combat.ts";
+import { attributes, combatStats, equipmentBonuses, refreshAttributes } from "./combat.ts";
 import { type FieldWidth, layout, PhantasyStar4Document } from "./document.ts";
 
 export interface PhantasyStar4Field extends EditorField {
@@ -14,15 +8,7 @@ export interface PhantasyStar4Field extends EditorField {
   width: FieldWidth;
 }
 
-const fieldModeOnly = [
-  ...attributes,
-  ...combatTargets.map(([id]) => id),
-  "maxHealth",
-  "maxEnergy",
-  "technique",
-  "skill",
-  "maxUses",
-];
+const fieldModeOnly = [...attributes, "maxHealth", "maxEnergy", "technique", "skill", "maxUses"];
 const invalid = () => new EditorError("invalid_edit", message("editor.invalidEdit"));
 
 function field(
@@ -101,25 +87,19 @@ export function characterFields(document: PhantasyStar4Document, index: number) 
       value.readonly = !document.rules;
       if (!document.rules) value.help = message("phantasyStar4.rulesRequiredHelp");
     }
-    const target = combatTargets.find(([stat]) => stat === id);
-    if (target) {
+    const computed = combatStats.find(([stat]) => stat === id);
+    if (computed) {
       value.help = message("phantasyStar4.rulesRequiredHelp");
       if (bonuses) {
-        const [stat, attribute] = target;
+        const [stat, attribute] = computed;
         const offset = bonuses[attribute] + bonuses[stat];
-        value.min = Math.max(0, offset);
-        value.max = Math.max(0, offset + 255);
-        value.readonly = offset + 255 < 0;
-        value.label = message("phantasyStar4.targetStat", { stat: value.label });
         value.derivedFrom = { key: `person.${index}.${attribute}`, offset, modulus: 65536 };
-        value.help = message("phantasyStar4.targetHelp", {
+        value.help = message("phantasyStar4.computedHelp", {
           attribute: message(`phantasyStar4.${attribute}`),
           stat: message(`phantasyStar4.${stat}`),
           attributeBonus: bonuses[attribute],
           combatBonus: bonuses[stat],
           total: offset,
-          min: value.min,
-          max: value.max,
         });
       }
     }
@@ -281,7 +261,6 @@ function findField(document: PhantasyStar4Document, key: string): PhantasyStar4F
 /** Validate the complete draft before writing, then report all actual byte-field changes. */
 export function editFields(document: PhantasyStar4Document, changes: Record<string, number>) {
   changes = { ...changes };
-  expandCombatTargets(document, changes);
   // A cleared selector disables its controls; retain the slot's original hidden capacities.
   for (const [key, after] of Object.entries(changes)) {
     const match = /^ability\.(\d+)\.skill\.(\d+)$/.exec(key);
@@ -331,9 +310,7 @@ export function editFields(document: PhantasyStar4Document, changes: Record<stri
         ({ field, before, after }) =>
           before !== after &&
           field.key.startsWith(`person.${index}.`) &&
-          [...attributes, ...combatTargets.map(([stat]) => stat)].some(
-            (attribute) => attribute === field.columnId,
-          ),
+          attributes.some((attribute) => attribute === field.columnId),
       )
     )
       refreshAttributes(document, output, index);

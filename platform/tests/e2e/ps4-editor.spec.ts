@@ -97,27 +97,31 @@ test("associates the MD editor and applies bilingual drafts to the paused runnin
     await editor.getByLabel(label, { exact: true }).press("Tab");
     await expect(editor.getByLabel(label, { exact: true })).toHaveValue(value);
   }
-  await expect(editor.getByLabel("Target Attack", { exact: true })).toHaveValue("190");
-  await expect(editor.getByLabel("Target Defence", { exact: true })).toHaveValue("167");
-  await expect(editor.getByLabel("Target Magic defence", { exact: true })).toHaveValue("181");
+  for (const [label, value] of [
+    ["Attack", "190"],
+    ["Defence", "167"],
+    ["Magic defence", "181"],
+  ] as const) {
+    await expect(editor.getByLabel(label, { exact: true })).toHaveValue(value);
+    await expect(editor.getByLabel(label, { exact: true })).toBeDisabled();
+  }
   await expect(editor).toContainText("Equipment: 2 (Strength) + 8 (Attack) = 10");
-  for (const [label, value, base, expected] of [
-    ["Target Attack", "9999", "Base Strength", "255"],
-    ["Target Attack", "215", "Base Strength", "205"],
-    ["Target Defence", "211", "Base Agility", "204"],
-    ["Target Magic defence", "222", "Base Mental", "211"],
+  for (const [label, value, computed, expected] of [
+    ["Base Strength", "205", "Attack", "215"],
+    ["Base Agility", "204", "Defence", "211"],
+    ["Base Mental", "211", "Magic defence", "222"],
   ] as const) {
     await editor.getByLabel(label, { exact: true }).fill(value);
     await editor.getByLabel(label, { exact: true }).press("Tab");
-    await expect(editor.getByLabel(base, { exact: true })).toHaveValue(expected);
+    await expect(editor.getByLabel(computed, { exact: true })).toHaveValue(expected);
+    await expect(editor.getByLabel(computed, { exact: true })).toBeDisabled();
   }
-  await editor.getByLabel("Base Strength", { exact: true }).fill("200");
-  await editor.getByLabel("Base Strength", { exact: true }).press("Tab");
-  await expect(editor.getByLabel("Target Attack", { exact: true })).toHaveValue("210");
-  await editor.getByLabel("Target Attack", { exact: true }).fill("215");
-  await editor.getByLabel("Target Attack", { exact: true }).press("Tab");
   await page.getByLabel("Language").selectOption("zh-CN");
   await expect(page.locator('[id="field-person.0.attack"]')).toHaveValue("215");
+  await expect(page.locator('[id="field-person.0.attack"]')).toBeDisabled();
+  await expect(page.locator('[id="field-person.0.attack"]')).toHaveAccessibleName(
+    chinese("phantasyStar4.attack"),
+  );
   await expect(page.locator('[id="field-person.0.strength"]')).toHaveValue("205");
   await page.getByLabel(chinese("app.language")).selectOption("en");
   await editor.getByRole("button", { name: "Techniques and skills", exact: true }).click();
@@ -153,7 +157,7 @@ test("associates the MD editor and applies bilingual drafts to the paused runnin
   await expect(preview).toContainText("Flaeli");
   await expect(preview).toContainText("Base Strength");
   await expect(preview).toContainText("Equipped Strength");
-  await expect(preview).toContainText("Target Attack");
+  await expect(preview).toContainText("Attack");
   await preview.getByRole("button", { name: "Close", exact: true }).click();
   await expect(skill.getByLabel("Remaining uses", { exact: true })).toHaveValue("20");
   await expect(cleared.getByLabel("Maximum uses", { exact: true })).toHaveValue("0");

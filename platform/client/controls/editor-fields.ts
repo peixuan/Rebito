@@ -29,7 +29,7 @@ export function resolveEditorFields(
       ...(maximum ? { max: maximum.value } : {}),
       readonly: Boolean(
         field.readonly ||
-          (link && (!base || base.readonly)) ||
+          link ||
           (field.maximumField && !maximum) ||
           (field.enabledByField && !enabled?.value),
       ),
@@ -37,7 +37,7 @@ export function resolveEditorFields(
   });
 }
 
-/** Last edited control wins locally; canonical server checks still reject inconsistent API drafts. */
+/** Only editable source fields become draft intents; derived values remain display-only. */
 export function changeEditorField(
   fields: EditorField[],
   changes: Record<string, number>,
@@ -46,8 +46,5 @@ export function changeEditorField(
 ) {
   const field = resolveEditorFields(fields, changes).find((entry) => entry.key === key);
   if (!field || field.readonly) return { ...changes };
-  const next = { ...changes, [key]: value };
-  if (field.derivedFrom) next[field.derivedFrom.key] = value - field.derivedFrom.offset;
-  else for (const target of fields) if (target.derivedFrom?.key === key) delete next[target.key];
-  return next;
+  return { ...changes, [key]: value };
 }

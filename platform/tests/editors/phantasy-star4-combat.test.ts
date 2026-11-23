@@ -8,7 +8,7 @@ import { phantasyStar4RulesFixture } from "./phantasy-star4-rules-fixture.ts";
 
 const rules = parsePhantasyStar4Rules(phantasyStar4RulesFixture());
 const adapter = createPhantasyStar4Adapter(rules);
-const targets = { "person.0.attack": 149, "person.0.defence": 327, "person.0.magicDefence": 103 };
+const bases = { "person.0.strength": 150, "person.0.agility": 200, "person.0.mental": 200 };
 
 function equipped() {
   const bytes = phantasyStar4Fixture();
@@ -16,7 +16,7 @@ function equipped() {
   return bytes;
 }
 
-it("inverts signed equipment contributions and preserves every unrelated byte", () => {
+it("derives combat totals from bases and preserves every unrelated byte", () => {
   const bytes = equipped();
   const before = bytes.slice();
   const expected = bytes.slice();
@@ -27,20 +27,19 @@ it("inverts signed equipment contributions and preserves every unrelated byte", 
   view.setUint16(0xf524, 149);
   view.setUint16(0xf528, 327);
   view.setUint16(0xf52c, 103);
-  const result = adapter.view(bytes, { changes: targets });
-  expect(adapter.apply(bytes, { changes: targets })).toEqual(expected);
+  const result = adapter.view(bytes, { changes: bases });
+  expect(adapter.apply(bytes, { changes: bases })).toEqual(expected);
   expect(adapter.apply(bytes, { changes: result.changes })).toEqual(expected);
   expect(bytes).toEqual(before);
-  expect(result.changes).toMatchObject({
-    "person.0.strength": 150,
-    "person.0.agility": 200,
-    "person.0.mental": 200,
-  });
+  expect(result.changes).toEqual(bases);
   expect(result.preview.map(({ key, before, after }) => [key, before, after])).toEqual(
     expect.arrayContaining([
       ["person.0.strength", 0, 150],
       ["modified.0.strength", 0, 149],
       ["modified.0.agility", 0, 255],
+      ["person.0.attack", 0, 149],
+      ["person.0.defence", 0, 327],
+      ["person.0.magicDefence", 0, 103],
     ]),
   );
   expect(Object.keys(result.changes).some((key) => key.startsWith("modified."))).toBe(false);
@@ -54,57 +53,41 @@ it("inverts signed equipment contributions and preserves every unrelated byte", 
   ).toBe(149);
 });
 
-it("exposes attainable targets and exact bonus breakdown instead of wrapped maxima", () => {
+it("exposes read-only totals with their base relation and exact equipment breakdown", () => {
   const view = adapter.view(equipped(), {});
   expect(view.fields.find(({ columnId }) => columnId === "attack")).toMatchObject({
     min: 0,
-    max: 254,
-    readonly: false,
+    max: 65535,
+    readonly: true,
+    label: { messageId: "phantasyStar4.attack" },
     derivedFrom: { key: "person.0.strength", offset: -1, modulus: 65536 },
     help: {
-      messageId: "phantasyStar4.targetHelp",
+      messageId: "phantasyStar4.computedHelp",
       parameters: { attributeBonus: -1, combatBonus: 0, total: -1 },
     },
   });
-  expect(view.fields.find(({ columnId }) => columnId === "defence")).toMatchObject({
-    min: 127,
-    max: 382,
-  });
-  expect(view.fields.find(({ columnId }) => columnId === "magicDefence")).toMatchObject({
-    min: 0,
-    max: 158,
-  });
-  for (const [stat, minimum, maximum] of [
-    ["attack", 0, 254],
-    ["defence", 127, 382],
-    ["magicDefence", 0, 158],
+  for (const [stat, attribute, offset] of [
+    ["attack", "strength", -1],
+    ["defence", "agility", 127],
+    ["magicDefence", "mental", -97],
   ] as const) {
-    for (const value of [minimum, maximum]) {
-      const output = adapter.view(equipped(), { changes: { [`person.0.${stat}`]: value } });
-      expect(output.fields.find(({ columnId }) => columnId === stat)?.value).toBe(value);
-    }
-    for (const value of [
-      minimum - 1,
-      maximum + 1,
-      65535,
-      1.5,
-      Number.NaN,
-      Number.POSITIVE_INFINITY,
-    ])
+    expect(view.fields.find(({ columnId }) => columnId === stat)).toMatchObject({
+      readonly: true,
+      derivedFrom: { key: `person.0.${attribute}`, offset, modulus: 65536 },
+    });
+    for (const value of [-1, 0, 200, 65535, 65536, 1.5, Number.NaN, Number.POSITIVE_INFINITY])
       expect(() =>
         adapter.apply(equipped(), { changes: { [`person.0.${stat}`]: value } }),
       ).toThrow();
   }
 });
 
-it("supports unequipped targets and consistent base intents for multiple characters in any order", () => {
+it("supports multiple characters in any order and rejects even consistent combat intents", () => {
   const bytes = phantasyStar4Fixture();
   const changes = {
-    "person.0.attack": 200,
     "person.0.strength": 200,
-    "person.1.defence": 180,
     "person.1.agility": 180,
-    "person.1.magicDefence": 160,
+    "person.1.mental": 160,
   };
   const output = adapter.apply(bytes, { changes });
   expect(
@@ -114,33 +97,33 @@ it("supports unequipped targets and consistent base intents for multiple charact
   expect([document.read(0xf518), document.read(0xf59e), document.read(0xf59b)]).toEqual([
     200, 180, 160,
   ]);
-  for (const inconsistent of [
-    { "person.0.attack": 200, "person.0.strength": 100 },
-    { "person.0.strength": 100, "person.0.attack": 200 },
+  for (const invalid of [
+    { "person.0.attack": 200, "person.0.strength": 200 },
+    { "person.0.strength": 200, "person.0.attack": 200 },
+    { "person.0.strength": -1 },
+    { "person.0.strength": 256 },
   ])
-    expect(() => adapter.apply(bytes, { changes: inconsistent })).toThrow(
-      "phantasyStar4.targetConflict",
-    );
+    expect(() => adapter.apply(bytes, { changes: invalid })).toThrow();
 });
 
-it("retains stale-cache corrections through canonical replay without inventing no-op refreshes", () => {
+it("preserves stale caches on base no-ops and recalculates actual changes through replay", () => {
   const bytes = phantasyStar4Fixture();
   bytes.set([20, 20], 0xf518);
-  const source = new PhantasyStar4Document(bytes, rules);
-  const result = adapter.view(bytes, { changes: { "person.0.attack": 20 } });
-  expect(result.changes).toEqual({ "person.0.attack": 20 });
+  const noop = adapter.view(bytes, { changes: { "person.0.strength": 20 } });
+  expect(noop.changes).toEqual({});
+  expect(noop.preview).toEqual([]);
+  expect(
+    editFields(new PhantasyStar4Document(bytes, rules), { "person.0.strength": 20 }).output,
+  ).toEqual(bytes);
+  const result = adapter.view(bytes, { changes: { "person.0.strength": 21 } });
+  expect(result.changes).toEqual({ "person.0.strength": 21 });
   expect(adapter.apply(bytes, { changes: result.changes })).toEqual(
-    adapter.apply(bytes, { changes: { "person.0.attack": 20 } }),
+    adapter.apply(bytes, { changes: { "person.0.strength": 21 } }),
   );
   expect(
     new PhantasyStar4Document(adapter.apply(bytes, { changes: result.changes })).read(0xf524, 2),
-  ).toBe(20);
-  expect(editFields(source, { "person.0.attack": 0 }).output[0xf518]).toBe(0);
-  bytes[0xf519] = 99;
-  new DataView(bytes.buffer).setUint16(0xf524, 20);
-  const noop = adapter.view(bytes, { changes: { "person.0.attack": 20 } });
-  expect(noop.changes).toEqual({});
-  expect(noop.preview).toEqual([]);
+  ).toBe(21);
+  expect(() => adapter.apply(bytes, { changes: { "person.0.attack": 20 } })).toThrow();
 });
 
 it("rejects unsupported rules, invalid equipment, battle edits and read-only effect keys", () => {
@@ -149,7 +132,7 @@ it("rejects unsupported rules, invalid equipment, battle edits and read-only eff
   expect(characterFields(plain, 0).find(({ columnId }) => columnId === "attack")?.readonly).toBe(
     true,
   );
-  expect(() => editFields(plain, targets)).toThrow();
+  expect(() => editFields(plain, bases)).toThrow();
   for (const invalid of [
     { "person.11.attack": 10 },
     { "person.00.attack": 10 },
@@ -160,15 +143,13 @@ it("rejects unsupported rules, invalid equipment, battle edits and read-only eff
   expect(
     adapter.view(bytes, {}).fields.find(({ columnId }) => columnId === "attack")?.readonly,
   ).toBe(true);
-  expect(() => adapter.apply(bytes, { changes: targets })).toThrow();
+  expect(() => adapter.apply(bytes, { changes: bases })).toThrow();
   expect(adapter.view(bytes, { changes: { "party.money": 600 } }).changes).toEqual({
     "party.money": 600,
   });
   bytes[0xf54c] = 1;
   new DataView(bytes.buffer).setUint16(0xef00, 4);
-  expect(() => adapter.apply(bytes, { changes: targets })).toThrow(
-    "phantasyStar4.fieldModeRequired",
-  );
+  expect(() => adapter.apply(bytes, { changes: bases })).toThrow("phantasyStar4.fieldModeRequired");
 });
 
 it("keeps unachievable and previously wrapped totals intact during unrelated edits", () => {
