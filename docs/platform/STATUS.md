@@ -254,6 +254,11 @@ revision and file hash; deployment must not replace the existing data volumes.
 
 ## Deployment evidence
 
+The browser CI job uses Ubuntu's official HTTPS archive after repeated hosted
+runner mirror stalls in package indexes and font downloads. Package signature
+checks, browser isolation and all tests remain enabled; dependency installation
+has an eight-minute timeout and a failure still blocks promotion.
+
 Images pin Node 24.22.3 and PostgreSQL 18.7. Compose uses `rebito` and isolated
 `rebito-tests` resources. Earlier deployments need the [migration](../../platform/DEPLOYMENT.md#project-names-and-earlier-deployments).
 Historical review evidence below is separate from the new cloud installation.
