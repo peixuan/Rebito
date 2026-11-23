@@ -79,5 +79,19 @@
   "san3.portraitNumber": "Portrait {number}",
   "san3.unregistered": "Unregistered",
   "san3.birthdayHelp": "February permits 29 days; other months follow the game calendar.",
-  "san3.portraitHelp": "Choose a portrait supported by this game. Unregistered slots stay unregistered; use the game to create an officer."
+  "san3.portraitHelp": "Choose a portrait supported by this game. Unregistered slots stay unregistered; use the game to create an officer.",
+  "san3.officerTraits": "Personality and service",
+  "san3.ambition": "Ambition",
+  "san3.luck": "Luck",
+  "san3.composure": "Composure",
+  "san3.bravery": "Bravery",
+  "san3.lifespan": "Lifespan category",
+  "san3.compatibility": "Compatibility",
+  "san3.morality": "Morality",
+  "san3.serviceYears": "Current service years",
+  "san3.originServiceYears": "Previous service years",
+  "san3.actionComplete": "Action completed",
+  "san3.lifespanHelp": "Category 0–7 changes the age threshold for death checks; it is not an exact death age.",
+  "san3.actionCompleteHelp": "Clearing this flag permits another strategic action. Assigned, dead or battling officers remain locked.",
+  "san3.serviceYearsHelp": "With a former faction, both service counters must total 1–256 to avoid overflow when returning."
 }

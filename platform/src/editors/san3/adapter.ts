@@ -98,7 +98,7 @@ function fields(
     module === "cities" ? cityFields(document, index) : officerFields(document, index);
   const faction = record.faction;
   return [
-    ...editable.map(({ offset: _offset, width: _width, ...field }) => ({
+    ...editable.map(({ offset: _offset, width: _width, mask: _mask, shift: _shift, ...field }) => ({
       ...field,
       ...(field.readonly ? { help: message("san3.readonlyHelp") } : {}),
     })),

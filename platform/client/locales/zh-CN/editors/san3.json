@@ -79,5 +79,19 @@
   "san3.portraitNumber": "头像 {number}",
   "san3.unregistered": "未注册",
   "san3.birthdayHelp": "二月允许29日，其他月份按游戏日历限制。",
-  "san3.portraitHelp": "仅列出本游戏支持的头像。未注册槽位不会因此变成已注册武将，请在游戏中完成创建。"
+  "san3.portraitHelp": "仅列出本游戏支持的头像。未注册槽位不会因此变成已注册武将，请在游戏中完成创建。",
+  "san3.officerTraits": "性格与仕官",
+  "san3.ambition": "野心",
+  "san3.luck": "运气",
+  "san3.composure": "冷静",
+  "san3.bravery": "勇猛",
+  "san3.lifespan": "寿命类别",
+  "san3.compatibility": "相性",
+  "san3.morality": "义理",
+  "san3.serviceYears": "当前仕官年数",
+  "san3.originServiceYears": "原势力仕官年数",
+  "san3.actionComplete": "已完成行动",
+  "san3.lifespanHelp": "类别0～7影响寿命判定的年龄门槛，并不等于固定死亡年龄。",
+  "san3.actionCompleteHelp": "取消后可再次执行战略行动。执行任务、死亡或战斗中的武将不可修改。",
+  "san3.serviceYearsHelp": "存在原势力时，两项仕官年数之和须为1～256，避免回归原势力时溢出。"
 }

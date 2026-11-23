@@ -180,7 +180,8 @@ describe("Japanese Mega-CD strategic memory", () => {
     bytes[san3Layout.officers.offset + 30 + 0x0c] = 7;
     const inactiveFields = officerFields(new San3Document(bytes), 1);
     expect(inactiveFields.slice(0, 4).every((field) => field.readonly)).toBe(true);
-    expect(inactiveFields.slice(4).every((field) => !field.readonly)).toBe(true);
+    expect(inactiveFields.slice(4, 10).every((field) => !field.readonly)).toBe(true);
+    expect(inactiveFields.slice(10).every((field) => field.readonly)).toBe(true);
   });
 
   it("edits historical and custom abilities without changing neighboring bytes", () => {

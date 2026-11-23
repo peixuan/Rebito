@@ -3,10 +3,13 @@ import { EditorError, type EditorField } from "../types.ts";
 import { cityDetailFields } from "./city-fields.ts";
 import { customMetadataFields, validateCustomFields } from "./custom-fields.ts";
 import { type San3Document, san3Attributes, san3Layout } from "./document.ts";
+import { officerTraitFields, validateOfficerTraits } from "./officer-traits.ts";
 
 export interface San3Field extends EditorField {
   offset: number;
   width: 1 | 2 | 4;
+  mask?: number;
+  shift?: number;
 }
 
 /** Basic abilities are editable even before an officer appears in a scenario. */
@@ -69,7 +72,7 @@ export function officerFields(document: San3Document, index: number): San3Field[
       ["soldiers", 2, 2, officer.soldierLimit],
       ["loyalty", 0x0f, 1, 100],
       ["training", 0x15, 1, 100],
-      ["morale", 0x16, 1, 100],
+      ["morale", 0x16, 1, 120],
     ] as const
   ).map(([id, relative, width, max]) => ({
     key: `officer.${index}.${id}`,
@@ -85,7 +88,7 @@ export function officerFields(document: San3Document, index: number): San3Field[
     readonly:
       !officer.available || (id === "loyalty" ? officer.role === 0 : officer.soldiers === 0),
   }));
-  return [...military, ...attributeFields(document, index)];
+  return [...military, ...attributeFields(document, index), ...officerTraitFields(document, index)];
 }
 
 export function findSan3Field(
@@ -111,6 +114,7 @@ export function findSan3Field(
 /** Validate atomically, including troop edits against the final leadership values. */
 export function editSan3(document: San3Document, changes: Record<string, number>) {
   validateCustomFields(document, changes);
+  validateOfficerTraits(document, changes);
   const edits = Object.entries(changes).map(([key, value]) => {
     const field = findSan3Field(document, key, changes);
     let maximum = field.max;
@@ -128,8 +132,15 @@ export function editSan3(document: San3Document, changes: Record<string, number>
   const bytes = document.copy();
   const data = new DataView(bytes.buffer);
   for (const { field, after } of edits) {
-    if (field.width === 1) data.setUint8(field.offset, after);
-    else if (field.width === 2) data.setUint16(field.offset, after);
+    if (field.width === 1) {
+      const shift = field.shift ?? 0;
+      const value =
+        field.mask === undefined
+          ? after
+          : (data.getUint8(field.offset) & ~(field.mask << shift)) |
+            ((after & field.mask) << shift);
+      data.setUint8(field.offset, value);
+    } else if (field.width === 2) data.setUint16(field.offset, after);
     else data.setUint32(field.offset, after);
   }
   return { bytes, edits };

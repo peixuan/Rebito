@@ -25,7 +25,8 @@ to persist changes in its native format; reopen cached game panels to see them.
 Population is stored in hundreds of people, capped at 30,000 stored units.
 Gold is capped at 50,000 and food at 3,000,000. Soldier capacity follows the
 game's allocation routine: `10000 + 100 * max(land leadership, naval leadership)`.
-Loyalty, training and morale have a maximum of 100. Ruler loyalty is read-only.
+Loyalty and training have a maximum of 100; morale can reach 120 through the
+game's battle routines. Ruler loyalty is read-only.
 Disbanding, creating an army and editing inactive officers are deliberately
 excluded because those actions update additional state.
 
@@ -71,6 +72,15 @@ draft so month/day edits are order independent. Portrait choices use verified
 creation IDs plus historical IDs backed by the game's lookup table. The `0xffff`
 unregistered sentinel cannot be changed through this editor. Editing a definition
 does not create a live officer or modify city lists; registration remains in-game.
+
+Personality nibbles, compatibility, morality, lifespan category, service years
+and the completed-action flag are editable for eligible live officers. Masked
+writes preserve adjacent flags and equipment allocations. Lifespan uses only
+bits 4..6 (0..7), not the entire high nibble shown by the old editor. It changes
+the age threshold for random death checks rather than fixing a death age.
+Service counters use 0..255; with a former faction, their final sum must be
+1..256 because the return routine adds them and subtracts one in a byte.
+Dead or battling officers stay locked, as do assigned officers' action flags.
 
 ## Evidence and limits
 
