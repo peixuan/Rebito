@@ -98,6 +98,10 @@ from a live officer's current campaign traits. Factions expose their alliances,
 hostility values, joint attack agreement and nomadic mission data as read-only
 context, matching the original editor's display scope. Alliance bits follow the
 game's big-endian word checks, not the legacy debugger's byte-array formatting.
+Officers also show their named role, previous faction and phonetic reading.
+Cities show their governor, strategist, serving/free/undiscovered counts and troop
+total. These totals come from one validated list traversal per view; malformed
+lists leave the scalar editor available without inventing relationship totals.
 
 ## Evidence and limits
 

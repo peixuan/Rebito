@@ -7,6 +7,7 @@ import {
   type EditorView,
 } from "../types.ts";
 import { san3BatchDraft } from "./batch-action.ts";
+import { san3CampaignContext, san3ReadingField } from "./campaign-context.ts";
 import { factionContextFields, historicalContextFields } from "./context-fields.ts";
 import { customMetadataFields } from "./custom-fields.ts";
 import { customNameFields, editCustomNames } from "./custom-names.ts";
@@ -52,7 +53,8 @@ function catalog(document: San3Document) {
     };
   });
   const factionName = (index: number): DisplayText => factions[index]?.name ?? message("san3.none");
-  return { cities, officers, factions, cityName, officerName, factionName };
+  const campaignFields = san3CampaignContext(document);
+  return { cities, officers, factions, cityName, officerName, factionName, campaignFields };
 }
 type Catalog = ReturnType<typeof catalog>;
 
@@ -135,6 +137,7 @@ function fields(
           }))
       : []),
     context("faction", faction, data.factionName(faction)),
+    ...data.campaignFields(module, index),
     ...(module === "officers"
       ? [
           context("soldierLimit", document.officer(index).soldierLimit),
@@ -291,6 +294,9 @@ export const san3Adapter: EditorAdapter = {
         ? {}
         : { batchKeys: selectedFields.filter((field) => !field.readonly).map(({ key }) => key) }),
       ...(module === "custom" ? { textFields: customNameFields(document, Number(selected)) } : {}),
+      ...(module === "officers"
+        ? { textFields: [san3ReadingField(document, Number(selected))] }
+        : {}),
       actions: module === "custom" ? [san3NamePresetAction] : [],
       changes: {
         ...Object.fromEntries(edits.map(({ field, after }) => [field.key, after])),
