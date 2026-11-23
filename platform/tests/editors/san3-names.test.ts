@@ -4,28 +4,7 @@ import {
   decodeSan3Name,
   san3GlyphLayout,
 } from "../../src/editors/san3/names.ts";
-
-/** Synthetic alphabet assembled from the standard decoder, not extracted game data. */
-function fixture() {
-  const codes = new Set([0x8140, 0x8160, 0x817c, 0x8abf, 0x8e9a, 0xeb9f, 0xebdb]);
-  const decoder = new TextDecoder("shift_jis", { fatal: true });
-  for (let code = 0x8141; codes.size < san3GlyphLayout.count; code++) {
-    try {
-      const text = decoder.decode(Uint8Array.of(code >> 8, code & 0xff));
-      if ([...text].length === 1) codes.add(code);
-    } catch {
-      // Unassigned byte pairs do not belong to this generated alphabet.
-    }
-  }
-  const bytes = new Uint8Array(0x80000);
-  const view = new DataView(bytes.buffer);
-  [...codes]
-    .sort((left, right) => left - right)
-    .forEach((code, index) => {
-      view.setUint16(san3GlyphLayout.offset + index * 2, code);
-    });
-  return bytes;
-}
+import { san3NameFixture as fixture } from "./san3-name-fixture.ts";
 
 describe("Japanese Mega-CD officer names", () => {
   it("encodes supported kanji and the private extension without changing memory", () => {

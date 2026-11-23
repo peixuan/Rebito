@@ -93,5 +93,9 @@
   "san3.actionComplete": "Action completed",
   "san3.lifespanHelp": "Category 0–7 changes the age threshold for death checks; it is not an exact death age.",
   "san3.actionCompleteHelp": "Clearing this flag permits another strategic action. Assigned, dead or battling officers remain locked.",
-  "san3.serviceYearsHelp": "With a former faction, both service counters must total 1–256 to avoid overflow when returning."
+  "san3.serviceYearsHelp": "With a former faction, both service counters must total 1–256 to avoid overflow when returning.",
+  "san3.kanji": "Name",
+  "san3.kana": "Reading",
+  "san3.kanjiHelp": "Up to three characters from this game’s character set. Unchanged names keep their original bytes.",
+  "san3.kanaHelp": "Up to seven encoded kana bytes; a voiced kana uses two. Hiragana and katakana are accepted."
 }

@@ -51,6 +51,10 @@ voicing marks. Semantic no-ops must preserve bytes: one character has two valid
 game encodings. All 1,064 historical name/reading fields round-tripped as text in
 the supplied original-game memory; synthetic fixtures cover malformed alphabets,
 private codes, aliases, unsupported characters and overflow.
+Name drafts survive record/tab/language changes and share one atomic publication
+with numeric changes. The original game's registered-profile screen displayed a
+private-glyph name, reading, changed birthday, age, gender and portrait. An in-game
+save followed by a fresh native-only boot retained the complete custom record.
 
 Six base abilities (land/naval leadership, strength, intelligence, politics and
 charisma) are editable at historical offsets `+5..+10` and custom offsets

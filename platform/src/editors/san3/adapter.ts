@@ -7,6 +7,7 @@ import {
   type EditorView,
 } from "../types.ts";
 import { customMetadataFields } from "./custom-fields.ts";
+import { customNameFields, editCustomNames } from "./custom-names.ts";
 import { San3Document, san3Layout } from "./document.ts";
 import { attributeFields, cityFields, editSan3, officerFields } from "./fields.ts";
 import { san3PresetAdapter } from "./preset-adapter.ts";
@@ -127,7 +128,8 @@ function prepare(bytes: Uint8Array, draft: EditorDraft) {
   const original = new San3Document(bytes);
   const result = editSan3(original, draft.changes ?? {});
   const edits = result.edits.filter(({ before, after }) => before !== after);
-  const document = new San3Document(result.bytes);
+  const names = editCustomNames(new San3Document(result.bytes), draft.textChanges ?? {});
+  const document = new San3Document(names.bytes);
   const data = catalog(document);
   const count = san3Layout[module as Module].count;
   const first =
@@ -140,16 +142,26 @@ function prepare(bytes: Uint8Array, draft: EditorDraft) {
           : data.cities.find((city) => city.faction !== 0xff)?.index;
   const selected = draft.record ?? String(first ?? 0);
   if (!/^(0|[1-9]\d{0,2})$/.test(selected) || Number(selected) >= count) throw invalid();
-  return { document, data, module: module as Module, selected, count, output: result.bytes, edits };
+  return {
+    document,
+    data,
+    module: module as Module,
+    selected,
+    count,
+    output: names.bytes,
+    edits,
+    textEdits: names.edits,
+  };
 }
 
 /** Numeric resources and base abilities; ownership and faction totals remain context. */
 export const san3Adapter: EditorAdapter = {
   size: san3Layout.size,
+  supportsText: true,
   view(bytes, draft) {
     if (bytes.length === san3Layout.size && bytes[0x4abc4] === 0 && bytes[0x4abc5] === 4)
       return san3PresetAdapter.view(bytes, draft);
-    const { document, data, module, selected, count, edits } = prepare(bytes, draft);
+    const { document, data, module, selected, count, edits, textEdits } = prepare(bytes, draft);
     const selectedFields = fields(document, data, module, Number(selected));
     const preview: EditorView["preview"] = edits.map(({ field, before, after }) => {
       const [kind, index] = field.key.split(".");
@@ -167,6 +179,17 @@ export const san3Adapter: EditorAdapter = {
         after: after * (field.multiplier ?? 1),
       };
     });
+    preview.push(
+      ...textEdits.map(({ key, index, kind, before, after }) => ({
+        key,
+        label: message("editor.columnLabel", {
+          group: label(data, "custom", index),
+          field: message(`san3.${kind}`),
+        }),
+        before,
+        after,
+      })),
+    );
     return {
       slots: [{ index: 0, label: message("san3.checkpoint"), available: true }],
       slot: 0,
@@ -213,8 +236,10 @@ export const san3Adapter: EditorAdapter = {
       }),
       selected,
       fields: selectedFields,
+      ...(module === "custom" ? { textFields: customNameFields(document, Number(selected)) } : {}),
       actions: [],
       changes: Object.fromEntries(edits.map(({ field, after }) => [field.key, after])),
+      textChanges: Object.fromEntries(textEdits.map(({ key, after }) => [key, after])),
       preview,
     };
   },
@@ -222,7 +247,8 @@ export const san3Adapter: EditorAdapter = {
     if (bytes.length === san3Layout.size && bytes[0x4abc4] === 0 && bytes[0x4abc5] === 4)
       return san3PresetAdapter.apply(bytes, draft);
     const prepared = prepare(bytes, draft);
-    if (!prepared.edits.length) throw new EditorError("no_changes", message("editor.noChanges"));
+    if (!prepared.edits.length && !prepared.textEdits.length)
+      throw new EditorError("no_changes", message("editor.noChanges"));
     return prepared.output;
   },
 };

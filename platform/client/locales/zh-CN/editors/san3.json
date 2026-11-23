@@ -93,5 +93,9 @@
   "san3.actionComplete": "已完成行动",
   "san3.lifespanHelp": "类别0～7影响寿命判定的年龄门槛，并不等于固定死亡年龄。",
   "san3.actionCompleteHelp": "取消后可再次执行战略行动。执行任务、死亡或战斗中的武将不可修改。",
-  "san3.serviceYearsHelp": "存在原势力时，两项仕官年数之和须为1～256，避免回归原势力时溢出。"
+  "san3.serviceYearsHelp": "存在原势力时，两项仕官年数之和须为1～256，避免回归原势力时溢出。",
+  "san3.kanji": "姓名",
+  "san3.kana": "读音",
+  "san3.kanjiHelp": "最多3个游戏字库支持的汉字。不修改的姓名会保留原始字节。",
+  "san3.kanaHelp": "最多7个假名编码字节，浊音假名占2字节。可输入平假名或片假名。"
 }

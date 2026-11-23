@@ -13,6 +13,7 @@ import { LocalBlobStore } from "../../src/storage/blobs.ts";
 import { RevisionRepository } from "../../src/storage/revisions.ts";
 import { testDatabase } from "../database.ts";
 import { discArchive, discBios } from "../library/segacd-fixtures.ts";
+import { san3NameFixture } from "./san3-name-fixture.ts";
 
 const lock = JSON.parse(readFileSync(new URL("../../runtime-lock.json", import.meta.url), "utf8"));
 const runtime = {
@@ -31,7 +32,7 @@ let releaseId: string;
 
 /** Original structural fixture: no game code, names, BIOS or player progress. */
 function programRam(overlay = 0) {
-  const bytes = Buffer.alloc(0x80000);
+  const bytes = Buffer.from(san3NameFixture());
   bytes.write("KOEI", 0x78000);
   bytes.write("KOEI", 0x78776);
   bytes.writeUInt16BE(200, 0x78788);
@@ -226,6 +227,46 @@ it("authorizes the owner before exposing or editing a captured CD game", async (
   expect(await history(initial.profileId)).toHaveLength(1);
   for (const file of ["save.srm", "__runtime/opaque.bin"])
     expect((await request(initial.id, { file })).json().error).toBe("no_editable_save");
+});
+
+it("publishes names and numeric edits together while preserving companions and ownership", async () => {
+  const source = snapshot();
+  const initial = await original(source.bytes);
+  const changes = { "city.0.gold": 123 };
+  const textChanges = { "custom.0.kanji": "\u6f22\u5b57", "custom.67.kana": "\u304c\u3071" };
+  const draft = { changes, textChanges };
+  const payload = { file: stateFile, edits: [{ slot: 0, ...draft }] };
+  const invalid = {
+    ...payload,
+    edits: [{ slot: 0, changes, textChanges: { "custom.0.kanji": "bad" } }],
+  };
+  expect((await request(initial.id, invalid, true)).statusCode).toBe(422);
+  expect((await request(initial.id, payload, true, 1)).statusCode).toBe(404);
+  expect(await history(initial.profileId)).toHaveLength(1);
+  const preview = await request(initial.id, draft);
+  expect(preview.statusCode).toBe(200);
+  expect(preview.json()).toMatchObject({ changes, textChanges });
+  const published = await request(initial.id, payload, true);
+  expect(published.statusCode).toBe(201);
+  const after = await saves.file(users[0]?.id ?? "", published.json().id, stateFile);
+  const expected = Buffer.from(source.bytes);
+  for (const [offset, bytes] of [
+    [0x787c4 + 14, [0, 123]],
+    [0x78004 + 13, [0x8a, 0xbf, 0x8e, 0x9a, 0, 0, 0]],
+    [0x78004 + 67 * 28 + 20, [0xb6, 0xde, 0xca, 0xdf, 0, 0, 0, 0]],
+  ] as const)
+    bytes.forEach((value, index) => {
+      expected[source.programOffset + ((offset + index) ^ 1)] = value;
+    });
+  expect(Buffer.from(after)).toEqual(expected);
+  for (const artifact of initial.manifest.artifacts.filter(({ name }) => name !== stateFile))
+    expect(
+      published
+        .json()
+        .manifest.artifacts.find((entry: { name: string }) => entry.name === artifact.name),
+    ).toEqual(artifact);
+  expect((await request(initial.id, payload, true)).statusCode).toBe(409);
+  expect(await history(initial.profileId)).toHaveLength(2);
 });
 
 it("requires initialized strategic data in the reviewed PicoDrive snapshot format", async () => {

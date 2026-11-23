@@ -8,6 +8,7 @@ function prepare(bytes: Uint8Array, draft: EditorDraft) {
     (draft.slot !== undefined && draft.slot !== 0) ||
     (draft.module !== undefined && draft.module !== "presets") ||
     draft.action ||
+    Object.keys(draft.textChanges ?? {}).length ||
     !/^[0-3]$/.test(draft.record ?? "0")
   )
     throw new EditorError("invalid_edit", message("editor.invalidEdit"));

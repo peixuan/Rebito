@@ -5,13 +5,14 @@ import { San3PresetDocument, san3PresetLayout } from "../../src/editors/san3/pre
 import { openSnapshotMemory } from "../../src/editors/snapshots/memory.ts";
 import type { Game } from "../../src/library/catalog.ts";
 import type { Profile, Revision } from "../../src/storage/revisions.ts";
+import { san3NameFixture } from "../editors/san3-name-fixture.ts";
 import { discArchive, discBios, discTrack } from "../library/segacd-fixtures.ts";
 import { chinese } from "./locales.ts";
 import { useSession } from "./session.ts";
 
 /** Synthetic strategic records only; the original fixture firmware never executes game commands. */
 function strategicMemory() {
-  const bytes = new Uint8Array(san3Layout.size);
+  const bytes = san3NameFixture();
   const view = new DataView(bytes.buffer);
   view.setUint32(0x78000, 0x4b4f4549);
   view.setUint32(0x78776, 0x4b4f4549);
@@ -220,6 +221,11 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   await editor.getByLabel("Birth month", { exact: true }).press("Tab");
   await editor.getByLabel("Birth day", { exact: true }).fill("29");
   await editor.getByLabel("Birth day", { exact: true }).press("Tab");
+  await editor.getByLabel("Name", { exact: true }).fill("\u6f22\u5b57");
+  await editor.getByLabel("Reading", { exact: true }).fill("\u304c\u3071");
+  await page.getByLabel("Language").selectOption("zh-CN");
+  await expect(page.getByLabel(chinese("san3.kanji"), { exact: true })).toHaveValue("\u6f22\u5b57");
+  await page.getByLabel(chinese("app.language")).selectOption("en");
   await editor.getByRole("button", { name: "Factions", exact: true }).click();
   await expect(editor.getByLabel("Gold", { exact: true })).toBeDisabled();
   await expect(editor.getByLabel("Gold", { exact: true })).toHaveValue("12345");
@@ -285,6 +291,10 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
     ...result.subarray(san3Layout.custom.offset + 10, san3Layout.custom.offset + 13),
   ]).toEqual([2, 29, 35]);
   expect(new DataView(result.buffer).getUint16(san3Layout.custom.offset)).toBe(0xffff);
+  expect(document.officer(532).name).toBe("\u6f22\u5b57");
+  expect([
+    ...result.subarray(san3Layout.custom.offset + 20, san3Layout.custom.offset + 25),
+  ]).toEqual([0xb6, 0xde, 0xca, 0xdf, 0]);
 
   // The same editor selects its registration schema from captured RAM, not a client flag.
   await page.getByRole("button", { name: "Stop game", exact: true }).click();
