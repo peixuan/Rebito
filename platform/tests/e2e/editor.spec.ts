@@ -70,5 +70,10 @@ test("clamps compact fields, preserves cross-module drafts and saves multiple sl
   expect(result).toEqual(expected);
   await editor.getByRole("button", { name: "Discard draft and reload" }).click();
   await expect(money).toHaveValue("600000000");
+  await money.fill("600000000");
+  await money.press("Tab");
+  await editor.getByRole("button", { name: "Preview edits", exact: true }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Close", exact: true }).click();
+  await expect(editor.getByRole("button", { name: "Save edits", exact: true })).toBeDisabled();
   await page.screenshot({ path: info.outputPath("editor.png"), animations: "disabled" });
 });

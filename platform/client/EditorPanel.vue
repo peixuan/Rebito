@@ -11,7 +11,11 @@ import type { EditorBatch, EditorQuery, EditorResponse } from "../src/editors/se
 import { type DisplayText, message } from "../src/shared/messages.ts";
 import type { Revision } from "../src/storage/revisions.ts";
 import { api, errorText } from "./api.ts";
-import { resolveEditorFields } from "./controls/editor-fields.ts";
+import {
+  changeEditorField,
+  previewedEditorChanges,
+  resolveEditorFields,
+} from "./controls/editor-fields.ts";
 import FieldGrid from "./controls/FieldGrid.vue";
 import RecordTable from "./controls/RecordTable.vue";
 import { localize, t, translate } from "./i18n.ts";
@@ -57,11 +61,8 @@ const count = computed(() =>
 );
 const fields = computed(() =>
   resolveEditorFields(
-    view.value?.fields.map((field) => ({
-      ...field,
-      value:
-        drafts.get(view.value?.file ?? "")?.get(view.value?.slot ?? 0)?.[field.key] ?? field.value,
-    })) ?? [],
+    view.value?.fields ?? [],
+    drafts.get(view.value?.file ?? "")?.get(view.value?.slot ?? 0) ?? {},
   ),
 );
 const previewRows = computed(() =>
@@ -104,14 +105,7 @@ async function refresh(selection: EditorQuery = {}) {
   if (ticket !== requestId || revision !== base.value) return;
   // Drop semantic no-ops while retaining the server-expanded linked actions.
   draft(response.file, response.slot);
-  drafts
-    .get(response.file)
-    ?.set(
-      response.slot,
-      Object.fromEntries(
-        response.preview.map((item) => [item.key, response.changes[item.key] ?? 0]),
-      ),
-    );
+  drafts.get(response.file)?.set(response.slot, previewedEditorChanges(response));
   if (!previews.has(response.file)) previews.set(response.file, new Map());
   previews.get(response.file)?.set(response.slot, response.preview);
   view.value = response;
@@ -119,18 +113,26 @@ async function refresh(selection: EditorQuery = {}) {
 }
 function change(key: string, value: number) {
   if (!view.value) return;
-  draft(view.value.file, view.value.slot)[key] = value;
-  const field = view.value.fields.find((item) => item.key === key);
+  const next = changeEditorField(
+    view.value.fields,
+    draft(view.value.file, view.value.slot),
+    key,
+    value,
+  );
+  drafts.get(view.value.file)?.set(view.value.slot, next);
   const row = view.value.records.find((item) => item.id === view.value?.selected);
-  if (field && row)
-    row.cells[field.columnId] = field.choices
-      ? (field.choices.find((choice) => choice.value === value)?.label ??
-        message("editor.unknownValue", { value }))
-      : field.boolean
-        ? value
-          ? message("common.yes")
-          : message("common.no")
-        : (value * (field.multiplier ?? 1)) / (field.divisor ?? 1);
+  if (row)
+    for (const field of resolveEditorFields(view.value.fields, next)) {
+      const value = field.value;
+      row.cells[field.columnId] = field.choices
+        ? (field.choices.find((choice) => choice.value === value)?.label ??
+          message("editor.unknownValue", { value }))
+        : field.boolean
+          ? value
+            ? message("common.yes")
+            : message("common.no")
+          : (value * (field.multiplier ?? 1)) / (field.divisor ?? 1);
+    }
 }
 async function navigate(selection: EditorQuery) {
   await refresh(); // Preserve and validate the previous slot before switching.

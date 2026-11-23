@@ -16,6 +16,8 @@ export interface EditorField {
   maximumField?: string;
   /** A zero selection in this visible field disables the dependent control. */
   enabledByField?: string;
+  /** Editable total linked to a visible base; the server independently validates this relation. */
+  derivedFrom?: { key: string; offset: number; modulus?: number };
   multiplier?: number;
   divisor?: number;
   help?: DisplayText;
@@ -45,6 +47,7 @@ export interface EditorView {
   selected: string;
   fields: EditorField[];
   actions: { id: string; label: DisplayText; help?: DisplayText }[];
+  /** Writable intents; preview may also include derived read-only effects. */
   changes: Record<string, number>;
   preview: {
     key: string;
