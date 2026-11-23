@@ -35,8 +35,9 @@ The catalog describes 161 item IDs, 41 technique IDs and 55 skill IDs, including
 empty ID zero and skill variants. Known unused items cannot gain extra copies;
 existing copies can be retained or reordered. Names are reference labels, not
 proof that every listed item or ability is suitable for every character or event.
-English proper names remain available in both interface languages where the
-translation's terminology has not been verified.
+Chinese character, item, technique and skill names match the supplied Ken Tse
+Chinese 1.6 translation. English labels remain available when switching language;
+four English item names describe edition-specific Chinese definitions.
 
 ## Snapshots and game-native saves
 
@@ -57,11 +58,16 @@ verify persistence, but direct SRAM editing is not implemented by this adapter.
   and independently inspected in the supplied game. Its noncommercial educational
   disclaimer is not an open-source license: no disassembly implementation or ROM
   tables are redistributed here.
-- Item and ability names derive from
+- English item and ability names derive from
   [PStarSaveEditor](https://github.com/Fuindin/PStarSaveEditor/tree/5c6896f3dc9a4da95cee858435f1dca224418f95),
   copyright 2017 Fuindin, under MIT; its notice is retained in
   [NOTICE.PSTAR](../../../NOTICE.PSTAR). Its emulator-specific file offsets are
   not used as Rebito snapshot offsets.
+- Chinese display labels were checked against the supplied Ken Tse Chinese 1.6
+  translation, with enlarged inspection of its custom glyphs. The
+  [translator's original thread](https://yzzl.kxb4u.com/viewthread.php?tid=1411)
+  identifies that translation; later rewrites are outside this terminology review.
+  Game and translation rights remain separate; no font is distributed here.
 - The proprietary ROM, BIOS, real saves, screenshots and local investigation
   output are not contribution fixtures. Tests generate synthetic records and
   containers. Original implementation code uses the project's AGPL grant;

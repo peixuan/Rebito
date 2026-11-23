@@ -8,8 +8,11 @@ option) any later version. Third-party components retain their own licenses.
 
 The complete GNU AGPLv3 text is in LICENSE.
 
-Phantasy Star IV item and ability names derive from PStarSaveEditor by Fuindin,
+English Phantasy Star IV item and ability names derive from PStarSaveEditor by Fuindin,
 commit 5c6896f3dc9a4da95cee858435f1dca224418f95 (MIT).
 Source: https://github.com/Fuindin/PStarSaveEditor
 Its permission notice accompanies the platform in NOTICE.PSTAR and browser notices.
+Chinese display names follow the supplied Ken Tse Chinese 1.6 translation;
+four English item labels describe its edition-specific Chinese definitions.
+Game and translation rights remain with their respective owners.
 Game names and trademarks remain the property of their respective owners.

@@ -11,6 +11,6 @@ regexes = ['''key:\s*"companion\.0\.salary"''']
 [[allowlists]]
 description = "Exact item catalog identifiers following Escapipe and Control Key"
 condition = "AND"
-paths = ['''^platform/client/locales/shared/editors/phantasyStar4Names\.json$''']
+paths = ['''^platform/client/locales/(shared|en)/editors/phantasyStar4Names\.json$''']
 regexTarget = "secret"
 regexes = ['''^phantasyStar4\.items\.(134|154)$''']

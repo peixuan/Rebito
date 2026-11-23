@@ -10,11 +10,13 @@ const executable = process.env.GITLEAKS_BIN ?? "gitleaks";
 const directory = await mkdtemp(join(tmpdir(), "retro-secret-policy-"));
 try {
   execFileSync("git", ["init", "--quiet", directory]);
-  const catalogPath = "platform/client/locales/shared/editors/phantasyStar4Names.json";
+  const catalogPaths = ["shared", "en"].map(
+    (locale) => `platform/client/locales/${locale}/editors/phantasyStar4Names.json`,
+  );
   const paths = [
     "platform/tests/editors/adapter.test.ts",
     "scripts/check-secret-scan.mjs",
-    catalogPath,
+    ...catalogPaths,
   ];
   const files = paths.map((path) => join(directory, path));
   const scan = () => {
@@ -48,7 +50,7 @@ try {
     null,
     2,
   );
-  const contents = [field, field, catalog];
+  const contents = [field, field, catalog, catalog];
   for (const file of files) {
     await mkdir(dirname(file), { recursive: true });
     await writeFile(file, contents[files.indexOf(file)]);
@@ -63,9 +65,11 @@ try {
     assert.equal(scan(), 1, "Other secret-like values in either file must still be detected");
     await writeFile(file, content);
   }
-  await writeFile(files[2], catalog.replace("items.134", "items.135"));
-  assert.equal(scan(), 1, "Other catalog identifiers must not share the exact exception");
-  await writeFile(files[2], catalog);
+  for (const file of files.slice(2)) {
+    await writeFile(file, catalog.replace("items.134", "items.135"));
+    assert.equal(scan(), 1, "Other catalog identifiers must not share the exact exception");
+    await writeFile(file, catalog);
+  }
   await writeFile(files[0], catalog);
   assert.equal(scan(), 1, "Catalog exceptions must not apply outside their catalog path");
   console.log("Secret scan exceptions remain limited to exact fields and paths.");
