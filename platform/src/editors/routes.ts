@@ -54,7 +54,7 @@ export function registerEditors(app: FastifyInstance, service: EditorService): v
   );
   app.post<{ Params: { id: string } }>(
     "/api/revisions/:id/editor",
-    { schema: { params: idParameters }, bodyLimit: 1024 * 1024 },
+    { schema: { params: idParameters }, bodyLimit: 1024 * 1024, config: { rotateHistory: true } },
     async (request, reply) => {
       const parsed = publish.safeParse(request.body);
       if (!parsed.success) return reply.code(400).send({ error: "invalid_request" });

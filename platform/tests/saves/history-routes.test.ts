@@ -91,9 +91,13 @@ it("previews and confirms owned history without deleting heads or protected poin
 it("returns durable pending cleanup after a disk failure and retries files only", async () => {
   const { profile, path } = await history();
   const planned = (await preview(path)).json();
+  const reclaim = reclamation.reclaimHistory;
   const fail = vi
     .spyOn(reclamation, "reclaimHistory")
-    .mockRejectedValueOnce(new Error("disk failure"));
+    .mockImplementation(async (database, directory, selectedOwner, remove) => {
+      if (selectedOwner === owner) throw new Error("disk failure");
+      return reclaim(database, directory, selectedOwner, remove);
+    });
   try {
     const result = await cleanup(path, planned.token);
     expect(result.statusCode).toBe(200);
@@ -112,4 +116,46 @@ it("returns durable pending cleanup after a disk failure and retries files only"
   expect(retried.statusCode).toBe(200);
   expect(retried.json().pendingFiles).toBe(0);
   expect(await fixture.repository.history(owner, profile.id)).toEqual(historyBefore);
+});
+
+it("automatically rotates successful HTTP saves while preserving an explicitly protected point", async () => {
+  const profile = await fixture.repository.create(owner, "test-game", "Automatic HTTP rotation");
+  let base: string | null = null;
+  let protectedId = "";
+  for (let index = 0; index < 14; index++) {
+    const body = new FormData();
+    body.append(
+      "metadata",
+      JSON.stringify({ kind: "game-save", releaseId: "test-game", baseRevision: base }),
+    );
+    body.append("file", new Blob([Uint8Array.of(index + 50)]), "save.dat");
+    const encoded = new Request(origin, { method: "POST", body });
+    const response = await app.inject({
+      method: "POST",
+      url: `/api/profiles/${profile.id}/revisions`,
+      headers: { cookie, origin, "content-type": encoded.headers.get("content-type") ?? "" },
+      payload: Buffer.from(await encoded.arrayBuffer()),
+    });
+    expect(response.statusCode).toBe(201);
+    base = response.json().id;
+    if (index === 0 && base) {
+      protectedId = base;
+      const protectedPoint = await app.inject({
+        method: "POST",
+        url: `/api/revisions/${base}/protection`,
+        headers: { cookie, origin },
+        payload: { expected: false, protected: true },
+      });
+      expect(protectedPoint.statusCode).toBe(200);
+    }
+  }
+  await vi.waitFor(async () =>
+    expect(await fixture.repository.history(owner, profile.id)).toHaveLength(11),
+  );
+  expect(
+    (await fixture.repository.list(owner)).find((entry) => entry.id === profile.id)?.headId,
+  ).toBe(base);
+  expect(await fixture.service.file(owner, protectedId, "save.dat")).toEqual(Buffer.from([50]));
+  if (!base) throw new Error("Missing head");
+  expect(await fixture.service.file(owner, base, "save.dat")).toEqual(Buffer.from([63]));
 });

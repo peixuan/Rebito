@@ -33,7 +33,7 @@ export function registerHistory(
   app.post<{ Params: { id: string }; Body: { token: string } }>(
     "/api/profiles/:id/history/cleanup",
     {
-      config: { exclusiveStorage: true },
+      config: { exclusiveStorage: true, rotateHistory: true },
       schema: {
         params: idParameters,
         body: {
@@ -55,7 +55,7 @@ export function registerHistory(
   app.post(
     "/api/storage/reclaim",
     {
-      config: { exclusiveStorage: true },
+      config: { exclusiveStorage: true, rotateHistory: true },
       schema: { body: { type: "object", additionalProperties: false } },
     },
     async (request) => reclaim(request.ownerId),

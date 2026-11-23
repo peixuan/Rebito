@@ -22,6 +22,7 @@ import { SaveService } from "../saves/service.ts";
 import { guardStorageRoutes, StorageActivity } from "../storage/activity.ts";
 import { LocalBlobStore } from "../storage/blobs.ts";
 import { DiskSpaceError } from "../storage/capacity.ts";
+import { HistoryMaintenance } from "../storage/history-maintenance.ts";
 import { storageLease } from "../storage/maintenance.ts";
 import { RevisionRepository } from "../storage/revisions.ts";
 import { migrateStorage } from "../storage/schema.ts";
@@ -34,8 +35,9 @@ export async function createPlatform(config: ServerConfig, database: Pool) {
   let activity: StorageActivity | undefined;
   try {
     activity = await StorageActivity.open(database);
-    const app = await createServices(config, database, activity);
+    const { app, history } = await createServices(config, database, activity);
     app.addHook("onClose", async () => {
+      await history.close();
       await activity?.close();
       await release();
     });
@@ -93,5 +95,19 @@ async function createServices(config: ServerConfig, database: Pool, activity: St
     await database.query("SELECT 1");
     return { status: "ok" };
   });
-  return app;
+  const history = new HistoryMaintenance(
+    database,
+    activity,
+    config.dataDirectory,
+    config.storageLimits,
+    (error) => app.log.error({ err: error }, "History maintenance retained for retry"),
+  );
+  app.addHook("onReady", async () => {
+    history.start();
+  });
+  app.addHook("onResponse", async (request, reply) => {
+    // Queue only: awaiting maintenance here would retain this handler's reader lease.
+    if (request.routeOptions.config.rotateHistory && reply.statusCode < 300) void history.request();
+  });
+  return { app, history };
 }

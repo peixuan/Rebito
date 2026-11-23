@@ -153,7 +153,7 @@ export async function registerSaves(
   const uploads = new UploadQueue();
   app.post<Params>(
     "/api/profiles/:id/revisions",
-    { schema: { params: idParameters } },
+    { schema: { params: idParameters }, config: { rotateHistory: true } },
     async (request, reply) => {
       const controller = new AbortController();
       const disconnected = () => controller.abort(badRequest("Upload disconnected", 499));
@@ -187,6 +187,7 @@ export async function registerSaves(
     "/api/profiles/:id/restore",
     {
       schema: { params: idParameters, body: restoreBody },
+      config: { rotateHistory: true },
     },
     async (request, reply) =>
       reply
