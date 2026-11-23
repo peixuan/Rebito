@@ -3,9 +3,10 @@ import { access, type FileHandle, mkdir, open, rename, rm } from "node:fs/promis
 import { join } from "node:path";
 import { message } from "../shared/messages.ts";
 import { DiskCapacity } from "../storage/capacity.ts";
+import { syncDirectory } from "../storage/files.ts";
 import { describeBios, verifyBios } from "./bios-verification.ts";
 import { readDiscFirmware, validateDiscBios } from "./segacd-upload.ts";
-import { syncDirectory, withCatalog, withLibraryLock } from "./transaction.ts";
+import { withCatalog, withLibraryLock } from "./transaction.ts";
 import { LibraryError } from "./upload-settings.ts";
 
 export const firmwareRegions = ["J", "U", "E"] as const;

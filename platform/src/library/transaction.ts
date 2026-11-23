@@ -1,19 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { mkdir, open, readFile, rename, rm } from "node:fs/promises";
 import { join } from "node:path";
+import { syncDirectory } from "../storage/files.ts";
 import { catalogSchema, LocalLibrary } from "./catalog.ts";
 
 export type Catalog = ReturnType<typeof catalogSchema.parse>;
-
-export async function syncDirectory(directory: string): Promise<void> {
-  if (process.platform === "win32") return;
-  const handle = await open(directory, "r");
-  try {
-    await handle.sync();
-  } finally {
-    await handle.close();
-  }
-}
 
 /** Share one publication lock between imports, configuration and reclamation. */
 export async function withCatalog<T>(

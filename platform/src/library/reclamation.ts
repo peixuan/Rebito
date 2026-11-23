@@ -1,34 +1,11 @@
-import type { Stats } from "node:fs";
-import { lstat, realpath, unlink } from "node:fs/promises";
-import { isAbsolute, join, relative, sep } from "node:path";
+import { unlink } from "node:fs/promises";
+import { join } from "node:path";
 import type { Pool } from "pg";
-import { assertArtifactName } from "../domain/artifacts.ts";
+import { removeOwnedFile, syncDirectory } from "../storage/files.ts";
+import { referencedBlobs } from "../storage/references.ts";
 import { releaseId } from "./catalog.ts";
-import { type DeletionJob, referencedBlobs } from "./deletion-records.ts";
-import { syncDirectory, withCatalog, writeCatalog } from "./transaction.ts";
-
-async function removeOwnedFile(root: string, name: string, remove: typeof unlink) {
-  assertArtifactName(name);
-  const path = join(root, name);
-  let details: Stats;
-  try {
-    details = await lstat(path);
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") return 0;
-    throw error;
-  }
-  const child = relative(await realpath(root), await realpath(path));
-  if (
-    !details.isFile() ||
-    !child ||
-    child === ".." ||
-    child.startsWith(`..${sep}`) ||
-    isAbsolute(child)
-  )
-    throw new Error("Unsafe cleanup target");
-  await remove(path);
-  return details.size;
-}
+import type { DeletionJob } from "./deletion-records.ts";
+import { withCatalog, writeCatalog } from "./transaction.ts";
 
 /** Caller holds the exclusive online lease. Publish catalog removal before unlinking
  * any bytes, and keep the durable job until cleanup succeeds. Missing files are safe

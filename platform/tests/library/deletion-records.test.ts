@@ -6,9 +6,9 @@ import {
   beginDeletion,
   deletionImpact,
   pendingDeletions,
-  referencedBlobs,
 } from "../../src/library/deletion-records.ts";
 import { loadConfig } from "../../src/server/config.ts";
+import { referencedBlobs } from "../../src/storage/references.ts";
 import { RevisionRepository } from "../../src/storage/revisions.ts";
 import { migrateStorage } from "../../src/storage/schema.ts";
 import { testDatabase } from "../database.ts";

@@ -3,8 +3,9 @@ import { copyFile, link, open, rm, stat } from "node:fs/promises";
 import { join } from "node:path";
 import { z } from "zod";
 import { message } from "../shared/messages.ts";
+import { syncDirectory } from "../storage/files.ts";
 import { catalogSchema, fingerprint, releaseId } from "./catalog.ts";
-import { syncDirectory, withCatalog, writeCatalog } from "./transaction.ts";
+import { withCatalog, writeCatalog } from "./transaction.ts";
 import { defaultLibraryBytes, LibraryError } from "./upload-settings.ts";
 
 const shape = catalogSchema.shape.games.element.shape;

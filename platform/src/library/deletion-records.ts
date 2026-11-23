@@ -3,6 +3,7 @@ import type { Pool } from "pg";
 import { assertProgressManifest } from "../domain/artifacts.ts";
 import { message } from "../shared/messages.ts";
 import type { BlobRef } from "../storage/blobs.ts";
+import { referencedBlobs } from "../storage/references.ts";
 import { type LibraryEntry, releaseId } from "./catalog.ts";
 import type { Catalog } from "./transaction.ts";
 import { LibraryError } from "./upload-settings.ts";
@@ -23,19 +24,6 @@ export interface DeletionJob {
   entry: LibraryEntry;
   preview: DeletionPreview;
   candidates: BlobRef[];
-}
-
-/** Remaining references are checked again on every cleanup retry. */
-export async function referencedBlobs(database: Database, excludingRelease?: string) {
-  const result = await database.query<{ sha256: string }>(
-    `
-    SELECT DISTINCT artifact->>'sha256' AS sha256
-    FROM revisions r JOIN profiles p ON p.id=r.profile_id,
-      LATERAL jsonb_array_elements(r.manifest->'artifacts') AS artifact
-    WHERE $1::text IS NULL OR p.release_id <> $1`,
-    [excludingRelease ?? null],
-  );
-  return new Set(result.rows.map((row) => row.sha256));
 }
 
 export async function deletionImpact(database: Database, catalog: Catalog, entry: LibraryEntry) {
