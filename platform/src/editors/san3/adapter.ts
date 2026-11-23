@@ -205,7 +205,7 @@ function prepare(bytes: Uint8Array, draft: EditorDraft) {
   };
 }
 
-/** Numeric resources and base abilities; ownership and faction totals remain context. */
+/** Strategic fields and guarded operations share one atomic preview and apply path. */
 export const san3Adapter: EditorAdapter = {
   size: san3Layout.size,
   supportsText: true,

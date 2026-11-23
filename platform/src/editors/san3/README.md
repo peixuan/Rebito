@@ -1,9 +1,13 @@
 # Romance of the Three Kingdoms III: Japanese Mega-CD memory
 
-This adapter handles strategic-game data and verified registration defaults in
-the sub-68000's 512 KiB program RAM. It does not handle the Mega Drive cartridge edition, mods,
+This adapter handles strategic-game data, verified registration defaults and
+land-battle mobility in the sub-68000's 512 KiB program RAM.
+It does not handle the Mega Drive cartridge edition, mods,
 raw BRAM files, native save containers or arbitrary emulator versions. Runtime
 and game identity must be checked separately by the snapshot binding.
+
+See the [two-branch feature comparison](PARITY.md) for completed operations,
+remaining gameplay gaps and deliberately excluded debugger controls.
 
 ## Verified fields
 

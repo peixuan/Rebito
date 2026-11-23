@@ -160,17 +160,30 @@ draft limits, cleared selections, future capacity, canonical replay and byte
 preservation; this evidence does not establish every ability/event combination.
 
 The [Japanese Mega-CD SAN3 adapter](../../platform/src/editors/san3/README.md)
-edits strategic population, gold, food, soldiers, loyalty, training and morale.
-Cities, officers and read-only faction totals share the compact bilingual editor.
-Six historical/custom base abilities are now editable with explicit checkpoint
-versus native-save persistence guidance. Troop edits use final-draft leadership;
-ability edits preserve existing armies. Original-editor parity is being checked
-against both supplied GameCheatKits branches; ownership and battle changes remain excluded.
-The 2026-11-23 real PicoDrive recheck confirmed that the checkpoint path edits
-program RAM: all seven values read back after an acknowledged load, while all
-73,728 native-save companion bytes stayed identical and the runtime stayed paused.
-Native persistence still requires the game's Save command after resuming. This
-verifies the current memory-editing boundary, not full reference-editor parity.
+remains a paused program-RAM editor. Both supplied GameCheatKits branches were
+audited; the [coverage comparison](../../platform/src/editors/san3/PARITY.md)
+separates implemented operations, remaining gameplay gaps and excluded debugger
+controls. Six historical/custom base abilities, four creation templates, custom
+names/profile metadata, city economy/stores/prices and campaign traits are editable.
+Numeric batches and the 68-name preset preserve draft previews and language changes.
+Relocation, same-capital succession, qualified appointments, treasure ownership
+and status cleanup maintain their reviewed dependent records. Land-battle mobility
+has a separate schema; naval combat and unverified campaign transitions are excluded.
+
+Original-game checks exercised base abilities, both young creation flows, names,
+traits, ruler replacement, relocation, treasures, appointments and land mobility.
+Campaign edits survived in-game saving and fresh native-only loads. Checkpoint
+writeback preserved all 73,728 native-save companion bytes; historical definitions
+and creation templates reload disc defaults on cold boot. Recovery/covert cleanup
+has instruction and synthetic evidence, not an affected-officer runtime check;
+older creation-row selection has instruction evidence only. Do not claim full
+reference-editor parity or universal game compatibility.
+
+Editor writes require a fresh paused capture after every resume. Failed published
+writeback retains the pause and original retry target. Clean captures can switch
+between campaign, registration and battle schemas; dirty drafts remain protected
+against cloud changes. Synthetic runtime tests exercise actual PicoDrive snapshot
+load/readback rather than replacing the emulator with a mock.
 Both games passed private original-game edit, in-game save and fresh native-save
 boot checks. This is evidence for those editions and tested fields, not universal
 ROM compatibility; proprietary samples and diagnostic output are not published.
@@ -185,12 +198,14 @@ The read-only combat UI passed all 554 unit/integration tests, lint, types and
 build, plus its sandbox-enabled browser flow. Published CI remains the acceptance
 record for the complete browser suite and container checks.
 
-All 532 database/unit tests pass (98.53% line and 94.49% branch coverage), along
-with the 26 repository policy tests and dependency/license checks. Real MD/CD
-runtime tests verify load acknowledgement, native-save preservation and pause
-ownership. All 63 sandboxed browser flows pass, including console writeback
-recovery and the existing DOS workflows. Hosted checks and production preservation
-acceptance remain mandatory for each exact revision before promotion.
+The SAN3 completion candidate passed 664 unit/database tests (98.84% line and
+95.14% branch coverage), lint, both type checks and the build. Its sandbox-enabled
+browser flow covers strategic drafts, registration and battle, including phase
+switches without reloading the workspace. All 26 repository policy tests, 33
+deployer tests and the 340-package dependency/license review passed. The current
+dependency audit reports no vulnerabilities. Complete browser/container checks
+and production preservation acceptance remain mandatory for the exact revision
+before promotion; hosted CI is the release record.
 
 ## Shared Mega CD BIOS
 
