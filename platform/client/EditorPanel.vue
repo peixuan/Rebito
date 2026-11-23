@@ -10,7 +10,7 @@ import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue"
 import type { EditorBatch, EditorQuery, EditorResponse } from "../src/editors/service.ts";
 import { type DisplayText, message } from "../src/shared/messages.ts";
 import type { Revision } from "../src/storage/revisions.ts";
-import { api, errorText } from "./api.ts";
+import { ApiError, api, errorText } from "./api.ts";
 import EditorBatchControls from "./controls/EditorBatch.vue";
 import {
   changeEditorField,
@@ -221,7 +221,23 @@ watch(
     if (dirty.value) stale.value = true;
     else {
       base.value = value;
-      void perform(() => refresh());
+      void perform(async () => {
+        try {
+          await refresh();
+        } catch (cause) {
+          if (base.value !== value) return;
+          // Keep valid selections. Only a clean draft with an obsolete selection
+          // may reopen the default schema (campaign, registration or battle).
+          if (
+            dirty.value ||
+            !(cause instanceof ApiError) ||
+            cause.status !== 422 ||
+            cause.message !== "invalid_edit"
+          )
+            throw cause;
+          await discard();
+        }
+      });
     }
   },
 );

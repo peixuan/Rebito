@@ -1,10 +1,12 @@
 import { expect, test } from "@playwright/test";
 import type { RuntimeHandle, RuntimeProgress, RuntimeWindow } from "../../client/runtime/types.ts";
+import { San3BattleDocument } from "../../src/editors/san3/battle.ts";
 import { San3Document, san3Layout } from "../../src/editors/san3/document.ts";
 import { San3PresetDocument, san3PresetLayout } from "../../src/editors/san3/presets.ts";
 import { openSnapshotMemory } from "../../src/editors/snapshots/memory.ts";
 import type { Game } from "../../src/library/catalog.ts";
 import type { Profile, Revision } from "../../src/storage/revisions.ts";
+import { san3BattleFixture } from "../editors/san3-battle-fixture.ts";
 import { san3NameFixture } from "../editors/san3-name-fixture.ts";
 import { discArchive, discBios, discTrack } from "../library/segacd-fixtures.ts";
 import { chinese } from "./locales.ts";
@@ -127,7 +129,8 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
     },
     { game, profile },
   );
-  const state = captured.files.find((file) => file.name === "__runtime/state.bin");
+  const stateName = "__runtime/state.bin";
+  const state = captured.files.find((file) => file.name === stateName);
   if (!state) throw new Error("Missing captured state");
   const memory = openSnapshotMemory(new Uint8Array(state.bytes), "picodrive", "program");
   state.bytes = [...memory.replace(strategicMemory())];
@@ -153,6 +156,34 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   expect(status).toBe(201);
   const history = async (): Promise<Revision[]> =>
     (await page.request.get(`/api/profiles/${profile.id}/revisions`)).json();
+  async function publishMemory(program: Uint8Array) {
+    const before = (await history())[0];
+    const files = captured.files.map((file) => ({
+      ...file,
+      bytes: file.name === stateName ? [...memory.replace(program)] : file.bytes,
+    }));
+    expect(
+      await page.evaluate(
+        async ({ profile, base, runtime, files }) => {
+          const body = new FormData();
+          body.append(
+            "metadata",
+            JSON.stringify({
+              kind: "snapshot",
+              runtime,
+              releaseId: profile.releaseId,
+              baseRevision: base,
+            }),
+          );
+          for (const file of files)
+            body.append("file", new Blob([new Uint8Array(file.bytes)]), file.name);
+          return (await fetch(`/api/profiles/${profile.id}/revisions`, { method: "POST", body }))
+            .status;
+        },
+        { profile, base: before?.id, runtime: captured.runtime, files },
+      ),
+    ).toBe(201);
+  }
 
   await page.goto("/");
   await page.getByRole("button", { name: /SAN3 strategic editor fixture/ }).click();
@@ -477,35 +508,8 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   ] as const)
     setupView.setUint16(offset, value);
   setup.fill(50, san3PresetLayout.offset, san3PresetLayout.offset + 24);
-  const beforeSetup = (await history())[0];
-  const setupFiles = captured.files.map((file) => ({
-    ...file,
-    bytes: file.name === state.name ? [...memory.replace(setup)] : file.bytes,
-  }));
-  expect(
-    await page.evaluate(
-      async ({ profile, base, runtime, files }) => {
-        const body = new FormData();
-        body.append(
-          "metadata",
-          JSON.stringify({
-            kind: "snapshot",
-            runtime,
-            releaseId: profile.releaseId,
-            baseRevision: base,
-          }),
-        );
-        for (const file of files)
-          body.append("file", new Blob([new Uint8Array(file.bytes)]), file.name);
-        return (await fetch(`/api/profiles/${profile.id}/revisions`, { method: "POST", body }))
-          .status;
-      },
-      { profile, base: beforeSetup?.id, runtime: captured.runtime, files: setupFiles },
-    ),
-  ).toBe(201);
-  await page.reload();
-  await page.getByRole("button", { name: /SAN3 strategic editor fixture/ }).click();
-  await page.getByRole("button", { name: "Open profile", exact: true }).click();
+  await publishMemory(setup);
+  await page.getByRole("button", { name: "Refresh saves", exact: true }).click();
   await page.getByRole("button", { name: "Start game", exact: true }).click();
   await capture.click();
   await expect(
@@ -539,5 +543,35 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   expect(setupSaved?.manifest.artifacts.find((file) => file.name === "save.srm")).toEqual(
     original.manifest.artifacts.find((file) => file.name === "save.srm"),
   );
+  await page.getByRole("button", { name: "Stop game", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Start game", exact: true })).toBeEnabled();
+  await publishMemory(san3BattleFixture());
+  await page.getByRole("button", { name: "Refresh saves", exact: true }).click();
+  await expect(editor.getByRole("button", { name: "Land battle", exact: true })).toBeVisible();
+  await expect(editor).toContainText("Structural validation does not detect the menu");
+  await page.getByRole("button", { name: "Start game", exact: true }).click();
+  await capture.click();
+  await editor.getByLabel("Remaining mobility", { exact: true }).fill("90");
+  await editor.getByLabel("Remaining mobility", { exact: true }).press("Tab");
+  await page.getByLabel("Language").selectOption("zh-CN");
+  await expect(page.getByLabel(chinese("san3.mobility"), { exact: true })).toHaveValue("90");
+  await page.getByLabel(chinese("app.language")).selectOption("en");
+  await editor.getByRole("button", { name: "Preview edits", exact: true }).click();
+  await expect(page.getByRole("dialog")).toContainText("Remaining mobility");
+  await page.getByRole("dialog").getByRole("button", { name: "Close", exact: true }).click();
+  await editor.getByRole("button", { name: "Save edits", exact: true }).click();
+  await expect(editor.getByRole("status")).toContainText("Edits were saved");
+  const battleRevision = (await history())[0];
+  const battleResponse = await page.request.get(
+    `/api/revisions/${battleRevision?.id}/file?name=__runtime%2Fstate.bin`,
+  );
+  const battle = new San3BattleDocument(
+    openSnapshotMemory(new Uint8Array(await battleResponse.body()), "picodrive", "program").bytes,
+  );
+  expect(battle.officer(0).mobility).toBe(90);
+  expect(battleRevision?.manifest.artifacts.find((file) => file.name === "save.srm")).toEqual(
+    original.manifest.artifacts.find((file) => file.name === "save.srm"),
+  );
+  await expect(editor.getByRole("alert")).not.toBeVisible();
   expect(errors).toEqual([]);
 });

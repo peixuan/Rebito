@@ -1,5 +1,7 @@
+import { Buffer } from "node:buffer";
 import { describe, expect, it } from "vitest";
 import { battleFields, editSan3Battle, San3BattleDocument } from "../../src/editors/san3/battle.ts";
+import { san3BattleAdapter } from "../../src/editors/san3/battle-adapter.ts";
 import { San3Document, san3Layout } from "../../src/editors/san3/document.ts";
 import { san3BattleFixture } from "./san3-battle-fixture.ts";
 
@@ -109,6 +111,25 @@ describe("Japanese Mega-CD land battle mobility", () => {
       expect(result.bytes).toEqual(expected);
       expect(new San3BattleDocument(result.bytes).officer(0).mobility).toBe(90);
     }
+  });
+
+  it("owns Node buffers as well as plain typed arrays", () => {
+    const input = Buffer.from(san3BattleFixture());
+    const original = Uint8Array.from(input);
+    const document = new San3BattleDocument(input);
+    const preview = san3BattleAdapter.view(input, { changes: { "battle.0.mobility": 90 } });
+    const result = san3BattleAdapter.apply(input, { changes: preview.changes });
+    expect(() =>
+      san3BattleAdapter.apply(input, {
+        changes: { "battle.0.mobility": 90, "battle.1.mobility": 91 },
+      }),
+    ).toThrow();
+    expect(Uint8Array.from(input)).toEqual(original);
+    expect(document.officer(0).mobility).toBe(5);
+    expect(result[officer(0) + 23]).toBe(90);
+    input.fill(0);
+    document.copy().fill(0);
+    expect(document.officer(0).mobility).toBe(5);
   });
 
   it("writes boundary values without changing unrelated bytes and rejects drafts atomically", () => {

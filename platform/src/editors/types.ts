@@ -40,6 +40,8 @@ export interface EditorTextField {
   help?: DisplayText;
 }
 export interface EditorView {
+  /** Optional guidance for the reviewed game phase represented by this view. */
+  instructions?: DisplayText;
   slots: { index: number; label: DisplayText; available: boolean }[];
   slot: number;
   modules: { id: string; label: DisplayText }[];

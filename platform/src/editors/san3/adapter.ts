@@ -8,6 +8,7 @@ import {
 } from "../types.ts";
 import { san3AppointmentFields } from "./appointment-fields.ts";
 import { san3BatchDraft } from "./batch-action.ts";
+import { san3BattleAdapter } from "./battle-adapter.ts";
 import { san3CampaignContext, san3ReadingField } from "./campaign-context.ts";
 import { factionContextFields, historicalContextFields } from "./context-fields.ts";
 import { customMetadataFields } from "./custom-fields.ts";
@@ -209,6 +210,8 @@ export const san3Adapter: EditorAdapter = {
   size: san3Layout.size,
   supportsText: true,
   view(bytes, draft) {
+    if (bytes.length === san3Layout.size && bytes[0x4abc4] === 0 && bytes[0x4abc5] === 1)
+      return san3BattleAdapter.view(bytes, draft);
     if (bytes.length === san3Layout.size && bytes[0x4abc4] === 0 && bytes[0x4abc5] === 4)
       return san3PresetAdapter.view(bytes, draft);
     const {
@@ -337,6 +340,8 @@ export const san3Adapter: EditorAdapter = {
     };
   },
   apply(bytes, draft) {
+    if (bytes.length === san3Layout.size && bytes[0x4abc4] === 0 && bytes[0x4abc5] === 1)
+      return san3BattleAdapter.apply(bytes, draft);
     if (bytes.length === san3Layout.size && bytes[0x4abc4] === 0 && bytes[0x4abc5] === 4)
       return san3PresetAdapter.apply(bytes, draft);
     const prepared = prepare(bytes, draft);

@@ -164,8 +164,8 @@ writeback path, not parity with every feature of the local reference editor.
 
 The constructor checks both KOEI markers, date, table references, resource limits
 and overlay selector `0x4abc4 == 0` (the `UCOM.PRG` strategic module). Registration
-uses the separate schema above; other overlays are rejected. Neither schema
-proves the game is idle between commands:
+uses the separate schema above; land combat has its own schema below. Other
+overlays are rejected. None of these schemas proves the game is idle between commands:
 users must return to the strategic command menu before editing. In-game panels
 cache their rendering; reopen a panel to refresh it after editing. Runtime
 writeback must still verify the replacement and preserve a failed update paused.
@@ -196,3 +196,14 @@ troops or allocated equipment. Qualification uses native base-ability checks;
 treasure bonuses do not qualify an officer. Preview exposes every role/advisor
 change. Four original-game transitions survived native saving and a fresh load,
 preserving troops, loyalty, training, morale, city and faction in each case.
+
+Land battle (`HEX.PRG`, overlay 1, combat mode 0) exposes remaining mobility only.
+Validation checks the reviewed consumers, both army sides, faction/capital links,
+unique acyclic unit chains and the selected deployed unit. The editor keeps the
+legacy 0..90 range; it is not a claim about the game's native maximum. Naval
+combat is not supported. Finish or cancel Move before capturing at the player's
+command menu: Move caches points until it closes, and the structure cannot prove
+the current UI phase. Original-game checks displayed 90, spent two on one hex,
+and retained 88 after closing Move; zero returned safely to the command menu.
+Memory writeback preserved all native-save bytes. These checks do not establish
+persistence of battle mobility through a native save.
