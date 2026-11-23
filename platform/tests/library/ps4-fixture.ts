@@ -1,10 +1,10 @@
 import { phantasyStar4Fixture } from "../editors/phantasy-star4-fixture.ts";
+import { phantasyStar4RulesFixture } from "../editors/phantasy-star4-rules-fixture.ts";
 import { mdFixture } from "./sega-fixtures.ts";
 
 /** Original test ROM that initializes synthetic editor records, then runs our VDP fixture. */
 export function ps4FixtureRom(): Uint8Array {
-  const bytes = new Uint8Array(0x18000);
-  bytes.set(mdFixture());
+  const bytes = phantasyStar4RulesFixture(mdFixture());
   bytes.set(phantasyStar4Fixture(), 0x8000);
   const view = new DataView(bytes.buffer);
   view.setUint32(4, 0x400);
@@ -23,6 +23,10 @@ export function ps4FixtureRom(): Uint8Array {
     0x22d8, // MOVE.L (A0)+,(A1)+.
     0x51c8,
     0xfffc, // DBF D0, copy loop.
+    0x13fc,
+    0x0001,
+    0x00a1,
+    0x30f1, // Enable SRAM when the generated metadata ROM extends past 2 MiB.
     0x4ef9,
     0x0000,
     0x0200, // Start the original display/input fixture.

@@ -22,35 +22,48 @@ Unknown bytes, other state blocks, SRAM and companion files remain unchanged.
 Authentication, ownership, revision conflicts and atomic publication remain
 platform responsibilities; this module has no HTTP, storage or emulator imports.
 
-| Scope                     | Behavior                                                                                                                                                       |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Money and experience      | Editable integers from 0 to 9,999,999; the game owns level progression.                                                                                        |
-| Current HP/TP             | Bounded by stored maxima; HP cannot create death or revive a dead character.                                                                                   |
-| Maximum HP/TP             | Editable in field/menu mode: HP 1–999, TP 0–999. Lowering a limit clamps current values; increasing it does not refill.                                        |
-| Inventory                 | Forty individual IDs, including duplicates; explicit removal closes gaps without sorting the remaining items. Move actions change actual game order.           |
-| Skill uses                | Editable maximum 0–99 for recognized skills; current uses remain bounded by stored capacity.                                                                   |
-| Base attributes           | Strength, mental, agility and dexterity are editable from 0 to 255 with reviewed game rules; derived combat totals are recalculated together.                  |
-| Learned techniques/skills | Select IDs in their physical slots while preserving capacity for future natural learning and fixed story events. Level, status and equipment remain read-only. |
+| Scope                       | Behavior                                                                                                                                                           |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Money and experience        | Editable integers from 0 to 9,999,999; the game owns level progression.                                                                                            |
+| Current HP/TP               | Bounded by stored maxima; HP cannot create death or revive a dead character.                                                                                       |
+| Maximum HP/TP               | Supported edited ranges are 1–999 HP and 0–999 TP; lowering a limit clamps its current value, while increasing it does not refill.                                 |
+| Base attributes             | Strength, mental, agility and dexterity are editable from 0 to 255 with reviewed ROM rules. Equipment-adjusted values and combat totals are recalculated together. |
+| Learned techniques/skills   | Select IDs in their existing physical slots with reviewed ROM rules; enough empty slots must remain for all future automatic learning.                             |
+| Skill uses                  | Maximum uses are editable from 0 to 99, matching the game's two-digit counter; current uses remain bounded by the stored maximum.                                  |
+| Inventory                   | Forty individual IDs, including duplicates; removal closes gaps and move actions change actual game order.                                                         |
+| Level, status and equipment | Read-only; these require additional linked state changes. Combat totals are derived from editable base attributes and equipment.                                   |
 
 The catalog describes 161 item IDs, 41 technique IDs and 55 skill IDs, including
-empty ID zero and skill variants. The reviewed Chinese edition defines four
-items that were unused in English; verified game rules permit those additions. Names are reference labels, not
-proof that every listed item or ability is suitable for every character or event.
-Chinese character, item, technique and skill names match the supplied Ken Tse
-Chinese 1.6 translation. English labels remain available when switching language;
-four English item names describe edition-specific Chinese definitions.
+empty ID zero and skill variants. Chinese labels match the supplied translation;
+English labels remain available when switching language. Later skill variants
+are distinguished in selections and previews. Names do not prove that every
+ability is suitable for every character or event. The four formerly unused
+English item IDs have actual item definitions in this reviewed Chinese edition.
 
-The supported maximum ranges match the game's display and recovery behavior,
-not the full storage widths. Larger original values survive unrelated edits.
-Draft inputs follow edited limits immediately; server validation remains atomic.
+## Game rules and editing limits
 
-Attribute and ability selection edits use equipment and growth rules parsed
-from the user's immutable game release, after ownership, size and hash checks.
-Unsupported data retains the basic editor. New edits require field/menu mode 12;
-battle caches remain intact. Future level-ups may replace attributes and limits,
-and story/hardware events may replace fixed ability slots. Empty android skill
-slots retain hidden capacities, and clearing a pending selection discards its
-pending count changes. No bundled game tables or client-supplied rules are used.
+The service reads at most 4 MiB from the revision's immutable game release after
+ownership and runtime checks. It verifies the release size and SHA-256 before
+passing bytes to the pure parser. Reviewed header and instruction references bind
+equipment bonuses and growth tables; unsupported assets retain the basic editor.
+Clients cannot supply these rules, choose asset paths or replace the parser.
+
+New attribute, ability and maximum edits require field/menu mode 12. Battle caches
+remain untouched. Equipment-adjusted base attributes use the translation's clipped
+byte arithmetic; combat totals follow the game's separate word arithmetic. The
+999 point limit is a supported editing range for three-digit display and recovery,
+not the storage width. The skill menu displays only two digits, so edited use
+maxima are limited to 99 even though the byte stores more. Larger existing values
+survive unrelated edits.
+
+The game appends future learned abilities without a bounds check. Edits therefore
+reserve capacity for both natural learning and still-empty fixed story/hardware
+slots, and cannot introduce ambiguous duplicate IDs. Moving an occupied fixed
+slot elsewhere must not increase total future capacity demand beyond the limit.
+Removing a skill preserves hidden capacity bytes needed by later android hardware
+events. Clearing a pending selection discards its pending count changes. These
+are one-time edits: normal level-ups can replace attributes and capacities, while
+story and hardware events can replace specific learned slots.
 
 ## Snapshots and game-native saves
 
@@ -69,18 +82,20 @@ verify persistence, but direct SRAM editing is not implemented by this adapter.
 - RAM layout and game routines were cross-checked against the
   [PS4 disassembly](https://github.com/squidfeatures/ps4disasm/tree/8a658314850904c6888969f90177779845133a7e)
   and independently inspected in the supplied game. Its noncommercial educational
-  disclaimer is not an open-source license: no disassembly implementation or ROM
-  tables are redistributed here.
+  disclaimer is not an open-source license: no disassembly implementation or
+  binary game tables are redistributed here.
 - English item and ability names derive from
   [PStarSaveEditor](https://github.com/Fuindin/PStarSaveEditor/tree/5c6896f3dc9a4da95cee858435f1dca224418f95),
   copyright 2017 Fuindin, under MIT; its notice is retained in
   [NOTICE.PSTAR](../../../NOTICE.PSTAR). Its emulator-specific file offsets are
   not used as Rebito snapshot offsets.
-- Chinese display labels were checked against the supplied Ken Tse Chinese 1.6
-  translation, with enlarged inspection of its custom glyphs. The
-  [translator's original thread](https://yzzl.kxb4u.com/viewthread.php?tid=1411)
-  identifies that translation; later rewrites are outside this terminology review.
-  Game and translation rights remain separate; no font is distributed here.
+- Chinese character, item, technique and skill labels were checked against the
+  supplied Ken Tse Chinese 1.6 translation, including enlarged inspection of its
+  custom glyphs. The [translator's original thread](https://yzzl.kxb4u.com/viewthread.php?tid=1411)
+  identifies that translation; later rewrites are not a terminology or format
+  reference for this edition. Four English item labels describe its distinct
+  Chinese definitions. Game and translation rights remain separate; no font or
+  other extracted binary resource is distributed.
 - The proprietary ROM, BIOS, real saves, screenshots and local investigation
   output are not contribution fixtures. Tests generate synthetic records and
   containers. Original implementation code uses the project's AGPL grant;
@@ -95,7 +110,16 @@ captured RAM and the game's menus confirmed the values. Saving normally to nativ
 slot 1 produced a valid checksum of 25,547. A fresh runtime boot supplied **only
 SRAM, with no snapshot**; continuing that save retained all five edited values.
 
-This verifies one normal field-menu, edit and native-save/load cycle. It does not
+On 2026-11-23, the same original game accepted HP/TP maxima of 999, base attributes
+200/180/160/140 and derived totals 210/163/180. A selected Gires technique in Chaz's
+fixed story slot healed HP and consumed TP; Medice healed HP and consumed one of
+99 skill uses. Saving normally produced a valid native-slot checksum. A fresh boot
+with only SRAM retained all twelve edited/consumed values and the derived totals.
+The fixed-slot placement leaves capacity for later natural learning; its story
+event can still replace that technique. A value of 255 displayed as 55 in the
+skill menu, confirming the supported edited maximum of 99.
+
+This verifies the tested field-menu edits, ability uses and native-save/load cycles. It does not
 establish correctness for every item, skill, combat transition, later translation,
 native slot, remote deployment or arbitrary emulator version. Battle-dependent
-stat and equipment changes require further evidence before becoming editable.
+state and equipment changes still require further evidence before becoming editable.

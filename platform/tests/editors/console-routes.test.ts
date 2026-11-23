@@ -14,7 +14,7 @@ import { createPlatform } from "../../src/server/platform.ts";
 import { LocalBlobStore } from "../../src/storage/blobs.ts";
 import { RevisionRepository } from "../../src/storage/revisions.ts";
 import { testDatabase } from "../database.ts";
-import { mdFixture } from "../library/sega-fixtures.ts";
+import { ps4FixtureRom } from "../library/ps4-fixture.ts";
 import { phantasyStar4Fixture } from "./phantasy-star4-fixture.ts";
 
 const lock = JSON.parse(readFileSync(new URL("../../runtime-lock.json", import.meta.url), "utf8"));
@@ -53,7 +53,7 @@ beforeAll(async () => {
   directory = await mkdtemp(join(tmpdir(), "rebito-console-editor-"));
   const library = join(directory, "library");
   await mkdir(library);
-  const bytes = mdFixture();
+  const bytes = ps4FixtureRom();
   const entry = {
     title: "Synthetic console editor fixture",
     system: "md" as const,

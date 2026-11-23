@@ -1,6 +1,6 @@
 # Platform work status
 
-Updated: 2026-11-22 (Asia/Shanghai).
+Updated: 2026-11-23 (Asia/Shanghai).
 
 ## Reviewed source and history
 
@@ -105,10 +105,21 @@ bypass the workspace pause. See [synchronization](../../platform/SYNCHRONIZATION
 
 The [Phantasy Star IV adapter](../../platform/src/editors/phantasy-star4/README.md)
 supports the supplied Ken Tse Chinese 1.6 Original mode: money, experience,
-current HP/TP, learned skill uses and forty-slot inventory with actual reordering.
-Equipment, learned ability IDs, maximum stats and derived combat values remain
-read-only. Its attributed MIT name catalog is separate from the independently
-implemented parser; the local reference editor supplied no reusable license.
+current HP/TP, maximum HP/TP up to 999, skill-use limits up to 99, four base
+attributes and selectable learned abilities, plus forty-slot inventory reordering.
+Reviewed rules are read from the authorized immutable game asset with bounded size
+and digest checks. Equipment-adjusted totals are recalculated; capacity guards
+reserve future level-up and fixed story/hardware slots. Equipment and level remain
+read-only. Chinese character, item and ability labels match the supplied translation;
+the English catalog retains its MIT attribution. Neither binary tables nor fonts
+are distributed; the local reference editor supplied no reusable license.
+
+The 2026-11-23 original-game acceptance used newly selected Gires and Medice,
+confirmed resource consumption, and retained all twelve edited/consumed values after
+an in-game save and fresh boot with only native SRAM. Derived combat totals also
+matched. Level-ups and story events can replace one-time edits. Tests cover linked
+draft limits, cleared selections, future capacity, canonical replay and byte
+preservation; this evidence does not establish every ability/event combination.
 
 The [Japanese Mega-CD SAN3 adapter](../../platform/src/editors/san3/README.md)
 edits strategic population, gold, food, soldiers, loyalty, training and morale.
@@ -118,7 +129,7 @@ Both games passed private original-game edit, in-game save and fresh native-save
 boot checks. This is evidence for those editions and tested fields, not universal
 ROM compatibility; proprietary samples and diagnostic output are not published.
 
-All 495 database/unit tests pass (98.41% line and 94.43% branch coverage), along
+All 522 database/unit tests pass (98.50% line and 94.33% branch coverage), along
 with the 26 repository policy tests and dependency/license checks. Real MD/CD
 runtime tests verify load acknowledgement, native-save preservation and pause
 ownership. All 63 sandboxed browser flows pass, including console writeback

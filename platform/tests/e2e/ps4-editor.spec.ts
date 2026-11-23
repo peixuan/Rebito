@@ -56,6 +56,11 @@ test("associates the MD editor and applies bilingual drafts to the paused runnin
     (await page.request.get(`/api/profiles/${profile.id}/revisions`)).json();
   const original = (await history())[0];
   if (!original) throw new Error("Missing captured revision");
+  const nativeSave = original.manifest.artifacts.find((file) => file.name === "save.srm");
+  expect(nativeSave?.size).toBeGreaterThan(0);
+  const nativeBytes = await page.request.get(`/api/revisions/${original.id}/file?name=save.srm`);
+  expect(nativeBytes.status()).toBe(200);
+  expect((await nativeBytes.body())[0]).toBe(0x42);
   await editor.getByLabel("HP", { exact: true }).fill("-");
   await expect(page.getByRole("button", { name: "Resume game", exact: true })).toBeDisabled();
   await editor.getByLabel("HP", { exact: true }).press("Tab");
@@ -70,8 +75,68 @@ test("associates the MD editor and applies bilingual drafts to the paused runnin
       .getByRole("region", { name: chinese("editor.title"), exact: true })
       .getByLabel(chinese("phantasyStar4.health"), { exact: true }),
   ).toHaveValue("30");
+  await expect(
+    page.getByRole("heading", { name: chinese("phantasyStar4.characters.0"), exact: true }),
+  ).toBeVisible();
   await page.getByLabel(chinese("app.language")).selectOption("en");
   await expect(page.getByRole("button", { name: "Resume game", exact: true })).toBeDisabled();
+  for (const [label, value] of [
+    ["Maximum HP", "120"],
+    ["HP", "110"],
+    ["Maximum TP", "90"],
+    ["TP", "80"],
+    ["Strength", "180"],
+    ["Mental", "170"],
+    ["Agility", "160"],
+    ["Dexterity", "150"],
+  ] as const) {
+    await editor.getByLabel(label, { exact: true }).fill(value);
+    await editor.getByLabel(label, { exact: true }).press("Tab");
+    await expect(editor.getByLabel(label, { exact: true })).toHaveValue(value);
+  }
+  await editor.getByRole("button", { name: "Techniques and skills", exact: true }).click();
+  await editor
+    .getByRole("group", { name: "Technique 3", exact: true })
+    .getByLabel("Technique", { exact: true })
+    .click();
+  await page.getByRole("option", { name: "Res", exact: true }).click();
+  const skill = editor.getByRole("group", { name: "Skill 3", exact: true });
+  await expect(skill.getByLabel("Maximum uses", { exact: true })).toBeDisabled();
+  await skill.getByLabel("Skill", { exact: true }).click();
+  await page.getByRole("option", { name: "Flaeli", exact: true }).click();
+  await expect(skill.getByLabel("Maximum uses", { exact: true })).toBeEnabled();
+  await skill.getByLabel("Maximum uses", { exact: true }).fill("60");
+  await skill.getByLabel("Maximum uses", { exact: true }).press("Tab");
+  await skill.getByLabel("Remaining uses", { exact: true }).fill("45");
+  await skill.getByLabel("Remaining uses", { exact: true }).press("Tab");
+  await expect(skill.getByLabel("Remaining uses", { exact: true })).toHaveValue("45");
+  await skill.getByLabel("Maximum uses", { exact: true }).fill("20");
+  await skill.getByLabel("Maximum uses", { exact: true }).press("Tab");
+  const cleared = editor.getByRole("group", { name: "Skill 4", exact: true });
+  await cleared.getByLabel("Skill", { exact: true }).click();
+  await page.getByRole("option", { name: "Disrupt", exact: true }).click();
+  await cleared.getByLabel("Maximum uses", { exact: true }).fill("9");
+  await cleared.getByLabel("Maximum uses", { exact: true }).press("Tab");
+  await cleared.getByLabel("Remaining uses", { exact: true }).fill("3");
+  await cleared.getByLabel("Remaining uses", { exact: true }).press("Tab");
+  await cleared.getByLabel("Skill", { exact: true }).click();
+  await page.getByRole("option", { name: "Empty", exact: true }).click();
+  await editor.getByRole("button", { name: "Preview edits", exact: true }).click();
+  const preview = page.getByRole("dialog");
+  await expect(preview).toContainText("Res");
+  await expect(preview).toContainText("Flaeli");
+  await preview.getByRole("button", { name: "Close", exact: true }).click();
+  await expect(skill.getByLabel("Remaining uses", { exact: true })).toHaveValue("20");
+  await expect(cleared.getByLabel("Maximum uses", { exact: true })).toHaveValue("0");
+  await expect(editor.getByRole("alert")).not.toBeVisible();
+  await page.getByLabel("Language").selectOption("zh-CN");
+  await expect(
+    page.getByLabel(chinese("phantasyStar4.technique"), { exact: true }).nth(2),
+  ).toContainText(chinese("phantasyStar4.techniques.24"));
+  await expect(
+    page.getByLabel(chinese("phantasyStar4.skill"), { exact: true }).nth(2),
+  ).toContainText(chinese("phantasyStar4.skills.4"));
+  await page.getByLabel(chinese("app.language")).selectOption("en");
   await editor.getByRole("button", { name: "Party", exact: true }).click();
   await editor.getByLabel("Meseta", { exact: true }).fill("12345");
   await editor.getByRole("button", { name: "Save edits", exact: true }).click();
@@ -81,9 +146,7 @@ test("associates the MD editor and applies bilingual drafts to the paused runnin
   expect(edited?.parentId).toBe(original.id);
   expect(edited?.source).toBe("editor");
   expect(edited?.manifest.runtime).toEqual(original.manifest.runtime);
-  expect(edited?.manifest.artifacts.find((file) => file.name === "save.srm")).toEqual(
-    original.manifest.artifacts.find((file) => file.name === "save.srm"),
-  );
+  expect(edited?.manifest.artifacts.find((file) => file.name === "save.srm")).toEqual(nativeSave);
   await page.getByRole("button", { name: "Save to account", exact: true }).click();
   await expect.poll(async () => (await history()).length).toBe(3);
   const captured = (await history())[0];
@@ -93,7 +156,21 @@ test("associates the MD editor and applies bilingual drafts to the paused runnin
   const memory = openSnapshotMemory(new Uint8Array(await state.body()), "genesis_plus_gx").bytes;
   const data = new DataView(memory.buffer);
   expect(data.getUint32(0xf438)).toBe(12345);
-  expect(data.getUint16(0xf50e)).toBe(30);
+  expect(data.getUint16(0xf50e)).toBe(110);
+  expect(data.getUint16(0xf510)).toBe(120);
+  expect(data.getUint16(0xf512)).toBe(80);
+  expect(data.getUint16(0xf514)).toBe(90);
+  expect([0x18, 0x1b, 0x1e, 0x21].map((offset) => memory[0xf500 + offset])).toEqual([
+    180, 170, 160, 150,
+  ]);
+  expect([0x24, 0x28, 0x2c].map((offset) => data.getUint16(0xf500 + offset))).toEqual([
+    180, 160, 170,
+  ]);
+  expect(memory[0xf554]).toBe(24);
+  expect(memory[0xf564]).toBe(4);
+  expect(memory.slice(0xf56e, 0xf570)).toEqual(Uint8Array.of(20, 20));
+  expect(memory[0xf565]).toBe(0);
+  expect(memory.slice(0xf570, 0xf572)).toEqual(Uint8Array.of(0, 0));
 
   // A failed post-publication preview must not move the editor back to its old head.
   let published = false;

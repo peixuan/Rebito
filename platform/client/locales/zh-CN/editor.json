@@ -2,7 +2,7 @@
   "editor.san3Title": "三国志 III（Mega-CD）",
   "editor.san3Description": "适用于原版日文 Mega-CD 版。请先回到战略指令菜单，再点击“暂停并取档修改”。修改后重新打开游戏面板以刷新显示，并在游戏内保存，让原生存档保留修改。暂不支持战斗、归属和历史武将基础属性修改。",
   "editor.phantasyStar4Title": "梦幻之星4（MD）",
-  "editor.phantasyStar4Description": "修改暂停时的地图／菜单状态，适用于原版背包结构。已核对 Ken Tse 中文 1.6；不支持物品堆叠汉化版或 MOD。每轮修改前，请先点击“暂停并取档修改”。",
+  "editor.phantasyStar4Description": "已核对 Ken Tse 中文 1.6 原版模式。请在战斗外的地图／菜单中点击“暂停并取档修改”。修改后继续游戏，并在游戏内保存以保留到原生存档。后续升级和硬件获取仍可能重设属性、已学能力及其上限。不支持物品堆叠汉化版或 MOD。",
   "editor.jinyongTitle": "金庸群侠传（DOS 原版）",
   "editor.jinyongDescription": "适用于 DOS 原版，不支持 MOD 或重制版。请一并同步 R1/R2/R3.GRP、S1/S2/S3.GRP、D1/D2/D3.GRP。修改器只修改 R 文件；修改后须在游戏内重新读档，不会直接改变游戏内存。",
   "editor.unsupported": "此游戏版本或进度类型尚不支持编辑。",
