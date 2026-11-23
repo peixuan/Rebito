@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { expect, test } from "@playwright/test";
 import type { Profile, Revision } from "../../src/storage/revisions.ts";
 import { openDosWorkspace, writeDosSave } from "./dos-workspace.ts";
@@ -6,10 +7,11 @@ test("rotates real DOS captures and cleans history while keeping the running gam
   page,
 }) => {
   test.setTimeout(90_000);
-  await openDosWorkspace(page, "Runtime retention", "history-runtime");
+  const name = `Runtime retention ${randomUUID()}`;
+  await openDosWorkspace(page, name, "history-runtime");
   const save = page.getByRole("button", { name: "Save to account", exact: true });
   const profiles: Profile[] = await (await page.request.get("/api/profiles")).json();
-  const profile = profiles[0];
+  const profile = profiles.find((entry) => entry.name === name);
   if (!profile) throw new Error("Missing runtime profile");
   const history = async (): Promise<Revision[]> =>
     (await page.request.get(`/api/profiles/${profile.id}/revisions`)).json();
