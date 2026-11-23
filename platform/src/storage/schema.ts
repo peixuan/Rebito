@@ -63,6 +63,19 @@ export async function migrateStorage(database: Pool): Promise<void> {
         INSERT INTO schema_versions VALUES (3);
       `);
     }
+    const historyCleanup = await client.query(
+      "SELECT version FROM schema_versions WHERE version = 4",
+    );
+    if (historyCleanup.rowCount === 0) {
+      await client.query(`
+        CREATE TABLE history_cleanup (
+          sha256 text PRIMARY KEY CHECK (sha256 ~ '^[a-f0-9]{64}$'),
+          size bigint NOT NULL CHECK (size >= 0),
+          owner_id text NOT NULL
+        );
+        INSERT INTO schema_versions VALUES (4);
+      `);
+    }
     await client.query("COMMIT");
   } catch (error) {
     await client.query("ROLLBACK");

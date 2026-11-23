@@ -82,6 +82,16 @@ describe("bounded history selection", () => {
     ).toEqual([]);
   });
 
+  it("retains the current head's actual predecessor when timestamps tie", () => {
+    const entries = history(12, 0).map((entry, index) => ({
+      ...entry,
+      parentId: index === 0 ? point(8).id : null,
+    }));
+    expect(planHistory(entries, limits, now, true).map((entry) => entry.id)).not.toContain(
+      point(8).id,
+    );
+  });
+
   it("is deterministic at date boundaries and rejects ambiguous inputs", () => {
     const entries = history(12, 0);
     expect(planHistory([...entries].reverse(), limits, now)).toEqual(

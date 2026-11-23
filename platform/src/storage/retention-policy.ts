@@ -7,6 +7,7 @@ export interface HistoryEntry {
   bytes: number;
   protected: boolean;
   current: boolean;
+  parentId?: string | null;
 }
 
 export const historyRetention = { recent: 10, daily: 7, weekly: 4, minimum: 2 } as const;
@@ -16,12 +17,12 @@ const day = 24 * 60 * 60 * 1000;
  * per profile survive pressure; an exhausted protected budget still rejects saves.
  * The caller must recheck this plan under the exclusive storage activity lease.
  */
-export function planHistory(
-  entries: readonly HistoryEntry[],
+export function planHistory<Entry extends HistoryEntry>(
+  entries: readonly Entry[],
   limits: StorageLimits,
   now = Date.now(),
   manual = false,
-): HistoryEntry[] {
+): Entry[] {
   const ordered = [...entries].sort(
     (left, right) =>
       right.createdAt.getTime() - left.createdAt.getTime() || left.id.localeCompare(right.id),
@@ -40,12 +41,13 @@ export function planHistory(
 
   const required = new Set<string>();
   const retained = new Set<string>();
-  const profiles = new Map<string, HistoryEntry[]>();
+  const profiles = new Map<string, Entry[]>();
   for (const entry of ordered) {
     const group = profiles.get(entry.profileId) ?? [];
     group.push(entry);
     profiles.set(entry.profileId, group);
     if (entry.current || entry.protected) required.add(entry.id);
+    if (entry.current && entry.parentId) required.add(entry.parentId);
   }
   for (const group of profiles.values()) {
     for (const entry of group.slice(0, historyRetention.minimum)) required.add(entry.id);
