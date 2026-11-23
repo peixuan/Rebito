@@ -146,8 +146,27 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   await page.getByRole("button", { name: "Start game", exact: true }).click();
   const capture = page.getByRole("button", { name: "Capture for editing", exact: true });
   await expect(capture).toBeEnabled({ timeout: 30_000 });
-  await capture.click();
   const editor = page.getByRole("region", { name: "Save editor", exact: true });
+  let release = () => {};
+  const barrier = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let waiting = false;
+  await page.route("**/api/profiles", async (route) => {
+    const response = await route.fetch();
+    waiting = true;
+    await barrier;
+    await route.fulfill({ response });
+  });
+  try {
+    await capture.click();
+    await expect.poll(() => waiting).toBe(true);
+    await expect(editor.getByLabel("Population", { exact: true })).toBeDisabled();
+  } finally {
+    release();
+  }
+  await expect(editor.getByLabel("Population", { exact: true })).toBeEnabled();
+  await page.unroute("**/api/profiles");
   await expect(editor.getByLabel("Gold", { exact: true })).toHaveValue("1500");
   const original = (await history())[0];
   if (!original) throw new Error("Missing editing base");

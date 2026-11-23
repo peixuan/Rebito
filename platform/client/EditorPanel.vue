@@ -22,13 +22,14 @@ import { localize, t, translate } from "./i18n.ts";
 
 const props = defineProps<{
   revisionId: string;
+  workspaceBusy: boolean;
   publish?: (revisionId: string, batch: EditorBatch) => Promise<Revision>;
 }>();
 const emit = defineEmits<{ saved: [revision: Revision]; dirty: [value: boolean] }>();
 const view = ref<EditorResponse | null>(null);
 const base = ref(props.revisionId);
 const running = ref(0);
-const busy = computed(() => running.value > 0);
+const busy = computed(() => running.value > 0 || props.workspaceBusy);
 let requestId = 0;
 const stale = ref(false);
 const error = ref<DisplayText>("");

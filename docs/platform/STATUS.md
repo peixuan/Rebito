@@ -89,6 +89,9 @@ restore. API checks cover stale previews, ownership, shared files, concurrent wr
 transaction rollback and interrupted physical reclamation. Browser checks also cover
 bilingual previews and checkpoints older than the first 100. Full browser/hosted
 checks and production preservation acceptance remain required for the exact release.
+Delayed-history regressions keep restart and editor input disabled while a published
+head is still loading; a capture also locks editor input until its base is available.
+This prevents a local save from being mistaken for a foreign update after restart.
 
 ## Original DOS Heroes of Jin Yong editor
 

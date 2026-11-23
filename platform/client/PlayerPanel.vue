@@ -22,6 +22,7 @@ const props = defineProps<{
   baseRevision: string | null;
   revision: Revision | null;
   editorDirty: boolean;
+  workspaceBusy: boolean;
 }>();
 const emit = defineEmits<{ saved: []; recovered: [profile: Profile] }>();
 const frame = ref<HTMLIFrameElement | null>(null);
@@ -347,7 +348,7 @@ defineExpose({ save, active, ready, busy, pendingSync, conflict, publishEdit, le
         v-if="!active"
         :label="t('player.start')"
         size="small"
-        :disabled="baseRevision !== (revision?.id ?? null)"
+        :disabled="workspaceBusy || baseRevision !== (revision?.id ?? null)"
         @click="active = true"
       />
       <template v-else>

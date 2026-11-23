@@ -148,6 +148,7 @@ onMounted(() => perform(refresh));
       :game="game"
       :profile-id="profile.id"
       :editor-dirty="editorDirty"
+      :workspace-busy="busy"
       :base-revision="head"
       :revision="revisions.find((revision) => revision.id === head) ?? null"
       @saved="perform(refresh)"
@@ -156,6 +157,7 @@ onMounted(() => perform(refresh));
     <EditorPanel
       v-if="game.editor && head"
       :revision-id="head"
+      :workspace-busy="busy || Boolean(player?.busy)"
       :publish="publishEdit"
       @dirty="editorDirty = $event"
       @saved="edited"
