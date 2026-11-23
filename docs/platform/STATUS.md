@@ -92,6 +92,10 @@ checks and production preservation acceptance remain required for the exact rele
 Delayed-history regressions keep restart and editor input disabled while a published
 head is still loading; a capture also locks editor input until its base is available.
 This prevents a local save from being mistaken for a foreign update after restart.
+Stopping also locks history restores and imports until its capture, publication
+and runtime shutdown finish. A real-DOS regression holds the publication response
+after commit and verifies that a subsequent restore uses the new head. Ordinary
+background synchronization retains its existing concurrent-import conflict handling.
 
 ## Original DOS Heroes of Jin Yong editor
 

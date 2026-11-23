@@ -26,10 +26,11 @@ const error = ref<DisplayText>("");
 const notice = ref<DisplayText>("");
 const editorDirty = ref(false);
 const player = ref<InstanceType<typeof PlayerPanel> | null>(null);
-const consoleEditLocked = computed(
+const cloudEditLocked = computed(
   () =>
-    props.game.system !== "dos" &&
-    Boolean(editorDirty.value || player.value?.pendingSync || player.value?.busy),
+    Boolean(player.value?.stopping) ||
+    (props.game.system !== "dos" &&
+      Boolean(editorDirty.value || player.value?.pendingSync || player.value?.busy)),
 );
 async function refresh() {
   revisions.value = await api<Revision[]>(`profiles/${props.profile.id}/revisions`);
@@ -70,7 +71,7 @@ async function publishEdit(revisionId: string, batch: EditorBatch) {
     : publish();
 }
 async function upload() {
-  if (!files.value.length || busy.value || consoleEditLocked.value) return;
+  if (!files.value.length || busy.value || cloudEditLocked.value) return;
   await perform(async () => {
     const body = new FormData();
     body.append(
@@ -86,7 +87,7 @@ async function upload() {
   });
 }
 async function restore(revision: Revision) {
-  if (busy.value || consoleEditLocked.value) return;
+  if (busy.value || cloudEditLocked.value) return;
   await perform(async () => {
     await api(`profiles/${props.profile.id}/restore`, {
       baseRevision: head.value,
@@ -172,7 +173,7 @@ onMounted(() => perform(refresh));
           type="file"
           :multiple="game.system === 'dos'"
           :aria-label="t('saves.files')"
-          :disabled="busy || consoleEditLocked"
+          :disabled="busy || cloudEditLocked"
           @change="selectFiles"
         >
         <Button
@@ -180,7 +181,7 @@ onMounted(() => perform(refresh));
           :label="t('saves.upload')"
           size="small"
           :loading="busy"
-          :disabled="busy || !files.length || consoleEditLocked"
+          :disabled="busy || !files.length || cloudEditLocked"
         />
       </form>
     </section>
@@ -188,7 +189,7 @@ onMounted(() => perform(refresh));
       :profile-id="profile.id"
       :revisions="revisions"
       :head="head"
-      :disabled="busy || consoleEditLocked"
+      :disabled="busy || cloudEditLocked"
       @restore="restore"
       @changed="perform(refresh)"
       @busy="historyBusy = $event"

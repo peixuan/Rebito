@@ -30,6 +30,7 @@ const active = ref(false);
 const ready = ref(false);
 const controls = shallowRef<RuntimeControls | null>(null);
 const busy = ref(false);
+const stopping = ref(false);
 const paused = ref(false);
 const relativeMouse = ref(false);
 const integerPixels = ref(true);
@@ -187,14 +188,21 @@ async function save(automatic = false, keepPaused = false) {
 async function stopAndSave() {
   if (
     busy.value ||
+    stopping.value ||
     pendingSync.value ||
     conflict.value ||
     (props.game.system !== "dos" && props.editorDirty)
   )
     return false;
   if (!active.value) return true;
-  if (!ready.value || (await save())) return perform(stop);
-  return false;
+  // Keep cloud mutations locked across capture, publication and runtime shutdown.
+  stopping.value = true;
+  try {
+    if (!ready.value || (await save())) return await perform(stop);
+    return false;
+  } finally {
+    stopping.value = false;
+  }
 }
 async function applyPendingEdit() {
   const pending = pendingEdit.value;
@@ -338,7 +346,17 @@ onBeforeUnmount(() => {
   window.removeEventListener("beforeunload", leaving);
   void stop();
 });
-defineExpose({ save, active, ready, busy, pendingSync, conflict, publishEdit, leave: stopAndSave });
+defineExpose({
+  save,
+  active,
+  ready,
+  busy,
+  stopping,
+  pendingSync,
+  conflict,
+  publishEdit,
+  leave: stopAndSave,
+});
 </script>
 
 <template>
