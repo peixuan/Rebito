@@ -34,10 +34,6 @@ const app = await createPlatform(
   fixture.database,
 );
 registerWeb(app, resolve("dist/client"));
-app.addHook("onClose", async () => {
-  await rm(".runtime-cache/e2e-sessions.json", { force: true });
-  await rm(directory, { recursive: true, force: true });
-});
 const sessions: Record<string, unknown> = {};
 for (const [index, name] of [
   "dos",
@@ -47,6 +43,7 @@ for (const [index, name] of [
   "player",
   "history",
   "history-pages",
+  "history-runtime",
   "console",
   "editor",
   "admin",
@@ -77,8 +74,20 @@ for (const [index, name] of [
 }
 await mkdir(".runtime-cache", { recursive: true });
 await writeFile(".runtime-cache/e2e-sessions.json", JSON.stringify(sessions), { mode: 0o600 });
+let closing: Promise<void> | undefined;
+async function close() {
+  // Wait for the history worker and its storage lease before deleting fixture data.
+  await app.close();
+  await fixture.close();
+  await rm(".runtime-cache/e2e-sessions.json", { force: true });
+  await rm(directory, { recursive: true, force: true });
+}
 for (const signal of ["SIGTERM", "SIGINT"] as const)
   process.once(signal, () => {
-    void app.close().finally(() => fixture.close());
+    closing ??= close();
+    void closing.catch((error: unknown) => {
+      console.error(error);
+      process.exitCode = 1;
+    });
   });
 await app.listen({ host: "127.0.0.1", port: 4317 });

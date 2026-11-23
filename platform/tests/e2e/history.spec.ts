@@ -51,6 +51,19 @@ test("protects important history and previews bilingual cleanup without changing
   await page.getByRole("dialog").getByRole("button", { name: "Cancel", exact: true }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
   await expect(history.locator(".revision-row")).toHaveCount(7);
+  await history.getByRole("button", { name: "Review history cleanup" }).click();
+  const concurrent = revisions[1];
+  if (!concurrent) throw new Error("Missing concurrent checkpoint");
+  const protection = (expected: boolean, protectedPoint: boolean) =>
+    page.request.post(`/api/revisions/${concurrent.id}/protection`, {
+      headers: { origin: "http://localhost:4317" },
+      data: { expected, protected: protectedPoint },
+    });
+  expect((await protection(false, true)).status()).toBe(200);
+  await page.getByRole("dialog").getByRole("button", { name: "Delete listed history" }).click();
+  await expect(history.getByRole("alert")).toContainText("History or protection changed");
+  await expect(history.locator(".revision-row")).toHaveCount(7);
+  expect((await protection(true, false)).status()).toBe(200);
   await page.getByLabel("Language", { exact: true }).selectOption("zh-CN");
   await page.getByRole("button", { name: chinese("history.review"), exact: true }).click();
   const dialog = page.getByRole("dialog");
