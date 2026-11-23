@@ -1,0 +1,20 @@
+{
+  "history.review": "预览历史清理",
+  "history.confirm": "删除列出的历史",
+  "history.cancel": "取消",
+  "history.protect": "保护",
+  "history.unprotect": "取消保护",
+  "history.protected": "已保护",
+  "history.unprotectHelp": "取消后，此版本可被自动轮换清理。当前进度及近期安全节点仍会保留。请确认不再需要长期保留此节点。",
+  "history.policy": "普通历史自动轮换：保留最近 10 个节点、近 7 天每日代表节点、近 4 周每周代表节点。用量超过 80% 时优先清理较旧的普通节点。重要进度可设为保护；受保护节点仍计入额度。",
+  "history.preview": "将删除 {count} 个版本，减少 {size} 的额度用量，预计释放磁盘空间 {disk}。",
+  "history.keepHelp": "当前进度、近期安全节点及 {count} 个受保护版本会保留。",
+  "history.sharedHelp": "同一版本的所有文件一并处理。仍被其它历史引用的文件会保留，因此实际释放空间可能小于额度减少量。",
+  "history.savedAt": "保存时间",
+  "history.empty": "此档案没有可清理的历史。",
+  "history.changed": "历史或保护状态已变化，请核对更新后的历史再操作。",
+  "history.cleaned": "已清理 {count} 个历史版本，释放磁盘空间 {size}。当前进度未改变。",
+  "history.pending": "历史清理已提交，部分磁盘回收尚未完成，后台会自动重试，也可点击下方按钮重试。",
+  "history.retry": "重试文件回收",
+  "history.reclaimed": "待处理的文件回收已完成。"
+}

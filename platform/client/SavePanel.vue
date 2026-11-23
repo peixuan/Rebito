@@ -7,7 +7,8 @@ import type { Game } from "../src/library/catalog.ts";
 import { type DisplayText, message } from "../src/shared/messages.ts";
 import type { Profile, Revision } from "../src/storage/revisions.ts";
 import { api, errorText } from "./api.ts";
-import { formatDate, t, translate } from "./i18n.ts";
+import HistoryPanel from "./HistoryPanel.vue";
+import { t, translate } from "./i18n.ts";
 import PlayerPanel from "./PlayerPanel.vue";
 import { uploadProgress } from "./runtime/progress-sync.ts";
 
@@ -20,6 +21,7 @@ const head = ref(props.profile.headId);
 const files = ref<File[]>([]);
 const input = ref<HTMLInputElement | null>(null);
 const busy = ref(false);
+const historyBusy = ref(false);
 const error = ref<DisplayText>("");
 const notice = ref<DisplayText>("");
 const editorDirty = ref(false);
@@ -98,7 +100,7 @@ function selectFiles(event: Event) {
   files.value = [...((event.target as HTMLInputElement).files ?? [])];
 }
 async function leave() {
-  if (busy.value || player.value?.busy) return false;
+  if (busy.value || historyBusy.value || player.value?.busy) return false;
   if (editorDirty.value) {
     error.value = message("saves.dirty");
     return false;
@@ -118,7 +120,7 @@ onMounted(() => perform(refresh));
       <Button
         :label="t('library.back')"
         variant="text"
-        :disabled="busy || editorDirty"
+        :disabled="busy || historyBusy || editorDirty"
         @click="back"
       />
       <h2>{{ game.title }} · {{ profile.name }}</h2>
@@ -180,45 +182,14 @@ onMounted(() => perform(refresh));
         />
       </form>
     </section>
-    <section class="profile-panel" :aria-label="t('saves.history')">
-      <h3>{{ t("saves.history") }}</h3>
-      <p v-if="revisions.length === 100" class="muted">{{ t("saves.historyLimit") }}</p>
-      <p v-if="!revisions.length" class="muted">{{ t("saves.empty") }}</p>
-      <article v-for="revision in revisions" :key="revision.id" class="revision-row">
-        <div>
-          <strong>{{ revision.id === head ? t("saves.current") : t("saves.history") }}</strong>
-          <span>
-            ·
-            {{
-              {
-                snapshot: t("saves.snapshot"),
-                "game-save": t("saves.native"),
-                filesystem: t("library.gameFile"),
-              }[revision.manifest.kind]
-            }}</span
-          >
-          <span class="muted"> · {{ formatDate(revision.createdAt) }}</span>
-          <div class="toolbar">
-            <a
-              v-for="file in revision.manifest.artifacts"
-              :key="file.name"
-              :href="`/api/revisions/${revision.id}/file?name=${encodeURIComponent(file.name)}`"
-              :download="file.name"
-              >{{
-                file.name
-              }}</a
-            >
-          </div>
-        </div>
-        <Button
-          v-if="revision.id !== head"
-          :label="t('saves.restore')"
-          size="small"
-          severity="secondary"
-          :disabled="busy || consoleEditLocked"
-          @click="restore(revision)"
-        />
-      </article>
-    </section>
+    <HistoryPanel
+      :profile-id="profile.id"
+      :revisions="revisions"
+      :head="head"
+      :disabled="busy || consoleEditLocked"
+      @restore="restore"
+      @changed="perform(refresh)"
+      @busy="historyBusy = $event"
+    />
   </section>
 </template>

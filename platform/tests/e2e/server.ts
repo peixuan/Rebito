@@ -45,6 +45,7 @@ for (const [index, name] of [
   "library",
   "other",
   "player",
+  "history",
   "console",
   "editor",
   "admin",
