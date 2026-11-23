@@ -44,9 +44,12 @@
   "phantasyStar4.up": "上移",
   "phantasyStar4.down": "下移",
   "phantasyStar4.orderHelp": "会改变游戏中的实际背包顺序；表格排序只改变当前显示。",
-  "phantasyStar4.readonlyHelp": "等级、已学能力、装备和缓存属性仅供查看，请通过游戏自身操作重新计算。",
+  "phantasyStar4.readonlyHelp": "等级、状态和装备仅供查看；战斗数值会根据基础属性与装备计算。",
   "phantasyStar4.knownAbilities": "{techniques} 个技巧 · {skills} 个特技",
   "phantasyStar4.maxPointsHelp": "支持修改的上限范围：生命 1–999、TP 0–999。降低上限时，超过上限的当前值也会随之降低。",
   "phantasyStar4.maxUsesHelp": "次数上限可设为 0–99，与游戏的两位数显示一致。提高上限不会自动补满剩余次数。",
-  "phantasyStar4.fieldModeRequired": "请先返回战斗外的地图或菜单，重新取档后再修改属性或能力。"
+  "phantasyStar4.fieldModeRequired": "请先返回战斗外的地图或菜单，重新取档后再修改属性或能力。",
+  "phantasyStar4.rulesRequiredHelp": "修改基础属性和选择能力需要已核对的中文 1.6 原版模式游戏数据。",
+  "phantasyStar4.learningSpaceRequired": "请为该角色后续升级和剧情新增的{ability}保留{count}个位置；剧情指定的位置仍可能被游戏替换。",
+  "phantasyStar4.skillVariant": "{name}（变体 {id}）"
 }

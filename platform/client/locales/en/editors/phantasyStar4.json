@@ -44,9 +44,12 @@
   "phantasyStar4.up": "Move up",
   "phantasyStar4.down": "Move down",
   "phantasyStar4.orderHelp": "Changes the actual in-game inventory order. Table sorting only changes this view.",
-  "phantasyStar4.readonlyHelp": "Level, learned abilities, equipment and cached attributes are shown for reference. Let the game recalculate them through its own actions.",
+  "phantasyStar4.readonlyHelp": "Level, status and equipment are shown for reference. Combat totals are calculated from base attributes and equipment.",
   "phantasyStar4.knownAbilities": "{techniques} techniques · {skills} skills",
   "phantasyStar4.maxPointsHelp": "Supported edited maxima: HP 1–999 and TP 0–999. Lowering a maximum also lowers the current value when needed.",
   "phantasyStar4.maxUsesHelp": "Editable maximum: 0–99, matching the game's two-digit counter. Increasing it does not refill remaining uses.",
-  "phantasyStar4.fieldModeRequired": "Return to a field or menu outside battle, then capture a new checkpoint before changing attributes or abilities."
+  "phantasyStar4.fieldModeRequired": "Return to a field or menu outside battle, then capture a new checkpoint before changing attributes or abilities.",
+  "phantasyStar4.rulesRequiredHelp": "Attribute and ability selection editing requires the reviewed Chinese 1.6 Original-mode game data.",
+  "phantasyStar4.learningSpaceRequired": "Reserve {count} slots for this character's future {ability} from level-ups and story events; fixed event slots can be replaced later by the game.",
+  "phantasyStar4.skillVariant": "{name} (variant {id})"
 }

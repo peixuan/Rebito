@@ -1,5 +1,6 @@
 import { message } from "../../shared/messages.ts";
 import { EditorError } from "../types.ts";
+import type { PhantasyStar4Rules } from "./rules.ts";
 
 /** Canonical big-endian Mega Drive work RAM, not an emulator's native heap or SRAM. */
 export const layout = {
@@ -19,12 +20,14 @@ export type FieldWidth = 1 | 2 | 4;
 export class PhantasyStar4Document {
   private readonly bytes: Uint8Array;
   private readonly data: DataView;
+  readonly rules: PhantasyStar4Rules | undefined;
 
-  constructor(bytes: Uint8Array) {
+  constructor(bytes: Uint8Array, rules?: PhantasyStar4Rules) {
     const invalid = () => new EditorError("invalid_save", message("editor.invalidSave"));
     if (bytes.length !== layout.size) throw invalid();
     this.bytes = new Uint8Array(bytes);
     this.data = new DataView(this.bytes.buffer);
+    this.rules = rules;
     const party = this.party();
     const firstEmpty = party.indexOf(0xff);
     const members = party.filter((id) => id !== 0xff);

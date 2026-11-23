@@ -8,6 +8,7 @@ import {
   inventoryFields,
   partyFields,
 } from "./fields.ts";
+import type { PhantasyStar4Rules } from "./rules.ts";
 
 const modules = ["party", "characters", "inventory", "abilities"] as const;
 type Module = (typeof modules)[number];
@@ -18,6 +19,18 @@ function indexOf(record: string, count: number) {
 }
 function itemName(id: number) {
   return message(`phantasyStar4.items.${id}`);
+}
+function fieldCatalog(columnId: string) {
+  if (["item", "rightHand", "leftHand", "head", "body"].includes(columnId)) return "items";
+  if (columnId === "technique") return "techniques";
+  if (columnId === "skill") return "skills";
+  return undefined;
+}
+function choiceName(catalog: "items" | "techniques" | "skills", id: number) {
+  const name = message(`phantasyStar4.${catalog}.${id}`);
+  return catalog === "skills" && id >= 48
+    ? message("phantasyStar4.skillVariant", { name, id })
+    : name;
 }
 function label(module: Module, index: number): DisplayText {
   return module === "party"
@@ -36,15 +49,7 @@ function fields(document: PhantasyStar4Document, module: Module, index: number):
           ? abilityFields(document, index)
           : characterFields(document, index);
   return result.map(({ offset: _, width: __, ...field }) => {
-    const catalog =
-      field.columnId === "item" ||
-      ["rightHand", "leftHand", "head", "body"].includes(field.columnId)
-        ? "items"
-        : field.columnId === "technique"
-          ? "techniques"
-          : field.columnId === "skill"
-            ? "skills"
-            : undefined;
+    const catalog = fieldCatalog(field.columnId);
     const count =
       catalog === "items"
         ? layout.itemCount
@@ -57,25 +62,25 @@ function fields(document: PhantasyStar4Document, module: Module, index: number):
         ? {
             choices: Array.from({ length: count }, (_, value) => ({
               value,
-              label: message(`phantasyStar4.${catalog}.${value}`),
+              label: choiceName(catalog, value),
             })),
           }
         : {}),
-      ...(field.readonly ? { help: message("phantasyStar4.readonlyHelp") } : {}),
+      ...(field.readonly && !field.help ? { help: message("phantasyStar4.readonlyHelp") } : {}),
     };
   });
 }
 
-function prepare(bytes: Uint8Array, draft: EditorDraft) {
+function prepare(bytes: Uint8Array, draft: EditorDraft, rules?: PhantasyStar4Rules) {
   if (draft.slot !== undefined && draft.slot !== 0) throw invalid();
   const module = draft.module ?? "characters";
   if (!modules.includes(module as Module)) throw invalid();
-  const original = new PhantasyStar4Document(bytes);
+  const original = new PhantasyStar4Document(bytes, rules);
   const changes = { ...draft.changes };
   let prepared = editFields(original, changes);
   if (draft.action) {
     if (module !== "inventory") throw invalid();
-    const inventory = new PhantasyStar4Document(prepared.output).inventory();
+    const inventory = new PhantasyStar4Document(prepared.output, rules).inventory();
     const occupied = inventory.flatMap((id, index) => (id === 0 ? [] : [index]));
     const from = occupied.indexOf(indexOf(draft.action.record, layout.inventory.count));
     if (from < 0) throw invalid();
@@ -96,7 +101,7 @@ function prepare(bytes: Uint8Array, draft: EditorDraft) {
       changes[`inventory.${index}.item`] = items[index] ?? 0;
     prepared = editFields(original, changes);
   }
-  const document = new PhantasyStar4Document(prepared.output);
+  const document = new PhantasyStar4Document(prepared.output, rules);
   const selected =
     draft.record ??
     String(module === "characters" || module === "abilities" ? document.party()[0] : 0);
@@ -107,13 +112,14 @@ function prepare(bytes: Uint8Array, draft: EditorDraft) {
 }
 
 /** Edits the captured game RAM; game-native save commands remain the game's responsibility. */
-export const phantasyStar4Adapter: EditorAdapter = {
+export const createPhantasyStar4Adapter = (rules?: PhantasyStar4Rules): EditorAdapter => ({
   size: layout.size,
   view(bytes, draft) {
-    const value = prepare(bytes, draft);
+    const value = prepare(bytes, draft, rules);
     const { document, module, selected, count, edits } = value;
     const selectedFields = fields(document, module, Number(selected));
     const preview = edits.map(({ field, before, after }) => {
+      const catalog = fieldCatalog(field.columnId);
       const parts = field.key.split(".");
       const editedModule =
         parts[0] === "party"
@@ -129,8 +135,8 @@ export const phantasyStar4Adapter: EditorAdapter = {
           group: label(editedModule, Number(parts[1]) || 0),
           field: message("editor.columnLabel", { group: field.group, field: field.label }),
         }),
-        before: editedModule === "inventory" ? itemName(before) : before,
-        after: editedModule === "inventory" ? itemName(after) : after,
+        before: catalog ? choiceName(catalog, before) : before,
+        after: catalog ? choiceName(catalog, after) : after,
       };
     });
     const held = document.inventory().flatMap((id, index) => (id === 0 ? [] : [index]));
@@ -203,8 +209,10 @@ export const phantasyStar4Adapter: EditorAdapter = {
     };
   },
   apply(bytes, draft) {
-    const prepared = prepare(bytes, draft);
+    const prepared = prepare(bytes, draft, rules);
     if (!prepared.edits.length) throw new EditorError("no_changes", message("editor.noChanges"));
     return prepared.output;
   },
-};
+});
+
+export const phantasyStar4Adapter = createPhantasyStar4Adapter();
