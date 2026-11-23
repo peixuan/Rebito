@@ -21,6 +21,7 @@ export default defineConfig({
         "client/runtime/progress-sync.ts",
         "client/runtime/progress-recovery.ts",
         "client/controls/numbers.ts",
+        "client/controls/editor-fields.ts",
       ],
       exclude: [
         "src/server/main.ts",

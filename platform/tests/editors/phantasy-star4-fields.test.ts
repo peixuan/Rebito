@@ -18,7 +18,7 @@ it("describes every character, forty bag slots and bounded learned ability slots
   expect(inventoryFields(document, 39)[0]?.value).toBe(0);
   const abilities = abilityFields(document, 10);
   expect(abilities).toHaveLength(40);
-  expect(abilities.filter((field) => !field.readonly)).toHaveLength(2);
+  expect(abilities.filter((field) => !field.readonly)).toHaveLength(4);
   expect(abilities.find((field) => field.key === "ability.10.uses.0")?.max).toBe(5);
   expect(() => inventoryFields(document, 40)).toThrow();
 });
@@ -51,8 +51,8 @@ it("rejects invalid keys, readonly fields, overflow and impossible HP/TP/skill u
   const document = new PhantasyStar4Document(bytes);
   for (const [key, value] of [
     ["person.0.level", 10],
-    ["person.0.maxHealth", 99],
-    ["person.0.maxEnergy", 99],
+    ["person.0.maxHealth", 0],
+    ["person.0.maxEnergy", 32768],
     ["person.0.strength", 90],
     ["person.0.rightHand", 1],
     ["person.0.status", 0],

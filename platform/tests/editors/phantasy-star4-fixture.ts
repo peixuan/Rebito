@@ -2,6 +2,7 @@
 export function phantasyStar4Fixture(): Uint8Array {
   const bytes = new Uint8Array(0x10000);
   const data = new DataView(bytes.buffer);
+  data.setUint16(0xef00, 12);
   bytes.set([0, 1, 0xff, 0xff, 0xff], 0xf40a);
   bytes.set([1, 2, 1, 160], 0xf410);
   data.setUint32(0xf438, 500);

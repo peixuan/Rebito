@@ -11,6 +11,7 @@ import type { EditorBatch, EditorQuery, EditorResponse } from "../src/editors/se
 import { type DisplayText, message } from "../src/shared/messages.ts";
 import type { Revision } from "../src/storage/revisions.ts";
 import { api, errorText } from "./api.ts";
+import { resolveEditorFields } from "./controls/editor-fields.ts";
 import FieldGrid from "./controls/FieldGrid.vue";
 import RecordTable from "./controls/RecordTable.vue";
 import { localize, t, translate } from "./i18n.ts";
@@ -54,13 +55,14 @@ const count = computed(() =>
     .flatMap((slots) => [...slots.values()])
     .reduce((sum, values) => sum + Object.keys(values).length, 0),
 );
-const fields = computed(
-  () =>
+const fields = computed(() =>
+  resolveEditorFields(
     view.value?.fields.map((field) => ({
       ...field,
       value:
         drafts.get(view.value?.file ?? "")?.get(view.value?.slot ?? 0)?.[field.key] ?? field.value,
     })) ?? [],
+  ),
 );
 const previewRows = computed(() =>
   [...(previews.get(view.value?.file ?? "") ?? [])].flatMap(([slot, values]) =>

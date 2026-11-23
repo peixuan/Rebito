@@ -42,9 +42,9 @@ export function characterFields(document: PhantasyStar4Document, index: number) 
     ["level", 8, 2, 99, "growth", true],
     ["experience", 0x0a, 4, 9_999_999, "growth", false],
     ["health", 0x0e, 2, document.read(base + 0x10, 2), "condition", false],
-    ["maxHealth", 0x10, 2, 0x7fff, "condition", true],
+    ["maxHealth", 0x10, 2, 999, "condition", false],
     ["energy", 0x12, 2, document.read(base + 0x14, 2), "condition", false],
-    ["maxEnergy", 0x14, 2, 0x7fff, "condition", true],
+    ["maxEnergy", 0x14, 2, 999, "condition", false],
     ["status", 0x16, 1, 255, "condition", true],
     ["strength", 0x18, 1, 255, "combat", true],
     ["mental", 0x1b, 1, 255, "combat", true],
@@ -74,6 +74,11 @@ export function characterFields(document: PhantasyStar4Document, index: number) 
       value.readonly = (document.read(base + 0x16) & 0x44) !== 0;
       value.min = value.readonly ? 0 : 1;
     }
+    if (id === "maxHealth") value.min = 1;
+    if (id === "maxHealth" || id === "maxEnergy")
+      value.help = message("phantasyStar4.maxPointsHelp");
+    if (id === "health" || id === "energy")
+      value.maximumField = `person.${index}.${id === "health" ? "maxHealth" : "maxEnergy"}`;
     return value;
   });
 }
@@ -139,6 +144,8 @@ export function abilityFields(document: PhantasyStar4Document, index: number) {
           maximum,
           id === 0 || id >= layout.skillCount,
         ),
+        maximumField: `ability.${index}.maxUses.${slot}`,
+        enabledByField: `ability.${index}.skill.${slot}`,
         group,
       },
       {
@@ -149,9 +156,11 @@ export function abilityFields(document: PhantasyStar4Document, index: number) {
           "skills",
           base + 0x6b + slot * 2,
           1,
-          255,
-          true,
+          99,
+          id === 0 || id >= layout.skillCount,
         ),
+        enabledByField: `ability.${index}.skill.${slot}`,
+        help: message("phantasyStar4.maxUsesHelp"),
         group,
       },
     );
@@ -180,8 +189,28 @@ function findField(document: PhantasyStar4Document, key: string): PhantasyStar4F
 export function editFields(document: PhantasyStar4Document, changes: Record<string, number>) {
   const edits = Object.entries(changes).map(([key, after]) => {
     const field = findField(document, key);
-    if (field.readonly || !Number.isSafeInteger(after) || after < field.min || after > field.max)
+    const maximum = field.maximumField
+      ? (changes[field.maximumField] ?? findField(document, field.maximumField).value)
+      : field.max;
+    const allowedMaximum =
+      field.maximumField && changes[field.maximumField] !== undefined
+        ? field.width === 1
+          ? 255
+          : 0x7fff
+        : maximum;
+    if (
+      field.readonly ||
+      !Number.isSafeInteger(after) ||
+      after < field.min ||
+      after > allowedMaximum
+    )
       throw new EditorError("invalid_edit", message("editor.invalidEdit"));
+    after = Math.min(after, maximum);
+    if (
+      ["maxHealth", "maxEnergy", "maxUses"].includes(field.columnId) &&
+      document.read(0xef00, 2) !== 12
+    )
+      throw new EditorError("invalid_edit", message("phantasyStar4.fieldModeRequired"));
     return { field, before: field.value, after };
   });
   const output = document.copy();
@@ -190,6 +219,23 @@ export function editFields(document: PhantasyStar4Document, changes: Record<stri
     if (field.width === 1) data.setUint8(field.offset, after);
     else if (field.width === 2) data.setUint16(field.offset, after);
     else data.setUint32(field.offset, after);
+  }
+  // Lowering a capacity also lowers its current value; a larger capacity does not heal/refill.
+  for (const index of Array.from({ length: layout.persons.count }, (_, index) => index)) {
+    for (const field of [...characterFields(document, index), ...abilityFields(document, index)]) {
+      if (!field.maximumField || changes[field.maximumField] === undefined) continue;
+      const after = Math.min(
+        changes[field.key] ?? field.value,
+        changes[field.maximumField] as number,
+      );
+      const existing = edits.find((entry) => entry.field.key === field.key);
+      if (!existing && after !== field.value) {
+        if (field.readonly) throw new EditorError("invalid_edit", message("editor.invalidEdit"));
+        edits.push({ field, before: field.value, after });
+        if (field.width === 1) data.setUint8(field.offset, after);
+        else data.setUint16(field.offset, after);
+      }
+    }
   }
   // Inventory has individual item IDs, not stacks. Removal closes gaps in original order.
   if (edits.some(({ field }) => field.key.startsWith("inventory."))) {

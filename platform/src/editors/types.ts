@@ -12,6 +12,10 @@ export interface EditorField {
   choices?: { value: number; label: DisplayText }[];
   boolean?: boolean;
   readonly?: boolean;
+  /** Another visible field supplies the maximum while a draft is being edited. */
+  maximumField?: string;
+  /** A zero selection in this visible field disables the dependent control. */
+  enabledByField?: string;
   multiplier?: number;
   divisor?: number;
   help?: DisplayText;

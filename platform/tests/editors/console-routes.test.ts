@@ -243,7 +243,7 @@ it("rejects malformed containers or RAM and invalid edits without publishing a p
     { file: stateFile, edits: [{ slot: 1, changes: { "party.money": 99 } }] },
     {
       file: stateFile,
-      edits: [{ slot: 0, changes: { "party.money": 99, "person.0.maxHealth": 999 } }],
+      edits: [{ slot: 0, changes: { "party.money": 99, "person.0.maxHealth": 0 } }],
     },
     { files: [batch(99), { file: "save.srm", edits: batch(99).edits }] },
   ]) {

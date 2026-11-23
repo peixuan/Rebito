@@ -45,5 +45,8 @@
   "phantasyStar4.down": "Move down",
   "phantasyStar4.orderHelp": "Changes the actual in-game inventory order. Table sorting only changes this view.",
   "phantasyStar4.readonlyHelp": "Level, learned abilities, equipment and cached attributes are shown for reference. Let the game recalculate them through its own actions.",
-  "phantasyStar4.knownAbilities": "{techniques} techniques · {skills} skills"
+  "phantasyStar4.knownAbilities": "{techniques} techniques · {skills} skills",
+  "phantasyStar4.maxPointsHelp": "Supported edited maxima: HP 1–999 and TP 0–999. Lowering a maximum also lowers the current value when needed.",
+  "phantasyStar4.maxUsesHelp": "Editable maximum: 0–99, matching the game's two-digit counter. Increasing it does not refill remaining uses.",
+  "phantasyStar4.fieldModeRequired": "Return to a field or menu outside battle, then capture a new checkpoint before changing attributes or abilities."
 }
