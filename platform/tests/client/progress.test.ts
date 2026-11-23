@@ -91,3 +91,14 @@ it("requires the exact game, core and runtime version for snapshots", () => {
     );
   }
 });
+
+it("restores native DOS files across an audio-only runtime variant", () => {
+  const previous = { adapter: "jsdos", core: "dosbox", version: "previous-audio" };
+  const saved: Revision = {
+    ...revision,
+    manifest: { ...revision.manifest, kind: "filesystem", runtime: previous },
+  };
+  expect(() =>
+    assertCompatible(game, saved, { ...previous, version: "buffered-audio" }),
+  ).not.toThrow();
+});

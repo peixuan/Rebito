@@ -3,6 +3,7 @@ import { cp, mkdir, mkdtemp, readdir, readFile, rename, rm, writeFile } from "no
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { x } from "tar";
+import { installDosAudioBuffer } from "./runtime-audio.mjs";
 import { installMaterials } from "./runtime-materials.mjs";
 
 export function verifyArchive(bytes, integrity) {
@@ -50,6 +51,10 @@ export async function installRuntime(record, cache, output, download = fetch) {
         }
       }
     } else await cp(join(root, record.from), target, { recursive: true });
+    if (record.variant) {
+      if (record.id !== "jsdos-8.5.3") throw new Error("Unreviewed runtime variant");
+      await installDosAudioBuffer(target, record.variant);
+    }
     if (record.id === "emulatorjs-4.2.3") {
       // The npm release omits its combined loader assets. Preserve the pinned
       // loader.js script order and retain the original sources alongside them.

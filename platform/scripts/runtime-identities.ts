@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 interface RuntimePackage {
   id: string;
   integrity: string;
+  variant?: string;
   core?: boolean;
 }
 interface RuntimeLock {
@@ -24,10 +25,17 @@ export function runtimeIdentities(lock: RuntimeLock): Record<string, string> {
   return Object.fromEntries(
     bindings.map(([core, packages]) => [
       core,
-      packages.every((entry) => lock.snapshotBaseline.integrities[entry.id] === entry.integrity)
+      packages.every(
+        (entry) =>
+          !entry.variant && lock.snapshotBaseline.integrities[entry.id] === entry.integrity,
+      )
         ? lock.snapshotBaseline.version
         : createHash("sha256")
-            .update(JSON.stringify(packages.map(({ id, integrity }) => ({ id, integrity }))))
+            .update(
+              JSON.stringify(
+                packages.map(({ id, integrity, variant }) => ({ id, integrity, variant })),
+              ),
+            )
             .digest("hex"),
     ]),
   );

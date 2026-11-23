@@ -16,6 +16,7 @@
 !src/**
 !scripts/
 !scripts/runtime-assets.mjs
+!scripts/runtime-audio.mjs
 !scripts/runtime-materials.mjs
 !scripts/runtime-identities.ts
 !scripts/browser-notices.ts

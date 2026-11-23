@@ -51,6 +51,16 @@ A short embedded revision also cannot prove the absence of local build patches.
 
 ## Build materials and nested source
 
+Rebito's 2026-11-23 `rebito-audio-buffer-100ms-v1` variant changes only the
+browser worklet target in js-dos 8.5.3's nested emulators 8.5.2 bundle: 2048 to
+4410 frames at 44.1 kHz (about 46 to 100 ms). The reproducible, checked transform
+is `platform/scripts/runtime-audio.mjs`; it runs after upstream archive verification.
+It updates the matching preferred source in `emulators.js.map` without changing
+mapping offsets, preserves upstream notices and adds `AUDIO-MODIFICATION.txt`.
+The raw archive review remains unchanged; the DOS runtime identity includes this
+local variant. Console identities and snapshot compatibility are unaffected.
+This source-level patch does not clear the broader redistribution blockers.
+
 The pinned js-dos workflow uses Node 22, Yarn, its lockfile, the emulators npm
 package and a Vite/Terser build. It also copies prebuilt File Explorer and
 WebRTC-NET assets from its `public` tree. The js-dos package declares GPL-2.0 but

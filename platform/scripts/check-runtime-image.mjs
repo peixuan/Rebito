@@ -46,6 +46,16 @@ for (const name of ["@vue/runtime-core", "primevue", "vue-i18n", "fflate"]) {
 }
 assert.ok(notices.includes("Permission is hereby granted"));
 const materials = JSON.parse(readFileSync("dist/client/runtimes/legal/inventory.json", "utf8"));
+const audioRoot = "dist/client/runtimes/jsdos-8.5.3";
+const audioNotice = readFileSync(`${audioRoot}/AUDIO-MODIFICATION.txt`, "utf8");
+assert.ok(audioNotice.includes("rebito-audio-buffer-100ms-v1"));
+const audioMap = JSON.parse(readFileSync(`${audioRoot}/emulators/emulators.js.map`, "utf8"));
+const audioSource =
+  audioMap.sourcesContent[audioMap.sources.indexOf("src/dos/dosbox/ts/audio-worklet.ts")];
+const audioTarget =
+  "this.targetFrames = Math.max(1024, Math.round(this.outputRate * 4410 / 44100));";
+assert.ok(audioSource.includes(audioTarget));
+assert.ok(readFileSync(`${audioRoot}/emulators/emulators.js`, "utf8").includes(audioTarget));
 const { createApp } = await import("./dist/server/app.js");
 const { registerWeb } = await import("./dist/server/web.js");
 const app = createApp({ write() {} });

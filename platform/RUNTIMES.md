@@ -24,7 +24,7 @@ and use a lock-derived fingerprint when recording emulator snapshots.
 Snapshot identities are derived from the selected core and wrapper, so adding an
 unrelated core does not invalidate existing progress. `snapshotBaseline` records
 the original deployment's identity and archive integrities. Unchanged legacy
-components retain that identity; changed archives receive a new fingerprint.
+components retain that identity; changed archives or local variants receive a new fingerprint.
 Keep this baseline immutable during upgrades; it is compatibility evidence, not
 a version alias for newly built binaries.
 
@@ -33,6 +33,11 @@ settings still override this default through DOSBox's ordered section parser.
 It installs the effective config after the game archive and restored overlay,
 since extraction otherwise replaces the startup option. Stored releases and
 private saves are unchanged, and running instances adopt it on their next start.
+The reviewed `runtime-audio.mjs` variant gives the browser worklet a 100 ms target
+buffer to tolerate brief delivery stalls, at about 54 ms more latency than upstream.
+It preserves playback/resampling logic and updates the mapped preferred source;
+see [source review](../docs/platform/RUNTIME_SOURCE_REVIEW.md). It does not alter
+console audio, native-save formats or synchronization/conflict rules.
 This is specific to js-dos 8.5.3/emulators 8.5.2, not DOSBox-X.
 The native prebuffer refill controller otherwise overproduces PCM into the
 separately buffered AudioWorklet, whose bounded queue drops samples. Disabling

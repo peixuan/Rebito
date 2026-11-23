@@ -4,9 +4,9 @@ import { expect, it } from "vitest";
 import { runtimeIdentities } from "../../scripts/runtime-identities.ts";
 
 const lock = JSON.parse(readFileSync("runtime-lock.json", "utf8"));
-const baselinePackages = lock.packages.filter(
-  (entry: { id: string }) => entry.id in lock.snapshotBaseline.integrities,
-);
+const baselinePackages = lock.packages
+  .filter((entry: { id: string }) => entry.id in lock.snapshotBaseline.integrities)
+  .map(({ variant: _variant, ...entry }: { variant?: string; id: string }) => entry);
 
 it("retains existing snapshots when adding unrelated emulation cores", () => {
   const original = { version: 1, packages: baselinePackages };
@@ -18,7 +18,7 @@ it("retains existing snapshots when adding unrelated emulation cores", () => {
     packages: [...lock.packages, { id: "extra-1.0", integrity: "fixture-new-core", core: true }],
   };
   expect(runtimeIdentities(expanded)).toMatchObject(runtimeIdentities(lock));
-  for (const core of ["dosbox", "fceumm", "snes9x", "gambatte", "mgba"])
+  for (const core of ["fceumm", "snes9x", "gambatte", "mgba"])
     expect(runtimeIdentities(expanded)[core]).toBe(lock.snapshotBaseline.version);
 });
 
@@ -32,6 +32,21 @@ it("invalidates only the affected core when its bytes change, and all consoles f
   changed.packages.find((entry: { id: string }) => entry.id === "emulatorjs-4.2.3").integrity =
     "changed";
   expect(runtimeIdentities(changed).snes9x).not.toBe(lock.snapshotBaseline.version);
-  expect(runtimeIdentities(changed).dosbox).toBe(lock.snapshotBaseline.version);
+  expect(runtimeIdentities(changed).dosbox).toBe(runtimeIdentities(lock).dosbox);
   expect(() => runtimeIdentities({ ...lock, packages: [] })).toThrow("Missing runtime wrapper");
+});
+
+it("identifies the local audio variant without invalidating console snapshots", () => {
+  const original = structuredClone(lock);
+  delete original.packages[0].variant;
+  expect(runtimeIdentities(original).dosbox).toBe(lock.snapshotBaseline.version);
+  expect(runtimeIdentities(lock).dosbox).not.toBe(runtimeIdentities(original).dosbox);
+  const changed = structuredClone(lock);
+  changed.packages[0].variant = "another-patch";
+  const before = runtimeIdentities(lock);
+  const after = runtimeIdentities(changed);
+  expect(after.dosbox).not.toBe(before.dosbox);
+  delete before.dosbox;
+  delete after.dosbox;
+  expect(after).toEqual(before);
 });

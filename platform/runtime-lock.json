@@ -3,6 +3,7 @@
   "packages": [
     {
       "id": "jsdos-8.5.3",
+      "variant": "rebito-audio-buffer-100ms-v1",
       "url": "https://registry.npmjs.org/js-dos/-/js-dos-8.5.3.tgz",
       "integrity": "sha512-1nZxQqW4wlsAKXIrvw9g6kUbSJECkJlAi+VOf/yD7Y1aRkO6TNixFuuD6uePMiEno8NXQJCGVr/QBvrCd9MNZQ==",
       "license": "GPL-2.0 (upstream package declaration)",

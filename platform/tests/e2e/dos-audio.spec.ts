@@ -6,10 +6,10 @@ import { type AudioProbeWindow, observeDosAudio } from "./audio-probe.ts";
 import { useSession } from "./session.ts";
 
 for (const outputRate of [44100, 48000]) {
-  test(`paces real DOS audio without queue overflow at ${outputRate} Hz`, async ({ page }) => {
+  test(`paces real DOS audio through a delivery stall at ${outputRate} Hz`, async ({ page }) => {
     test.setTimeout(60_000);
     await useSession(page.context(), "dos");
-    await observeDosAudio(page, outputRate);
+    await observeDosAudio(page, outputRate, 60);
     const games: Game[] = await (await page.request.get("/api/games")).json();
     const game = games.find((entry) => entry.system === "dos");
     if (!game) throw new Error("Missing DOS fixture");
@@ -68,6 +68,9 @@ for (const outputRate of [44100, 48000]) {
     if (!first || !last) throw new Error("Missing audio observations");
     expect(last.sourceRate).toBe(44100);
     expect(last.outputRate).toBe(outputRate);
+    expect(first.delayed).toBe(false);
+    expect(last.delayed).toBe(true);
+    expect(last.targetFrames).toBe(Math.round(outputRate / 10));
     const rate = (last.samples - first.samples) / (last.time - first.time);
     expect(rate).toBeGreaterThan(43500);
     expect(rate).toBeLessThan(44700);

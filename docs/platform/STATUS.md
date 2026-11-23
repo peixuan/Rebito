@@ -210,6 +210,16 @@ container checks remain mandatory for the exact candidate before promotion.
 
 ## DOS audio and automatic synchronization
 
+The 2026-11-23 follow-up reproduced an underrun during a brief PCM delivery stall.
+The reviewed local worklet variant increases its finite target from about 46 ms
+to 100 ms, adding about 54 ms of audio latency. Resampling, playback pacing and
+save synchronization are unchanged. Both the bundle and its preferred mapped
+source carry the adjustment; the build rejects unexpected input. DOS identity
+records the variant without invalidating native-file progress or console snapshots.
+Real-WASM regressions at 44.1/48 kHz inject a FIFO-preserving 60 ms delivery delay
+and retain the existing rate, overflow, underrun and configuration assertions.
+Long OS suspensions or sustained CPU starvation remain outside this buffer's scope.
+
 The DOSBox adapter keeps configuration defaults beside archive restoration. Its
 native mixer prebuffer defaults to zero, retaining explicit game overrides and the
 browser's audio buffer. The effective config is installed last. Real WASM tests at
