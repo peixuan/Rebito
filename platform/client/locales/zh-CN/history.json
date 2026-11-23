@@ -1,4 +1,6 @@
 {
+  "history.newest": "最新历史",
+  "history.older": "更早历史",
   "history.review": "预览历史清理",
   "history.confirm": "删除列出的历史",
   "history.cancel": "取消",

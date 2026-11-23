@@ -2,7 +2,7 @@
 import Button from "primevue/button";
 import Dialog from "primevue/dialog";
 import Message from "primevue/message";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { type DisplayText, message } from "../src/shared/messages.ts";
 import type { HistoryPreview } from "../src/storage/history.ts";
 import type { Revision } from "../src/storage/revisions.ts";
@@ -24,6 +24,8 @@ const preview = ref<HistoryPreview | null>(null);
 const pending = ref(false);
 const error = ref<DisplayText>("");
 const notice = ref<DisplayText>("");
+const older = ref<Revision[] | null>(null);
+const entries = computed(() => older.value ?? props.revisions);
 type Reclaimed = { reclaimedBytes: number | null; pendingFiles: number };
 
 async function perform(action: () => Promise<void>) {
@@ -35,6 +37,7 @@ async function perform(action: () => Promise<void>) {
   try {
     await action();
   } catch (cause) {
+    older.value = null;
     error.value =
       cause instanceof ApiError && cause.status === 409
         ? message("history.changed")
@@ -47,12 +50,21 @@ async function perform(action: () => Promise<void>) {
   }
 }
 async function protect(revision: Revision) {
-  await api(`revisions/${revision.id}/protection`, {
+  const updated = await api<Revision>(`revisions/${revision.id}/protection`, {
     expected: revision.protected,
     protected: !revision.protected,
   });
+  if (older.value)
+    older.value = older.value.map((entry) => (entry.id === updated.id ? updated : entry));
   visible.value = false;
   emit("changed");
+}
+async function loadOlder() {
+  const cursor = entries.value.at(-1)?.id;
+  if (!cursor) return;
+  await perform(async () => {
+    older.value = await api<Revision[]>(`profiles/${props.profileId}/revisions?before=${cursor}`);
+  });
 }
 function toggleProtection(revision: Revision) {
   if (revision.protected) {
@@ -86,6 +98,7 @@ async function confirm() {
           size: formatBytes(result.reclaimedBytes ?? 0),
         });
     visible.value = false;
+    older.value = null;
     emit("changed");
   });
 }
@@ -122,10 +135,9 @@ async function retry() {
     <p class="muted">{{ t("history.policy") }}</p>
     <Message v-if="error" severity="error" role="alert">{{ translate(error) }}</Message>
     <Message v-if="notice" severity="info" role="status">{{ translate(notice) }}</Message>
-    <p v-if="revisions.length === 100" class="muted">{{ t("saves.historyLimit") }}</p>
-    <p v-if="!revisions.length" class="muted">{{ t("saves.empty") }}</p>
+    <p v-if="!entries.length" class="muted">{{ t("saves.empty") }}</p>
     <article
-      v-for="revision in revisions"
+      v-for="revision in entries"
       :key="revision.id"
       class="revision-row"
       :data-revision-id="revision.id"
@@ -174,6 +186,24 @@ async function retry() {
         />
       </div>
     </article>
+    <div class="toolbar">
+      <Button
+        v-if="older"
+        :label="t('history.newest')"
+        size="small"
+        variant="text"
+        :disabled="disabled || busy"
+        @click="older = null"
+      />
+      <Button
+        v-if="entries.length === 100"
+        :label="t('history.older')"
+        size="small"
+        variant="text"
+        :disabled="disabled || busy"
+        @click="loadOlder"
+      />
+    </div>
     <Dialog
       v-model:visible="visible"
       :header="selected ? t('history.unprotect') : t('history.review')"

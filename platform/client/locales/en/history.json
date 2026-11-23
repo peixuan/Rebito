@@ -1,4 +1,6 @@
 {
+  "history.newest": "Newest history",
+  "history.older": "Older history",
   "history.review": "Review history cleanup",
   "history.confirm": "Delete listed history",
   "history.cancel": "Cancel",

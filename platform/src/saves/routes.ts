@@ -104,10 +104,20 @@ export async function registerSaves(
         );
     },
   );
-  app.get<Params>(
+  app.get<Params & { Querystring: { before?: string } }>(
     "/api/profiles/:id/revisions",
-    { schema: { params: idParameters } },
-    async (request) => service.revisions.history(request.ownerId, request.params.id),
+    {
+      schema: {
+        params: idParameters,
+        querystring: {
+          type: "object",
+          additionalProperties: false,
+          properties: { before: { type: "string", format: "uuid" } },
+        },
+      },
+    },
+    async (request) =>
+      service.revisions.history(request.ownerId, request.params.id, request.query.before),
   );
   app.post<Params & { Body: { expected: boolean; protected: boolean } }>(
     "/api/revisions/:id/protection",

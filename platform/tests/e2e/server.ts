@@ -46,6 +46,7 @@ for (const [index, name] of [
   "other",
   "player",
   "history",
+  "history-pages",
   "console",
   "editor",
   "admin",

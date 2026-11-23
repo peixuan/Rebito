@@ -81,16 +81,28 @@ export class RevisionRepository {
     return result.rows;
   }
 
-  async history(owner: string, profileId: string): Promise<Revision[]> {
+  async history(owner: string, profileId: string, before?: string): Promise<Revision[]> {
     const profile = await this.database.query(
       "SELECT id FROM profiles WHERE owner_id=$1 AND id=$2",
       [owner, profileId],
     );
     if (!profile.rowCount) throw new ProgressError("not_found");
+    if (before) {
+      const cursor = await this.database.query(
+        "SELECT id FROM revisions WHERE profile_id=$1 AND id=$2",
+        [profileId, before],
+      );
+      if (!cursor.rowCount) throw new ProgressError("not_found");
+    }
+    // Compare in PostgreSQL: JavaScript dates lose sub-millisecond timestamp precision.
     const result = await this.database.query<Revision>(
       `SELECT ${revisionColumns} FROM revisions r WHERE r.profile_id=$1
+       AND ($2::uuid IS NULL OR EXISTS (
+         SELECT 1 FROM revisions cursor WHERE cursor.id=$2 AND cursor.profile_id=$1
+         AND (r.created_at < cursor.created_at OR
+           (r.created_at=cursor.created_at AND r.id>cursor.id))))
        ORDER BY r.created_at DESC, r.id LIMIT 100`,
-      [profileId],
+      [profileId, before ?? null],
     );
     return result.rows;
   }
