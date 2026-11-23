@@ -157,6 +157,20 @@ async function navigate(selection: EditorQuery) {
   await refresh(); // Preserve and validate the previous slot before switching.
   await refresh(selection);
 }
+async function runAction(action: EditorResponse["actions"][number]) {
+  const current = view.value;
+  if (!current) return;
+  if (action.textDefaults) {
+    Object.assign(
+      textDraft(current.file, current.slot),
+      Object.fromEntries(
+        Object.entries(action.textDefaults).map(([key, value]) => [key, translate(value)]),
+      ),
+    );
+    await refresh();
+    showPreview.value = true;
+  } else await refresh({ action: { id: action.id, record: current.selected } });
+}
 async function save() {
   await refresh();
   if (!view.value) return;
@@ -316,9 +330,7 @@ onBeforeUnmount(() => {
               size="small"
               severity="secondary"
               :disabled="busy || stale || Boolean(invalid.size)"
-              @click="
-                perform(() => refresh({ action: { id: action.id, record: view?.selected ?? '' } }))
-              "
+              @click="perform(() => runAction(action))"
             />
           </div>
         </div>

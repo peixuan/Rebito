@@ -112,5 +112,7 @@
   "san3.jointRewardAmount": "Joint attack reward",
   "san3.nomadicCity": "Nomadic mission city",
   "san3.nomadicGold": "Nomadic mission gold",
-  "san3.nomadicFood": "Nomadic mission food"
+  "san3.nomadicFood": "Nomadic mission food",
+  "san3.applyNamePresets": "Preview 68 preset names",
+  "san3.namePresetsHelp": "Replace the names and readings in all 68 custom slots. Preview first; abilities and registration stay unchanged."
 }

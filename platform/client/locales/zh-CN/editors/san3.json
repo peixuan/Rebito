@@ -112,5 +112,7 @@
   "san3.jointRewardAmount": "共同进攻报酬",
   "san3.nomadicCity": "异民族任务城市",
   "san3.nomadicGold": "异民族任务金",
-  "san3.nomadicFood": "异民族任务粮"
+  "san3.nomadicFood": "异民族任务粮",
+  "san3.applyNamePresets": "预览68组预设姓名",
+  "san3.namePresetsHelp": "替换全部68个新武将槽位的姓名和读音。先预览，再保存；能力和注册状态不变。"
 }

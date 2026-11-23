@@ -11,6 +11,7 @@ import { customMetadataFields } from "./custom-fields.ts";
 import { customNameFields, editCustomNames } from "./custom-names.ts";
 import { San3Document, san3Layout } from "./document.ts";
 import { attributeFields, cityFields, editSan3, officerFields } from "./fields.ts";
+import { san3NamePresetAction } from "./name-presets.ts";
 import { san3PresetAdapter } from "./preset-adapter.ts";
 
 const modules = ["cities", "officers", "custom", "factions"] as const;
@@ -264,7 +265,7 @@ export const san3Adapter: EditorAdapter = {
       selected,
       fields: selectedFields,
       ...(module === "custom" ? { textFields: customNameFields(document, Number(selected)) } : {}),
-      actions: [],
+      actions: module === "custom" ? [san3NamePresetAction] : [],
       changes: Object.fromEntries(edits.map(({ field, after }) => [field.key, after])),
       textChanges: Object.fromEntries(textEdits.map(({ key, after }) => [key, after])),
       preview,

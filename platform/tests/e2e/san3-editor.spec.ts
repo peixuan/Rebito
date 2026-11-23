@@ -12,7 +12,9 @@ import { useSession } from "./session.ts";
 
 /** Synthetic strategic records only; the original fixture firmware never executes game commands. */
 function strategicMemory() {
-  const bytes = san3NameFixture();
+  const bytes = san3NameFixture(
+    Array.from({ length: 68 }, (_, index) => chinese(`san3.presetName${index}`)),
+  );
   const view = new DataView(bytes.buffer);
   view.setUint32(0x78000, 0x4b4f4549);
   view.setUint32(0x78776, 0x4b4f4549);
@@ -215,6 +217,10 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   await page.getByLabel(chinese("app.language")).selectOption("en");
   await editor.getByRole("button", { name: "Custom officers", exact: true }).click();
   await expect(editor.getByLabel("Portrait", { exact: true })).toBeDisabled();
+  await editor.getByRole("button", { name: "Preview 68 preset names", exact: true }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.getByRole("dialog").getByRole("button", { name: "Close", exact: true }).click();
+  await expect(editor.getByLabel("Name", { exact: true })).toHaveValue(chinese("san3.presetName0"));
   await editor.getByLabel("Age", { exact: true }).fill("35");
   await editor.getByLabel("Age", { exact: true }).press("Tab");
   await editor.getByLabel("Birth month", { exact: true }).fill("2");
@@ -292,6 +298,7 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   ]).toEqual([2, 29, 35]);
   expect(new DataView(result.buffer).getUint16(san3Layout.custom.offset)).toBe(0xffff);
   expect(document.officer(532).name).toBe("\u6f22\u5b57");
+  expect(document.officer(599).name).toBe(chinese("san3.presetName67"));
   expect([
     ...result.subarray(san3Layout.custom.offset + 20, san3Layout.custom.offset + 25),
   ]).toEqual([0xb6, 0xde, 0xca, 0xdf, 0]);

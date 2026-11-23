@@ -55,6 +55,11 @@ Name drafts survive record/tab/language changes and share one atomic publication
 with numeric changes. The original game's registered-profile screen displayed a
 private-glyph name, reading, changed birthday, age, gender and portrait. An in-game
 save followed by a fresh native-only boot retained the complete custom record.
+The optional 68-name preset reproduces the maintainer-authored name/reading list
+from the later reference branch. It fills a previewable text draft, preserves
+abilities and registration state, and uses the same encoding checks as manual
+names. It does not create officers or publish automatically. Both language packs
+carry identical game-name data so changing UI language cannot rename a character.
 
 Six base abilities (land/naval leadership, strength, intelligence, politics and
 charisma) are editable at historical offsets `+5..+10` and custom offsets

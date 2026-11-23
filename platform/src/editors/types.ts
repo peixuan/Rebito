@@ -57,7 +57,13 @@ export interface EditorView {
   selected: string;
   fields: EditorField[];
   textFields?: EditorTextField[];
-  actions: { id: string; label: DisplayText; help?: DisplayText }[];
+  actions: {
+    id: string;
+    label: DisplayText;
+    help?: DisplayText;
+    /** Localized text presets enter the ordinary validated draft before publication. */
+    textDefaults?: Record<string, DisplayText>;
+  }[];
   /** Writable intents; preview may also include derived read-only effects. */
   changes: Record<string, number>;
   textChanges?: Record<string, string>;
