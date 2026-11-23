@@ -97,5 +97,20 @@
   "san3.kanji": "Name",
   "san3.kana": "Reading",
   "san3.kanjiHelp": "Up to three characters from this game’s character set. Unchanged names keep their original bytes.",
-  "san3.kanaHelp": "Up to seven encoded kana bytes; a voiced kana uses two. Hiragana and katakana are accepted."
+  "san3.kanaHelp": "Up to seven encoded kana bytes; a voiced kana uses two. Hiragana and katakana are accepted.",
+  "san3.historicalContext": "Historical definitions",
+  "san3.definitionField": "{field} (definition)",
+  "san3.birthYear": "Birth year",
+  "san3.lineage": "Lineage",
+  "san3.factionContext": "Diplomatic context",
+  "san3.alliances": "Alliances",
+  "san3.hostilities": "Hostility",
+  "san3.factionNumber": "Faction {number}",
+  "san3.jointFaction": "Joint attack partner",
+  "san3.jointTarget": "Joint attack target",
+  "san3.jointRewardType": "Joint attack reward type",
+  "san3.jointRewardAmount": "Joint attack reward",
+  "san3.nomadicCity": "Nomadic mission city",
+  "san3.nomadicGold": "Nomadic mission gold",
+  "san3.nomadicFood": "Nomadic mission food"
 }

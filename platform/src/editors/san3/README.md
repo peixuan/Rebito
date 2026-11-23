@@ -85,6 +85,11 @@ the age threshold for random death checks rather than fixing a death age.
 Service counters use 0..255; with a former faction, their final sum must be
 1..256 because the return routine adds them and subtracts one in a byte.
 Dead or battling officers stay locked, as do assigned officers' action flags.
+Historical definition traits remain separate read-only context, distinguished
+from a live officer's current campaign traits. Factions expose their alliances,
+hostility values, joint attack agreement and nomadic mission data as read-only
+context, matching the original editor's display scope. Alliance bits follow the
+game's big-endian word checks, not the legacy debugger's byte-array formatting.
 
 ## Evidence and limits
 

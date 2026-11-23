@@ -6,6 +6,7 @@ import {
   type EditorField,
   type EditorView,
 } from "../types.ts";
+import { factionContextFields, historicalContextFields } from "./context-fields.ts";
 import { customMetadataFields } from "./custom-fields.ts";
 import { customNameFields, editCustomNames } from "./custom-names.ts";
 import { San3Document, san3Layout } from "./document.ts";
@@ -92,6 +93,18 @@ function fields(
       ...(["cityCount", "officerCount", "population", "gold", "food", "soldiers"] as const).map(
         (id) => context(id, faction[id]),
       ),
+      ...factionContextFields(document, index).map((field) => {
+        const target = Number(field.columnId.split(".")[1]);
+        return Number.isInteger(target)
+          ? {
+              ...field,
+              label: message("editor.columnLabel", {
+                group: field.group,
+                field: data.factionName(target),
+              }),
+            }
+          : field;
+      }),
     ];
   }
   const record = module === "cities" ? document.city(index) : document.officer(index);
@@ -103,6 +116,20 @@ function fields(
       ...field,
       ...(field.readonly ? { help: message("san3.readonlyHelp") } : {}),
     })),
+    ...(module === "officers" && index < san3Layout.historical.count
+      ? historicalContextFields(document, index)
+          .filter(
+            (field) =>
+              !["land", "naval", "strength", "intelligence", "politics", "charisma"].includes(
+                field.columnId,
+              ),
+          )
+          .map((field) => ({
+            ...field,
+            columnId: `definition.${field.columnId}`,
+            label: message("san3.definitionField", { field: field.label }),
+          }))
+      : []),
     context("faction", faction, data.factionName(faction)),
     ...(module === "officers"
       ? [

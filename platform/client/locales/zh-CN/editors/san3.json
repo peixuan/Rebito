@@ -97,5 +97,20 @@
   "san3.kanji": "姓名",
   "san3.kana": "读音",
   "san3.kanjiHelp": "最多3个游戏字库支持的汉字。不修改的姓名会保留原始字节。",
-  "san3.kanaHelp": "最多7个假名编码字节，浊音假名占2字节。可输入平假名或片假名。"
+  "san3.kanaHelp": "最多7个假名编码字节，浊音假名占2字节。可输入平假名或片假名。",
+  "san3.historicalContext": "历史武将原始定义",
+  "san3.definitionField": "{field}（原始定义）",
+  "san3.birthYear": "出生年份",
+  "san3.lineage": "血缘",
+  "san3.factionContext": "外交状态",
+  "san3.alliances": "同盟",
+  "san3.hostilities": "敌对度",
+  "san3.factionNumber": "势力 {number}",
+  "san3.jointFaction": "共同进攻势力",
+  "san3.jointTarget": "共同进攻目标",
+  "san3.jointRewardType": "共同进攻报酬类型",
+  "san3.jointRewardAmount": "共同进攻报酬",
+  "san3.nomadicCity": "异民族任务城市",
+  "san3.nomadicGold": "异民族任务金",
+  "san3.nomadicFood": "异民族任务粮"
 }
