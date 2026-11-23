@@ -12,7 +12,8 @@ disk reservation. Identical files already share content-addressed blobs.
   days and one per week for four weeks. These sets overlap; they are not additive
   guarantees. Daily/weekly buckets are elapsed UTC durations, independent of locale.
 - Above 80% of either account budget, discard older ordinary history first, retaining
-  the two newest points per profile as well as heads and protected points. The hard
+  the two newest points per profile as well as heads, their actual predecessors and
+  protected points. The hard
   quota still applies if these protected bytes alone fill it; never delete them to
   make an upload succeed.
 - Manual cleanup previews the exact removals and estimated physical reclamation.
@@ -32,9 +33,20 @@ Interrupted physical reclamation is retryable. A failed save must retain its las
 published head; pending writeback remains paused. Cleanup must drain active handlers
 and downloads before unlinking their files.
 
-Rotate after successful publication and on a bounded background interval. Multiple
-application instances share the existing PostgreSQL activity lease; no external
-queue or additional service is required. Stop the worker before closing that lease.
+Rotate after successful publication, at startup and every 60 seconds. Reclaim at
+most 128 files before yielding the exclusive lease; continue remaining batches and
+retry errors on the next notification or interval. Multiple application instances
+share the existing PostgreSQL activity lease; no external queue or additional service
+is required. Stop the worker before closing that lease. Never await rotation while
+holding an HTTP request's shared lease.
+
+The workspace shows 100 revisions at a time, with access to older pages. Protection
+changes do not alter save bytes or the selected head. Removing protection requires
+confirmation. Manual cleanup shows exact revision timestamps and sizes, logical quota
+reduction and estimated disk reclamation; shared blobs explain any difference.
+If metadata cleanup commits but unlinking fails, report pending reclamation instead
+of claiming a rollback. Retrying only reclaims files; it never repeats deletion of
+history or republishes a save.
 
 ## Deployment capacity
 

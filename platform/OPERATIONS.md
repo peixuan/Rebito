@@ -11,8 +11,10 @@ The default per-account limits are 100 profiles, 2,000 revisions and 2 GiB of lo
 history. Identical blob contents share physical space; each retained revision still
 counts its full logical size. DOS automatic sync publishes only when native files
 change. Repeated manual captures and different snapshots can still grow history.
-Quota exhaustion stops new saves; it is not automatic history rotation. Do not
-increase quotas indefinitely as a substitute for a retention policy.
+Ordinary history now rotates automatically; current heads, their predecessors,
+recent safety points and protected checkpoints remain. Existing history is protected
+on first upgrade. Quota exhaustion still stops saves if these required points fill
+the budget. See the [retention contract](../docs/platform/HISTORY_RETENTION.md).
 
 Before new blob writes the app leaves a configurable 1 GiB free-space margin. A
 failed upload preserves the published head; the player remains paused for retry.
@@ -23,10 +25,11 @@ filesystems, host disk, backup destination and Docker disk use separately.
 Useful read-only checks are `docker system df`, `df -h`, and
 `docker compose exec app du -sh /data`. Backups, old images and build caches need
 their own size/retention budgets. Never use a blanket volume prune to manage saves.
-Offline `collect` below only removes abandoned blobs; retained history needs an
-explicit future retention/deletion policy, with current heads protected. No automatic
-history deletion is enabled. No additional queue, cache service or metrics database
-is needed for these bounds.
+Offline `collect` below removes abandoned blobs. Online history cleanup records its
+own durable reclamation jobs and retries interrupted batches after checking all
+remaining references. Users can protect checkpoints and preview manual cleanup in
+their save workspace, including versions beyond the first 100. No additional queue,
+cache service or metrics database is needed for these bounds.
 
 ### Build-cache retention
 

@@ -59,9 +59,36 @@ See [architecture](ARCHITECTURE.md).
   DOS edits replace declared native files, without updating game RAM. Read
   [synchronization](../../platform/SYNCHRONIZATION.md).
 
-Windows games, persistent offline upload queues, automatic history pruning and
-arbitrary third-party editors are not implemented. DOSBox-X remains a future
+Windows games, persistent offline upload queues and arbitrary third-party editors
+are not implemented. DOSBox-X remains a future
 Windows 95/98/ME candidate, not evidence of general Win32 support.
+
+## Bounded personal save history
+
+The per-account default is 2 GiB of logical history; the cloud deployment's earlier
+512 MiB override was raised to match it, with existing saves verified unchanged.
+Ordinary revisions now rotate automatically: ten recent points, seven daily samples
+and four weekly samples, with earlier compaction above 80% of the byte/revision
+budget. Current heads, their actual predecessors, recent safety points and manually
+protected checkpoints survive. Existing history is protected on first migration.
+These guarantees take priority over space reduction; hard quotas and the free-space
+reserve still reject writes rather than deleting protected progress.
+
+The bilingual workspace supports protection, confirmed removal of protection,
+older-history pages and exact cleanup previews. Transactional metadata compaction
+and durable file reclamation share the existing storage activity lease; retries
+recheck references across all accounts. Interrupted unlinking is reported separately
+from committed history cleanup. No extra service, dependency, compression chain or
+runtime restart is introduced. See [retention](HISTORY_RETENTION.md) and
+[operations](../../platform/OPERATIONS.md).
+
+All 554 database/unit tests, lint, types and production build pass; overall coverage
+is 98.56% lines and 94.41% branches. Focused real-DOS acceptance covers repeated
+captures, automatic rotation, cleanup during play, restart and protected-point
+restore. API checks cover stale previews, ownership, shared files, concurrent writes,
+transaction rollback and interrupted physical reclamation. Browser checks also cover
+bilingual previews and checkpoints older than the first 100. Full browser/hosted
+checks and production preservation acceptance remain required for the exact release.
 
 ## Original DOS Heroes of Jin Yong editor
 

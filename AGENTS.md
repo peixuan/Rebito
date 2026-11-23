@@ -80,6 +80,11 @@ because an upstream documentation page lists a feature.
   writers. Read [storage operations](platform/OPERATIONS.md) before maintenance.
   Callers must await `app.close()` before ending the database pool; ending the pool
   inside an app close hook can deadlock against its dedicated storage lease.
+- Retention never removes current heads, their predecessors, recent safety points
+  or protected checkpoints. Protect pre-existing history during migration. Recheck
+  manual cleanup previews under the exclusive lease and persist file cleanup intent
+  atomically with metadata compaction. Drain the history worker before closing its
+  lease or removing storage. See [retention](docs/platform/HISTORY_RETENTION.md).
 - Prefer OIDC integration; LDAP may be federated through an identity provider.
 - Use small cohesive modules, descriptive names and comments explaining invariants.
 - Keep the UI compact with neutral slate/blue accents; the user dislikes green
