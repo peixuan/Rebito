@@ -1,6 +1,7 @@
 import type { LocalLibrary } from "../library/catalog.ts";
 import type { SaveService } from "../saves/service.ts";
 import { message } from "../shared/messages.ts";
+import { bindGameData } from "./game-data.ts";
 import { findEditor } from "./registry.ts";
 import { assertSnapshotBinding } from "./snapshots/binding.ts";
 import { openSnapshotMemory } from "./snapshots/memory.ts";
@@ -49,7 +50,7 @@ export class EditorService {
       if (memory.bytes.length !== adapter.size)
         throw new EditorError("invalid_save", message("editor.invalidSave"));
       return {
-        adapter,
+        adapter: await bindGameData(this.library, game, registration),
         instructions: registration.instructions,
         file: name,
         files: [name],

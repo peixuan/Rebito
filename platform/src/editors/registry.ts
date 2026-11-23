@@ -10,6 +10,11 @@ export type EditorRegistration = {
   readonly label: DisplayText;
   readonly instructions: DisplayText;
   readonly adapter: EditorAdapter;
+  /** Optional immutable game data; only installed code chooses its bounded parser. */
+  readonly gameData?: {
+    readonly maxBytes: number;
+    readonly bind: (bytes: Uint8Array) => EditorAdapter;
+  };
 } & (
   | { readonly system: "dos"; readonly snapshot?: never }
   | { readonly system: "md" | "segacd"; readonly snapshot: SnapshotBinding }

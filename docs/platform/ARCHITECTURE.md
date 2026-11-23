@@ -60,6 +60,12 @@ Editor modules are reviewed code shipped with the application. A schema describe
 ordinary fields; explicit code handles linked changes and checksums. Only install
 modules for supported release/format combinations. Unknown bytes survive edits.
 
+An installed editor may bind additional rules from its immutable game release.
+The service checks ownership and runtime first, then streams within the adapter's
+fixed size limit and verifies the release hash before invoking its pure parser.
+Clients cannot supply rules or paths. Optional unsupported data leaves the basic
+adapter available, and normal storage leases still protect every request.
+
 ## Persistence and concurrency
 
 Keep native game saves, emulator snapshots and writable file collections distinct.
