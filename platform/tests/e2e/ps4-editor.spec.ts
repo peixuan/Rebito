@@ -85,10 +85,10 @@ test("associates the MD editor and applies bilingual drafts to the paused runnin
     ["HP", "110"],
     ["Maximum TP", "90"],
     ["TP", "80"],
-    ["Strength", "180"],
-    ["Mental", "170"],
-    ["Agility", "160"],
-    ["Dexterity", "150"],
+    ["Base Strength", "180"],
+    ["Base Mental", "170"],
+    ["Base Agility", "160"],
+    ["Base Dexterity", "150"],
   ] as const) {
     await editor.getByLabel(label, { exact: true }).fill(value);
     await editor.getByLabel(label, { exact: true }).press("Tab");

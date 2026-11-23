@@ -1,6 +1,12 @@
 import { message } from "../../shared/messages.ts";
 import { EditorError, type EditorField } from "../types.ts";
-import { attributes, refreshAttributes } from "./combat.ts";
+import {
+  attributes,
+  combatTargets,
+  equipmentBonuses,
+  expandCombatTargets,
+  refreshAttributes,
+} from "./combat.ts";
 import { type FieldWidth, layout, PhantasyStar4Document } from "./document.ts";
 
 export interface PhantasyStar4Field extends EditorField {
@@ -8,7 +14,15 @@ export interface PhantasyStar4Field extends EditorField {
   width: FieldWidth;
 }
 
-const fieldModeOnly = [...attributes, "maxHealth", "maxEnergy", "technique", "skill", "maxUses"];
+const fieldModeOnly = [
+  ...attributes,
+  ...combatTargets.map(([id]) => id),
+  "maxHealth",
+  "maxEnergy",
+  "technique",
+  "skill",
+  "maxUses",
+];
 const invalid = () => new EditorError("invalid_edit", message("editor.invalidEdit"));
 
 function field(
@@ -42,6 +56,7 @@ export function partyFields(document: PhantasyStar4Document): PhantasyStar4Field
 /** Base attributes are editable only when their equipment rules can be recomputed. */
 export function characterFields(document: PhantasyStar4Document, index: number) {
   const base = document.personOffset(index);
+  const bonuses = equipmentBonuses(document, index);
   const specifications = [
     ["level", 8, 2, 99, "growth", true],
     ["experience", 0x0a, 4, 9_999_999, "growth", false],
@@ -82,8 +97,31 @@ export function characterFields(document: PhantasyStar4Document, index: number) 
     if (id === "maxHealth" || id === "maxEnergy")
       value.help = message("phantasyStar4.maxPointsHelp");
     if (attributes.some((attribute) => attribute === id)) {
+      value.label = message("phantasyStar4.baseAttribute", { attribute: value.label });
       value.readonly = !document.rules;
       if (!document.rules) value.help = message("phantasyStar4.rulesRequiredHelp");
+    }
+    const target = combatTargets.find(([stat]) => stat === id);
+    if (target) {
+      value.help = message("phantasyStar4.rulesRequiredHelp");
+      if (bonuses) {
+        const [stat, attribute] = target;
+        const offset = bonuses[attribute] + bonuses[stat];
+        value.min = Math.max(0, offset);
+        value.max = Math.max(0, offset + 255);
+        value.readonly = offset + 255 < 0;
+        value.label = message("phantasyStar4.targetStat", { stat: value.label });
+        value.derivedFrom = { key: `person.${index}.${attribute}`, offset, modulus: 65536 };
+        value.help = message("phantasyStar4.targetHelp", {
+          attribute: message(`phantasyStar4.${attribute}`),
+          stat: message(`phantasyStar4.${stat}`),
+          attributeBonus: bonuses[attribute],
+          combatBonus: bonuses[stat],
+          total: offset,
+          min: value.min,
+          max: value.max,
+        });
+      }
     }
     if (id === "health" || id === "energy")
       value.maximumField = `person.${index}.${id === "health" ? "maxHealth" : "maxEnergy"}`;
@@ -243,6 +281,7 @@ function findField(document: PhantasyStar4Document, key: string): PhantasyStar4F
 /** Validate the complete draft before writing, then report all actual byte-field changes. */
 export function editFields(document: PhantasyStar4Document, changes: Record<string, number>) {
   changes = { ...changes };
+  expandCombatTargets(document, changes);
   // A cleared selector disables its controls; retain the slot's original hidden capacities.
   for (const [key, after] of Object.entries(changes)) {
     const match = /^ability\.(\d+)\.skill\.(\d+)$/.exec(key);
@@ -292,7 +331,9 @@ export function editFields(document: PhantasyStar4Document, changes: Record<stri
         ({ field, before, after }) =>
           before !== after &&
           field.key.startsWith(`person.${index}.`) &&
-          attributes.some((attribute) => attribute === field.columnId),
+          [...attributes, ...combatTargets.map(([stat]) => stat)].some(
+            (attribute) => attribute === field.columnId,
+          ),
       )
     )
       refreshAttributes(document, output, index);

@@ -56,6 +56,18 @@ not the storage width. The skill menu displays only two digits, so edited use
 maxima are limited to 99 even though the byte stores more. Larger existing values
 survive unrelated edits.
 
+Target attack, defence and magic defence invert to base strength, agility and
+mental respectively. Each target subtracts both the equipment's base-attribute
+bonus and its combat bonus; the result must fit 0–255. Controls show both bonuses,
+the attainable nonnegative range and the linked attribute. Unequipping first is
+optional. The last edited control updates its counterpart; inconsistent base and
+target values submitted directly to the API are rejected. Previews also show
+equipment-adjusted attributes, including clipping, without making these effects
+writable. Existing wrapped totals remain preserved during unrelated edits.
+Explicit target corrections survive canonical replay even when only a stale
+cached total needs refreshing. Later equipment changes recalculate from the new
+base; this feature does not freeze combat totals or change equipment definitions.
+
 The game appends future learned abilities without a bounds check. Edits therefore
 reserve capacity for both natural learning and still-empty fixed story/hardware
 slots, and cannot introduce ambiguous duplicate IDs. Moving an occupied fixed

@@ -1,5 +1,6 @@
 import { type DisplayText, message } from "../../shared/messages.ts";
 import { type EditorAdapter, type EditorDraft, EditorError, type EditorField } from "../types.ts";
+import { combatEffects } from "./combat.ts";
 import { layout, PhantasyStar4Document } from "./document.ts";
 import {
   abilityFields,
@@ -139,6 +140,11 @@ export const createPhantasyStar4Adapter = (rules?: PhantasyStar4Rules): EditorAd
         after: catalog ? choiceName(catalog, after) : after,
       };
     });
+    preview.push(
+      ...combatEffects(value.original, document).filter(
+        (effect) => !preview.some(({ key }) => key === effect.key),
+      ),
+    );
     const held = document.inventory().flatMap((id, index) => (id === 0 ? [] : [index]));
     const selectedHeld = held.indexOf(Number(selected));
     return {
