@@ -19,6 +19,7 @@ function strategicMemory() {
   view.setUint32(0x78000, 0x4b4f4549);
   view.setUint32(0x78776, 0x4b4f4549);
   view.setUint16(0x78788, 200);
+  for (let index = 1; index < 13; index++) view.setUint16(0x787aa + index * 2, 0xffff);
   for (let index = 0; index < san3Layout.factions.count; index++)
     view.setUint16(san3Layout.factions.offset + index * san3Layout.factions.stride, 0xffff);
   view.setUint16(san3Layout.factions.offset, 0);
@@ -364,6 +365,42 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
     morale: 0,
   });
   expect(relocated?.manifest.artifacts.find((file) => file.name === "save.srm")).toEqual(
+    original.manifest.artifacts.find((file) => file.name === "save.srm"),
+  );
+
+  await capture.click();
+  await editor.getByRole("button", { name: "Treasures", exact: true }).click();
+  await editor
+    .getByRole("row")
+    .filter({ hasText: /^Treasure 2/ })
+    .click();
+  await editor.getByLabel("Owner", { exact: true }).click();
+  await page.getByRole("option", { name: "General", exact: true }).click();
+  await editor.getByRole("button", { name: "Officers", exact: true }).click();
+  await editor
+    .getByRole("row")
+    .filter({ hasText: /^General/ })
+    .click();
+  await editor.getByLabel("Strategy books held", { exact: true }).fill("2");
+  await editor.getByLabel("Strategy books held", { exact: true }).press("Tab");
+  await editor.getByRole("button", { name: "Preview edits", exact: true }).click();
+  await expect(page.getByRole("dialog")).toContainText("Treasure 2");
+  await expect(page.getByRole("dialog")).toContainText("Strategy books held");
+  await page.getByRole("dialog").getByRole("button", { name: "Close", exact: true }).click();
+  await editor.getByRole("button", { name: "Save edits", exact: true }).click();
+  await expect(editor.getByRole("status")).toContainText("Edits were saved");
+  const treasureRevision = (await history())[0];
+  const treasureResponse = await page.request.get(
+    `/api/revisions/${treasureRevision?.id}/file?name=__runtime%2Fstate.bin`,
+  );
+  const treasureData = new DataView(
+    openSnapshotMemory(new Uint8Array(await treasureResponse.body()), "picodrive", "program").bytes
+      .buffer,
+  );
+  expect(treasureData.getUint16(0x787aa)).toBe(2);
+  expect(treasureData.getUint16(0x787ac)).toBe(1);
+  expect(treasureData.getUint16(san3Layout.officers.offset + 30 + 4)).toBe(0x4003);
+  expect(treasureRevision?.manifest.artifacts.find((file) => file.name === "save.srm")).toEqual(
     original.manifest.artifacts.find((file) => file.name === "save.srm"),
   );
 

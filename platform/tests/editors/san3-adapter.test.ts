@@ -72,7 +72,13 @@ describe("SAN3 editor view", () => {
       snapshot: { core: "picodrive", domain: "program" },
     });
     const view = san3Adapter.view(fixture(), {});
-    expect(view.modules.map(({ id }) => id)).toEqual(["cities", "officers", "custom", "factions"]);
+    expect(view.modules.map(({ id }) => id)).toEqual([
+      "cities",
+      "officers",
+      "custom",
+      "factions",
+      "treasures",
+    ]);
     expect(view).toMatchObject({ slot: 0, selected: "0", actions: [], changes: {}, preview: [] });
     expect(view.records[0]).toMatchObject({
       label: "Town",

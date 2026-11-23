@@ -116,6 +116,14 @@ has instruction and synthetic-test evidence, not an observed affected-game case.
 
 ## Evidence and limits
 
+The treasure view transfers unique items with their shared ownership table and
+officer masks. Strategy books share a world limit of seven; their quantity field
+is separate from unique-item bits. Claiming the hidden seal clears its discovery
+marker. Event custodians and unsafe officers remain read-only. These edits preserve
+base abilities; the game computes item bonuses. Original-game snapshot readback
+and a fresh native-only load retained a transfer, two books and the claimed seal,
+including its consumed city marker. The native roundtrip changed only 11 bytes.
+
 The registration overlay (`0x4abc4 == 4`) exposes a separate creation-default
 view after verifying both table consumers and the point-allocation instructions.
 Its four six-byte rows at `0x5d0ac` select male/female and age below/at least 30.

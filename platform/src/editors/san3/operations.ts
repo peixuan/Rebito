@@ -5,6 +5,8 @@ import { editSan3, findSan3Field } from "./fields.ts";
 import { editSan3Lifecycle } from "./lifecycle.ts";
 import { relocateSan3Officers } from "./relocation.ts";
 import { replaceSan3Ruler } from "./ruler-change.ts";
+import { san3TreasureOwnerLabel } from "./treasure-view.ts";
+import { editSan3Treasures, inspectSan3Treasures } from "./treasures.ts";
 
 const invalid = () => new EditorError("invalid_edit", message("editor.invalidEdit"));
 const officerName = (document: San3Document, index: number): DisplayText =>
@@ -19,12 +21,17 @@ export function editSan3Campaign(document: San3Document, changes: Record<string,
   const touched = new Set<number>();
   const scalar: Record<string, number> = Object.create(null);
   const lifecycle: Record<string, number> = Object.create(null);
+  const treasures: Record<string, number> = Object.create(null);
   const operationChanges: Record<string, number> = {};
   for (const [key, value] of Object.entries(changes)) {
     const move = /^move\.(0|[1-9]\d{0,2})\.city$/.exec(key);
     const ruler = /^ruler\.(0|[1-9]\d?)\.officer$/.exec(key);
     if (key.startsWith("lifecycle.")) {
       lifecycle[key] = value;
+      continue;
+    }
+    if (key.startsWith("treasure.") || key.startsWith("book.")) {
+      treasures[key] = value;
       continue;
     }
     if (move) {
@@ -51,6 +58,10 @@ export function editSan3Campaign(document: San3Document, changes: Record<string,
     ? editSan3Lifecycle(document, lifecycle)
     : { changes: {} };
   const lifecycleKeys = Object.keys(transitions.changes);
+  const treasureEdits = Object.keys(treasures).length
+    ? editSan3Treasures(document, treasures).edits
+    : [];
+  if (treasureEdits.length && (moves.size || rulers.size || lifecycleKeys.length)) throw invalid();
   if (lifecycleKeys.length && (moves.size || rulers.size)) throw invalid();
   for (const key of lifecycleKeys) touched.add(Number(key.split(".")[1]));
   Object.assign(operationChanges, transitions.changes);
@@ -65,6 +76,27 @@ export function editSan3Campaign(document: San3Document, changes: Record<string,
   const result = editSan3(document, scalar);
   let current = new San3Document(result.bytes);
   const operationPreview: EditorView["preview"] = [];
+  if (treasureEdits.length) {
+    const inventory = inspectSan3Treasures(current);
+    const intents = Object.fromEntries(treasureEdits.map(({ key, after }) => [key, after]));
+    const updated = editSan3Treasures(current, intents);
+    Object.assign(operationChanges, intents);
+    for (const { key, index, kind, before, after } of updated.edits) {
+      const ownership = kind === "owner";
+      operationPreview.push({
+        key,
+        label: message("editor.columnLabel", {
+          group: ownership
+            ? inventory.items[index]?.name || message("san3.treasureRecord", { index: index + 1 })
+            : officerName(current, index),
+          field: message(ownership ? "san3.treasureOwner" : "san3.bookCopies"),
+        }),
+        before: ownership ? san3TreasureOwnerLabel(current, before) : before,
+        after: ownership ? san3TreasureOwnerLabel(current, after) : after,
+      });
+    }
+    current = new San3Document(updated.bytes);
+  }
   if (lifecycleKeys.length) {
     const updated = editSan3Lifecycle(current, transitions.changes);
     for (const entry of updated.preview) {

@@ -147,5 +147,14 @@
   "san3.relocationHelp": "请回到战略菜单并卸下军备。移动会解散部队，清零训练、士气与行动状态，并更新城市名单。君主、太守及任务中的武将不可移动。请与该武将其他实时属性或君主替换分开保存。",
   "san3.rulerChangeHelp": "只能选择都城内空闲且未装备军备的武将。双方部队保留；原君主变为忠诚100的武将，同时更新太守和军师关联。",
   "san3.invalidRelocation": "无法移动此武将：请检查城市名单、君主/太守身份、已分配军备及进行中的行动。",
-  "san3.invalidRulerChange": "请选择同一都城内空闲且未装备军备的继任者；委任或关联异常时不能替换。"
+  "san3.invalidRulerChange": "请选择同一都城内空闲且未装备军备的继任者；委任或关联异常时不能替换。",
+  "san3.treasures": "宝物",
+  "san3.treasureOwner": "持有人",
+  "san3.treasureRecord": "宝物 {index}",
+  "san3.eventCustodian": "由游戏事件保管",
+  "san3.bookTotal": "已发现兵法书总数",
+  "san3.bookTotalCount": "{count} 本兵法书",
+  "san3.bookCopies": "持有兵法书数量",
+  "san3.bookCopiesHelp": "所有武将合计最多持有七本。重新分配时，请先减少其他武将的数量；唯一宝物和基础能力保持不变。",
+  "san3.treasureOwnershipHelp": "转交或移除此唯一宝物，归属表与武将背包会同步更新。取得隐藏玉玺时会清除发现标记。事件保管的宝物和忙碌武将保持锁定。"
 }

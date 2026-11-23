@@ -18,8 +18,9 @@ import { san3NamePresetAction } from "./name-presets.ts";
 import { san3OperationFields } from "./operation-fields.ts";
 import { editSan3Campaign } from "./operations.ts";
 import { san3PresetAdapter } from "./preset-adapter.ts";
+import { san3BookFields, san3TreasureView } from "./treasure-view.ts";
 
-const modules = ["cities", "officers", "custom", "factions"] as const;
+const modules = ["cities", "officers", "custom", "factions", "treasures"] as const;
 type Module = (typeof modules)[number];
 const invalid = () => new EditorError("invalid_edit", message("editor.invalidEdit"));
 const fallback = (kind: "city" | "officer" | "faction", index: number) =>
@@ -87,6 +88,7 @@ function fields(
   module: Module,
   index: number,
 ): EditorField[] {
+  if (module === "treasures") return [];
   if (module === "custom")
     return [
       ...customMetadataFields(document, index),
@@ -160,7 +162,7 @@ function prepare(bytes: Uint8Array, draft: EditorDraft) {
   if (draft.slot !== undefined && draft.slot !== 0) throw invalid();
   const module = draft.module ?? "cities";
   if (!modules.includes(module as Module)) throw invalid();
-  if (module === "factions" && draft.action) throw invalid();
+  if ((module === "factions" || module === "treasures") && draft.action) throw invalid();
   const original = new San3Document(bytes);
   const result = editSan3Campaign(
     original,
@@ -174,11 +176,12 @@ function prepare(bytes: Uint8Array, draft: EditorDraft) {
   const names = editCustomNames(new San3Document(result.bytes), draft.textChanges ?? {});
   const document = new San3Document(names.bytes);
   const data = catalog(document);
-  const count = san3Layout[module as Module].count;
+  const count =
+    module === "treasures" ? 13 : san3Layout[module as Exclude<Module, "treasures">].count;
   const first =
     module === "officers"
       ? data.officers.find((officer) => officer.available)?.index
-      : module === "custom"
+      : module === "custom" || module === "treasures"
         ? 0
         : module === "factions"
           ? data.factions.find((faction) => faction.active)?.index
@@ -220,6 +223,8 @@ export const san3Adapter: EditorAdapter = {
       operationPreview,
     } = prepare(bytes, draft);
     const selectedFields = fields(document, data, module, Number(selected));
+    const treasures =
+      module === "treasures" ? san3TreasureView(document, Number(selected)) : undefined;
     const preview: EditorView["preview"] = edits.map(({ field, before, after }) => {
       const [kind, index] = field.key.split(".");
       return {
@@ -252,49 +257,54 @@ export const san3Adapter: EditorAdapter = {
       slot: 0,
       modules: modules.map((id) => ({ id, label: message(`san3.${id}`) })),
       module,
-      columns: selectedFields.map(({ columnId: id, label }) => ({
-        id,
-        label,
-        defaultVisible: (module === "cities"
-          ? ["population", "gold", "food"]
-          : module === "officers"
-            ? ["soldiers", "loyalty"]
-            : ["cityCount", "officerCount", "gold", "food"]
-        ).includes(id),
-      })),
+      columns:
+        treasures?.columns ??
+        selectedFields.map(({ columnId: id, label }) => ({
+          id,
+          label,
+          defaultVisible: (module === "cities"
+            ? ["population", "gold", "food"]
+            : module === "officers"
+              ? ["soldiers", "loyalty"]
+              : ["cityCount", "officerCount", "gold", "food"]
+          ).includes(id),
+        })),
       ...(module === "officers"
         ? { filter: { tag: "active", label: message("san3.activeOnly"), defaultEnabled: true } }
         : {}),
-      records: Array.from({ length: count }, (_, index) => {
-        const active =
-          module === "officers"
-            ? data.officers[index]?.available === true
-            : module === "factions"
-              ? data.factions[index]?.active === true
-              : true;
-        return {
-          id: String(index),
-          label: label(data, module, index),
-          summary: !active
-            ? message("san3.inactive")
-            : module === "factions"
-              ? message("san3.context")
-              : "",
-          tags: active ? ["active"] : [],
-          available: active,
-          cells: Object.fromEntries(
-            fields(document, data, module, index).map((field) => [
-              field.columnId,
-              field.choices?.find(({ value }) => value === field.value)?.label ??
-                field.value * (field.multiplier ?? 1),
-            ]),
-          ),
-        };
-      }),
+      records:
+        treasures?.records ??
+        Array.from({ length: count }, (_, index) => {
+          const active =
+            module === "officers"
+              ? data.officers[index]?.available === true
+              : module === "factions"
+                ? data.factions[index]?.active === true
+                : true;
+          return {
+            id: String(index),
+            label: label(data, module, index),
+            summary: !active
+              ? message("san3.inactive")
+              : module === "factions"
+                ? message("san3.context")
+                : "",
+            tags: active ? ["active"] : [],
+            available: active,
+            cells: Object.fromEntries(
+              fields(document, data, module, index).map((field) => [
+                field.columnId,
+                field.choices?.find(({ value }) => value === field.value)?.label ??
+                  field.value * (field.multiplier ?? 1),
+              ]),
+            ),
+          };
+        }),
       selected,
-      fields: [
+      fields: treasures?.fields ?? [
         ...selectedFields,
         ...san3OperationFields(document, module, Number(selected)),
+        ...(module === "officers" ? san3BookFields(document, Number(selected)) : []),
         ...(module === "officers"
           ? lifecycleFields(original, Number(selected)).map((field) => ({
               ...field,
@@ -302,7 +312,7 @@ export const san3Adapter: EditorAdapter = {
             }))
           : []),
       ],
-      ...(module === "factions"
+      ...(module === "factions" || module === "treasures"
         ? {}
         : { batchKeys: selectedFields.filter((field) => !field.readonly).map(({ key }) => key) }),
       ...(module === "custom" ? { textFields: customNameFields(document, Number(selected)) } : {}),
