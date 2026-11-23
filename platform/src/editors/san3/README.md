@@ -188,3 +188,11 @@ UI and a fresh native-only load both retained the new ruler, roles and armies.
 Relocation and ruler changes cannot share a draft or silently overwrite separate
 live-trait edits on the affected officers. City ownership, arbitrary role changes,
 alliances, birth/death and live officer creation remain guarded game transitions.
+
+Appointments support qualified serving strategists, generals, military and civil
+officers, plus explicit city-strategist replacement. They update the advisor link
+without changing the governor, loyalty or armies. Civil conversion requires no
+troops or allocated equipment. Qualification uses native base-ability checks;
+treasure bonuses do not qualify an officer. Preview exposes every role/advisor
+change. Four original-game transitions survived native saving and a fresh load,
+preserving troops, loyalty, training, morale, city and faction in each case.

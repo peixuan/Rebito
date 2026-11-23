@@ -324,6 +324,34 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   ]).toEqual([0xb6, 0xde, 0xca, 0xdf, 0]);
 
   await capture.click();
+  await editor.getByRole("button", { name: "Officers", exact: true }).click();
+  await editor
+    .getByRole("row")
+    .filter({ hasText: /^General/ })
+    .click();
+  await editor.getByLabel("Role", { exact: true }).click();
+  await page.getByRole("option", { name: "Strategist", exact: true }).click();
+  await editor.getByRole("button", { name: "Preview edits", exact: true }).click();
+  await expect(page.getByRole("dialog")).toContainText("Strategist");
+  await expect(page.getByRole("dialog")).toContainText("City strategist");
+  await page.getByRole("dialog").getByRole("button", { name: "Close", exact: true }).click();
+  await editor.getByRole("button", { name: "Cities", exact: true }).click();
+  await editor.getByRole("button", { name: "Officers", exact: true }).click();
+  await expect(editor.getByLabel("Role", { exact: true })).toContainText("Strategist");
+  await editor.getByRole("button", { name: "Save edits", exact: true }).click();
+  await expect(editor.getByRole("status")).toContainText("Edits were saved");
+  const appointedRevision = (await history())[0];
+  const appointedResponse = await page.request.get(
+    `/api/revisions/${appointedRevision?.id}/file?name=__runtime%2Fstate.bin`,
+  );
+  const appointedDocument = new San3Document(
+    openSnapshotMemory(new Uint8Array(await appointedResponse.body()), "picodrive", "program")
+      .bytes,
+  );
+  expect(appointedDocument.officer(1).role).toBe(1);
+  expect(appointedDocument.read(san3Layout.cities.offset + 10, 2)).toBe(1);
+
+  await capture.click();
   await editor.getByRole("button", { name: "Factions", exact: true }).click();
   await editor.getByLabel("New ruler", { exact: true }).click();
   await page.getByRole("option", { name: "General", exact: true }).click();

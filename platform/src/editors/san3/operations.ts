@@ -1,5 +1,6 @@
 import { type DisplayText, message } from "../../shared/messages.ts";
 import { EditorError, type EditorView } from "../types.ts";
+import { editSan3Appointments } from "./appointment-draft.ts";
 import { San3Document, san3Layout } from "./document.ts";
 import { editSan3, findSan3Field } from "./fields.ts";
 import { editSan3Lifecycle } from "./lifecycle.ts";
@@ -22,12 +23,17 @@ export function editSan3Campaign(document: San3Document, changes: Record<string,
   const scalar: Record<string, number> = Object.create(null);
   const lifecycle: Record<string, number> = Object.create(null);
   const treasures: Record<string, number> = Object.create(null);
+  const appointments: Record<string, number> = Object.create(null);
   const operationChanges: Record<string, number> = {};
   for (const [key, value] of Object.entries(changes)) {
     const move = /^move\.(0|[1-9]\d{0,2})\.city$/.exec(key);
     const ruler = /^ruler\.(0|[1-9]\d?)\.officer$/.exec(key);
     if (key.startsWith("lifecycle.")) {
       lifecycle[key] = value;
+      continue;
+    }
+    if (key.startsWith("appointment.")) {
+      appointments[key] = value;
       continue;
     }
     if (key.startsWith("treasure.") || key.startsWith("book.")) {
@@ -76,6 +82,17 @@ export function editSan3Campaign(document: San3Document, changes: Record<string,
   const result = editSan3(document, scalar);
   let current = new San3Document(result.bytes);
   const operationPreview: EditorView["preview"] = [];
+  if (Object.keys(appointments).length) {
+    const appointed = editSan3Appointments(current, appointments);
+    if (
+      Object.keys(appointed.changes).length &&
+      (moves.size || rulers.size || lifecycleKeys.length || treasureEdits.length)
+    )
+      throw invalid();
+    current = new San3Document(appointed.bytes);
+    Object.assign(operationChanges, appointed.changes);
+    operationPreview.push(...appointed.preview);
+  }
   if (treasureEdits.length) {
     const inventory = inspectSan3Treasures(current);
     const intents = Object.fromEntries(treasureEdits.map(({ key, after }) => [key, after]));

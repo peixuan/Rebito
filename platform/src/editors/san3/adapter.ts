@@ -6,6 +6,7 @@ import {
   type EditorField,
   type EditorView,
 } from "../types.ts";
+import { san3AppointmentFields } from "./appointment-fields.ts";
 import { san3BatchDraft } from "./batch-action.ts";
 import { san3CampaignContext, san3ReadingField } from "./campaign-context.ts";
 import { factionContextFields, historicalContextFields } from "./context-fields.ts";
@@ -302,9 +303,16 @@ export const san3Adapter: EditorAdapter = {
         }),
       selected,
       fields: treasures?.fields ?? [
-        ...selectedFields,
+        ...selectedFields.filter((field) => module !== "officers" || field.columnId !== "role"),
         ...san3OperationFields(document, module, Number(selected)),
         ...(module === "officers" ? san3BookFields(document, Number(selected)) : []),
+        ...(module === "officers"
+          ? san3AppointmentFields(
+              document,
+              Number(selected),
+              operationChanges[`appointment.${selected}.advisor`],
+            )
+          : []),
         ...(module === "officers"
           ? lifecycleFields(original, Number(selected)).map((field) => ({
               ...field,
