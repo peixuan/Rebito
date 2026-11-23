@@ -87,7 +87,7 @@ scanning still covers the entire reachable history, including the template.
 CI scans reachable Git history with the pinned Gitleaks CLI. Locally, run
 `gitleaks git . --log-opts=--all --redact=100` and
 `node scripts/check-secret-scan.mjs` (set `GITLEAKS_BIN` if it is not on PATH).
-The configured false positives are one exact editor field and two exact game
+The configured false positives are two exact editor fields and two exact game
 catalog identifiers, restricted by path and covered by scanner regression tests.
 Do not exclude whole directories or conceal real findings.
 ROMs, firmware, disc images, database copies and downloaded runtime archives are

@@ -35,7 +35,7 @@ function strategicMemory() {
     bytes[offset + 0x0c] = index === 0 ? 0 : 3;
     bytes[offset + 0x0f] = 90;
     view.setUint16(offset + 2, 2000);
-    bytes[base + 5] = 70;
+    bytes.set([70, 60, 80, 90, 50, 40], base + 5);
     bytes.set(new TextEncoder().encode(name), base + 15);
   }
   bytes.set(new TextEncoder().encode("Harbor"), san3Layout.territories.offset + 10);
@@ -187,6 +187,12 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
     ["Loyalty", "89"],
     ["Training", "67"],
     ["Morale", "78"],
+    ["Land leadership", "91"],
+    ["Naval leadership", "92"],
+    ["Strength", "93"],
+    ["Intelligence", "94"],
+    ["Politics", "95"],
+    ["Charisma", "96"],
   ]) {
     if (!label || !value) throw new Error("Missing officer edit");
     await editor.getByLabel(label, { exact: true }).fill(value);
@@ -198,6 +204,7 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
       .getByRole("region", { name: chinese("editor.title"), exact: true })
       .getByLabel(chinese("san3.soldiers"), { exact: true }),
   ).toHaveValue("8765");
+  await expect(page.getByLabel(chinese("san3.strength"), { exact: true })).toHaveValue("93");
   await page.getByLabel(chinese("app.language")).selectOption("en");
   await editor.getByRole("button", { name: "Factions", exact: true }).click();
   await expect(editor.getByLabel("Gold", { exact: true })).toBeDisabled();
@@ -257,6 +264,8 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
     training: 67,
     morale: 78,
   });
+  expect(Object.values(document.attributes(1))).toEqual([91, 92, 93, 94, 95, 96]);
+  expect(document.officer(1).soldierLimit).toBe(19_200);
   expect(result[123]).toBe(219);
   expect(errors).toEqual([]);
 });

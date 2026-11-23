@@ -1,10 +1,38 @@
 import { message } from "../../shared/messages.ts";
 import { EditorError, type EditorField } from "../types.ts";
-import type { San3Document } from "./document.ts";
+import { type San3Document, san3Attributes, san3Layout } from "./document.ts";
 
 export interface San3Field extends EditorField {
   offset: number;
   width: 1 | 2 | 4;
+}
+
+/** Basic abilities are editable even before an officer appears in a scenario. */
+export function attributeFields(document: San3Document, index: number): San3Field[] {
+  const offset = document.attributeOffset(index);
+  const values = document.attributes(index);
+  const valid = Object.values(values).every((value) => value >= 1 && value <= 100);
+  return san3Attributes.map((id, relative) => ({
+    key: `officer.${index}.${id}`,
+    label: message(`san3.${id}`),
+    group: message("san3.baseAttributes"),
+    columnId: id,
+    offset: offset + relative,
+    width: 1,
+    value: values[id],
+    min: 1,
+    max: 100,
+    readonly: !valid,
+    ...(relative === 0
+      ? {
+          help: message(
+            index < san3Layout.historical.count
+              ? "san3.historicalAttributesHelp"
+              : "san3.customAttributesHelp",
+          ),
+        }
+      : {}),
+  }));
 }
 
 /** Population is stored in hundreds; the shared multiplier presents people. */
@@ -33,7 +61,7 @@ export function cityFields(document: San3Document, index: number): San3Field[] {
 export function officerFields(document: San3Document, index: number): San3Field[] {
   const officer = document.officer(index);
   const offset = document.offset("officers", index);
-  return (
+  const military = (
     [
       ["soldiers", 2, 2, officer.soldierLimit],
       ["loyalty", 0x0f, 1, 100],
@@ -54,6 +82,7 @@ export function officerFields(document: San3Document, index: number): San3Field[
     readonly:
       !officer.available || (id === "loyalty" ? officer.role === 0 : officer.soldiers === 0),
   }));
+  return [...military, ...attributeFields(document, index)];
 }
 
 export function findSan3Field(document: San3Document, key: string): San3Field {
@@ -68,11 +97,19 @@ export function findSan3Field(document: San3Document, key: string): San3Field {
   throw new EditorError("invalid_edit", message("editor.invalidEdit"));
 }
 
-/** Validate the whole request before copying; no pointer, name or table edits. */
+/** Validate atomically, including troop edits against the final leadership values. */
 export function editSan3(document: San3Document, changes: Record<string, number>) {
   const edits = Object.entries(changes).map(([key, value]) => {
     const field = findSan3Field(document, key);
-    if (field.readonly || !Number.isSafeInteger(value) || value < field.min || value > field.max)
+    let maximum = field.max;
+    if (field.columnId === "soldiers") {
+      const index = Number(key.split(".")[1]);
+      const attributes = document.attributes(index);
+      const land = changes[`officer.${index}.land`] ?? attributes.land;
+      const naval = changes[`officer.${index}.naval`] ?? attributes.naval;
+      maximum = 10_000 + Math.max(land, naval) * 100;
+    }
+    if (field.readonly || !Number.isSafeInteger(value) || value < field.min || value > maximum)
       throw new EditorError("invalid_edit", message("editor.invalidEdit"));
     return { field, before: field.value, after: value };
   });

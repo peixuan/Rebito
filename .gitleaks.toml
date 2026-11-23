@@ -9,6 +9,13 @@ regexTarget = "match"
 regexes = ['''key:\s*"companion\.0\.salary"''']
 
 [[allowlists]]
+description = "Exact SAN3 preview field identifier, not an authentication credential"
+condition = "AND"
+paths = ['''^platform/tests/editors/san3-adapter\.test\.ts$''']
+regexTarget = "match"
+regexes = ['''^key:\s*"officer\.1\.strength"$''']
+
+[[allowlists]]
 description = "Exact item catalog identifiers following Escapipe and Control Key"
 condition = "AND"
 paths = ['''^platform/client/locales/(shared|en)/editors/phantasyStar4Names\.json$''']

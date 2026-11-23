@@ -12,6 +12,15 @@ export const san3Layout = {
   territories: { offset: 0x44076, count: 46, stride: 0x1a },
 } as const;
 
+export const san3Attributes = [
+  "land",
+  "naval",
+  "strength",
+  "intelligence",
+  "politics",
+  "charisma",
+] as const;
+
 const invalid = () => new EditorError("invalid_save", message("editor.invalidSave"));
 const invalidRecord = () => new EditorError("invalid_edit", message("editor.selectRecord"));
 const decoder = new TextDecoder("shift_jis");
@@ -117,14 +126,30 @@ export class San3Document {
     return { index, ruler, active: ruler < san3Layout.officers.count };
   }
 
+  /** Historical definitions and custom records use distinct layouts in program RAM. */
+  attributeOffset(index: number): number {
+    this.offset("officers", index);
+    return index < san3Layout.historical.count
+      ? san3Layout.historical.offset + index * san3Layout.historical.stride + 5
+      : san3Layout.custom.offset +
+          (index - san3Layout.historical.count) * san3Layout.custom.stride +
+          4;
+  }
+
+  attributes(index: number) {
+    const offset = this.attributeOffset(index);
+    return Object.fromEntries(
+      san3Attributes.map((id, relative) => [id, this.read(offset + relative, 1)]),
+    ) as Record<(typeof san3Attributes)[number], number>;
+  }
+
   officer(index: number) {
     const offset = this.offset("officers", index);
     const historical = index < san3Layout.historical.count;
     const base = historical
       ? san3Layout.historical.offset + index * san3Layout.historical.stride
       : san3Layout.custom.offset + (index - san3Layout.historical.count) * san3Layout.custom.stride;
-    const land = this.read(base + (historical ? 5 : 4), 1);
-    const naval = this.read(base + (historical ? 6 : 5), 1);
+    const { land, naval } = this.attributes(index);
     const role = this.read(offset + 0x0c, 1);
     const city = this.read(offset + 0x10, 1);
     const faction = this.read(offset + 0x11, 1);

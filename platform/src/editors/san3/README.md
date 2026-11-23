@@ -35,6 +35,20 @@ names start at `0x44076`, 46 records of `0x1a` bytes. Names are decoded from the
 user's game data; unsupported private glyphs fall back to the game's phonetic
 reading when available. No extracted names, fonts or game data are distributed.
 
+Six base abilities (land/naval leadership, strength, intelligence, politics and
+charisma) are editable at historical offsets `+5..+10` and custom offsets
+`+4..+9`, with the game's 1..100 range. The controls also support historical
+officers who have not appeared yet. Recruitment capacity follows the final draft's
+leadership, independent of edit order; changing abilities never silently changes
+existing troops. Explicit troop edits must fit the resulting recruitment capacity.
+Historical definitions live outside the native-save payload: use a checkpoint to
+keep them across a fresh boot. A fresh boot with only native SRAM reloads disc
+defaults. Custom abilities are inside the native payload and require in-game saving.
+The original-game checkpoint test changed all six values for one historical and
+one custom record, read back all twelve after acknowledged PicoDrive writeback,
+and preserved the 73,728-byte native companion. The bilingual browser flow also
+checks ability drafts, retained changes, failed-download recovery and troop limits.
+
 ## Evidence and limits
 
 The original supplied Japanese disc's first MODE1/2352 track has 4,745 sectors
@@ -65,7 +79,5 @@ users must return to the strategic command menu before editing. In-game panels
 cache their rendering; reopen a panel to refresh it after editing. Runtime
 writeback must still verify the replacement and preserve a failed update paused.
 
-City ownership, officer lists, role changes, alliances, birth/death, officer
-creation and historical base-attribute changes are not supported. In particular,
-historical definitions lie outside the native-save block; editing those bytes
-would not have the same persistence contract as the seven fields above.
+City ownership, officer lists, role changes, alliances, birth/death and officer
+creation are not yet supported. Base-ability editing does not change those relationships.

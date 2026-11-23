@@ -162,7 +162,10 @@ preservation; this evidence does not establish every ability/event combination.
 The [Japanese Mega-CD SAN3 adapter](../../platform/src/editors/san3/README.md)
 edits strategic population, gold, food, soldiers, loyalty, training and morale.
 Cities, officers and read-only faction totals share the compact bilingual editor.
-Ownership changes, battle data and historical base-attribute editing are excluded.
+Six historical/custom base abilities are now editable with explicit checkpoint
+versus native-save persistence guidance. Troop edits use final-draft leadership;
+ability edits preserve existing armies. Original-editor parity is being checked
+against both supplied GameCheatKits branches; ownership and battle changes remain excluded.
 The 2026-11-23 real PicoDrive recheck confirmed that the checkpoint path edits
 program RAM: all seven values read back after an acknowledged load, while all
 73,728 native-save companion bytes stayed identical and the runtime stayed paused.

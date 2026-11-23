@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { San3Document, san3Layout } from "../../src/editors/san3/document.ts";
+import { San3Document, san3Attributes, san3Layout } from "../../src/editors/san3/document.ts";
 import { cityFields, editSan3, officerFields } from "../../src/editors/san3/fields.ts";
 
 /** Generated structure only: no game code, names, ROM or real player progress. */
@@ -30,8 +30,7 @@ function fixture() {
     bytes[offset + 0x16] = 55;
     const base =
       index === 532 ? san3Layout.custom.offset : san3Layout.historical.offset + index * 30;
-    bytes[base + (index === 532 ? 4 : 5)] = 60;
-    bytes[base + (index === 532 ? 5 : 6)] = 70;
+    bytes.set([60, 70, 80, 45, 52, 63], base + (index === 532 ? 4 : 5));
     bytes.set(new TextEncoder().encode("Officer"), base + (index === 532 ? 13 : 15));
   }
   bytes.set(new TextEncoder().encode("City"), san3Layout.territories.offset + 10);
@@ -177,6 +176,68 @@ describe("Japanese Mega-CD strategic memory", () => {
     ).toEqual(["soldiers", "training", "morale"]);
     expect(() => editSan3(noArmy, { "officer.1.soldiers": 1000 })).toThrow();
     bytes[san3Layout.officers.offset + 30 + 0x0c] = 7;
-    expect(officerFields(new San3Document(bytes), 1).every((field) => field.readonly)).toBe(true);
+    const inactiveFields = officerFields(new San3Document(bytes), 1);
+    expect(inactiveFields.slice(0, 4).every((field) => field.readonly)).toBe(true);
+    expect(inactiveFields.slice(4).every((field) => !field.readonly)).toBe(true);
+  });
+
+  it("edits historical and custom abilities without changing neighboring bytes", () => {
+    const bytes = fixture();
+    bytes[san3Layout.officers.offset + 30 + 0x0c] = 7;
+    const document = new San3Document(bytes);
+    const changes = Object.fromEntries(
+      [1, 532].flatMap((index) =>
+        san3Attributes.map((id, relative) => [`officer.${index}.${id}`, 91 + relative]),
+      ),
+    );
+    const edited = editSan3(document, changes);
+    const after = new San3Document(edited.bytes);
+    const restored = edited.bytes.slice();
+    for (const index of [1, 532]) {
+      expect(Object.values(after.attributes(index))).toEqual([91, 92, 93, 94, 95, 96]);
+      const offset = document.attributeOffset(index);
+      restored.set(bytes.subarray(offset, offset + 6), offset);
+      expect(after.officer(index).soldierLimit).toBe(19_200);
+    }
+    expect(restored).toEqual(bytes);
+    expect(document.copy()).toEqual(bytes);
+    for (const value of [0, 101, 1.5, Number.NaN])
+      expect(() =>
+        editSan3(document, { "officer.1.land": 100, "officer.532.strength": value }),
+      ).toThrow();
+  });
+
+  it("uses final leadership for troop requests and never silently changes armies", () => {
+    const document = new San3Document(fixture());
+    for (const entries of [
+      [
+        ["officer.1.soldiers", 20_000],
+        ["officer.1.land", 100],
+      ],
+      [
+        ["officer.1.land", 100],
+        ["officer.1.soldiers", 20_000],
+      ],
+    ]) {
+      const edited = editSan3(document, Object.fromEntries(entries));
+      expect(new San3Document(edited.bytes).officer(1).soldiers).toBe(20_000);
+    }
+    expect(() =>
+      editSan3(document, {
+        "officer.1.soldiers": 17_000,
+        "officer.1.land": 1,
+        "officer.1.naval": 1,
+      }),
+    ).toThrow();
+    const largeArmy = editSan3(document, { "officer.1.soldiers": 17_000 }).bytes;
+    const changed = editSan3(new San3Document(largeArmy), {
+      "officer.1.land": 1,
+      "officer.1.naval": 1,
+    });
+    expect(new San3Document(changed.bytes).officer(1)).toMatchObject({
+      soldiers: 17_000,
+      soldierLimit: 10_100,
+    });
+    expect(changed.edits.map(({ field }) => field.columnId)).toEqual(["land", "naval"]);
   });
 });

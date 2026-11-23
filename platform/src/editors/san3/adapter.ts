@@ -97,6 +97,7 @@ function fields(
     context("faction", faction, data.factionName(faction)),
     ...(module === "officers"
       ? [
+          context("soldierLimit", document.officer(index).soldierLimit),
           context(
             "location",
             document.officer(index).city,
@@ -132,7 +133,7 @@ function prepare(bytes: Uint8Array, draft: EditorDraft) {
   return { document, data, module: module as Module, selected, count, output: result.bytes, edits };
 }
 
-/** Only numeric strategic data is editable; ownership and faction totals are context. */
+/** Numeric resources and base abilities; ownership and faction totals remain context. */
 export const san3Adapter: EditorAdapter = {
   size: san3Layout.size,
   view(bytes, draft) {

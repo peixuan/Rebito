@@ -26,7 +26,7 @@ function fixture() {
     bytes[offset + 12] = index === 0 ? 0 : 3;
     bytes[offset + 15] = 90;
     view.setUint16(offset + 2, 2000 + index * 1000);
-    bytes[0x4021e + index * 30 + 5] = 70;
+    bytes.set([70, 60, 80, 90, 50, 40], 0x4021e + index * 30 + 5);
   }
   bytes.set(new TextEncoder().encode("Ruler"), 0x4021e + 15);
   bytes.set(new TextEncoder().encode("Town"), 0x44076 + 10);
@@ -84,6 +84,36 @@ describe("SAN3 editor view", () => {
       cells: { cityCount: 0, officerCount: 0 },
     });
     expect(view.fields.every(({ readonly }) => readonly)).toBe(true);
+  });
+
+  it("presents base abilities with checkpoint persistence guidance and canonical previews", () => {
+    const bytes = fixture();
+    const view = san3Adapter.view(bytes, {
+      module: "officers",
+      record: "1",
+      changes: { "officer.1.strength": 99 },
+    });
+    expect(view.fields.find(({ columnId }) => columnId === "strength")).toMatchObject({
+      value: 99,
+      min: 1,
+      max: 100,
+      readonly: false,
+    });
+    expect(view.fields.find(({ columnId }) => columnId === "land")?.help).toEqual({
+      messageId: "san3.historicalAttributesHelp",
+    });
+    expect(view.preview).toContainEqual(
+      expect.objectContaining({
+        key: "officer.1.strength",
+        before: 80,
+        after: 99,
+      }),
+    );
+    expect(view.records[1]?.cells.strength).toBe(99);
+    expect(JSON.stringify(view)).not.toMatch(/"(?:offset|width)":/);
+    expect(
+      new San3Document(san3Adapter.apply(bytes, { changes: view.changes })).attributes(1).strength,
+    ).toBe(99);
   });
 
   it("canonicalizes accumulated drafts and previews population in people", () => {

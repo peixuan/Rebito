@@ -16,6 +16,7 @@ try {
   const paths = [
     "platform/tests/editors/adapter.test.ts",
     "scripts/check-secret-scan.mjs",
+    "platform/tests/editors/san3-adapter.test.ts",
     ...catalogPaths,
   ];
   const files = paths.map((path) => join(directory, path));
@@ -50,7 +51,8 @@ try {
     null,
     2,
   );
-  const contents = [field, field, catalog, catalog];
+  const san3Field = `const preview = { key: ${JSON.stringify(["officer", 1, "strength"].join("."))} };\n`;
+  const contents = [field, field, san3Field, catalog, catalog];
   for (const file of files) {
     await mkdir(dirname(file), { recursive: true });
     await writeFile(file, contents[files.indexOf(file)]);
@@ -60,18 +62,28 @@ try {
     const content = contents[files.indexOf(file)];
     await writeFile(
       file,
-      `${content}\nconst api_key = ${JSON.stringify(randomBytes(32).toString("hex"))};\n`,
+      `${content}\nconst api_key = ${JSON.stringify(randomBytes(48).toString("base64url"))};\n`,
     );
-    assert.equal(scan(), 1, "Other secret-like values in either file must still be detected");
+    assert.equal(
+      scan(),
+      1,
+      `Other secret-like values in ${paths[files.indexOf(file)]} must still be detected`,
+    );
     await writeFile(file, content);
   }
-  for (const file of files.slice(2)) {
+  for (const file of files.slice(3)) {
     await writeFile(file, catalog.replace("items.134", "items.135"));
     assert.equal(scan(), 1, "Other catalog identifiers must not share the exact exception");
     await writeFile(file, catalog);
   }
   await writeFile(files[0], catalog);
   assert.equal(scan(), 1, "Catalog exceptions must not apply outside their catalog path");
+  await writeFile(files[0], contents[0]);
+  await writeFile(files[2], san3Field.replace("officer.1", "officer.2"));
+  assert.equal(scan(), 1, "Other officer field identifiers must not share the exact exception");
+  await writeFile(files[2], contents[2]);
+  await writeFile(files[0], san3Field);
+  assert.equal(scan(), 1, "The officer field exception must not apply outside its test path");
   console.log("Secret scan exceptions remain limited to exact fields and paths.");
 } finally {
   // mkdtemp supplies a dedicated absolute child of the OS temporary directory.
