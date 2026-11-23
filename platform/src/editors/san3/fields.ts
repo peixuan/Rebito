@@ -67,6 +67,7 @@ export function cityFields(document: San3Document, index: number): San3Field[] {
 export function officerFields(document: San3Document, index: number): San3Field[] {
   const officer = document.officer(index);
   const offset = document.offset("officers", index);
+  const equipped = (document.read(offset + 10, 1) & 15) !== 0;
   const military = (
     [
       ["soldiers", 2, 2, officer.soldierLimit],
@@ -86,7 +87,10 @@ export function officerFields(document: San3Document, index: number): San3Field[
     max,
     // Disband/recruit and ruler loyalty involve additional state, not just a number.
     readonly:
-      !officer.available || (id === "loyalty" ? officer.role === 0 : officer.soldiers === 0),
+      !officer.available ||
+      (id === "loyalty" ? officer.role === 0 : officer.soldiers === 0) ||
+      (id === "soldiers" && equipped),
+    ...(id === "soldiers" && equipped ? { help: message("san3.equippedTroopsHelp") } : {}),
   }));
   return [...military, ...attributeFields(document, index), ...officerTraitFields(document, index)];
 }

@@ -123,7 +123,7 @@ function fields(
   return [
     ...editable.map(({ offset: _offset, width: _width, mask: _mask, shift: _shift, ...field }) => ({
       ...field,
-      ...(field.readonly ? { help: message("san3.readonlyHelp") } : {}),
+      ...(field.readonly ? { help: field.help ?? message("san3.readonlyHelp") } : {}),
     })),
     ...(module === "officers" && index < san3Layout.historical.count
       ? historicalContextFields(document, index)

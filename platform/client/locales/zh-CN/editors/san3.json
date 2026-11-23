@@ -156,5 +156,6 @@
   "san3.bookTotalCount": "{count} 本兵法书",
   "san3.bookCopies": "持有兵法书数量",
   "san3.bookCopiesHelp": "所有武将合计最多持有七本。重新分配时，请先减少其他武将的数量；唯一宝物和基础能力保持不变。",
-  "san3.treasureOwnershipHelp": "转交或移除此唯一宝物，归属表与武将背包会同步更新。取得隐藏玉玺时会清除发现标记。事件保管的宝物和忙碌武将保持锁定。"
+  "san3.treasureOwnershipHelp": "转交或移除此唯一宝物，归属表与武将背包会同步更新。取得隐藏玉玺时会清除发现标记。事件保管的宝物和忙碌武将保持锁定。",
+  "san3.equippedTroopsHelp": "修改兵数前，请先在游戏中卸除已分配的武器和战船；游戏退还装备的数量取决于当前兵数。"
 }

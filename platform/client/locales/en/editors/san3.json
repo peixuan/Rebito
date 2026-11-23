@@ -156,5 +156,6 @@
   "san3.bookTotalCount": "{count} strategy books",
   "san3.bookCopies": "Strategy books held",
   "san3.bookCopiesHelp": "At most seven copies exist across all officers. Reduce another holder first when redistributing. Unique treasures and base abilities are preserved.",
-  "san3.treasureOwnershipHelp": "Transfer or remove this unique item. Ownership and the officer inventory change together; claiming the hidden seal clears its discovery marker. Event custodians and busy officers remain locked."
+  "san3.treasureOwnershipHelp": "Transfer or remove this unique item. Ownership and the officer inventory change together; claiming the hidden seal clears its discovery marker. Event custodians and busy officers remain locked.",
+  "san3.equippedTroopsHelp": "Remove allocated weapons and ships before changing troop numbers; native equipment refunds depend on the current army size."
 }

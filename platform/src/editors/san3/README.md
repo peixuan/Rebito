@@ -93,6 +93,9 @@ the age threshold for random death checks rather than fixing a death age.
 Service counters use 0..255; with a former faction, their final sum must be
 1..256 because the return routine adds them and subtracts one in a byte.
 Dead or battling officers stay locked, as do assigned officers' action flags.
+Troop counts are also locked while weapons or ships are allocated: the game
+refunds equipment using the current army size. Remove equipment through the game
+before editing troops to avoid manufacturing or losing city inventory.
 Historical definition traits remain separate read-only context, distinguished
 from a live officer's current campaign traits. Factions expose their alliances,
 hostility values, joint attack agreement and nomadic mission data as read-only
