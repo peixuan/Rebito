@@ -114,15 +114,12 @@ export function establishSan3Infiltration(
 ) {
   const { base } = requireNewAgent(document, index);
   document.offset("factions", originFaction);
-  const combined = document.read(base + 18, 1) + priorServiceYears;
   if (
     !document.faction(originFaction).active ||
     originFaction === document.read(base + 17, 1) ||
     !Number.isSafeInteger(priorServiceYears) ||
     priorServiceYears < 0 ||
-    priorServiceYears > 255 ||
-    combined < 1 ||
-    combined > 256
+    priorServiceYears > 255
   )
     throw invalid();
   const edit = draft(document);

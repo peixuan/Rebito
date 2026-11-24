@@ -103,7 +103,7 @@
   "san3.actionComplete": "Action completed",
   "san3.lifespanHelp": "Category 0–7 changes the age threshold for death checks; it is not an exact death age.",
   "san3.actionCompleteHelp": "Clearing this flag permits another strategic action. Assigned, dead or battling officers remain locked.",
-  "san3.serviceYearsHelp": "With a former faction, both service counters must total 1–256 to avoid overflow when returning.",
+  "san3.serviceYearsHelp": "Both counters are independently editable from 0 to 255, including for officers without a former faction. Native covert return calculates current plus prior years minus one; results outside 0–255 wrap around. Changing these values does not cancel a task or change membership.",
   "san3.kanji": "Name",
   "san3.kana": "Reading",
   "san3.kanjiHelp": "Up to three characters from this game’s character set. Unchanged names keep their original bytes.",

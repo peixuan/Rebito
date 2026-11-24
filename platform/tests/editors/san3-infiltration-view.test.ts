@@ -16,7 +16,7 @@ function fixture() {
 }
 
 describe("SAN3 covert operation fields and canonical previews", () => {
-  it("names foreign choices and exposes dependent service bounds without mutating the snapshot", () => {
+  it("names foreign choices and exposes independent service bounds without mutating the snapshot", () => {
     const document = new San3Document(fixture());
     const fields = san3InfiltrationFields(document, 2);
     expect(fields.find(({ columnId }) => columnId === "deployCity")).toMatchObject({
@@ -30,7 +30,7 @@ describe("SAN3 covert operation fields and canonical previews", () => {
     expect(fields.find(({ columnId }) => columnId === "priorServiceYears")).toMatchObject({
       value: 0,
       min: 0,
-      max: 249,
+      max: 255,
       enabledByField: "infiltration.2.establishFaction",
     });
     expect(fields.find(({ columnId }) => columnId === "end")?.readonly).toBe(true);
@@ -77,7 +77,7 @@ describe("SAN3 covert operation fields and canonical previews", () => {
     const prior = san3InfiltrationFields(document, 7).find(
       ({ columnId }) => columnId === "priorServiceYears",
     );
-    expect(prior).toMatchObject({ value: 1, min: 1, max: 255 });
+    expect(prior).toMatchObject({ value: 0, min: 0, max: 255 });
     const result = san3InfiltrationDraft(document, {
       "infiltration.7.establishFaction": 1,
       "infiltration.7.priorServiceYears": 255,
@@ -120,6 +120,41 @@ describe("SAN3 covert operation fields and canonical previews", () => {
     expect(result.bytes[officer(2) + 20]).toBe(7);
   });
 
+  it.each([
+    [200, 100],
+    [0, 0],
+    [255, 255],
+  ])(
+    "establishes an insider with independent service bytes %i/%i and replayable intent",
+    (current, prior) => {
+      const original = fixture();
+      original[officer(2) + 18] = current;
+      const document = new San3Document(original);
+      expect(
+        san3InfiltrationFields(document, 2).find(
+          ({ columnId }) => columnId === "priorServiceYears",
+        ),
+      ).toMatchObject({ min: 0, max: 255, value: 0, readonly: false });
+      const result = san3InfiltrationDraft(document, {
+        "infiltration.2.establishFaction": 2,
+        "infiltration.2.priorServiceYears": prior,
+      });
+      expect(result.bytes[officer(2) + 11]).toBe(0xe8);
+      expect(result.bytes[officer(2) + 19]).toBe(1);
+      expect(result.bytes[officer(2) + 20]).toBe(prior);
+      expect(result.preview.find(({ key }) => key.endsWith("originServiceYears"))).toMatchObject({
+        before: 17,
+        after: prior,
+      });
+      expect(san3InfiltrationDraft(document, result.changes).bytes).toEqual(result.bytes);
+      const restored = result.bytes.slice();
+      for (const relative of [11, 19, 20])
+        restored[officer(2) + relative] = original[officer(2) + relative] as number;
+      expect(restored).toEqual(original);
+      expect(document.copy()).toEqual(original);
+    },
+  );
+
   it("normalizes placeholders and rejects mixed, unavailable or invalid operations atomically", () => {
     const document = new San3Document(fixture());
     for (const changes of [
@@ -136,7 +171,7 @@ describe("SAN3 covert operation fields and canonical previews", () => {
       { "infiltration.2.deployCity": 1 },
       { "infiltration.2.deployCity": 5 },
       { "infiltration.2.establishFaction": 3 },
-      { "infiltration.2.establishFaction": 2, "infiltration.2.priorServiceYears": 250 },
+      { "infiltration.2.establishFaction": 2, "infiltration.2.priorServiceYears": 256 },
       { "infiltration.2.end": 1 },
       { "infiltration.2.end": 2 },
       { "infiltration.2.deployCity": -1 },

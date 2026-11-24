@@ -4,7 +4,7 @@ import { canSwitchSan3Army, editSan3Army } from "./army.ts";
 import { cityDetailFields } from "./city-fields.ts";
 import { customMetadataFields, validateCustomFields } from "./custom-fields.ts";
 import { San3Document, san3Attributes, san3Layout } from "./document.ts";
-import { officerTraitFields, validateOfficerTraits } from "./officer-traits.ts";
+import { officerTraitFields } from "./officer-traits.ts";
 
 export interface San3Field extends EditorField {
   offset: number;
@@ -129,7 +129,6 @@ export function findSan3Field(
 /** Validate atomically, including troop edits against the final leadership values. */
 export function editSan3(document: San3Document, changes: Record<string, number>) {
   validateCustomFields(document, changes);
-  validateOfficerTraits(document, changes);
   const edits = Object.entries(changes).map(([key, value]) => {
     const field = findSan3Field(document, key, changes);
     if (field.columnId === "training" || field.columnId === "morale") {

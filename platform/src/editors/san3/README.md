@@ -68,8 +68,11 @@ These are free editor operations, without native recruitment costs.
 Personality nibbles, compatibility, morality, service counters and the completed
 action flag are masked writes. Lifespan uses bits 4..6, not the old editor's
 entire high nibble: it changes a random-death threshold, not a fixed death age.
-When a prior faction is present, service counters must total 1..256 because the
-native return computes current plus prior service minus one in a byte.
+Personality and both service counters remain editable for inactive, deceased,
+busy and battling records in the campaign view. They do not change membership,
+mission or battle flags. Service counters independently accept 0..255; native
+covert return computes `(current + prior - 1) & 255`, so the game can wrap the
+result. The action-completed flag has its separate command-state boundary.
 
 Names are decoded from the user's game, including private glyphs and phonetic
 reading. The writable alphabet comes from its sorted 2,173-entry RAM index at

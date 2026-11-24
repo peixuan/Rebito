@@ -182,7 +182,12 @@ describe("Japanese Mega-CD strategic memory", () => {
     const inactiveFields = officerFields(new San3Document(bytes), 1);
     expect(inactiveFields.slice(0, 4).every((field) => field.readonly)).toBe(true);
     expect(inactiveFields.slice(4, 10).every((field) => field.readonly)).toBe(true);
-    expect(inactiveFields.slice(10).every((field) => field.readonly)).toBe(true);
+    expect(
+      inactiveFields
+        .slice(10)
+        .filter((field) => field.readonly)
+        .map(({ columnId }) => columnId),
+    ).toEqual(["actionComplete"]);
   });
 
   it("edits all six registered custom abilities without changing neighboring bytes", () => {

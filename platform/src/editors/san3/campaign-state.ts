@@ -114,13 +114,6 @@ export function editSan3CampaignState(document: San3Document, changes: Record<st
     if (values.originFaction !== undefined && values.rebellionFaction !== undefined)
       throw invalid();
     const base = state.base;
-    const changesCovertReturn = altered.some(
-      (field) => field.columnId === "infiltrationMonths" || field.columnId === "originFaction",
-    );
-    if (changesCovertReturn && (state.covert & 8) !== 0 && state.member?.kind === "serving") {
-      const years = document.read(base + 18, 1) + document.read(base + 20, 1);
-      if (years < 1 || years > 256) throw invalid();
-    }
     for (const field of altered) {
       const after = values[field.columnId] as number;
       if (field.columnId.endsWith("Faction") && after !== 255) {

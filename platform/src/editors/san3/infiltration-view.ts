@@ -38,15 +38,12 @@ function infiltrationFields(document: San3Document, index: number): EditorField[
   const cities = Array.from({ length: san3Layout.cities.count }, (_, city) => city).filter((city) =>
     factions.includes(document.city(city).faction),
   );
-  const priorMinimum = Math.max(0, 1 - document.read(base + 18, 1));
   const canDeploy =
     cities.length > 0 &&
     permitted(() => deploySan3Infiltrator(document, index, cities[0] as number));
   const canEstablish =
     factions.length > 0 &&
-    permitted(() =>
-      establishSan3Infiltration(document, index, factions[0] as number, priorMinimum),
-    );
+    permitted(() => establishSan3Infiltration(document, index, factions[0] as number));
   const canEnd = permitted(() => endSan3Infiltration(document, index));
   if (!canDeploy && !canEstablish && !canEnd) return [];
   const none = { value: 0, label: message("san3.none") };
@@ -73,8 +70,8 @@ function infiltrationFields(document: San3Document, index: number): EditorField[
     {
       id: "priorServiceYears",
       label: "infiltrationPriorService",
-      value: priorMinimum,
-      max: Math.min(255, 256 - document.read(base + 18, 1)),
+      value: 0,
+      max: 255,
       enabled: canEstablish,
     },
     {
@@ -91,7 +88,7 @@ function infiltrationFields(document: San3Document, index: number): EditorField[
     label: message(`san3.${label}`),
     help: message(`san3.${label}Help`),
     value,
-    min: id === "priorServiceYears" ? priorMinimum : 0,
+    min: 0,
     max,
     readonly: !enabled,
     ...options,

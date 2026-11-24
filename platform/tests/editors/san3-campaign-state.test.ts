@@ -3,8 +3,12 @@ import {
   campaignStateFields,
   editSan3CampaignState,
 } from "../../src/editors/san3/campaign-state.ts";
-import { San3Document } from "../../src/editors/san3/document.ts";
-import { governanceOfficer as officer, san3GovernanceFixture } from "./san3-governance-fixture.ts";
+import { San3Document, san3Layout } from "../../src/editors/san3/document.ts";
+import {
+  governanceCity as city,
+  governanceOfficer as officer,
+  san3GovernanceFixture,
+} from "./san3-governance-fixture.ts";
 
 describe("SAN3 coherent monthly campaign states", () => {
   it("starts an injury, adjusts its countdown and clears its hold flag at zero", () => {
@@ -52,17 +56,43 @@ describe("SAN3 coherent monthly campaign states", () => {
     expect(() =>
       editSan3CampaignState(new San3Document(bytes), { "state.9.originFaction": 1 }),
     ).not.toThrow();
-    bytes[officer(1) + 11] = 0xe8;
-    bytes[officer(1) + 19] = 1;
-    expect(() =>
-      editSan3CampaignState(new San3Document(bytes), { "state.1.infiltrationMonths": 7 }),
-    ).toThrow();
-    bytes[officer(1) + 18] = 2;
-    bytes[officer(1) + 20] = 255;
-    expect(() =>
-      editSan3CampaignState(new San3Document(bytes), { "state.1.infiltrationMonths": 7 }),
-    ).toThrow();
   });
+
+  it.each([
+    [200, 100],
+    [0, 0],
+  ])(
+    "keeps independent service bytes %i/%i while adjusting an insider's clock and origin",
+    (current, prior) => {
+      const original = san3GovernanceFixture();
+      const data = new DataView(original.buffer);
+      data.setUint16(san3Layout.factions.offset + 2 * 50, 11);
+      data.setUint32(san3Layout.factions.offset + 2 * 50 + 2, city(4));
+      data.setUint16(city(4) + 4, 11);
+      original[city(4) + 20] = 2;
+      original.set([0, 0, 0, 0, 4, 2], officer(11) + 12);
+      original[officer(1) + 11] = 0xe8;
+      original[officer(1) + 19] = 1;
+      original[officer(1) + 18] = current;
+      original[officer(1) + 20] = prior;
+      const document = new San3Document(original);
+      const changes = { "state.1.infiltrationMonths": 7, "state.1.originFaction": 2 };
+      const result = editSan3CampaignState(document, changes);
+      expect(result.changes).toEqual(changes);
+      expect(result.writes.map(({ offset }) => offset)).toEqual([officer(1) + 11, officer(1) + 19]);
+      expect(result.bytes[officer(1) + 11]).toBe(0xef);
+      expect(result.bytes[officer(1) + 19]).toBe(2);
+      const restored = result.bytes.slice();
+      restored[officer(1) + 11] = 0xe8;
+      restored[officer(1) + 19] = 1;
+      expect(restored).toEqual(original);
+      expect(editSan3CampaignState(document, result.changes).bytes).toEqual(result.bytes);
+      expect(() =>
+        editSan3CampaignState(document, { ...changes, "state.1.originFaction": 0 }),
+      ).toThrow();
+      expect(document.copy()).toEqual(original);
+    },
+  );
 
   it("creates and cancels only the native pending drive-tiger plan", () => {
     const original = san3GovernanceFixture();

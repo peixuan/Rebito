@@ -91,7 +91,7 @@ describe("SAN3 editor view", () => {
     expect(JSON.stringify(view)).not.toMatch(/"(?:offset|width)":/);
   });
 
-  it("filters active officers, labels missing names and locks inactive records", () => {
+  it("filters active officers while keeping inactive personality and service editable", () => {
     const view = san3Adapter.view(fixture(), { module: "officers", record: "2" });
     expect(view.filter).toMatchObject({ tag: "active", defaultEnabled: true });
     expect(view.records.filter(({ tags }) => tags.includes("active"))).toHaveLength(2);
@@ -99,7 +99,19 @@ describe("SAN3 editor view", () => {
       available: false,
       label: { messageId: "san3.officerRecord", parameters: { index: 3 } },
     });
-    expect(view.fields.every(({ readonly }) => readonly)).toBe(true);
+    expect(view.fields.filter(({ readonly }) => !readonly).map(({ columnId }) => columnId)).toEqual(
+      [
+        "ambition",
+        "luck",
+        "composure",
+        "bravery",
+        "lifespan",
+        "compatibility",
+        "morality",
+        "serviceYears",
+        "originServiceYears",
+      ],
+    );
     expect(view.columns.filter(({ defaultVisible }) => defaultVisible).map(({ id }) => id)).toEqual(
       ["soldiers", "loyalty"],
     );

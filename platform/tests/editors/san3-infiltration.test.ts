@@ -75,10 +75,11 @@ describe("SAN3 native covert deployment and insider affiliation", () => {
     expect(result.bytes[officer(2) + 17]).toBe(0);
     expect(result.bytes[officer(2) + 20]).toBe(249);
     expect(inspectSan3Lists(new San3Document(result.bytes)).cities[0]?.serving).toEqual([0, 1, 2]);
-    expect(() => establishSan3Infiltration(document, 2, 1, 250)).toThrow();
+    expect(establishSan3Infiltration(document, 2, 1, 250).bytes[officer(2) + 20]).toBe(250);
     expect(() => establishSan3Infiltration(document, 2, 0, 1)).toThrow();
     expect(() => establishSan3Infiltration(document, 2, 2, 1)).toThrow();
     expect(() => establishSan3Infiltration(document, 2, 1, -1)).toThrow();
+    expect(() => establishSan3Infiltration(document, 2, 1, 256)).toThrow();
   });
 
   it("refuses to discard armies, equipment, leadership, missions or existing covert states", () => {
