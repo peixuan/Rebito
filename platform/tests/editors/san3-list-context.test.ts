@@ -73,7 +73,10 @@ describe("SAN3 immutable list context", () => {
     const inspect = vi.spyOn(lists, "inspectSan3Lists");
     try {
       expect(() => san3ListContext(document)).toThrow();
-      expect(san3CampaignContext(document)("cities", 1)).toEqual([]);
+      expect(san3CampaignContext(document)("cities", 1).map(({ columnId }) => columnId)).toEqual([
+        "port",
+        "hiddenSeal",
+      ]);
       expect(san3GovernorFields(document, 1)[0]?.readonly).toBe(true);
       expect(san3ShipbuildingFields(document, 1)).toEqual([]);
       expect(() => appointSan3Governor(document, 1, 4)).toThrow();

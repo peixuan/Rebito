@@ -169,8 +169,11 @@ Unknown bytes, list pointers and battlefield coordinates are intentionally exclu
 A fresh callback-level audit found delegation, scheduled custom appearance and
 batch-relocation UI gaps. Batch relocation now has an atomic multi-record action,
 explicit steps and per-officer blocked reasons. Sixteen related unit tests, both
-type checks, build and a sandboxed real-core browser flow pass. Delegation and
-scheduled appearance remain under original-game verification.
+type checks, build and a sandboxed real-core browser flow pass. City administration
+now exposes all four native modes with guarded eligibility and masked writes.
+Military, production and adaptive settings survived original Save and a fresh
+SRAM-only Load, preserving roster/army/ownership state. Direct management has
+native-code and unit-test coverage. Scheduled appearance remains under verification.
 
 Historical base abilities are now read-only in both UI and API, including mixed
 and batch drafts. Original-game Save/Load retained an unsaved second ability set

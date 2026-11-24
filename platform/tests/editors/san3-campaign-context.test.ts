@@ -56,6 +56,8 @@ describe("SAN3 campaign relationship context", () => {
       freeCount: 1,
       hiddenCount: 1,
       soldiers: 600,
+      port: 0,
+      hiddenSeal: 0,
     });
     expect(fields[0]?.choices).toEqual([{ value: 0, label: "Alpha" }]);
     expect(fields[1]?.choices).toEqual([{ value: 1, label: "Beta" }]);
@@ -106,7 +108,7 @@ describe("SAN3 campaign relationship context", () => {
     new DataView(bytes.buffer).setUint16(officer(2), 0);
     const document = new San3Document(bytes);
     const context = san3CampaignContext(document);
-    expect(context("cities", 0)).toEqual([]);
+    expect(context("cities", 0).map(({ columnId }) => columnId)).toEqual(["port", "hiddenSeal"]);
     expect(context("officers", 2)).toHaveLength(2);
     const view = san3Adapter.view(bytes, { module: "cities", record: "0" });
     expect(view.fields.some(({ columnId }) => columnId === "population")).toBe(true);

@@ -45,8 +45,17 @@ export function san3CampaignContext(document: San3Document) {
       ];
     }
     if (module !== "cities") return [];
+    const base = document.offset("cities", index);
+    const flags = [
+      ["port", (document.read(base + 21, 1) >> 7) & 1],
+      ["hiddenSeal", (document.read(base + 23, 1) >> 6) & 1],
+    ] as const;
+    const cityFlags = flags.map(([id, value]) => ({
+      ...field(id, value, message(value ? "common.yes" : "common.no")),
+      help: message(`san3.${id}Help`),
+    }));
     const lists = graph?.cities[index];
-    if (!lists) return [];
+    if (!lists) return cityFlags;
     return [
       field("governor", lists.serving[0] ?? 0xffff, officerName(lists.serving[0] ?? 0xffff)),
       field("advisor", lists.advisor, officerName(lists.advisor)),
@@ -57,6 +66,7 @@ export function san3CampaignContext(document: San3Document) {
         "soldiers",
         lists.serving.reduce((sum, officer) => sum + document.officer(officer).soldiers, 0),
       ),
+      ...cityFlags,
     ];
   };
 }

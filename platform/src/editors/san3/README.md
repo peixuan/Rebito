@@ -96,6 +96,11 @@ replayed. Any invalid request rejects the complete operation without publication
 - Governor appointments repair city ordering and strategist references. Succession
   may choose an officer from another owned city, moves the capital and refreshes
   active ruler caches. Armies survive. Leaders must hand over before leaving.
+- City administration offers direct, military, production and adaptive modes.
+  Military/civil governors require delegation. The executing city, battles and
+  inconsistent leadership remain locked. This workflow preserves all other city
+  flags and runs separately from other edits. Port capability and the hidden-seal
+  discovery marker are read-only context; seal ownership uses the treasure workflow.
 - City transfers move the complete serving roster and preserve armies/stores.
   A neutral city needs an explicit incoming governor, whose incoming army is
   disbanded. Abandonment releases local officers and disbands their armies.

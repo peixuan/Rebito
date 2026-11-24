@@ -22,6 +22,7 @@ scope differences and persistence boundaries; each is part of the review.
 | City stocks/prices     | Three weapons, three ships, five trade prices                            | All eleven; native caps and nonzero trade divisors                                                                                         |
 | City ownership         | Independent faction field                                                | Transfer a complete serving roster; claim a neutral city with a governor; abandon a noncapital city                                        |
 | Governor               | First officer in city list                                               | Explicit appointment repairs ordering and strategist links                                                                                 |
+| Delegation             | Low two bits of a city flag byte                                         | Four named administration modes with governor, command-city and battle checks; upper bits preserved                                        |
 | Ruler                  | Independent ruler ID                                                     | Same-city or cross-city succession updates capital, roles and live command caches                                                          |
 | Faction membership     | Raw officer/city faction fields                                          | Relocation, roster conversion, whole-city transfer or complete faction absorption                                                          |
 | Six abilities          | Custom editable, historical/live displayed                               | Six custom abilities editable; historical definitions read-only because native saves exclude them                                          |
@@ -83,6 +84,9 @@ scope. Necessary contract cleanup during absorption/abandonment is previewed.
 City totals derive from verified lists; malformed graphs omit totals rather
 than inventing values. Named role, prior faction and phonetic reading remain
 visible. Territory names come from the loaded game, not a distributed table.
+The known port capability and hidden-seal marker are displayed read-only. A raw
+port toggle does not establish naval-map compatibility; a seal toggle would bypass
+unique treasure ownership. They are deliberate boundaries, not unknown fields.
 
 Raw next pointers, list heads, process addresses, arbitrary unknown bytes/bits,
 battle coordinates and serializer diagnostics are intentionally excluded.

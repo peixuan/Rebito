@@ -10,6 +10,7 @@ import { san3AppointmentFields } from "./appointment-fields.ts";
 import { san3BatchDraft } from "./batch-action.ts";
 import { san3BattleAdapter } from "./battle-adapter.ts";
 import { san3CampaignContext, san3ReadingField } from "./campaign-context.ts";
+import { san3DelegationFields } from "./city-delegation.ts";
 import { factionContextFields, historicalContextFields } from "./context-fields.ts";
 import { customMetadataFields } from "./custom-fields.ts";
 import { customNameFields, editCustomNames } from "./custom-names.ts";
@@ -325,6 +326,7 @@ export const san3Adapter: EditorAdapter = {
         ),
         ...operationFields,
         ...(module === "cities" ? san3GovernorFields(document, Number(selected)) : []),
+        ...(module === "cities" ? san3DelegationFields(document, Number(selected)) : []),
         ...san3TerritoryFields(document, module, Number(selected)),
         ...(module === "factions" ? san3MergeFields(document, Number(selected)) : []),
         ...(module === "cities" ? san3ShipbuildingFields(document, Number(selected)) : []),
