@@ -419,6 +419,12 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
     [0x58a62, 0x7446],
     [0x58d1a, 0x0c32],
     [0x58d1c, 100],
+    [0x58d0e, 0x4a04],
+    [0x58d10, 0x6700],
+    [0x58d12, 0xff38],
+    [0x58e02, 0x4a04],
+    [0x58e04, 0x6600],
+    [0x58e06, 0xfe44],
   ] as const)
     setupView.setUint16(offset, value);
   setup.fill(50, san3PresetLayout.offset, san3PresetLayout.offset + 24);
@@ -461,6 +467,39 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   expect(restoredSetup.values(1)[2]).toBe(73);
   expect(restoredSetup.values(3)[5]).toBe(81);
   expect(setupSaved?.manifest.artifacts.find((file) => file.name === "save.srm")).toEqual(
+    original.manifest.artifacts.find((file) => file.name === "save.srm"),
+  );
+  await capture.click();
+  await editor
+    .getByRole("button", { name: "Set all creation defaults to 100", exact: true })
+    .click();
+  await expect(page.getByRole("dialog")).toContainText("Points to allocate");
+  await page.getByRole("dialog").getByRole("button", { name: "Close", exact: true }).click();
+  await page.getByLabel("Language").selectOption("zh-CN");
+  await expect(page.getByLabel(chinese("san3.charisma"), { exact: true })).toHaveValue("100");
+  await page.getByLabel(chinese("app.language")).selectOption("en");
+  await editor.getByRole("button", { name: "Save edits", exact: true }).click();
+  await expect(editor.getByRole("status")).toContainText("Edits were saved");
+  const maximumSaved = (await history())[0];
+  const maximumResponse = await page.request.get(
+    `/api/revisions/${maximumSaved?.id}/file?name=__runtime%2Fstate.bin`,
+  );
+  expect(maximumResponse.status()).toBe(200);
+  const maximumBytes = openSnapshotMemory(
+    new Uint8Array(await maximumResponse.body()),
+    "picodrive",
+    "program",
+  ).bytes;
+  const maximumSetup = new San3PresetDocument(maximumBytes);
+  for (let index = 0; index < 4; index++) {
+    expect(maximumSetup.values(index)).toEqual(Array(6).fill(100));
+    expect(maximumSetup.bonus(index)).toBe(0);
+  }
+  const maximumCode = new DataView(maximumBytes.buffer);
+  expect(maximumCode.getUint16(0x58a5e)).toBe(0x7400);
+  expect(maximumCode.getUint16(0x58a62)).toBe(0x7400);
+  expect(maximumCode.getUint16(0x58d12)).toBe(0xf0);
+  expect(maximumSaved?.manifest.artifacts.find((file) => file.name === "save.srm")).toEqual(
     original.manifest.artifacts.find((file) => file.name === "save.srm"),
   );
   await page.getByRole("button", { name: "Stop game", exact: true }).click();

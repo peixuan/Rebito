@@ -52,6 +52,15 @@ function presets() {
   }
   data.setUint16(0x58a5e, 0x745a);
   data.setUint16(0x58a62, 0x7446);
+  for (const [offset, word] of [
+    [0x58d0e, 0x4a04],
+    [0x58d10, 0x6700],
+    [0x58d12, 0xff38],
+    [0x58e02, 0x4a04],
+    [0x58e04, 0x6600],
+    [0x58e06, 0xfe44],
+  ] as const)
+    data.setUint16(offset, word);
   data.setUint16(0x58d1a, 0x0c32);
   data.setUint16(0x58d1c, 100);
   bytes.fill(50, san3PresetLayout.offset, san3PresetLayout.offset + 24);

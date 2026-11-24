@@ -1,10 +1,12 @@
 import { Buffer } from "node:buffer";
 import { describe, expect, it } from "vitest";
+import { previewedEditorChanges } from "../../client/controls/editor-fields.ts";
 import { san3Adapter } from "../../src/editors/san3/adapter.ts";
 import {
   editSan3Presets,
   presetFields,
   San3PresetDocument,
+  san3MaximumPresetKey,
   san3PresetLayout,
 } from "../../src/editors/san3/presets.ts";
 
@@ -19,6 +21,15 @@ function fixture() {
   }
   view.setUint16(0x58a5e, 0x745a);
   view.setUint16(0x58a62, 0x7446);
+  for (const [offset, word] of [
+    [0x58d0e, 0x4a04],
+    [0x58d10, 0x6700],
+    [0x58d12, 0xff38],
+    [0x58e02, 0x4a04],
+    [0x58e04, 0x6600],
+    [0x58e06, 0xfe44],
+  ] as const)
+    view.setUint16(offset, word);
   view.setUint16(0x58d1a, 0x0c32);
   view.setUint16(0x58d1c, 100);
   for (let index = 0; index < 24; index++) bytes[san3PresetLayout.offset + index] = 40 + index;
@@ -32,6 +43,10 @@ function rowChanges(index: number, values: readonly number[]): Record<string, nu
       values[column] ?? 0,
     ]),
   );
+}
+
+function maximumDraft() {
+  return san3Adapter.view(fixture(), {}).actions[0]?.numericDefaults ?? {};
 }
 
 describe("Japanese Mega-CD creation defaults", () => {
@@ -167,5 +182,89 @@ describe("Japanese Mega-CD creation defaults", () => {
         values[1] - 1,
       ]);
     }
+  });
+
+  it("maximizes all rows with the exact zero-point confirmation patch", () => {
+    const input = Buffer.from(fixture());
+    const original = Uint8Array.from(input);
+    const result = editSan3Presets(new San3PresetDocument(input), maximumDraft());
+    const document = new San3PresetDocument(result.bytes);
+    for (let index = 0; index < 4; index++) {
+      expect(document.values(index)).toEqual([100, 100, 100, 100, 100, 100]);
+      expect(document.bonus(index)).toBe(0);
+      expect(presetFields(document, index).every(({ max }) => max === 100)).toBe(true);
+    }
+    expect(result.edits).toHaveLength(26);
+    expect(result.changes).toEqual(maximumDraft());
+    const changed = [...original.keys()].filter(
+      (offset) => original[offset] !== result.bytes[offset],
+    );
+    expect(changed).toEqual([
+      0x58a5f,
+      0x58a63,
+      0x58d12,
+      0x58d13,
+      ...Array.from({ length: 24 }, (_, index) => san3PresetLayout.offset + index),
+    ]);
+    expect(Uint8Array.from(input)).toEqual(original);
+    expect(() => san3Adapter.apply(result.bytes, { changes: result.changes })).toThrow(
+      "editor.noChanges",
+    );
+  });
+
+  it("replays the complete maximum draft and overrides through the client filter", () => {
+    const bytes = fixture();
+    const first = san3Adapter.view(bytes, {
+      changes: { ...maximumDraft(), "preset.0.land": 40 },
+    });
+    expect(first.changes["preset.0.land"]).toBeUndefined();
+    expect(first.changes[san3MaximumPresetKey]).toBe(1);
+    expect(previewedEditorChanges(first)).toEqual(first.changes);
+    expect(first.preview.some(({ key }) => key === "preset.0.land")).toBe(false);
+    expect(first.preview.filter(({ key }) => key.endsWith(".bonus"))).toMatchObject([
+      { key: "preset.0.bonus", before: 90, after: 0 },
+      { key: "preset.2.bonus", before: 70, after: 0 },
+    ]);
+    const second = san3Adapter.view(bytes, { record: "3", changes: previewedEditorChanges(first) });
+    expect(second.changes).toEqual(first.changes);
+    const edited = new San3PresetDocument(san3Adapter.apply(bytes, { changes: second.changes }));
+    expect(edited.values(0)).toEqual([40, 100, 100, 100, 100, 100]);
+    expect(edited.values(3)).toEqual([100, 100, 100, 100, 100, 100]);
+    expect(second.records.map(({ cells }) => cells.bonus)).toEqual([0, 0, 0, 0]);
+    const copied = san3Adapter.view(bytes, {
+      record: "0",
+      changes: { ...first.changes, "preset.0.land": 95 },
+      action: { id: "copy-fields", record: "0", targets: ["1", "3"] },
+    });
+    const published = new San3PresetDocument(
+      san3Adapter.apply(bytes, { changes: previewedEditorChanges(copied) }),
+    );
+    expect(published.values(1)[0]).toBe(95);
+    expect(published.values(3)[0]).toBe(95);
+    const reset = san3Adapter.view(bytes, { changes: { ...first.changes, ...maximumDraft() } });
+    expect(reset.changes).toEqual(maximumDraft());
+  });
+
+  it("rejects partial code patches and malformed maximum drafts atomically", () => {
+    const original = fixture();
+    for (const offset of [0x58a5f, 0x58a63, 0x58d0f, 0x58d10, 0x58d12, 0x58e02, 0x58e04, 0x58e06]) {
+      const bytes = original.slice();
+      bytes[offset] = (bytes[offset] ?? 0) ^ 1;
+      expect(() => new San3PresetDocument(bytes)).toThrow("editor.invalidSave");
+    }
+    const zeroOnly = original.slice();
+    zeroOnly[0x58a5f] = zeroOnly[0x58a63] = 0;
+    expect(() => new San3PresetDocument(zeroOnly)).toThrow("editor.invalidSave");
+    for (const value of [0, 2, 0.5, Number.NaN])
+      expect(() =>
+        editSan3Presets(new San3PresetDocument(original), { [san3MaximumPresetKey]: value }),
+      ).toThrow();
+    expect(() =>
+      editSan3Presets(new San3PresetDocument(original), {
+        [san3MaximumPresetKey]: 1,
+        "preset.0.land": 101,
+      }),
+    ).toThrow();
+    expect(original).toEqual(fixture());
   });
 });

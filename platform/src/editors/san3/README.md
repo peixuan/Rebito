@@ -180,8 +180,14 @@ Controls require a player-controlled, nondelegated port with a valid roster.
 Registration overlay 4 verifies the template consumers and allocation routines.
 Each ability uses 1..100 while leaving room for the complete native 90-point
 (under 30) or 70-point (at least 30) grant. Edit before allocation. Templates
-survive checkpoints, not cold boot or reloading `SETTEI.PRG`. Registered officers
-are unaffected; closing a dialog does not necessarily unload the module.
+survive checkpoints, not cold boot or reloading `SETTEI.PRG`. The maximum-defaults
+button fills all four rows with 100 and disables additional allocation through
+three verified instruction operands. Press Left (increase) on the allocation
+screen to enter the existing confirmation path. Manual overrides remain possible.
+An actual male registration completed with six 100s and retained its definition
+after registration Save and a fresh SRAM-only boot; the older-age branch has
+static and unit coverage. Registered officers are unaffected by template edits;
+closing a dialog does not necessarily unload the module.
 
 Battle overlay 1 validates both army sides, faction/capital relationships and
 unique acyclic unit chains. Land and naval views edit troops, training, morale,
