@@ -213,5 +213,6 @@
   "san3.taskMember": "{name}的任务",
   "san3.taskSummary": "{kind}；进度{elapsed}/{total}个月；成效{effect}",
   "san3.spyTaskSummary": "{kind}：{city}；进度{elapsed}/{total}个月；分值{effect}",
-  "san3.separateWorkflow": "任务、归属或状态操作请分别保存，便于核对它们带来的关联变化。"
+  "san3.separateWorkflow": "任务、归属或状态操作请分别保存，便于核对它们带来的关联变化。",
+  "san3.equipmentUnavailable": "无法更换装备：请核对来源城市的归属、港口条件、库存数量和库存上限。"
 }

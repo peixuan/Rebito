@@ -213,5 +213,6 @@
   "san3.taskMember": "Task of {name}",
   "san3.taskSummary": "{kind}; {elapsed}/{total} months; result {effect}",
   "san3.spyTaskSummary": "{kind} in {city}; {elapsed}/{total} months; score {effect}",
-  "san3.separateWorkflow": "Apply task, membership, or status workflows separately from other edits so their dependent changes can be reviewed."
+  "san3.separateWorkflow": "Apply task, membership, or status workflows separately from other edits so their dependent changes can be reviewed.",
+  "san3.equipmentUnavailable": "Equipment exchange is unavailable: check source-city ownership, port access, stock shortages and inventory limits."
 }
