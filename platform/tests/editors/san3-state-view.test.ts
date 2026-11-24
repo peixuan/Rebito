@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { san3Adapter } from "../../src/editors/san3/adapter.ts";
 import { San3Document } from "../../src/editors/san3/document.ts";
 import { san3StateDraft, san3StateFields } from "../../src/editors/san3/state-view.ts";
 import { governanceOfficer as officer, san3GovernanceFixture } from "./san3-governance-fixture.ts";
@@ -55,6 +56,22 @@ describe("SAN3 state workflow fields and canonical previews", () => {
       "stateEffect.1.rebellion",
     ]);
     expect(cancelled.bytes[officer(1) + 19]).toBe(1);
+  });
+
+  it("shows one origin selector while retaining the table's original context column", () => {
+    const bytes = san3GovernanceFixture();
+    const view = san3Adapter.view(bytes, { module: "officers", record: "1" });
+    expect(view.fields.filter(({ columnId }) => columnId === "originFaction")).toHaveLength(1);
+    expect(view.fields.find(({ columnId }) => columnId === "originFaction")?.key).toBe(
+      "state.1.originFaction",
+    );
+    expect(view.columns.some(({ id }) => id === "originFaction")).toBe(true);
+    new DataView(bytes.buffer).setUint16(officer(1), 1);
+    const partial = san3Adapter.view(bytes, { module: "officers", record: "1" });
+    expect(partial.fields.filter(({ columnId }) => columnId === "originFaction")).toHaveLength(1);
+    expect(partial.fields.find(({ columnId }) => columnId === "originFaction")?.key).toBe(
+      "context.originFaction",
+    );
   });
 
   it("rejects mixed/raw keys and keeps original bytes immutable on failed drafts", () => {

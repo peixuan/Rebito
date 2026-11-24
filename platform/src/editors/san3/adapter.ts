@@ -236,6 +236,7 @@ export const san3Adapter: EditorAdapter = {
       operationPreview,
     } = prepare(bytes, draft);
     const selectedFields = fields(document, data, module, Number(selected));
+    const stateFields = module === "officers" ? san3StateFields(original, Number(selected)) : [];
     const treasures =
       module === "treasures" ? san3TreasureView(document, Number(selected)) : undefined;
     const preview: EditorView["preview"] = edits.map(({ field, before, after }) => {
@@ -315,7 +316,12 @@ export const san3Adapter: EditorAdapter = {
         }),
       selected,
       fields: treasures?.fields ?? [
-        ...selectedFields.filter((field) => module !== "officers" || field.columnId !== "role"),
+        ...selectedFields.filter(
+          (field) =>
+            module !== "officers" ||
+            (field.columnId !== "role" &&
+              !(field.columnId === "originFaction" && stateFields.length > 0)),
+        ),
         ...san3OperationFields(document, module, Number(selected)),
         ...(module === "cities" ? san3GovernorFields(document, Number(selected)) : []),
         ...san3TerritoryFields(document, module, Number(selected)),
@@ -332,7 +338,7 @@ export const san3Adapter: EditorAdapter = {
           : []),
         ...(module === "officers"
           ? [
-              ...san3StateFields(original, Number(selected)),
+              ...stateFields,
               ...san3LifeFields(original, Number(selected), operationChanges),
               ...san3PresenceFields(original, Number(selected), operationChanges),
               ...san3InfiltrationFields(original, Number(selected)),
