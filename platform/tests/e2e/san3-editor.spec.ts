@@ -370,7 +370,7 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
     openSnapshotMemory(new Uint8Array(await treasureResponse.body()), "picodrive", "program").bytes
       .buffer,
   );
-  expect(treasureData.getUint16(0x787aa)).toBe(2);
+  expect(treasureData.getUint16(0x787aa)).toBe(0);
   expect(treasureData.getUint16(0x787ac)).toBe(1);
   expect(treasureData.getUint16(san3Layout.officers.offset + 30 + 4)).toBe(0x4003);
   expect(treasureRevision?.manifest.artifacts.find((file) => file.name === "save.srm")).toEqual(

@@ -75,7 +75,7 @@ describe("SAN3 treasure presentation", () => {
     expect(san3TreasureView(document, 2).fields[0]).toMatchObject({ value: 601, readonly: true });
     expect(san3TreasureView(document, 0).fields[0]).toMatchObject({
       value: 0,
-      max: 7,
+      max: 65535,
       readonly: true,
     });
     bytes[san3Layout.officers.offset + 30 + 8] = 4;
@@ -90,13 +90,13 @@ describe("SAN3 treasure presentation", () => {
     });
   });
 
-  it("reflects the final shared budget and leaves ordinary inspection usable on invalid inventory", () => {
+  it("shows independent personal limits and leaves ordinary inspection usable on invalid inventory", () => {
     const bytes = editSan3Treasures(new San3Document(fixture()), { "book.1.copies": 5 }).bytes;
     const document = new San3Document(bytes);
-    expect(san3BookFields(document, 0)[0]).toMatchObject({ value: 0, max: 2, readonly: false });
-    expect(san3BookFields(document, 1)[0]).toMatchObject({ value: 5, max: 7, readonly: false });
-    expect(san3BookFields(document, 2)[0]?.readonly).toBe(true);
-    new DataView(bytes.buffer).setUint16(0x787ac, 0);
+    expect(san3BookFields(document, 0)[0]).toMatchObject({ value: 0, max: 7 });
+    expect(san3BookFields(document, 1)[0]).toMatchObject({ value: 5, max: 7 });
+    expect(san3BookFields(document, 2)[0]).toMatchObject({ value: 0, max: 7 });
+    new DataView(bytes.buffer).setUint16(0x787ac, 602);
     const malformed = new San3Document(bytes);
     expect(san3BookFields(malformed, 0)).toEqual([]);
     expect(() => san3TreasureView(malformed, 0)).toThrow();

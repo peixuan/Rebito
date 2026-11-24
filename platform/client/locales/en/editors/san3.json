@@ -177,11 +177,11 @@
   "san3.treasureOwner": "Owner",
   "san3.treasureRecord": "Treasure {index}",
   "san3.eventCustodian": "Held by a game event",
-  "san3.bookTotal": "Discovered strategy books",
-  "san3.bookTotalCount": "{count} strategy books",
+  "san3.bookTotal": "Native book issuance counter",
+  "san3.bookTotalCount": "Native issuance: {count}",
   "san3.bookCopies": "Strategy books held",
-  "san3.bookCopiesHelp": "At most seven copies exist across all officers. Reduce another holder first when redistributing. Unique treasures and base abilities are preserved.",
-  "san3.treasureOwnershipHelp": "Transfer or remove this unique item. Ownership and the officer inventory change together; claiming the hidden seal clears its discovery marker. Event custodians and busy officers remain locked.",
+  "san3.bookCopiesHelp": "Each officer can hold 0–7 copies independently. Editing this quantity preserves the native issuance counter, other officers and base abilities.",
+  "san3.treasureOwnershipHelp": "Transfer global ownership and update the old/new owners’ personal flags. Other officers’ duplicate flags are preserved. Claiming the hidden seal clears its discovery marker. Event custodians and busy recipients remain locked.",
   "san3.equippedTroopsHelp": "Remove allocated weapons and ships before changing troop numbers; native equipment refunds depend on the current army size.",
   "san3.invalidAppointment": "Choose a qualified, idle officer in this city. Rulers and governors cannot be reassigned; civil officers must have no troops or equipment.",
   "san3.appointments": "Appointment",
@@ -300,5 +300,6 @@
   "san3.taskJoin": "Join an existing task group",
   "san3.taskJoinChoice": "{task} — {leader} ({count} officers)",
   "san3.taskGroupSize": "Task group participants",
-  "san3.taskJoinHelp": "Join a same-city group with fewer than ten participants. Its existing duration, progress and result are copied without changing current members or charging resources; this officer's action becomes completed. To create a group, assign the first officer normally, then let others join. Spies remain individual. Preview this operation separately from other task edits."
+  "san3.taskJoinHelp": "Join a same-city group with fewer than ten participants. Its existing duration, progress and result are copied without changing current members or charging resources; this officer's action becomes completed. To create a group, assign the first officer normally, then let others join. Spies remain individual. Preview this operation separately from other task edits.",
+  "san3.booksDiscarded": "Books beyond the recipient’s seven-copy capacity"
 }

@@ -31,7 +31,13 @@ export function removeSan3Officer(document: San3Document, index: number) {
   const mask = inventory.masks[index] ?? 0;
   const copies = inventory.copies[index] ?? 0;
   const recipient = member.kind === "serving" ? document.faction(city.faction).ruler : 65535;
-  if (mask && recipient !== 65535) requireIdleGovernor(document, recipient);
+  const items = inventory.items
+    .filter((item) => item.index > 0 && item.owner === index)
+    .map((item) => item.index);
+  const personalItems = Array.from({ length: 12 }, (_, item) => item + 1).filter(
+    (item) => (mask & (1 << item)) !== 0,
+  );
+  if ((mask || items.length) && recipient !== 65535) requireIdleGovernor(document, recipient);
   const edit = governanceEdit(document);
   const remaining = city[member.kind].filter((candidate) => candidate !== index);
   edit.write(
@@ -45,19 +51,16 @@ export function removeSan3Officer(document: San3Document, index: number) {
   edit.write(base, 2, 65535);
   edit.write(base + 8, 1, document.read(base + 8, 1) | 16);
   edit.write(base + 4, 2, 0);
-  const items = inventory.items
-    .filter((item) => item.index > 0 && item.owner === index)
-    .map((item) => item.index);
   for (const item of items) edit.write(san3TreasureLayout.owners + item * 2, 2, recipient);
   if (recipient !== 65535) {
     const recipientMask = inventory.masks[recipient] ?? 0;
-    const totalCopies = (inventory.copies[recipient] ?? 0) + copies;
+    const totalCopies = Math.min(7, (inventory.copies[recipient] ?? 0) + copies);
     edit.write(
       document.offset("officers", recipient) + 4,
       2,
       ((recipientMask | mask) & 0x1ffe) | (totalCopies << 13) | (totalCopies ? 1 : 0),
     );
-  } else edit.write(san3TreasureLayout.owners, 2, inventory.total - copies);
+  } else edit.write(san3TreasureLayout.owners, 2, Math.max(0, inventory.total - copies));
   const result = edit.finish();
   inspectSan3Treasures(new San3Document(result.bytes));
   return {
@@ -67,7 +70,10 @@ export function removeSan3Officer(document: San3Document, index: number) {
       city: member.city,
       recipient,
       items,
+      personalItems,
       copies,
+      booksDiscarded:
+        recipient === 65535 ? copies : Math.max(0, (inventory.copies[recipient] ?? 0) + copies - 7),
       soldiersRemoved: member.kind === "serving" ? document.read(base + 2, 2) : 0,
       advisorRemoved: city.advisor === index,
     },

@@ -9,6 +9,14 @@ const none = 0xffff;
 const invalidSave = () => new EditorError("invalid_save", message("editor.invalidSave"));
 const invalidEdit = () => new EditorError("invalid_edit", message("editor.invalidEdit"));
 
+/** Read item labels from the user's game, without requiring a global ownership match. */
+export function san3TreasureName(document: San3Document, index: number): string {
+  if (!Number.isInteger(index) || index < 0 || index >= san3TreasureLayout.count)
+    throw invalidEdit();
+  const base = san3TreasureLayout.definitions + index * 18;
+  return decodeSan3Name(Uint8Array.from({ length: 13 }, (_, n) => document.read(base + 5 + n, 1)));
+}
+
 /** Thirteen items: item zero is a shared book, not a fourteenth ownership bit. */
 export function inspectSan3Treasures(document: San3Document) {
   const masks = Array.from({ length: san3Layout.officers.count }, (_, index) =>
@@ -16,7 +24,6 @@ export function inspectSan3Treasures(document: San3Document) {
   );
   const copies = masks.map((mask) => mask >>> 13);
   const total = document.read(san3TreasureLayout.owners, 2);
-  if (total > 7 || copies.reduce((sum, count) => sum + count, 0) !== total) throw invalidSave();
   for (const [index, mask] of masks.entries()) {
     // Unused native records can retain bit0 with a zero quantity; preserve them.
     if (
@@ -26,16 +33,10 @@ export function inspectSan3Treasures(document: San3Document) {
       throw invalidSave();
   }
   const items = Array.from({ length: san3TreasureLayout.count }, (_, index) => {
-    const base = san3TreasureLayout.definitions + index * 18;
-    const name = decodeSan3Name(
-      Uint8Array.from({ length: 13 }, (_, n) => document.read(base + 5 + n, 1)),
-    );
+    const name = san3TreasureName(document, index);
     const owner = document.read(san3TreasureLayout.owners + index * 2, 2);
     if (index > 0) {
       if (owner > 601 && owner !== none) throw invalidSave();
-      const holders = masks.flatMap((mask, officer) => (mask & (1 << index) ? [officer] : []));
-      if (owner < 600 ? holders.length !== 1 || holders[0] !== owner : holders.length !== 0)
-        throw invalidSave();
     }
     return {
       index,
@@ -73,9 +74,11 @@ export function san3TreasureRecipients(document: San3Document): number[] {
 }
 
 /**
- * Transfer ownership and its redundant officer mask together. Ability bonuses
+ * Transfer global ownership and its old/new officer masks together. Other personal
+ * copies are independent and survive this operation. Ability bonuses
  * are computed by the game; base abilities are never adjusted by this operation.
- * Book quantities share a world limit of seven and are validated as a final draft.
+ * Book quantities have a per-officer limit of seven; their native issuance counter
+ * is independent and is not rewritten to the sum of edited personal quantities.
  */
 export function editSan3Treasures(document: San3Document, changes: Record<string, number>) {
   const inventory = inspectSan3Treasures(document);
@@ -120,14 +123,11 @@ export function editSan3Treasures(document: San3Document, changes: Record<string
       const before = copies[index];
       if (before === undefined || after < 0 || after > 7) throw invalidEdit();
       if (before === after) continue;
-      eligible(index);
       copies[index] = after;
       masks[index] = ((masks[index] ?? 0) & 0x1ffe) | (after << 13) | (after > 0 ? 1 : 0);
       edits.push({ key, index, kind: "copies", before, after });
     } else throw invalidEdit();
   }
-  const total = copies.reduce((sum, count) => sum + count, 0);
-  if (total > 7) throw invalidEdit();
   const bytes = document.copy();
   const data = new DataView(bytes.buffer);
   const writes: San3RelocationWrite[] = [];
@@ -138,7 +138,6 @@ export function editSan3Treasures(document: San3Document, changes: Record<string
     if (width === 1) data.setUint8(offset, after);
     else data.setUint16(offset, after);
   };
-  write(san3TreasureLayout.owners, 2, total);
   for (let index = 1; index < owners.length; index++)
     write(san3TreasureLayout.owners + index * 2, 2, owners[index] ?? none);
   for (const [index, mask] of masks.entries())

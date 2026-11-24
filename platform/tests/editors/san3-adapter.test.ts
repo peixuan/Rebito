@@ -110,6 +110,7 @@ describe("SAN3 editor view", () => {
         "morality",
         "serviceYears",
         "originServiceYears",
+        "bookCopies",
       ],
     );
     expect(view.columns.filter(({ defaultVisible }) => defaultVisible).map(({ id }) => id)).toEqual(

@@ -140,9 +140,12 @@ replayed. Any invalid request rejects the complete operation without publication
 - Death removes membership and passes belongings to the ruler or returns them to
   the pool. Revival places a valid deceased officer in a chosen city as a free
   officer; former armies, equipment and missions are not restored.
-- Unique treasures update ownership and masks together. Books share a seven-copy
-  world limit. Claiming the hidden seal consumes its discovery marker. Event
-  custodians and unsafe recipients stay locked; item bonuses are game-derived.
+- Global treasure transfers update the old/new owners' flags and preserve other
+  officers' duplicate flags. Each officer can hold up to seven books independently;
+  edits leave the native issuance counter unchanged. Death inheritance combines
+  personal flags and caps received books at seven, previewing overflow loss.
+  Claiming the hidden seal consumes its discovery marker. Event custodians and
+  unsafe global recipients stay locked; item bonuses are game-derived.
 
 Resolve ongoing missions, recovery/covert activity and allocated equipment before
 operations whose controls require it. Do not bypass these prerequisites with raw

@@ -53,7 +53,9 @@ describe("SAN3 coherent death and revival", () => {
       city: 0,
       recipient: 0,
       items: [1],
+      personalItems: [1],
       copies: 2,
+      booksDiscarded: 0,
       soldiersRemoved: 3000,
       advisorRemoved: true,
     });
@@ -135,7 +137,7 @@ describe("SAN3 coherent death and revival", () => {
     new DataView(unused.buffer).setUint16(san3Layout.custom.offset + 67 * 28, 65535);
     expect(() => reviveSan3Officer(new San3Document(unused), 599, 4)).toThrow();
     const broken = original.slice();
-    new DataView(broken.buffer).setUint16(san3TreasureLayout.owners + 2, 2);
+    new DataView(broken.buffer).setUint16(san3TreasureLayout.owners + 2, 602);
     expect(() => removeSan3Officer(new San3Document(broken), 2)).toThrow();
     expect(new San3Document(original).read(city(0) + 4, 2)).toBe(0);
   });

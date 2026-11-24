@@ -87,26 +87,27 @@ describe("SAN3 coherent treasure ownership", () => {
     }
   });
 
-  it("validates final book totals and preserves unique items during redistribution", () => {
+  it("allows independent book quantities without rewriting the native issuance counter", () => {
     let document = new San3Document(fixture());
     document = new San3Document(editSan3Treasures(document, { "book.1.copies": 7 }).bytes);
     const original = document.copy();
-    expect(() => editSan3Treasures(document, { "book.2.copies": 1 })).toThrow();
+    const duplicate = inspectSan3Treasures(
+      new San3Document(editSan3Treasures(document, { "book.2.copies": 7 }).bytes),
+    );
+    expect(duplicate.copies.slice(1, 3)).toEqual([7, 7]);
+    expect(duplicate.total).toBe(0);
     const result = editSan3Treasures(document, { "book.2.copies": 7, "book.1.copies": 0 });
     const next = inspectSan3Treasures(new San3Document(result.bytes));
-    expect(next.total).toBe(7);
+    expect(next.total).toBe(0);
     expect(next.masks[1]).toBe(2);
     expect(next.masks[2]).toBe(0xe001);
     expect(document.copy()).toEqual(original);
     expect(editSan3Treasures(document, { "book.1.copies": 7 }).writes).toEqual([]);
   });
 
-  it("rejects inconsistent ownership, quantities, discovery markers and malformed drafts", () => {
+  it("rejects invalid owner IDs, personal quantities, discovery markers and malformed drafts", () => {
     for (const mutate of [
-      (data: DataView) => data.setUint16(officer(2) + 4, 2),
-      (data: DataView) => data.setUint16(owner(1), 2),
       (data: DataView) => data.setUint16(owner(2), 602),
-      (data: DataView) => data.setUint16(owner(0), 1),
       (data: DataView) => data.setUint16(officer(2) + 4, 1),
       (data: DataView) => {
         data.setUint16(owner(0), 1);
@@ -135,6 +136,19 @@ describe("SAN3 coherent treasure ownership", () => {
       { "officer.1.treasures": 65535 },
     ])
       expect(() => editSan3Treasures(document, changes)).toThrow();
+  });
+
+  it("preserves third-party personal flags during global transfers even if masks disagree", () => {
+    const bytes = fixture();
+    const data = new DataView(bytes.buffer);
+    data.setUint16(officer(0) + 4, 2);
+    data.setUint16(officer(1) + 4, 0);
+    data.setUint16(owner(0), 12);
+    const result = editSan3Treasures(new San3Document(bytes), { "treasure.1.owner": 2 });
+    const after = inspectSan3Treasures(new San3Document(result.bytes));
+    expect(after.masks.slice(0, 3)).toEqual([2, 0, 2]);
+    expect(after.items[1]?.owner).toBe(2);
+    expect(after.total).toBe(12);
   });
 
   it("rejects unsafe owners and malformed lists before any partial transfer", () => {

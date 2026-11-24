@@ -31,12 +31,43 @@ describe("SAN3 life operation controls", () => {
       "lifeEffect.2.soldiers",
       "lifeEffect.2.belongings",
       "lifeEffect.2.treasure.1",
+      "lifeEffect.2.personalTreasure.1",
+      "lifeEffect.2.inheritedTreasure.1",
       "lifeEffect.2.advisor",
     ]);
     expect(editSan3Life(document, canonical).bytes).toEqual(first.bytes);
     expect(() => editSan3Life(document, { "lifeEffect.2.soldiers": 0 })).toThrow();
     first.bytes.fill(0);
     expect(document.copy()).toEqual(original);
+  });
+
+  it("separates global inheritance from duplicate personal flags and previews capped books", () => {
+    const bytes = fixture();
+    const data = new DataView(bytes.buffer);
+    data.setUint16(san3TreasureLayout.owners + 2, 2);
+    data.setUint16(san3TreasureLayout.owners + 4, 1);
+    data.setUint16(officer(0) + 4, 0xc005);
+    data.setUint16(officer(1) + 4, 4);
+    data.setUint16(officer(2) + 4, 0xa005);
+    const document = new San3Document(bytes);
+    const result = editSan3Life(document, { "life.2.dead": 1 });
+    const after = new San3Document(result.bytes);
+    expect(after.read(officer(0) + 4, 2)).toBe(0xe005);
+    expect(after.read(officer(1) + 4, 2)).toBe(4);
+    expect(after.read(san3TreasureLayout.owners + 2, 2)).toBe(0);
+    expect(after.read(san3TreasureLayout.owners + 4, 2)).toBe(1);
+    expect(result.preview.find((row) => row.key === "lifeEffect.2.discardedBooks")).toMatchObject({
+      before: 0,
+      after: 4,
+    });
+    expect(result.preview.find((row) => row.key === "lifeEffect.2.inheritedBooks")).toMatchObject({
+      before: 6,
+      after: 7,
+    });
+    expect(editSan3Life(document, previewedEditorChanges(result)).bytes).toEqual(result.bytes);
+    data.setUint16(officer(9) + 4, 0xe001);
+    const free = removeSan3Officer(new San3Document(bytes), 9);
+    expect(new San3Document(free.bytes).read(san3TreasureLayout.owners, 2)).toBe(0);
   });
 
   it("keeps a revival destination through repeated preview and apply", () => {

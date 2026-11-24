@@ -33,7 +33,7 @@ export function san3TreasureView(
     group: message("san3.treasures"),
     value: owner ?? inventory.total,
     min: 0,
-    max: owner === null ? 7 : 0xffff,
+    max: 0xffff,
     readonly: owner === null || item.readonly || (owner < 600 && !recipients.includes(owner)),
     help: message(owner === null ? "san3.bookCopiesHelp" : "san3.treasureOwnershipHelp"),
     ...(owner === null ? {} : { choices }),
@@ -61,7 +61,7 @@ export function san3TreasureView(
 export function san3BookFields(document: San3Document, index: number): EditorField[] {
   document.offset("officers", index);
   try {
-    const { copies, total } = inspectSan3Treasures(document);
+    const { copies } = inspectSan3Treasures(document);
     const value = copies[index] ?? 0;
     return [
       {
@@ -71,8 +71,7 @@ export function san3BookFields(document: San3Document, index: number): EditorFie
         group: message("san3.treasures"),
         value,
         min: 0,
-        max: 7 - total + value,
-        readonly: !san3TreasureRecipients(document).includes(index),
+        max: 7,
         help: message("san3.bookCopiesHelp"),
       },
     ];

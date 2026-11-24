@@ -56,7 +56,7 @@ export function editSan3Life(document: San3Document, draft: Record<string, numbe
         change.soldiersRemoved,
         0,
       );
-      if (change.items.length || change.copies)
+      if (change.items.length || change.personalItems.length || change.copies)
         append(
           `lifeEffect.${index}.belongings`,
           names.officer(index),
@@ -76,6 +76,50 @@ export function editSan3Life(document: San3Document, draft: Record<string, numbe
           after: names.officer(change.recipient),
         });
       append(`lifeEffect.${index}.books`, names.officer(index), "bookCopies", change.copies, 0);
+      for (const item of inventory.items.filter((item) =>
+        change.personalItems.includes(item.index),
+      ))
+        preview.push({
+          key: `lifeEffect.${index}.personalTreasure.${item.index}`,
+          label: message("editor.columnLabel", {
+            group: names.officer(index),
+            field: item.name || message("san3.treasureRecord", { index: item.index + 1 }),
+          }),
+          before: 1,
+          after: 0,
+        });
+      if (change.recipient !== 65535) {
+        const after = inspectSan3Treasures(new San3Document(result.bytes));
+        for (const item of inventory.items.filter((item) =>
+          change.personalItems.includes(item.index),
+        )) {
+          const beforeFlag = ((inventory.masks[change.recipient] ?? 0) >>> item.index) & 1;
+          if (beforeFlag) continue;
+          preview.push({
+            key: `lifeEffect.${index}.inheritedTreasure.${item.index}`,
+            label: message("editor.columnLabel", {
+              group: names.officer(change.recipient),
+              field: item.name || message("san3.treasureRecord", { index: item.index + 1 }),
+            }),
+            before: 0,
+            after: 1,
+          });
+        }
+        append(
+          `lifeEffect.${index}.inheritedBooks`,
+          names.officer(change.recipient),
+          "bookCopies",
+          inventory.copies[change.recipient] ?? 0,
+          after.copies[change.recipient] ?? 0,
+        );
+        append(
+          `lifeEffect.${index}.discardedBooks`,
+          names.officer(index),
+          "booksDiscarded",
+          0,
+          change.booksDiscarded,
+        );
+      }
       if (change.advisorRemoved)
         append(
           `lifeEffect.${index}.advisor`,
