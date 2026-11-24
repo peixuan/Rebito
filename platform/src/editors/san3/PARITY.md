@@ -27,7 +27,7 @@ scope differences and persistence boundaries; each is part of the review.
 | Faction membership     | Raw officer/city faction fields                                          | Relocation, roster conversion, whole-city transfer or complete faction absorption                                                          |
 | Six abilities          | Custom editable, historical/live displayed                               | Six custom abilities editable; historical definitions read-only because native saves exclude them                                          |
 | Custom profile         | Names, gender, birthday, age, portrait                                   | All fields with game encoding, calendar and verified portrait checks                                                                       |
-| Name preset            | Replace 68 custom name/reading pairs                                     | Previewable draft preserving abilities and registration state                                                                              |
+| Custom preset          | Replace 68 custom name/reading pairs                                     | Previewable names plus six abilities at 100; registration and live membership remain explicit                                              |
 | Creation defaults      | No equivalent reachable control                                          | Four six-ability templates with native allocation capacity checks                                                                          |
 | Current army           | Soldiers, training, morale, loyalty                                      | Existing armies, recruitment and disbanding; dependent effects previewed                                                                   |
 | Personality/service    | Nibbles, compatibility, morality, lifespan, current/prior service        | Independent stored values across officer states; native masks preserved and service-counter wrapping explained                             |
@@ -101,7 +101,9 @@ acknowledged and read back; native save companions remain unchanged. Campaign
 persistence requires the game's Save command. Historical definitions are read-only;
 the native payload excludes them. Creation templates remain explicitly temporary:
 they survive checkpoints and reset on cold boot/module reload. Created custom
-records can persist in native SRAM. Battle edits remain available with temporary
+records enter native campaign SRAM, but a fresh title Load uses the independent
+registration copy. Repeat Load from the strategic system menu to restore the
+campaign's custom definitions. Battle edits remain available with temporary
 state instructions; their native-save persistence is not claimed.
 
 Original-game acceptance includes all four creation rows, ability changes,

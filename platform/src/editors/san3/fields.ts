@@ -17,7 +17,6 @@ export interface San3Field extends EditorField {
 export function attributeFields(document: San3Document, index: number): San3Field[] {
   const offset = document.attributeOffset(index);
   const values = document.attributes(index);
-  const valid = Object.values(values).every((value) => value >= 1 && value <= 100);
   return san3Attributes.map((id, relative) => ({
     key: `officer.${index}.${id}`,
     label: message(`san3.${id}`),
@@ -28,7 +27,7 @@ export function attributeFields(document: San3Document, index: number): San3Fiel
     value: values[id],
     min: 1,
     max: 100,
-    readonly: index < san3Layout.historical.count || !valid,
+    readonly: index < san3Layout.historical.count,
     ...(relative === 0
       ? {
           help: message(

@@ -67,6 +67,8 @@ export interface EditorView {
     help?: DisplayText;
     /** Localized text presets enter the ordinary validated draft before publication. */
     textDefaults?: Record<string, DisplayText>;
+    /** Numeric presets enter the same preview and range validation as manual edits. */
+    numericDefaults?: Record<string, number>;
   }[];
   /** Writable intents; preview may also include derived read-only effects. */
   changes: Record<string, number>;

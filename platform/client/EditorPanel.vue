@@ -162,11 +162,12 @@ async function navigate(selection: EditorQuery) {
 async function runAction(action: EditorResponse["actions"][number]) {
   const current = view.value;
   if (!current) return;
-  if (action.textDefaults) {
+  if (action.textDefaults || action.numericDefaults) {
+    Object.assign(draft(current.file, current.slot), action.numericDefaults ?? {});
     Object.assign(
       textDraft(current.file, current.slot),
       Object.fromEntries(
-        Object.entries(action.textDefaults).map(([key, value]) => [key, translate(value)]),
+        Object.entries(action.textDefaults ?? {}).map(([key, value]) => [key, translate(value)]),
       ),
     );
     await refresh();

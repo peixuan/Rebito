@@ -29,7 +29,12 @@ loading only that slot's SRAM restored all six disc values. In-session retention
 must not be presented as native-save persistence.
 
 Creation and battle operations remain available with explicit temporary-state
-instructions. Created custom officers can be saved normally; the creation
+instructions. Campaign Save includes custom definitions, but the original title
+Load uses the separate registration copy instead. After a fresh native-save boot,
+load the same campaign slot once more from the strategic system menu to restore
+its custom definitions. This was verified with different saved and unsaved values
+and identical SRAM bytes across the fresh runtime. Checkpoints already contain
+the edited definitions. The creation
 templates themselves reset on a cold boot or module reload. Battle-state
 persistence through native saving is not established. These schemas cannot
 prove the game is between commands.
@@ -84,8 +89,9 @@ reading fields round-tripped in private original-game memory checks.
 Custom slots retain the `0xffff` unregistered portrait sentinel. Editing a
 definition does not register it. Calendar checks validate the final month/day
 pair; portrait choices are backed by the game lookup. The optional 68-name
-preset creates a previewable name/reading draft and preserves registration and
-abilities. Both languages use the same names. Batches expand explicit scalar
+preset creates a previewable name/reading draft and fills all six abilities with
+100, including unused slots. It preserves registration and live membership;
+both languages use the same names. Batches expand explicit scalar
 edits and officer relocation destinations; names and other relationship workflows
 remain separate. Every selected target is validated before any change is published.
 

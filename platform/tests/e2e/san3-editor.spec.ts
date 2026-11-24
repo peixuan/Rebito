@@ -161,10 +161,14 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
     .getByRole("row")
     .filter({ hasText: /^Officer 533/ })
     .click();
-  await editor.getByRole("button", { name: "Preview 68 preset names", exact: true }).click();
+  await editor
+    .getByRole("button", { name: "Preview 68 full-ability presets", exact: true })
+    .click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.getByRole("dialog").getByRole("button", { name: "Close", exact: true }).click();
   await expect(editor.getByLabel("Name", { exact: true })).toHaveValue(chinese("san3.presetName0"));
+  for (const [label] of abilities)
+    await expect(editor.getByLabel(label, { exact: true })).toHaveValue("100");
   await editor.getByLabel("Age", { exact: true }).fill("35");
   await editor.getByLabel("Age", { exact: true }).press("Tab");
   await editor.getByLabel("Birth month", { exact: true }).fill("2");
@@ -217,7 +221,7 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   await editor.getByRole("button", { name: "Custom officers", exact: true }).click();
   await expect(editor.getByLabel("Birth month", { exact: true })).toBeDisabled();
   await expect(
-    editor.getByRole("button", { name: "Preview 68 preset names", exact: true }),
+    editor.getByRole("button", { name: "Preview 68 full-ability presets", exact: true }),
   ).toBeDisabled();
   await expect(
     editor.getByRole("button", { name: "Discard draft and reload", exact: true }),
@@ -245,8 +249,9 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   });
   expect(Object.values(document.attributes(1))).toEqual([70, 60, 80, 90, 50, 40]);
   expect(document.officer(1).soldierLimit).toBe(17_000);
-  expect(Object.values(document.attributes(533))).toEqual([91, 92, 93, 94, 95, 96]);
-  expect(document.officer(533).soldierLimit).toBe(19_200);
+  for (let index = 532; index < 600; index++)
+    expect(Object.values(document.attributes(index))).toEqual(Array(6).fill(100));
+  expect(document.officer(533).soldierLimit).toBe(20_000);
   expect(document.read(san3Layout.custom.offset + 28, 2)).toBe(231);
   const { offset, count, stride } = san3Layout.historical;
   expect(result.subarray(offset, offset + count * stride)).toEqual(
