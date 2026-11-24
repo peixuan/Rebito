@@ -225,5 +225,6 @@
   "san3.weapon": "兵器类型",
   "san3.ship": "战船类型",
   "san3.infantry": "步兵",
-  "san3.noShip": "无战船"
+  "san3.noShip": "无战船",
+  "san3.rebellion": "待结算的叛乱计划"
 }

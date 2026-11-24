@@ -21,6 +21,7 @@ import { san3NamePresetAction } from "./name-presets.ts";
 import { san3OperationFields } from "./operation-fields.ts";
 import { editSan3Campaign } from "./operations.ts";
 import { san3PresetAdapter } from "./preset-adapter.ts";
+import { san3StateFields } from "./state-view.ts";
 import { san3TaskFields } from "./task-view.ts";
 import { san3BookFields, san3TreasureView } from "./treasure-view.ts";
 
@@ -321,7 +322,13 @@ export const san3Adapter: EditorAdapter = {
             )
           : []),
         ...(module === "officers"
-          ? lifecycleFields(original, Number(selected)).map((field) => ({
+          ? [
+              ...san3StateFields(original, Number(selected)),
+              ...lifecycleFields(original, Number(selected)).filter(
+                ({ key, columnId }) =>
+                  columnId !== "finishRecovery" || Object.hasOwn(operationChanges, key),
+              ),
+            ].map((field) => ({
               ...field,
               value: operationChanges[field.key] ?? field.value,
             }))

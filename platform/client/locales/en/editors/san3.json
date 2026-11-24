@@ -225,5 +225,6 @@
   "san3.weapon": "Weapon type",
   "san3.ship": "Warship type",
   "san3.infantry": "Infantry",
-  "san3.noShip": "No vessel"
+  "san3.noShip": "No vessel",
+  "san3.rebellion": "Rebellion plan pending"
 }
