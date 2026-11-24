@@ -163,11 +163,11 @@
   "san3.appointmentHelp": "Choose a qualified officer already serving here. Strategist: Intelligence or Politics 80+. General: Strength 85+, or Strength 70+ and Charisma plus average leadership 120+. Armies and loyalty are preserved; civil conversion requires no troops or equipment. Apply separately from relocation, succession, covert status and treasure transfers.",
   "san3.appointAdvisor": "Appoint as city strategist",
   "san3.appointAdvisorHelp": "Explicitly replace the city strategist. The previous holder keeps their role; this does not change the governor. A newly appointed strategist fills a vacant seat automatically.",
-  "san3.battle": "Land battle",
+  "san3.battle": "Battle",
   "san3.mobility": "Remaining mobility",
   "san3.battleMobilityHelp": "Finish or cancel Move and return to your battle command menu before capturing. An open Move dialog caches points and can overwrite edits. The reviewed editor range is 0–90; this does not change future turns or strategic movement.",
   "san3.battleSummary": "{mobility} mobility points",
-  "san3.battleInstructions": "Original Japanese Mega-CD land combat only. Finish or cancel Move, return to your command menu, then capture for editing. Only deployed units’ remaining mobility is editable. Structural validation does not detect the menu or support naval combat; an unfinished Move may overwrite changes.",
+  "san3.battleInstructions": "Original Japanese Mega-CD land and naval combat. Close movement and selection dialogs, return to your battle command menu, then capture for editing. Edit deployed troops, training, morale, mobility and equipment with inventory reconciliation. Structural checks cannot detect the menu; an unfinished command may overwrite changes.",
   "san3.invalidGovernance": "Choose consistent, idle city leadership. Resolve ongoing tasks, covert status and battles before changing governors or rulers.",
   "san3.governance": "City leadership",
   "san3.appointGovernor": "New governor",
@@ -220,5 +220,10 @@
   "san3.infiltrationMonthsHelp": "Elapsed months, not months remaining (0–7). At 7, the next monthly update attempts to return the officer and army to the origin faction. A free agent waiting for recruitment begins this process after joining a faction.",
   "san3.originFactionHelp": "Change the origin used by an existing covert affiliation, turncoat state or pending rebellion plan. This does not immediately change current membership. The game uses this faction when resolving the existing state; current and prior service must remain safe for a covert return.",
   "san3.rebellionFaction": "Drive-tiger instigator",
-  "san3.rebellionFactionHelp": "Choose a faction to establish a pending rebellion plan, or None to cancel it. The game resolves the plan through its monthly rebellion and combat rules. Outcomes can include casualties, expulsion, death or ownership changes. Cancelling only removes the plan and preserves the stored prior affiliation."
+  "san3.rebellionFactionHelp": "Choose a faction to establish a pending rebellion plan, or None to cancel it. The game resolves the plan through its monthly rebellion and combat rules. Outcomes can include casualties, expulsion, death or ownership changes. Cancelling only removes the plan and preserves the stored prior affiliation.",
+  "san3.battleEquipmentHelp": "Weapons reserve one stock unit per whole 100 soldiers; ships reserve one vessel. Exchanges return old equipment before taking new stock from the same-faction source city. Current movement points are preserved. Shortages, stock overflow and ship exchanges outside ports are rejected.",
+  "san3.weapon": "Weapon type",
+  "san3.ship": "Warship type",
+  "san3.infantry": "Infantry",
+  "san3.noShip": "No vessel"
 }

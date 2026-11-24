@@ -425,8 +425,8 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   await expect(page.getByRole("button", { name: "Start game", exact: true })).toBeEnabled();
   await publishMemory(san3BattleFixture());
   await page.getByRole("button", { name: "Refresh saves", exact: true }).click();
-  await expect(editor.getByRole("button", { name: "Land battle", exact: true })).toBeVisible();
-  await expect(editor).toContainText("Structural validation does not detect the menu");
+  await expect(editor.getByRole("button", { name: "Battle", exact: true })).toBeVisible();
+  await expect(editor).toContainText("Structural checks cannot detect the menu");
   await page.getByRole("button", { name: "Start game", exact: true }).click();
   await capture.click();
   await editor.getByLabel("Remaining mobility", { exact: true }).fill("90");

@@ -7,7 +7,7 @@ import { san3BattleFixture } from "./san3-battle-fixture.ts";
 
 const officer = (index: number) => san3Layout.officers.offset + index * san3Layout.officers.stride;
 
-describe("Japanese Mega-CD land battle mobility", () => {
+describe("Japanese Mega-CD battle mobility", () => {
   it("owns buffers and exposes only deployed army members through a separate schema", () => {
     const bytes = san3BattleFixture();
     expect(() => new San3Document(bytes)).toThrow();
@@ -16,27 +16,25 @@ describe("Japanese Mega-CD land battle mobility", () => {
     expect(document.indexes()).toEqual([1, 2, 0]);
     expect(document.selected).toBe(0);
     expect(document.officer(0)).toMatchObject({ index: 0, name: "A", faction: 0, mobility: 5 });
-    expect(battleFields(document, 0)).toMatchObject([
-      {
-        key: "battle.0.mobility",
-        value: 5,
-        min: 0,
-        max: 90,
-        width: 1,
-        offset: officer(0) + 23,
-        help: { messageId: "san3.battleMobilityHelp" },
-      },
-    ]);
+    expect(battleFields(document, 0)[0]).toMatchObject({
+      key: "battle.0.mobility",
+      value: 5,
+      min: 0,
+      max: 90,
+      width: 1,
+      offset: officer(0) + 23,
+      help: { messageId: "san3.battleMobilityHelp" },
+    });
     document.copy().fill(0);
     for (const index of [-1, 0.5, 3, 600, Number.NaN])
       expect(() => document.officer(index)).toThrow();
     expect(document.officer(0).mobility).toBe(5);
   });
 
-  it("rejects other overlays, naval combat, changed consumers and invalid battle graphs", () => {
+  it("rejects other overlays, unknown combat modes, changed consumers and invalid graphs", () => {
     expect(() => new San3BattleDocument(new Uint8Array(100))).toThrow();
     for (const offset of [
-      0x78000, 0x78776, 0x4abc5, 0x52057, 0x54003, 0x27ba7, 0x27bc7, 0x6532c, 0x65331, 0x65614,
+      0x78000, 0x78776, 0x4abc5, 0x52056, 0x54003, 0x27ba7, 0x27bc7, 0x6532c, 0x65331, 0x65614,
       0x65619,
     ]) {
       const bytes = san3BattleFixture();
@@ -44,6 +42,7 @@ describe("Japanese Mega-CD land battle mobility", () => {
       expect(() => new San3BattleDocument(bytes), offset.toString(16)).toThrow();
     }
     const mutations: ((bytes: Uint8Array, view: DataView) => void)[] = [
+      (_, view) => view.setUint16(0x52056, 2),
       (_, view) => view.setUint16(0x78788, 0),
       (bytes) => {
         bytes[0x7878a] = 12;
@@ -100,6 +99,20 @@ describe("Japanese Mega-CD land battle mobility", () => {
     }
   });
 
+  it("edits naval mobility using the same verified Move consumer without changing ship data", () => {
+    const bytes = san3BattleFixture();
+    new DataView(bytes.buffer).setUint16(0x52056, 1);
+    bytes[officer(0) + 10] = 0x74;
+    const document = new San3BattleDocument(bytes);
+    expect(document.naval).toBe(true);
+    for (const value of [0, 90]) {
+      const result = editSan3Battle(document, { "battle.0.mobility": value });
+      const expected = bytes.slice();
+      expected[officer(0) + 23] = value;
+      expect(result.bytes).toEqual(expected);
+    }
+  });
+
   it("accepts native combat morale above 100 without changing it during mobility edits", () => {
     for (const morale of [101, 120]) {
       const bytes = san3BattleFixture();
@@ -145,7 +158,7 @@ describe("Japanese Mega-CD land battle mobility", () => {
       ["battle.3.mobility", 20],
       ["battle.00.mobility", 20],
       ["officer.0.mobility", 20],
-      ["battle.0.soldiers", 20],
+      ["battle.0.soldiers", 20_001],
       ["battle.1.mobility", -1],
       ["battle.1.mobility", 91],
       ["battle.1.mobility", 1.5],

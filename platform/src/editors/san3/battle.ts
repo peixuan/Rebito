@@ -1,6 +1,7 @@
 import { message } from "../../shared/messages.ts";
 import { EditorError } from "../types.ts";
 import { san3Layout } from "./document.ts";
+import { exchangeSan3Equipment } from "./equipment.ts";
 import type { San3Field } from "./fields.ts";
 import { decodeSan3Name } from "./names.ts";
 
@@ -9,12 +10,13 @@ const invalidEdit = () => new EditorError("invalid_edit", message("editor.invali
 const roster = { offset: 0x4b504, count: 8, stride: 12 };
 const officerOffset = (index: number) => san3Layout.officers.offset + index * 30;
 
-/** Land combat has an independent schema; strategic relationships are not writable here. */
+/** Combat has an independent schema; strategic relationships are not writable here. */
 export class San3BattleDocument {
   private readonly bytes: Uint8Array;
   private readonly data: DataView;
   private readonly members = new Map<number, number>();
   readonly selected: number;
+  readonly naval: boolean;
 
   constructor(bytes: Uint8Array) {
     if (bytes.length !== san3Layout.size) throw invalidSave();
@@ -30,7 +32,7 @@ export class San3BattleDocument {
       word(0x78788) > 9999 ||
       this.data.getUint8(0x7878a) > 11 ||
       word(0x4abc4) !== 1 ||
-      word(0x52056) !== 0 ||
+      word(0x52056) > 1 ||
       long(0x54000) !== 0x4eba0c94 ||
       long(0x27ba4) !== 0x10280017 ||
       long(0x27bc4) !== 0x11420017 ||
@@ -40,6 +42,7 @@ export class San3BattleDocument {
       long(0x65616) !== 0x27bac
     )
       throw invalidSave();
+    this.naval = word(0x52056) === 1;
     const sides = new Set<number>();
     for (let slot = 0; slot < roster.count; slot++) {
       const base = roster.offset + slot * roster.stride;
@@ -101,11 +104,30 @@ export class San3BattleDocument {
       : san3Layout.custom.offset +
         (index - san3Layout.historical.count) * san3Layout.custom.stride +
         13;
+    const offset = officerOffset(index);
+    const city = this.bytes[offset + 16] ?? 0xff;
+    const cityBase = san3Layout.cities.offset + city * san3Layout.cities.stride;
+    const attributes = historical
+      ? san3Layout.historical.offset + index * san3Layout.historical.stride + 5
+      : san3Layout.custom.offset +
+        (index - san3Layout.historical.count) * san3Layout.custom.stride +
+        4;
+    const land = this.bytes[attributes] ?? 255;
+    const naval = this.bytes[attributes + 1] ?? 255;
+    const equipment = this.bytes[offset + 10] ?? 0;
     return {
       index,
       name: decodeSan3Name(this.bytes.subarray(names, names + 7)),
       faction,
       mobility: this.data.getUint8(officerOffset(index) + 23),
+      soldiers: this.data.getUint16(offset + 2),
+      soldierLimit: 10_000 + Math.max(land, naval) * 100,
+      training: this.data.getUint8(offset + 21),
+      morale: this.data.getUint8(offset + 22),
+      weapon: equipment & 3,
+      ship: (equipment >>> 2) & 3,
+      canEquip: land <= 100 && naval <= 100 && this.bytes[cityBase + 20] === faction,
+      port: ((this.bytes[cityBase + 21] ?? 0) & 0x80) !== 0,
     };
   }
 
@@ -117,7 +139,7 @@ export class San3BattleDocument {
 /** The 0–90 range preserves the original editor's range, not a claimed native maximum. */
 export function battleFields(document: San3BattleDocument, index: number): San3Field[] {
   const officer = document.officer(index);
-  return [
+  const fields: San3Field[] = [
     {
       key: `battle.${index}.mobility`,
       label: message("san3.mobility"),
@@ -131,18 +153,83 @@ export function battleFields(document: San3BattleDocument, index: number): San3F
       help: message("san3.battleMobilityHelp"),
     },
   ];
+  for (const [id, relative, width, maximum] of [
+    ["soldiers", 2, 2, officer.soldierLimit],
+    ["training", 21, 1, 100],
+    ["morale", 22, 1, 120],
+    ["weapon", 10, 1, 3],
+    ["ship", 10, 1, 3],
+  ] as const) {
+    fields.push({
+      key: `battle.${index}.${id}`,
+      label: message(`san3.${id}`),
+      group: message("san3.battle"),
+      columnId: id,
+      offset: officerOffset(index) + relative,
+      width,
+      value: officer[id],
+      min: id === "soldiers" || (id === "ship" && document.naval) ? 1 : 0,
+      max: maximum,
+      ...(["soldiers", "weapon", "ship"].includes(id)
+        ? {
+            readonly: !officer.canEquip || (id === "ship" && !officer.port),
+            help: message("san3.battleEquipmentHelp"),
+          }
+        : {}),
+      ...(id === "weapon" || id === "ship"
+        ? {
+            choices: (id === "weapon"
+              ? ["infantry", "warhorses", "crossbows", "heavyCrossbows"]
+              : ["noShip", "heavyWarships", "mediumWarships", "lightWarships"]
+            )
+              .map((label, value) => ({ value, label: message(`san3.${label}`) }))
+              .filter(({ value }) => id !== "ship" || !document.naval || value > 0),
+          }
+        : {}),
+    });
+  }
+  return fields;
 }
 
 /** Move dialogs cache their counter: capture at the battle command menu before editing. */
 export function editSan3Battle(document: San3BattleDocument, changes: Record<string, number>) {
   const edits = Object.entries(changes).map(([key, value]) => {
-    const match = /^battle\.(0|[1-9]\d{0,2})\.mobility$/.exec(key);
-    const field = match && battleFields(document, Number(match[1]))[0];
-    if (!field || !Number.isSafeInteger(value) || value < field.min || value > field.max)
+    const match =
+      /^battle\.(0|[1-9]\d{0,2})\.(mobility|soldiers|training|morale|weapon|ship)$/.exec(key);
+    const field =
+      match && battleFields(document, Number(match[1])).find((field) => field.key === key);
+    if (
+      !field ||
+      field.readonly ||
+      !Number.isSafeInteger(value) ||
+      value < field.min ||
+      value > field.max
+    )
       throw invalidEdit();
     return { field, before: field.value, after: value };
   });
-  const bytes = document.copy();
-  for (const { field, after } of edits) bytes[field.offset] = after;
-  return { bytes, edits };
+  const equipped = new Set(
+    edits
+      .filter(({ field }) => ["soldiers", "weapon", "ship"].includes(field.columnId))
+      .map(({ field }) => Number(field.key.split(".")[1])),
+  );
+  const result = exchangeSan3Equipment(
+    document.copy(),
+    [...equipped].map((index) => {
+      const current = document.officer(index);
+      return {
+        index,
+        soldiers: changes[`battle.${index}.soldiers`] ?? current.soldiers,
+        weapon: changes[`battle.${index}.weapon`] ?? current.weapon,
+        ship: changes[`battle.${index}.ship`] ?? current.ship,
+      };
+    }),
+  );
+  for (const { field, after } of edits)
+    if (!["soldiers", "weapon", "ship"].includes(field.columnId))
+      result.bytes[field.offset] = after;
+  const inventory = result.writes.filter(
+    ({ offset }) => offset >= san3Layout.cities.offset && offset < san3Layout.factions.offset,
+  );
+  return { bytes: result.bytes, edits, inventory };
 }

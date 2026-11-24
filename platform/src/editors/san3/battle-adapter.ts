@@ -1,6 +1,16 @@
 import { message } from "../../shared/messages.ts";
 import { type EditorAdapter, type EditorDraft, EditorError } from "../types.ts";
 import { battleFields, editSan3Battle, San3BattleDocument } from "./battle.ts";
+import { san3Layout } from "./document.ts";
+
+const stockNames: Record<number, string> = {
+  36: "crossbows",
+  38: "heavyCrossbows",
+  40: "warhorses",
+  43: "heavyWarships",
+  44: "mediumWarships",
+  45: "lightWarships",
+};
 
 const label = (document: San3BattleDocument, index: number) =>
   document.officer(index).name || message("san3.officerRecord", { index: index + 1 });
@@ -26,18 +36,21 @@ function prepare(bytes: Uint8Array, draft: EditorDraft) {
   };
 }
 
-/** Combat exposes reviewed mobility only; it cannot dispatch campaign or creation actions. */
+/** Combat edits its deployed armies; campaign and creation actions remain separate. */
 export const san3BattleAdapter: EditorAdapter = {
   size: 0x80000,
   view(bytes, draft) {
-    const { document, selected, edits } = prepare(bytes, draft);
+    const { document, selected, edits, inventory } = prepare(bytes, draft);
     return {
       instructions: message("san3.battleInstructions"),
       slots: [{ index: 0, label: message("san3.checkpoint"), available: true }],
       slot: 0,
       modules: [{ id: "battle", label: message("san3.battle") }],
       module: "battle",
-      columns: [{ id: "mobility", label: message("san3.mobility") }],
+      columns: ["mobility", "soldiers", "training", "morale", "weapon", "ship"].map((id) => ({
+        id,
+        label: message(`san3.${id}`),
+      })),
       records: document.indexes().map((index) => {
         const { mobility } = document.officer(index);
         return {
@@ -46,7 +59,12 @@ export const san3BattleAdapter: EditorAdapter = {
           summary: message("san3.battleSummary", { mobility }),
           tags: [],
           available: true,
-          cells: { mobility },
+          cells: Object.fromEntries(
+            battleFields(document, index).map((field) => [
+              field.columnId,
+              field.choices?.find(({ value }) => value === field.value)?.label ?? field.value,
+            ]),
+          ),
         };
       }),
       selected,
@@ -55,15 +73,30 @@ export const san3BattleAdapter: EditorAdapter = {
       ),
       actions: [],
       changes: Object.fromEntries(edits.map(({ field, after }) => [field.key, after])),
-      preview: edits.map(({ field, before, after }) => ({
-        key: field.key,
-        label: message("editor.columnLabel", {
-          group: label(document, Number(field.key.split(".")[1])),
-          field: field.label,
+      preview: [
+        ...edits.map(({ field, before, after }) => ({
+          key: field.key,
+          label: message("editor.columnLabel", {
+            group: label(document, Number(field.key.split(".")[1])),
+            field: field.label,
+          }),
+          before,
+          after,
+        })),
+        ...inventory.map(({ offset, before, after }) => {
+          const city = Math.floor((offset - san3Layout.cities.offset) / san3Layout.cities.stride);
+          const relative = (offset - san3Layout.cities.offset) % san3Layout.cities.stride;
+          return {
+            key: `battle-stock.${city}.${stockNames[relative]}`,
+            label: message("editor.columnLabel", {
+              group: message("san3.cityRecord", { index: city + 1 }),
+              field: message(`san3.${stockNames[relative]}`),
+            }),
+            before,
+            after,
+          };
         }),
-        before,
-        after,
-      })),
+      ],
     };
   },
   apply(bytes, draft) {
