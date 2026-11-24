@@ -1,6 +1,6 @@
 # Platform work status
 
-Updated: 2026-11-23 (Asia/Shanghai).
+Updated: 2026-11-24 (Asia/Shanghai).
 
 ## Reviewed source and history
 
@@ -161,23 +161,35 @@ preservation; this evidence does not establish every ability/event combination.
 
 The [Japanese Mega-CD SAN3 adapter](../../platform/src/editors/san3/README.md)
 remains a paused program-RAM editor. Both supplied GameCheatKits branches were
-audited; the [coverage comparison](../../platform/src/editors/san3/PARITY.md)
-separates implemented operations, remaining gameplay gaps and excluded debugger
-controls. Six historical/custom base abilities, four creation templates, custom
-names/profile metadata, city economy/stores/prices and campaign traits are editable.
-Numeric batches and the 68-name preset preserve draft previews and language changes.
-Relocation, same-capital succession, qualified appointments, treasure ownership
-and status cleanup maintain their reviewed dependent records. Land-battle mobility
-has a separate schema; naval combat and unverified campaign transitions are excluded.
+reviewed against reachable controls. The [coverage mapping](../../platform/src/editors/san3/PARITY.md)
+now covers their meaningful gameplay features through coherent operations:
+base abilities, four creation templates, custom names/profiles, city economy,
+armies, tasks, life/discovery, covert status, governance and land/naval combat.
+Unknown bytes, list pointers and battlefield coordinates are intentionally excluded.
 
-Original-game checks exercised base abilities, both young creation flows, names,
-traits, ruler replacement, relocation, treasures, appointments and land mobility.
-Campaign edits survived in-game saving and fresh native-only loads. Checkpoint
-writeback preserved all 73,728 native-save companion bytes; historical definitions
-and creation templates reload disc defaults on cold boot. Recovery/covert cleanup
-has instruction and synthetic evidence, not an affected-officer runtime check;
-older creation-row selection has instruction evidence only. Do not claim full
-reference-editor parity or universal game compatibility.
+Leadership changes include governors and cross-city succession with current-ruler
+cache repair. City transfer, abandonment and faction absorption maintain complete
+rosters, allegiance and contracts. Death/revival and recruitment/discovery preview
+army, strategist and inheritance effects. Withdrawal preserves the appearance
+time line; consumed events are not replayed. Tasks preserve shared clocks/results,
+allow idle officers to join groups of up to ten, and show action-flag effects.
+Construction uses actual port ship queues, not the legacy task-9 label. Battle
+equipment exchanges reconcile stocks; reserve deployment eligibility preserves
+losses and uses native Deploy/Retreat for map placement.
+
+Original-game checks exercised all four creation rows, army/equipment changes,
+leadership/territory/life/discovery operations, task-group monthly settlement,
+covert recruitment/return, ship completion/cancellation and land/naval commands.
+Campaign edits survived original Save followed by fresh native-SRAM-only loads.
+Checkpoint writeback preserved all 73,728 native companion bytes. Historical
+abilities and creation defaults reload disc data on cold boot/module reload;
+battle edit persistence through native saving is not established. These are
+verified cases for this edition, not universal campaign/emulator compatibility.
+
+Selected city controls share an immutable, document-scoped list context; even
+72 valid governor candidates require one graph traversal. Actual edits still
+validate the resulting document. Original mutable relocation graphs remain
+independent, and malformed-list failures cannot contaminate other documents.
 
 Editor writes require a fresh paused capture after every resume. Failed published
 writeback retains the pause and original retry target. Clean captures can switch
@@ -198,14 +210,15 @@ The read-only combat UI passed all 554 unit/integration tests, lint, types and
 build, plus its sandbox-enabled browser flow. Published CI remains the acceptance
 record for the complete browser suite and container checks.
 
-The SAN3 completion candidate passed 664 unit/database tests (98.84% line and
-95.14% branch coverage), lint, both type checks and the build. Its sandbox-enabled
-browser flow covers strategic drafts, registration and battle, including phase
-switches without reloading the workspace. All 26 repository policy tests, 33
-deployer tests and the 340-package dependency/license review passed. The current
-dependency audit reports no vulnerabilities. Complete browser/container checks
-and production preservation acceptance remain mandatory for the exact revision
-before promotion; hosted CI is the release record.
+The SAN3 parity candidate passed all 790 unit/database tests (99% line and
+94.86% branch coverage), lint, both type checks and production build. The local
+full test run bounded workers to four; no test or timeout was relaxed. Focused
+sandboxed browser checks cover actual runtime writeback, unchanged native SRAM,
+canonical drafts, repeated previews and language/record/module switches.
+All 26 repository policy tests, 33 deployer tests and the 340-package dependency
+license review passed. Complete browser/container checks and production save
+preservation remain mandatory for the exact promoted revision; hosted CI is the
+release record. No proprietary fixtures, private captures or dependencies were added.
 
 ## Shared Mega CD BIOS
 
