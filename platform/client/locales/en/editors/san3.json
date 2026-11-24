@@ -182,6 +182,8 @@
   "san3.bookTotal": "Native book issuance counter",
   "san3.bookTotalCount": "Native issuance: {count}",
   "san3.bookCopies": "Strategy books held",
+  "san3.personalTreasures": "Personal treasure flags",
+  "san3.personalTreasureHelp": "Personal flags can be duplicated across officers. They do not transfer global ownership or consume hidden items. Ordinary bonuses read these flags; special event effects may still depend on the global owner. Save inside the game after editing.",
   "san3.bookCopiesHelp": "Each officer can hold 0–7 copies independently. Editing this quantity preserves the native issuance counter, other officers and base abilities.",
   "san3.treasureOwnershipHelp": "Transfer global ownership and update the old/new owners’ personal flags. Other officers’ duplicate flags are preserved. Claiming the hidden seal clears its discovery marker. Event custodians and busy recipients remain locked.",
   "san3.equippedTroopsHelp": "Remove allocated weapons and ships before changing troop numbers; native equipment refunds depend on the current army size.",

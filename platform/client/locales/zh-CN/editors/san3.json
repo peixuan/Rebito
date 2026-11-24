@@ -182,6 +182,8 @@
   "san3.bookTotal": "游戏原生兵法书发放计数",
   "san3.bookTotalCount": "原生发放计数：{count}",
   "san3.bookCopies": "持有兵法书数量",
+  "san3.personalTreasures": "个人宝物标记",
+  "san3.personalTreasureHelp": "可让多个武将重复持有同一宝物，不转移全局归属，也不领取隐藏物品。普通加成读取个人标记，特殊事件效果仍可能依赖全局持有者。修改后请在游戏内保存。",
   "san3.bookCopiesHelp": "每位武将可以独立持有0至7本。修改数量不会改变游戏原生发放计数、其他武将或基础能力。",
   "san3.treasureOwnershipHelp": "转交全局归属，同时更新原持有者和新持有者的个人标记，保留其他武将的重复标记。取得隐藏玉玺会清除发现标记。事件保管者和忙碌接收者保持锁定。",
   "san3.equippedTroopsHelp": "修改兵数前，请先在游戏中卸除已分配的武器和战船；游戏退还装备的数量取决于当前兵数。",

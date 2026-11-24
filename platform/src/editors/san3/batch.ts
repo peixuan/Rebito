@@ -6,7 +6,9 @@ import { san3FactionControlFields } from "./faction-control.ts";
 import { attributeFields, cityFields, officerFields } from "./fields.ts";
 import { san3OperationFields } from "./operation-fields.ts";
 import { editSan3Campaign } from "./operations.ts";
+import { san3PersonalTreasureFields } from "./personal-treasures.ts";
 import { editSan3Presets, presetFields, San3PresetDocument, san3PresetLayout } from "./presets.ts";
+import { san3BookFields } from "./treasure-view.ts";
 
 export type San3BatchKind = "city" | "officer" | "custom" | "preset" | "faction";
 const invalid = () => new EditorError("invalid_edit", message("editor.invalidEdit"));
@@ -51,6 +53,8 @@ export function expandSan3Batch(
       return [
         ...officerFields(document, index),
         ...san3OperationFields(document, "officers", index),
+        ...san3BookFields(document, index),
+        ...san3PersonalTreasureFields(document, index),
       ];
     return [
       ...attributeFields(document, san3Layout.historical.count + index),

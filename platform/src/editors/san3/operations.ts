@@ -6,6 +6,7 @@ import { San3Document, san3Layout } from "./document.ts";
 import { editSan3, findSan3Field } from "./fields.ts";
 import { editSan3Governors } from "./governance-draft.ts";
 import { editSan3Lifecycle } from "./lifecycle.ts";
+import { editSan3PersonalTreasures } from "./personal-treasures.ts";
 import { relocateSan3Officers } from "./relocation.ts";
 import { succeedSan3Ruler } from "./ruler-change.ts";
 import { san3RulerPreview } from "./ruler-preview.ts";
@@ -28,12 +29,17 @@ export function editSan3Campaign(document: San3Document, changes: Record<string,
   const scalar: Record<string, number> = Object.create(null);
   const lifecycle: Record<string, number> = Object.create(null);
   const treasures: Record<string, number> = Object.create(null);
+  const personal: Record<string, number> = Object.create(null);
   const appointments: Record<string, number> = Object.create(null);
   const governors: Record<string, number> = Object.create(null);
   const operationChanges: Record<string, number> = {};
   for (const [key, value] of Object.entries(changes)) {
     const move = /^move\.(0|[1-9]\d{0,2})\.city$/.exec(key);
     const ruler = /^ruler\.(0|[1-9]\d?)\.officer$/.exec(key);
+    if (key.startsWith("personalTreasure.")) {
+      personal[key] = value;
+      continue;
+    }
     if (key.startsWith("governor.")) {
       governors[key] = value;
       continue;
@@ -138,6 +144,14 @@ export function editSan3Campaign(document: San3Document, changes: Record<string,
       });
     }
     current = new San3Document(updated.bytes);
+  }
+  if (Object.keys(personal).length) {
+    // Explicit personal flags apply after global transfers, so a former owner can
+    // deliberately retain a duplicate without changing the requested global owner.
+    const updated = editSan3PersonalTreasures(current, personal);
+    current = new San3Document(updated.bytes);
+    Object.assign(operationChanges, updated.changes);
+    operationPreview.push(...updated.preview);
   }
   if (lifecycleKeys.length) {
     const updated = editSan3Lifecycle(current, transitions.changes);
