@@ -2,6 +2,7 @@ import { message } from "../../shared/messages.ts";
 import { EditorError } from "../types.ts";
 import { editSan3Delegation } from "./city-delegation.ts";
 import type { San3Document } from "./document.ts";
+import { editSan3FactionControl } from "./faction-control.ts";
 import { san3InfiltrationDraft } from "./infiltration-view.ts";
 import { editSan3Life } from "./life-controls.ts";
 import { san3MergeDraft } from "./merge-view.ts";
@@ -12,6 +13,7 @@ import { san3TaskDraft } from "./task-view.ts";
 import { san3TerritoryDraft } from "./territory-draft.ts";
 
 const workflows = [
+  { prefix: "factionControl.", edit: editSan3FactionControl },
   { prefix: "delegation.", edit: editSan3Delegation },
   { prefix: "merge.", edit: san3MergeDraft },
   { prefix: "shipbuilding.", edit: editSan3Shipbuilding },

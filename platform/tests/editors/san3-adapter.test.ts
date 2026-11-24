@@ -118,7 +118,7 @@ describe("SAN3 editor view", () => {
     expect(view.fields.find(({ columnId }) => columnId === "location")?.readonly).toBe(true);
   });
 
-  it("aggregates only owned cities and active officers into read-only factions", () => {
+  it("aggregates owned cities and officers while exposing faction control", () => {
     const view = san3Adapter.view(fixture(), { module: "factions" });
     expect(view.records[0]?.cells).toMatchObject({
       ruler: "Ruler",
@@ -133,7 +133,9 @@ describe("SAN3 editor view", () => {
       available: false,
       cells: { cityCount: 0, officerCount: 0 },
     });
-    expect(view.fields.every(({ readonly }) => readonly)).toBe(true);
+    expect(view.fields.filter(({ readonly }) => !readonly).map(({ key }) => key)).toEqual([
+      "factionControl.0.human",
+    ]);
   });
 
   it("locks historical abilities and previews editable registered custom abilities", () => {

@@ -2,18 +2,20 @@ import { message } from "../../shared/messages.ts";
 import { EditorError, type EditorField } from "../types.ts";
 import { customMetadataFields } from "./custom-fields.ts";
 import { San3Document, san3Layout } from "./document.ts";
+import { san3FactionControlFields } from "./faction-control.ts";
 import { attributeFields, cityFields, officerFields } from "./fields.ts";
 import { san3OperationFields } from "./operation-fields.ts";
 import { editSan3Campaign } from "./operations.ts";
 import { editSan3Presets, presetFields, San3PresetDocument, san3PresetLayout } from "./presets.ts";
 
-export type San3BatchKind = "city" | "officer" | "custom" | "preset";
+export type San3BatchKind = "city" | "officer" | "custom" | "preset" | "faction";
 const invalid = () => new EditorError("invalid_edit", message("editor.invalidEdit"));
 const counts = {
   city: san3Layout.cities.count,
   officer: san3Layout.officers.count,
   custom: san3Layout.custom.count,
   preset: san3PresetLayout.count,
+  faction: san3Layout.factions.count,
 };
 
 /** Expand explicit numeric changes; validation succeeds for every record or none. */
@@ -44,6 +46,7 @@ export function expandSan3Batch(
     }
     if (!(document instanceof San3Document)) throw invalid();
     if (sourceKind === "city") return cityFields(document, index);
+    if (sourceKind === "faction") return san3FactionControlFields(document, index);
     if (sourceKind === "officer")
       return [
         ...officerFields(document, index),

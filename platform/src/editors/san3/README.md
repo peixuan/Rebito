@@ -117,6 +117,11 @@ replayed. Any invalid request rejects the complete operation without publication
 - Faction absorption transfers all cities and armies, reconciles player control,
   allegiance and contracts, and demotes the former ruler. The current turn faction
   cannot be dissolved. Previews include cancelled agreements and status cleanup.
+- Active factions expose Player/Computer control, including batch changes. Native
+  dispatch reads the flag again; this does not reorder turns or interrupt an
+  executing command. Two player flags survived original Save and a fresh
+  SRAM-only Load. The sandboxed browser flow checks canonical drafts, language
+  switches, actual checkpoint writeback and unchanged native companions.
 - Relocation and qualified appointments maintain city/role/strategist links.
   Moving an officer disbands their army. In-place civil conversion requires no army.
   Native base abilities, not treasure bonuses, determine appointment qualifications.

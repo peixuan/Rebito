@@ -15,6 +15,7 @@ import { factionContextFields, historicalContextFields } from "./context-fields.
 import { customMetadataFields } from "./custom-fields.ts";
 import { customNameFields, editCustomNames } from "./custom-names.ts";
 import { San3Document, san3Layout } from "./document.ts";
+import { san3FactionControlFields } from "./faction-control.ts";
 import { attributeFields, cityFields, officerFields } from "./fields.ts";
 import { san3GovernorFields } from "./governance-fields.ts";
 import { san3InfiltrationFields } from "./infiltration-view.ts";
@@ -111,6 +112,7 @@ function fields(
     if (!faction) throw invalid();
     return [
       context("ruler", faction.ruler, data.officerName(faction.ruler)),
+      ...san3FactionControlFields(document, index),
       ...(["cityCount", "officerCount", "population", "gold", "food", "soldiers"] as const).map(
         (id) => context(id, faction[id]),
       ),
@@ -174,14 +176,20 @@ function prepare(bytes: Uint8Array, draft: EditorDraft) {
   if (draft.slot !== undefined && draft.slot !== 0) throw invalid();
   const module = draft.module ?? "cities";
   if (!modules.includes(module as Module)) throw invalid();
-  if ((module === "factions" || module === "treasures") && draft.action) throw invalid();
+  if (module === "treasures" && draft.action) throw invalid();
   const original = new San3Document(bytes);
   const result = editSan3Campaign(
     original,
     san3BatchDraft(
       original,
       draft,
-      module === "cities" ? "city" : module === "custom" ? "custom" : "officer",
+      module === "cities"
+        ? "city"
+        : module === "custom"
+          ? "custom"
+          : module === "factions"
+            ? "faction"
+            : "officer",
     ),
   );
   const edits = result.edits.filter(({ before, after }) => before !== after);
@@ -282,7 +290,7 @@ export const san3Adapter: EditorAdapter = {
             ? ["population", "gold", "food"]
             : module === "officers"
               ? ["soldiers", "loyalty"]
-              : ["cityCount", "officerCount", "gold", "food"]
+              : ["factionControl", "cityCount", "officerCount", "gold", "food"]
           ).includes(id),
         })),
       ...(module === "officers"
@@ -357,11 +365,15 @@ export const san3Adapter: EditorAdapter = {
             }))
           : []),
       ],
-      ...(module === "factions" || module === "treasures"
+      ...(module === "treasures"
         ? {}
         : {
             batchKeys: [...selectedFields, ...operationFields]
-              .filter((field) => !field.readonly)
+              .filter(
+                (field) =>
+                  !field.readonly &&
+                  (module !== "factions" || field.key.startsWith("factionControl.")),
+              )
               .map(({ key }) => key),
           }),
       ...(module === "custom" ? { textFields: customNameFields(document, Number(selected)) } : {}),
