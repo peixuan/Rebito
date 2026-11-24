@@ -98,6 +98,13 @@ Hints cover controller inputs and disk controls; account saving stays in the pag
 toolbar. Remapping lasts for this runtime only, since browser settings persistence
 is disabled. DOS uses each game's own keyboard/mouse conventions instead.
 
+The runtime canvas owns navigation keys only while it has focus. Explicit Start,
+Resume and canvas clicks hand focus to the game; a control selected during loading
+keeps its focus. Capture-phase cancellation covers held/repeated arrows, Space and
+page-navigation keys without blocking emulator input or page controls. Background
+resume never moves focus. Failed stops retain keyboard handling until the runtime
+actually stops; successful cleanup restores the canvas tab index.
+
 Live DOS editing pauses the existing instance and checks every target file against
 the editor's base revision before server publication. It downloads only the edited
 native file group, verifies all hashes, rechecks every original file before writing,

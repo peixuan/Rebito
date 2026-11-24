@@ -92,6 +92,7 @@ async function perform(action: () => Promise<void>) {
 }
 async function boot() {
   const ticket = ++generation;
+  const initialFocus = document.activeElement;
   snapshotSession.invalidate();
   busy.value = true;
   error.value = "";
@@ -132,6 +133,8 @@ async function boot() {
       handle = started;
       controls.value = started.controls ?? null;
       ready.value = true;
+      // Loading can finish after the user has focused another control; respect that choice.
+      if (document.activeElement === initialFocus) started.focus?.();
     } finally {
       clearTimeout(timer);
     }
@@ -298,6 +301,7 @@ function togglePause() {
   else {
     snapshotSession.invalidate();
     handle.resume();
+    handle.focus?.();
   }
 }
 function toggleMouse() {

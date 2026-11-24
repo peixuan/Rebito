@@ -38,6 +38,8 @@ export interface RuntimeControls {
   configure(): void;
 }
 export interface RuntimeHandle {
+  /** Explicit user handoff only; background resume must not steal editor focus. */
+  focus?(): void;
   pause(): void;
   resume(): void;
   capture(): Promise<RuntimeProgress | null>;
