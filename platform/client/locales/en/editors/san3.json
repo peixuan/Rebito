@@ -259,7 +259,7 @@
   "san3.role7": "Not yet appeared",
   "san3.presenceRole": "Service and discovery",
   "san3.presenceChanges": "Service and discovery",
-  "san3.presenceHelp": "Leaders hand over first; resolve missions and allocated equipment. Civil service joins this city's faction; free or hidden states disband the army and retain belongings.",
+  "san3.presenceHelp": "Leaders hand over first; resolve missions and allocated equipment. Civil service joins this city's faction; free, hidden or not-yet-appeared states disband the army. Withdrawal to not yet appeared also requires returning all treasures and books. It removes city membership without rewinding historical appearance events; use an explicit appearance city to introduce the officer again.",
   "san3.appearanceCity": "Appearance city",
   "san3.appearanceHelp": "Unappeared registered officers enter the selected city's list. Civil service requires an owned city. Existing officers use relocation to change cities.",
   "san3.shipbuilding": "Shipbuilding queues",

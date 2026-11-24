@@ -3,6 +3,7 @@ import type { EditorField } from "../types.ts";
 import { San3Document } from "./document.ts";
 import { invalidGovernance } from "./governance-core.ts";
 import { setSan3OfficerPresence } from "./governance-membership.ts";
+import { withdrawSan3Officer } from "./governance-withdrawal.ts";
 import { san3OperationLabels, san3OperationPreview } from "./operation-preview.ts";
 import { appendSan3PlacementEffects } from "./placement-preview.ts";
 
@@ -42,7 +43,10 @@ export function editSan3Presence(document: San3Document, draft: Record<string, n
   const names = san3OperationLabels(document);
   for (const [index, request] of [...requests].sort(([a], [b]) => a - b)) {
     if (current.officer(index).role === request.role) continue;
-    const result = setSan3OfficerPresence(current, index, request.role, request.city);
+    const result =
+      request.role === 7
+        ? withdrawSan3Officer(current, index)
+        : setSan3OfficerPresence(current, index, request.role, request.city);
     const change = result.change;
     const key = `presence.${index}.role`;
     changes[key] = request.role;
@@ -53,7 +57,7 @@ export function editSan3Presence(document: San3Document, draft: Record<string, n
       roleLabel(change.previousRole),
       roleLabel(request.role),
     );
-    if (change.introduced) {
+    if ("introduced" in change && change.introduced) {
       const cityKey = `presence.${index}.city`;
       changes[cityKey] = request.city;
       append(
@@ -64,6 +68,14 @@ export function editSan3Presence(document: San3Document, draft: Record<string, n
         names.city(request.city),
       );
     }
+    if (request.role === 7)
+      append(
+        `presenceEffect.${index}.roster`,
+        names.officer(index),
+        "rosterMembership",
+        names.city(change.city),
+        message("san3.none"),
+      );
     const placed = new San3Document(result.bytes);
     appendSan3PlacementEffects(current, placed, index, "presenceEffect", append);
     if (change.advisorRemoved)
@@ -88,10 +100,11 @@ export function san3PresenceFields(
   const current = document.officer(index);
   const city = draft[`presence.${index}.city`] ?? placementCity(document, index);
   const choices = [{ value: current.role, label: roleLabel(current.role) }];
-  for (const value of [4, 5, 6]) {
+  for (const value of [4, 5, 6, 7]) {
     if (value === current.role) continue;
     try {
-      setSan3OfficerPresence(document, index, value, city);
+      if (value === 7) withdrawSan3Officer(document, index);
+      else setSan3OfficerPresence(document, index, value, city);
       choices.push({ value, label: message(`san3.role${value}`) });
     } catch {
       /* Read-only rows remain inspectable, including malformed or dead records. */

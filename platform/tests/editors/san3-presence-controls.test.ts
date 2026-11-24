@@ -89,6 +89,34 @@ describe("SAN3 service and discovery controls", () => {
     ).toEqual({ messageId: "san3.none" });
   });
 
+  it("withdraws with only a canonical role intent and previews loss of city membership", () => {
+    const document = new San3Document(fixture());
+    const first = editSan3Presence(document, { "presence.2.role": 7, "presence.2.city": 0 });
+    const canonical = previewedEditorChanges(first);
+    expect(canonical).toEqual({ "presence.2.role": 7 });
+    const second = editSan3Presence(document, canonical);
+    expect(previewedEditorChanges(second)).toEqual(canonical);
+    expect(second.bytes).toEqual(first.bytes);
+    expect(first.preview.find((row) => row.key === "presenceEffect.2.roster")).toMatchObject({
+      before: { messageId: "san3.cityRecord", parameters: { index: 1 } },
+      after: { messageId: "san3.none" },
+    });
+    expect(new San3Document(second.bytes).officer(2)).toMatchObject({
+      role: 7,
+      city: 255,
+      faction: 255,
+    });
+    expect(san3PresenceFields(document, 2)[0]?.choices?.map((choice) => choice.value)).toContain(7);
+    const changed = new San3Document(second.bytes);
+    expect(san3PresenceFields(changed, 2)[1]?.readonly).toBe(false);
+    expect(
+      editSan3Presence(changed, { "presence.2.role": 5, "presence.2.city": 4 }).changes,
+    ).toEqual({
+      "presence.2.role": 5,
+      "presence.2.city": 4,
+    });
+  });
+
   it("shows unsupported states read-only and rejects malformed or implicit moves", () => {
     const bytes = fixture();
     bytes[officer(599) + 12] = 255;
@@ -105,7 +133,7 @@ describe("SAN3 service and discovery controls", () => {
       { "presence.599.role": 5 },
       { "presence.600.role": 5 },
       { "presence.2.role": 5, "presence.2.city": 4 },
-      { "presence.2.role": 7 },
+      { "presence.2.role": 8 },
       { "presence.2.role": 2.5 },
       { "presence.2.city": 46 },
       { "presenceEffect.2.soldiers": 0 },
