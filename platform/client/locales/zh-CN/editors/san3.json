@@ -212,5 +212,6 @@
   "san3.taskGroupHelp": "修改会作用于本城此任务组的全部{count}名武将，密探则单独计算。保存前请核对预览中的受影响武将；游戏将在月度结算时执行任务结果。",
   "san3.taskMember": "{name}的任务",
   "san3.taskSummary": "{kind}；进度{elapsed}/{total}个月；成效{effect}",
-  "san3.spyTaskSummary": "{kind}：{city}；进度{elapsed}/{total}个月；分值{effect}"
+  "san3.spyTaskSummary": "{kind}：{city}；进度{elapsed}/{total}个月；分值{effect}",
+  "san3.separateWorkflow": "任务、归属或状态操作请分别保存，便于核对它们带来的关联变化。"
 }

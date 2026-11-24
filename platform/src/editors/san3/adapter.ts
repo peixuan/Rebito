@@ -21,6 +21,7 @@ import { san3NamePresetAction } from "./name-presets.ts";
 import { san3OperationFields } from "./operation-fields.ts";
 import { editSan3Campaign } from "./operations.ts";
 import { san3PresetAdapter } from "./preset-adapter.ts";
+import { san3TaskFields } from "./task-view.ts";
 import { san3BookFields, san3TreasureView } from "./treasure-view.ts";
 
 const modules = ["cities", "officers", "custom", "factions", "treasures"] as const;
@@ -311,6 +312,7 @@ export const san3Adapter: EditorAdapter = {
         ...san3OperationFields(document, module, Number(selected)),
         ...(module === "cities" ? san3GovernorFields(document, Number(selected)) : []),
         ...(module === "officers" ? san3BookFields(document, Number(selected)) : []),
+        ...(module === "officers" ? san3TaskFields(document, Number(selected)) : []),
         ...(module === "officers"
           ? san3AppointmentFields(
               document,
