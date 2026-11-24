@@ -40,16 +40,29 @@ export function placeSan3Unaffiliated(
   const base = document.offset("officers", index);
   edit.write(document.offset("cities", city) + (role === 5 ? 6 : 8), 2, index);
   edit.write(base, 2, head);
+  resetSan3OfficerPlacement(document, edit, index, city, role, 255);
+}
+
+/** A fresh placement keeps the definition and belongings, not a former army or mission. */
+export function resetSan3OfficerPlacement(
+  document: San3Document,
+  edit: ReturnType<typeof governanceEdit>,
+  index: number,
+  city: number,
+  role: 4 | 5 | 6,
+  faction: number,
+) {
+  const base = document.offset("officers", index);
   edit.write(base + 2, 2, 0);
   edit.write(base + 8, 1, document.read(base + 8, 1) & ~0x1d);
   edit.write(base + 9, 1, document.read(base + 9, 1) & 0x80);
   edit.write(base + 10, 1, document.read(base + 10, 1) & 0xf0);
   edit.write(base + 11, 1, document.read(base + 11, 1) & 0xe0);
   edit.write(base + 12, 1, role);
-  edit.write(base + 15, 1, 0);
+  edit.write(base + 15, 1, faction === 255 ? 0 : 100);
   edit.write(base + 16, 1, city);
-  edit.write(base + 17, 1, 255);
-  edit.write(base + 18, 1, 0);
+  edit.write(base + 17, 1, faction);
+  edit.write(base + 18, 1, faction === 255 ? 0 : 1);
   edit.write(base + 19, 1, 255);
   edit.write(base + 20, 1, 0);
   edit.write(base + 21, 1, 0);
