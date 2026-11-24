@@ -271,5 +271,9 @@
   "san3.mergeFactionHelp": "将本势力全部城池、在职武将和军队并入所选势力。原君主改任官员，并同步处理归属、玩家控制和相关约定。不能解散当前回合势力：可反向吸收另一方，再按需更换君主。请先处理任务和潜伏活动。",
   "san3.playerControl": "玩家控制",
   "san3.cancelledAlliance": "取消同盟",
-  "san3.cancelledTargetReference": "清除势力目标"
+  "san3.cancelledTargetReference": "清除势力目标",
+  "san3.taskJoin": "参加已有任务组",
+  "san3.taskJoinChoice": "{task} — {leader}（{count} 人）",
+  "san3.taskGroupSize": "任务组人数",
+  "san3.taskJoinHelp": "加入同城且不足十人的任务组，沿用其现有工期、进度和成效，不改写已有成员、不扣资源；此武将将标记为行动完毕。新建多人组时，先正常给一名武将分派任务，再让其他人加入。密探仍独立执行。请与其他任务修改分别预览。"
 }

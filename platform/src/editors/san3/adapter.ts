@@ -328,7 +328,9 @@ export const san3Adapter: EditorAdapter = {
         ...(module === "factions" ? san3MergeFields(document, Number(selected)) : []),
         ...(module === "cities" ? san3ShipbuildingFields(document, Number(selected)) : []),
         ...(module === "officers" ? san3BookFields(document, Number(selected)) : []),
-        ...(module === "officers" ? san3TaskFields(document, Number(selected)) : []),
+        ...(module === "officers"
+          ? san3TaskFields(document, Number(selected), original, operationChanges)
+          : []),
         ...(module === "officers"
           ? san3AppointmentFields(
               document,

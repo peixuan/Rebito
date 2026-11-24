@@ -38,6 +38,10 @@ describe("Japanese Mega-CD campaign task transactions", () => {
     expect(result.changes).toEqual(changes);
     expect(result.groups).toEqual([[1, 2]]);
     expect(result.preview.filter(({ key }) => key.startsWith("task."))).toHaveLength(3);
+    expect(result.preview.filter(({ key }) => key.endsWith(".actionComplete"))).toMatchObject([
+      { key: "taskEffect.1.actionComplete", before: 0, after: 1 },
+      { key: "taskEffect.2.actionComplete", before: 0, after: 1 },
+    ]);
     for (const index of [1, 2]) {
       expect(result.bytes[officer(index) + 27]).toBe(0x56);
       expect(result.bytes[officer(index) + 28]).toBe(0x12);
@@ -67,6 +71,7 @@ describe("Japanese Mega-CD campaign task transactions", () => {
       );
     }
     expect(result.bytes[officer(1) + 8]).toBe(0x81);
+    expect(result.preview.some(({ key }) => key.endsWith(".actionComplete"))).toBe(false);
     expect(result.bytes.slice(officer(0), officer(0) + 30)).toEqual(
       original.slice(officer(0), officer(0) + 30),
     );
@@ -86,11 +91,20 @@ describe("Japanese Mega-CD campaign task transactions", () => {
       members: [3],
     });
     expect(result.bytes[city(1) + 24]).toBe(64);
+    expect(result.preview.find(({ key }) => key === "taskEffect.3.actionComplete")).toMatchObject({
+      before: 0,
+      after: 1,
+      label: {
+        messageId: "editor.columnLabel",
+        parameters: { field: { messageId: "san3.actionComplete" } },
+      },
+    });
     const switched = editSan3Tasks(new San3Document(result.bytes), {
       "task.3.kind": 5,
       "task.3.effect": 13,
     });
     expect(switched.bytes[city(1) + 24]).toBe(32);
+    expect(switched.preview.some(({ key }) => key.endsWith(".actionComplete"))).toBe(false);
     expect(switched.bytes.slice(city(1) + 14, city(1) + 20)).toEqual(
       document.copy().slice(city(1) + 14, city(1) + 20),
     );
@@ -145,6 +159,7 @@ describe("Japanese Mega-CD campaign task transactions", () => {
       [city(0) + 24, 0],
       [officer(1) + 8, 0x84],
       [officer(1) + 9, 0xc1],
+      [officer(1) + 9, 0xc8],
       [officer(1) + 10, 0x71],
     ] as const) {
       const bytes = fixture();

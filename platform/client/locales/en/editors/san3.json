@@ -271,5 +271,9 @@
   "san3.mergeFactionHelp": "Absorb every city, serving officer and army into the selected faction. The former ruler becomes an officer; allegiance, player control and contracts are reconciled. The current turn faction cannot be dissolved: merge the other faction into it, then change ruler if needed. Resolve active tasks and covert activity first.",
   "san3.playerControl": "Player control",
   "san3.cancelledAlliance": "Alliance cancelled",
-  "san3.cancelledTargetReference": "Faction target cleared"
+  "san3.cancelledTargetReference": "Faction target cleared",
+  "san3.taskJoin": "Join an existing task group",
+  "san3.taskJoinChoice": "{task} — {leader} ({count} officers)",
+  "san3.taskGroupSize": "Task group participants",
+  "san3.taskJoinHelp": "Join a same-city group with fewer than ten participants. Its existing duration, progress and result are copied without changing current members or charging resources; this officer's action becomes completed. To create a group, assign the first officer normally, then let others join. Spies remain individual. Preview this operation separately from other task edits."
 }

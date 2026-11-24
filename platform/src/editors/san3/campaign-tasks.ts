@@ -62,7 +62,8 @@ export function inspectSan3Task(document: San3Document, index: number): San3Task
   };
 }
 
-function validTask(document: San3Document, task: San3Task) {
+/** Recheck task clocks and results before either changing or extending a native group. */
+export function validateSan3Task(document: San3Document, task: San3Task) {
   if (![...Array(9).keys(), 255].includes(task.kind)) throw invalid();
   if (task.kind === 255) return;
   if (
@@ -111,7 +112,9 @@ export function taskFields(
             })),
           }
         : {}),
-      help: message("san3.taskGroupHelp", { count: task.members.length }),
+      ...(id === "kind"
+        ? { help: message("san3.taskGroupHelp", { count: task.members.length }) }
+        : {}),
     })),
     {},
   );
@@ -136,7 +139,7 @@ export function editSan3Tasks(document: San3Document, changes: Record<string, nu
       if (after.kind === 255 && altered.some((id) => id !== "kind")) throw invalid();
       if (after.kind === 8 && altered.includes("effect")) throw invalid();
       if (after.kind !== 7 && altered.includes("targetCity")) throw invalid();
-      validTask(document, after);
+      validateSan3Task(document, after);
       return { index, before, after, altered };
     })
     .filter((plan) => plan !== undefined);
@@ -150,7 +153,7 @@ export function editSan3Tasks(document: San3Document, changes: Record<string, nu
       if (
         after.kind !== 255 &&
         ((document.read(base + 8, 1) & 0x1c) !== 0 ||
-          (document.read(base + 9, 1) & 7) !== 0 ||
+          (document.read(base + 9, 1) & 15) !== 0 ||
           (document.read(base + 10, 1) & 15) !== 0)
       )
         throw invalid();
@@ -228,7 +231,22 @@ export function editSan3Tasks(document: San3Document, changes: Record<string, nu
             : after.effect
         : 0;
       write(base + 9, 1, (data.getUint8(base + 9) & ~64) | (active ? 64 : 0));
-      if (active) write(base + 8, 1, data.getUint8(base + 8) | 1);
+      if (active) {
+        const beforeAction = data.getUint8(base + 8) & 1;
+        write(base + 8, 1, data.getUint8(base + 8) | 1);
+        if (!beforeAction)
+          preview.push({
+            key: `taskEffect.${member}.actionComplete`,
+            label: message("editor.columnLabel", {
+              group:
+                document.officer(member).name ||
+                message("san3.officerRecord", { index: member + 1 }),
+              field: message("san3.actionComplete"),
+            }),
+            before: 0,
+            after: 1,
+          });
+      }
       write(base + 26, 1, after.kind);
       write(base + 27, 1, clock);
       write(base + 28, 2, effect);
