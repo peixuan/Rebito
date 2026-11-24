@@ -99,11 +99,13 @@ export function mergeSan3Factions(document: San3Document, source: number, target
   for (let faction = 0; faction < san3Layout.factions.count; faction++) {
     const base = document.offset("factions", faction);
     const mask = document.read(base + 6, 4);
-    const alliance = (mask & (1 << source)) !== 0;
+    const alliance = (mask & (faction === source ? 0x1fffff : 1 << source)) !== 0;
+    const partner = document.read(base + 36, 1);
     const joint =
-      faction === source ||
-      document.read(base + 36, 1) === source ||
-      (document.read(base + 36, 1) !== 255 && sourceCities.includes(document.read(base + 37, 1)));
+      partner !== 255 &&
+      (faction === source ||
+        partner === source ||
+        sourceCities.includes(document.read(base + 37, 1)));
     const targetReference = document.read(base + 14, 1) === source;
     // +36 is the native agreement-validity sentinel. Reward/unknown bytes survive.
     if (joint) edit.write(base + 36, 1, 255);

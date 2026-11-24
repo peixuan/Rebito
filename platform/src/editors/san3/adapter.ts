@@ -19,6 +19,7 @@ import { san3GovernorFields } from "./governance-fields.ts";
 import { san3InfiltrationFields } from "./infiltration-view.ts";
 import { san3LifeFields } from "./life-controls.ts";
 import { lifecycleFields } from "./lifecycle.ts";
+import { san3MergeFields } from "./merge-view.ts";
 import { san3NamePresetAction } from "./name-presets.ts";
 import { san3OperationFields } from "./operation-fields.ts";
 import { editSan3Campaign } from "./operations.ts";
@@ -318,6 +319,7 @@ export const san3Adapter: EditorAdapter = {
         ...san3OperationFields(document, module, Number(selected)),
         ...(module === "cities" ? san3GovernorFields(document, Number(selected)) : []),
         ...san3TerritoryFields(document, module, Number(selected)),
+        ...(module === "factions" ? san3MergeFields(document, Number(selected)) : []),
         ...(module === "cities" ? san3ShipbuildingFields(document, Number(selected)) : []),
         ...(module === "officers" ? san3BookFields(document, Number(selected)) : []),
         ...(module === "officers" ? san3TaskFields(document, Number(selected)) : []),

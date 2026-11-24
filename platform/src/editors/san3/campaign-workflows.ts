@@ -3,6 +3,7 @@ import { EditorError } from "../types.ts";
 import type { San3Document } from "./document.ts";
 import { san3InfiltrationDraft } from "./infiltration-view.ts";
 import { editSan3Life } from "./life-controls.ts";
+import { san3MergeDraft } from "./merge-view.ts";
 import { editSan3Presence } from "./presence-controls.ts";
 import { editSan3Shipbuilding } from "./shipbuilding.ts";
 import { san3StateDraft } from "./state-view.ts";
@@ -10,6 +11,7 @@ import { san3TaskDraft } from "./task-view.ts";
 import { san3TerritoryDraft } from "./territory-draft.ts";
 
 const workflows = [
+  { prefix: "merge.", edit: san3MergeDraft },
   { prefix: "shipbuilding.", edit: editSan3Shipbuilding },
   { prefix: "presence.", edit: editSan3Presence },
   { prefix: "life.", edit: editSan3Life },

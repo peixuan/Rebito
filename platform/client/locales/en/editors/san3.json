@@ -266,5 +266,10 @@
   "san3.shipbuildingHeavy": "Heavy warships: months remaining",
   "san3.shipbuildingMedium": "Medium warships: months remaining",
   "san3.shipbuildingLight": "Light warships: months remaining",
-  "san3.shipbuildingHelp": "Available in player-controlled ports without delegation. A positive value freely starts or adjusts a queue without spending gold or an officer's action. Set 0 to cancel: no ships are completed and no gold is refunded. At the native monthly settlement, a queue reaching zero adds two ships, capped at 100. Normal build times are 6/4/2 months; the stored ranges allow 7/7/3. Save in-game to retain queues across a fresh boot."
+  "san3.shipbuildingHelp": "Available in player-controlled ports without delegation. A positive value freely starts or adjusts a queue without spending gold or an officer's action. Set 0 to cancel: no ships are completed and no gold is refunded. At the native monthly settlement, a queue reaching zero adds two ships, capped at 100. Normal build times are 6/4/2 months; the stored ranges allow 7/7/3. Save in-game to retain queues across a fresh boot.",
+  "san3.mergeFaction": "Merge this faction into",
+  "san3.mergeFactionHelp": "Absorb every city, serving officer and army into the selected faction. The former ruler becomes an officer; allegiance, player control and contracts are reconciled. The current turn faction cannot be dissolved: merge the other faction into it, then change ruler if needed. Resolve active tasks and covert activity first.",
+  "san3.playerControl": "Player control",
+  "san3.cancelledAlliance": "Alliance cancelled",
+  "san3.cancelledTargetReference": "Faction target cleared"
 }
