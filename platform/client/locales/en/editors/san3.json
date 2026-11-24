@@ -21,6 +21,8 @@
   "san3.cities": "Cities",
   "san3.officers": "Officers",
   "san3.factions": "Factions",
+  "san3.invalidTurnOrder": "The current turn queue is inconsistent. Capture again at the main map; current and completed turns cannot be moved.",
+  "san3.turnPosition": "This month’s position",
   "san3.factionControl": "Controlled by",
   "san3.factionControlHelp": "Choose Player or Computer, then preview and save. The game reads this flag when dispatching commands; it does not change the current turn order. Capture at the main map after closing any unfinished command.",
   "san3.factionControl0": "Computer",
