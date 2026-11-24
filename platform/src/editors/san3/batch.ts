@@ -40,6 +40,8 @@ export function expandSan3Batch(
     targets.some((index) => !validIndex(index) || index === sourceIndex)
   )
     throw invalid();
+  const copyRelocation =
+    sourceKind === "officer" && Object.hasOwn(changes, `move.${sourceIndex}.city`);
 
   function fields(index: number, draft: Record<string, number>): EditorField[] {
     if (sourceKind === "preset") {
@@ -52,7 +54,7 @@ export function expandSan3Batch(
     if (sourceKind === "officer")
       return [
         ...officerFields(document, index),
-        ...san3OperationFields(document, "officers", index),
+        ...(copyRelocation ? san3OperationFields(document, "officers", index) : []),
         ...san3BookFields(document, index),
         ...san3PersonalTreasureFields(document, index),
       ];
