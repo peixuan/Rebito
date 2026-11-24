@@ -261,5 +261,10 @@
   "san3.presenceChanges": "Service and discovery",
   "san3.presenceHelp": "Leaders hand over first; resolve missions and allocated equipment. Civil service joins this city's faction; free or hidden states disband the army and retain belongings.",
   "san3.appearanceCity": "Appearance city",
-  "san3.appearanceHelp": "Unappeared registered officers enter the selected city's list. Civil service requires an owned city. Existing officers use relocation to change cities."
+  "san3.appearanceHelp": "Unappeared registered officers enter the selected city's list. Civil service requires an owned city. Existing officers use relocation to change cities.",
+  "san3.shipbuilding": "Shipbuilding queues",
+  "san3.shipbuildingHeavy": "Heavy warships: months remaining",
+  "san3.shipbuildingMedium": "Medium warships: months remaining",
+  "san3.shipbuildingLight": "Light warships: months remaining",
+  "san3.shipbuildingHelp": "Available in player-controlled ports without delegation. A positive value freely starts or adjusts a queue without spending gold or an officer's action. Set 0 to cancel: no ships are completed and no gold is refunded. At the native monthly settlement, a queue reaching zero adds two ships, capped at 100. Normal build times are 6/4/2 months; the stored ranges allow 7/7/3. Save in-game to retain queues across a fresh boot."
 }

@@ -7,6 +7,7 @@ import { san3GovernorFields } from "../../src/editors/san3/governance-fields.ts"
 import { appointSan3Governor } from "../../src/editors/san3/governance-governor.ts";
 import { san3ListContext } from "../../src/editors/san3/list-context.ts";
 import * as lists from "../../src/editors/san3/relocation.ts";
+import { san3ShipbuildingFields } from "../../src/editors/san3/shipbuilding.ts";
 import {
   governanceCity as city,
   governanceOfficer as officer,
@@ -22,6 +23,7 @@ describe("SAN3 immutable list context", () => {
       expect(san3ListContext(document)).toBe(context);
       san3CampaignContext(document)("cities", 1);
       inspectSan3Governance(document);
+      san3ShipbuildingFields(document, 1);
       expect(inspect).toHaveBeenCalledTimes(1);
       const firstCity = context.cities[1];
       const member = context.membership.get(4);
@@ -73,6 +75,7 @@ describe("SAN3 immutable list context", () => {
       expect(() => san3ListContext(document)).toThrow();
       expect(san3CampaignContext(document)("cities", 1)).toEqual([]);
       expect(san3GovernorFields(document, 1)[0]?.readonly).toBe(true);
+      expect(san3ShipbuildingFields(document, 1)).toEqual([]);
       expect(() => appointSan3Governor(document, 1, 4)).toThrow();
       expect(inspect).toHaveBeenCalledTimes(1);
       const repaired = new San3Document(original);

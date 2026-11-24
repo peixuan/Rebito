@@ -24,6 +24,7 @@ import { san3OperationFields } from "./operation-fields.ts";
 import { editSan3Campaign } from "./operations.ts";
 import { san3PresenceFields } from "./presence-controls.ts";
 import { san3PresetAdapter } from "./preset-adapter.ts";
+import { san3ShipbuildingFields } from "./shipbuilding.ts";
 import { san3StateFields } from "./state-view.ts";
 import { san3TaskFields } from "./task-view.ts";
 import { san3TerritoryFields } from "./territory-fields.ts";
@@ -317,6 +318,7 @@ export const san3Adapter: EditorAdapter = {
         ...san3OperationFields(document, module, Number(selected)),
         ...(module === "cities" ? san3GovernorFields(document, Number(selected)) : []),
         ...san3TerritoryFields(document, module, Number(selected)),
+        ...(module === "cities" ? san3ShipbuildingFields(document, Number(selected)) : []),
         ...(module === "officers" ? san3BookFields(document, Number(selected)) : []),
         ...(module === "officers" ? san3TaskFields(document, Number(selected)) : []),
         ...(module === "officers"
