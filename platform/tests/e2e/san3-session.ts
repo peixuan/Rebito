@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { expect, type Page } from "@playwright/test";
 import type { RuntimeHandle, RuntimeProgress, RuntimeWindow } from "../../client/runtime/types.ts";
 import { openSnapshotMemory } from "../../src/editors/snapshots/memory.ts";
@@ -20,6 +21,8 @@ export async function prepareSan3Editor(
   await useSession(page.context(), "admin-san3");
   const track = discTrack();
   track[2000] = marker;
+  // Distinct test games share a database but must not reuse the same immutable release.
+  track.set(createHash("sha256").update(title).digest(), 2001);
   const uploaded = await page.request.post("/api/admin/games", {
     headers: { origin: "http://localhost:4317" },
     multipart: {
