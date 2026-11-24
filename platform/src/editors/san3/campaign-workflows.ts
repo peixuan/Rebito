@@ -4,7 +4,10 @@ import type { San3Document } from "./document.ts";
 import { san3StateDraft } from "./state-view.ts";
 import { san3TaskDraft } from "./task-view.ts";
 
+import { san3TerritoryDraft } from "./territory-draft.ts";
+
 const workflows = [
+  { prefix: "ownership.", edit: san3TerritoryDraft },
   { prefix: "task.", edit: san3TaskDraft },
   { prefix: "state.", edit: san3StateDraft },
 ];

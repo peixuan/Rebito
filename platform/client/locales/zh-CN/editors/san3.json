@@ -226,5 +226,11 @@
   "san3.ship": "战船类型",
   "san3.infantry": "步兵",
   "san3.noShip": "无战船",
-  "san3.rebellion": "待结算的叛乱计划"
+  "san3.rebellion": "待结算的叛乱计划",
+  "san3.neutralCity": "中立／放弃城池",
+  "san3.transferCity": "城池转交势力",
+  "san3.transferCityHelp": "将非首都城池及全体在职武将一并转交，保留城内军队和库存；武将忠诚设为100、资历设为1年。选择中立会让全体在职武将在本城下野并解散军队。请先处理任务、潜伏和装备。当前命令所在城不能易主；首都需先通过继任迁都。",
+  "san3.incomingGovernor": "中立城接任太守",
+  "san3.incomingGovernorHelp": "选择本城在野／未发现武将，或接收势力中空闲的非太守武将。外来武将的军队会解散。请选定接收势力和太守后再预览。",
+  "san3.cancelledJoint": "取消联合进攻约定"
 }

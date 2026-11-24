@@ -23,6 +23,7 @@ import { editSan3Campaign } from "./operations.ts";
 import { san3PresetAdapter } from "./preset-adapter.ts";
 import { san3StateFields } from "./state-view.ts";
 import { san3TaskFields } from "./task-view.ts";
+import { san3TerritoryFields } from "./territory-fields.ts";
 import { san3BookFields, san3TreasureView } from "./treasure-view.ts";
 
 const modules = ["cities", "officers", "custom", "factions", "treasures"] as const;
@@ -312,6 +313,7 @@ export const san3Adapter: EditorAdapter = {
         ...selectedFields.filter((field) => module !== "officers" || field.columnId !== "role"),
         ...san3OperationFields(document, module, Number(selected)),
         ...(module === "cities" ? san3GovernorFields(document, Number(selected)) : []),
+        ...san3TerritoryFields(document, module, Number(selected)),
         ...(module === "officers" ? san3BookFields(document, Number(selected)) : []),
         ...(module === "officers" ? san3TaskFields(document, Number(selected)) : []),
         ...(module === "officers"

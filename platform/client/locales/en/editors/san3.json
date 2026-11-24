@@ -226,5 +226,11 @@
   "san3.ship": "Warship type",
   "san3.infantry": "Infantry",
   "san3.noShip": "No vessel",
-  "san3.rebellion": "Rebellion plan pending"
+  "san3.rebellion": "Rebellion plan pending",
+  "san3.neutralCity": "Neutral / abandon city",
+  "san3.transferCity": "Transfer city to",
+  "san3.transferCityHelp": "Transfer a noncapital city and its serving officers together, preserving its armies and stores. Officers receive loyalty 100 and one service year. Choose Neutral to release all serving officers locally and disband their armies. Resolve active tasks, covert activity and equipment first. The current command city cannot change owner; move a capital by succession first.",
+  "san3.incomingGovernor": "Governor for neutral city",
+  "san3.incomingGovernorHelp": "Choose a local free/hidden officer, or an idle non-governor from the receiving faction. An incoming army is disbanded. Select both the receiving faction and governor before previewing.",
+  "san3.cancelledJoint": "Joint-attack agreement cancelled"
 }
