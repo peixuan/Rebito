@@ -15,8 +15,10 @@ import { san3DelegationFields } from "./city-delegation.ts";
 import { factionContextFields, historicalContextFields } from "./context-fields.ts";
 import { customMetadataFields } from "./custom-fields.ts";
 import { customNameFields, editCustomNames } from "./custom-names.ts";
+import { san3DiplomacyFields } from "./diplomacy.ts";
 import { San3Document, san3Layout } from "./document.ts";
 import { san3FactionControlFields } from "./faction-control.ts";
+import { san3FactionIconFields } from "./faction-icon.ts";
 import { attributeFields, cityFields, officerFields } from "./fields.ts";
 import { san3GovernorFields } from "./governance-fields.ts";
 import { san3InfiltrationFields } from "./infiltration-view.ts";
@@ -34,6 +36,7 @@ import { san3StateFields } from "./state-view.ts";
 import { san3TaskFields } from "./task-view.ts";
 import { san3TerritoryFields } from "./territory-fields.ts";
 import { san3BookFields, san3TreasureView } from "./treasure-view.ts";
+import { san3TurnOrderFields } from "./turn-order-view.ts";
 
 const modules = ["cities", "officers", "custom", "factions", "treasures"] as const;
 type Module = (typeof modules)[number];
@@ -115,6 +118,8 @@ function fields(
     return [
       context("ruler", faction.ruler, data.officerName(faction.ruler)),
       ...san3FactionControlFields(document, index),
+      ...san3FactionIconFields(document, index),
+      ...san3TurnOrderFields(document, index),
       ...(["cityCount", "officerCount", "population", "gold", "food", "soldiers"] as const).map(
         (id) => context(id, faction[id]),
       ),
@@ -297,7 +302,7 @@ export const san3Adapter: EditorAdapter = {
             ? ["population", "gold", "food"]
             : module === "officers"
               ? ["soldiers", "loyalty"]
-              : ["factionControl", "cityCount", "officerCount", "gold", "food"]
+              : ["factionControl", "turnPosition", "turnState", "cityCount", "officerCount"]
           ).includes(id),
         })),
       ...(module === "officers"
@@ -335,10 +340,12 @@ export const san3Adapter: EditorAdapter = {
       fields: treasures?.fields ?? [
         ...selectedFields.filter(
           (field) =>
-            module !== "officers" ||
-            (field.columnId !== "role" &&
-              !(field.columnId === "originFaction" && stateFields.length > 0)),
+            (module !== "factions" || !/^(alliance|hostility)\./.test(field.columnId)) &&
+            (module !== "officers" ||
+              (field.columnId !== "role" &&
+                !(field.columnId === "originFaction" && stateFields.length > 0))),
         ),
+        ...(module === "factions" ? san3DiplomacyFields(document, Number(selected)) : []),
         ...operationFields,
         ...(module === "cities" ? san3GovernorFields(document, Number(selected)) : []),
         ...(module === "cities" ? san3DelegationFields(document, Number(selected)) : []),

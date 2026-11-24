@@ -137,6 +137,7 @@ describe("SAN3 editor view", () => {
     });
     expect(view.fields.filter(({ readonly }) => !readonly).map(({ key }) => key)).toEqual([
       "factionControl.0.human",
+      "factionIcon.0.symbol",
     ]);
   });
 

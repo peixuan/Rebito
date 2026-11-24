@@ -3,6 +3,7 @@ import { EditorError, type EditorView } from "../types.ts";
 import { editSan3Appointments } from "./appointment-draft.ts";
 import { san3CampaignWorkflow } from "./campaign-workflows.ts";
 import { San3Document, san3Layout } from "./document.ts";
+import { san3FactionSettingsWorkflow } from "./faction-settings.ts";
 import { editSan3, findSan3Field } from "./fields.ts";
 import { editSan3Governors } from "./governance-draft.ts";
 import { editSan3Lifecycle } from "./lifecycle.ts";
@@ -20,7 +21,8 @@ const officerName = (document: San3Document, index: number): DisplayText =>
 
 /** Structural operations remain intents; clients never receive writable list pointers. */
 export function editSan3Campaign(document: San3Document, changes: Record<string, number>) {
-  const workflow = san3CampaignWorkflow(document, changes);
+  const workflow =
+    san3FactionSettingsWorkflow(document, changes) ?? san3CampaignWorkflow(document, changes);
   if (workflow) return workflow;
   const moves = new Map<number, number[]>();
   const rulers = new Map<number, number>();
