@@ -31,7 +31,11 @@ export function inspectSan3Governance(document: San3Document) {
       cities.push(city);
       pointer = document.read(pointer, 4);
     }
-    if (graph.cities[cities[0] ?? -1]?.serving[0] !== ruler) throw invalidGovernance();
+    if (
+      graph.cities[cities[0] ?? -1]?.serving[0] !== ruler ||
+      (document.read(document.offset("officers", ruler) + 8, 1) & 16) !== 0
+    )
+      throw invalidGovernance();
     return cities;
   });
   return { ...graph, factionCities };
