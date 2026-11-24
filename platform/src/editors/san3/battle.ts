@@ -1,5 +1,6 @@
 import { message } from "../../shared/messages.ts";
 import { EditorError } from "../types.ts";
+import { inspectSan3BattleReserves } from "./battle-reserves.ts";
 import { san3Layout } from "./document.ts";
 import { exchangeSan3Equipment } from "./equipment.ts";
 import type { San3Field } from "./fields.ts";
@@ -84,10 +85,15 @@ export class San3BattleDocument {
     }
     this.selected = word(0x52058);
     if (sides.size !== 2 || !this.members.has(this.selected)) throw invalidSave();
-    // A deployed unit outside the reviewed army chains indicates an incomplete battle graph.
+    const outside = [];
     for (let index = 0; index < san3Layout.officers.count; index++) {
       if ((this.data.getUint8(officerOffset(index) + 8) & 4) !== 0 && !this.members.has(index))
-        throw invalidSave();
+        outside.push(index);
+    }
+    // Native retreat keeps the "already deployed" bit on a city-reserve record.
+    if (outside.length) {
+      const { retired } = inspectSan3BattleReserves(this.bytes, new Set(this.members.keys()));
+      if (outside.some((index) => !retired.has(index))) throw invalidSave();
     }
   }
 

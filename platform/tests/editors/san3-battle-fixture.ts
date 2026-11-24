@@ -11,6 +11,9 @@ export function san3BattleFixture() {
   data.setUint16(0x4abc4, 1);
   data.setUint16(0x52056, 0);
   data.setUint16(0x52058, 0);
+  data.setUint32(0x4ab2c, 0);
+  for (let city = 0; city < san3Layout.cities.count; city++)
+    data.setUint16(san3Layout.cities.offset + city * san3Layout.cities.stride + 4, 0xffff);
   data.setUint32(0x54000, 0x4eba0c94);
   data.setUint32(0x27ba4, 0x10280017);
   data.setUint32(0x27bc4, 0x11420017);
