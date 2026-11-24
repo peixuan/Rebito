@@ -8,6 +8,7 @@ import { editSan3Governors } from "./governance-draft.ts";
 import { editSan3Lifecycle } from "./lifecycle.ts";
 import { editSan3PersonalTreasures } from "./personal-treasures.ts";
 import { relocateSan3Officers } from "./relocation.ts";
+import { san3RelocationPreview } from "./relocation-preview.ts";
 import { succeedSan3Ruler } from "./ruler-change.ts";
 import { san3RulerPreview } from "./ruler-preview.ts";
 import { san3TreasureOwnerLabel } from "./treasure-view.ts";
@@ -16,8 +17,6 @@ import { editSan3Treasures, inspectSan3Treasures } from "./treasures.ts";
 const invalid = () => new EditorError("invalid_edit", message("editor.invalidEdit"));
 const officerName = (document: San3Document, index: number): DisplayText =>
   document.officer(index).name || message("san3.officerRecord", { index: index + 1 });
-const cityName = (document: San3Document, index: number): DisplayText =>
-  document.city(index).name || message("san3.cityRecord", { index: index + 1 });
 
 /** Structural operations remain intents; clients never receive writable list pointers. */
 export function editSan3Campaign(document: San3Document, changes: Record<string, number>) {
@@ -173,38 +172,9 @@ export function editSan3Campaign(document: San3Document, changes: Record<string,
       indices.sort((a, b) => a - b),
       destination,
     );
-    for (const move of moved.moves) {
-      const group = officerName(current, move.index);
-      const prefix = `move.${move.index}`;
-      const base = current.offset("officers", move.index);
-      operationPreview.push({
-        key: `${prefix}.city`,
-        label: message("editor.columnLabel", { group, field: message("san3.moveTo") }),
-        before: cityName(current, move.fromCity),
-        after: cityName(current, move.toCity),
-      });
-      for (const [id, before, after] of [
-        ["soldiers", move.soldiersRemoved, 0],
-        ["training", current.read(base + 21, 1), 0],
-        ["morale", current.read(base + 22, 1), 0],
-        ["actionComplete", current.read(base + 8, 1) & 1, 0],
-        [
-          "loyalty",
-          current.read(base + 15, 1),
-          move.toFaction === 0xff ? current.read(base + 15, 1) : 100,
-        ],
-        ["role", move.fromRole, move.toRole],
-        ["faction", move.fromFaction, move.toFaction],
-      ] as const)
-        if (before !== after)
-          operationPreview.push({
-            key: `${prefix}.${id}`,
-            label: message("editor.columnLabel", { group, field: message(`san3.${id}`) }),
-            before,
-            after,
-          });
-    }
-    current = new San3Document(moved.bytes);
+    const next = new San3Document(moved.bytes);
+    operationPreview.push(...san3RelocationPreview(current, next, moved));
+    current = next;
   }
   for (const [faction, successor] of [...rulers].sort(([a], [b]) => a - b)) {
     const replaced = succeedSan3Ruler(current, faction, successor);

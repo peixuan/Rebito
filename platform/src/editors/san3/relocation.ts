@@ -1,6 +1,8 @@
 import { message } from "../../shared/messages.ts";
 import { EditorError } from "../types.ts";
 import { San3Document, san3Layout } from "./document.ts";
+import { prepareSan3Relocation } from "./relocation-effects.ts";
+import { rebuildSan3RelocationRosters } from "./relocation-rosters.ts";
 
 const none = 0xffff;
 const listHeads = { serving: 4, free: 6, hidden: 8 } as const;
@@ -9,7 +11,7 @@ type CityLists = Record<ListKind, number[]> & { faction: number; advisor: number
 
 export interface San3RelocationWrite {
   offset: number;
-  width: 1 | 2;
+  width: 1 | 2 | 4;
   before: number;
   after: number;
 }
@@ -90,9 +92,9 @@ export function inspectSan3Lists(document: San3Document) {
 }
 
 /**
- * Move a batch atomically. Serving arrivals become civil officers; neutral-city
- * arrivals become free officers. As in the legacy tool, their armies are disbanded.
- * No recruitment, resurrection, battle transition or ownership change is implied.
+ * Move a batch atomically, retaining same-faction armies and maintaining offices.
+ * Changing allegiance releases the former army; a ruler cannot implicitly merge
+ * factions. Completed native commands must release their cached city first.
  */
 export function relocateSan3Officers(
   document: San3Document,
@@ -107,30 +109,19 @@ export function relocateSan3Officers(
     selected.size !== indices.length
   )
     throw invalidMove();
-  const { cities, membership, rulers } = inspectSan3Lists(document);
-  const target = cities[destination];
+  const graph = inspectSan3Lists(document);
+  const target = graph.cities[destination];
   if (!target) throw invalidMove();
-  const destinationRole = target.faction === 0xff ? 5 : 4;
   const moves = indices.map((index) => {
     const base = document.offset("officers", index);
-    const source = membership.get(index);
+    const source = graph.membership.get(index);
     const role = document.read(base + 0x0c, 1);
-    const task = document.read(base + 0x1a, 1);
     if (!source) throw invalidMove("relocationNoRoster");
     if (source.city === destination) throw invalidMove();
-    if (role === 0 || rulers.has(index)) throw invalidMove("relocationRuler");
-    if (cities[source.city]?.serving[0] === index) throw invalidMove("relocationGovernor");
+    if (role === 0 && !graph.rulers.has(index)) throw invalidMove();
+    if (graph.rulers.has(index) && document.read(base + 17, 1) !== target.faction)
+      throw invalidMove("relocationRuler");
     if ((document.read(base + 8, 1) & 0x14) !== 0) throw invalidMove("relocationBattleOrDead");
-    if (
-      (document.read(base + 8, 1) & 8) !== 0 ||
-      (task !== 0 && task !== 0xff) ||
-      document.read(base + 0x1b, 1) !== 0
-    )
-      throw invalidMove("relocationTask");
-    if ((document.read(base + 9, 1) & 0x7f) !== 0) throw invalidMove("relocationStatus");
-    // Native unequipping refunds the allocated stock before relocation disbands troops.
-    if ((document.read(base + 10, 1) & 15) !== 0 || (document.read(base + 11, 1) & 15) !== 0)
-      throw invalidMove("relocationEquipment");
     return {
       index,
       fromCity: source.city,
@@ -138,54 +129,33 @@ export function relocateSan3Officers(
       fromFaction: document.read(base + 0x11, 1),
       toFaction: target.faction,
       fromRole: role,
-      toRole: destinationRole,
-      // Free/hidden records can retain a troop placeholder without a serving army.
-      soldiersRemoved: role <= 4 ? document.read(base + 2, 2) : 0,
+      toRole: target.faction === 0xff ? 5 : 4,
+      soldiersRemoved: 0,
     };
   });
-
-  for (const lists of cities) {
-    for (const kind of Object.keys(listHeads) as ListKind[])
-      lists[kind] = lists[kind].filter((index) => !selected.has(index));
-    if (selected.has(lists.advisor))
-      lists.advisor =
-        lists.serving.find(
-          (index) => document.read(document.offset("officers", index) + 12, 1) === 1,
-        ) ?? none;
+  const effects = prepareSan3Relocation(document, graph, indices, target.faction);
+  const rosters = rebuildSan3RelocationRosters(
+    document,
+    graph,
+    indices,
+    destination,
+    effects.bytes,
+  );
+  const output = new San3Document(rosters.bytes);
+  inspectSan3Lists(output);
+  const writes = new Map<number, San3RelocationWrite>();
+  for (const entry of [...effects.writes, ...rosters.writes]) writes.set(entry.offset, entry);
+  for (const move of moves) {
+    const base = document.offset("officers", move.index);
+    move.toRole = output.read(base + 12, 1);
+    move.soldiersRemoved =
+      move.fromRole <= 4 ? document.read(base + 2, 2) - output.read(base + 2, 2) : 0;
   }
-  target[target.faction === 0xff ? "free" : "serving"].push(...indices);
-
-  const bytes = document.copy();
-  const view = new DataView(bytes.buffer);
-  const writes: San3RelocationWrite[] = [];
-  const write = (offset: number, width: 1 | 2, after: number) => {
-    const before = document.read(offset, width);
-    if (before === after) return;
-    writes.push({ offset, width, before, after });
-    if (width === 1) view.setUint8(offset, after);
-    else view.setUint16(offset, after);
+  return {
+    ...rosters,
+    moves,
+    cancelledTasks: effects.cancelledTasks,
+    refunds: effects.refunds,
+    writes: [...writes.values()].sort((left, right) => left.offset - right.offset),
   };
-  for (const [city, lists] of cities.entries()) {
-    const base = document.offset("cities", city);
-    for (const kind of Object.keys(listHeads) as ListKind[]) {
-      write(base + listHeads[kind], 2, lists[kind][0] ?? none);
-      for (const [position, index] of lists[kind].entries())
-        write(document.offset("officers", index), 2, lists[kind][position + 1] ?? none);
-    }
-    write(base + 10, 2, lists.advisor);
-  }
-  for (const index of indices) {
-    const base = document.offset("officers", index);
-    write(base + 2, 2, 0);
-    write(base + 0x15, 1, 0);
-    write(base + 0x16, 1, 0);
-    write(base + 8, 1, document.read(base + 8, 1) & ~1);
-    write(base + 12, 1, destinationRole);
-    write(base + 16, 1, destination);
-    write(base + 17, 1, target.faction);
-    if (target.faction !== 0xff) write(base + 15, 1, 100);
-  }
-  inspectSan3Lists(new San3Document(bytes));
-  writes.sort((left, right) => left.offset - right.offset);
-  return { bytes, moves, writes };
 }

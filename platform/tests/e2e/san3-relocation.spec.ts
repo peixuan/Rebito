@@ -6,7 +6,9 @@ import { san3GovernanceFixture } from "../editors/san3-governance-fixture.ts";
 import { chinese } from "./locales.ts";
 import { prepareSan3Editor } from "./san3-session.ts";
 
-test("explains blocked moves and applies a reviewed multi-officer relocation", async ({ page }) => {
+test("offers valid leader moves and applies a reviewed multi-officer relocation", async ({
+  page,
+}) => {
   test.setTimeout(90_000);
   const { history } = await prepareSan3Editor(
     page,
@@ -22,18 +24,21 @@ test("explains blocked moves and applies a reviewed multi-officer relocation", a
   const editor = page.getByRole("region", { name: "Save editor", exact: true });
   await expect(editor.getByLabel("Population", { exact: true })).toBeEnabled();
   await editor.getByRole("button", { name: "Officers", exact: true }).click();
-  await expect(editor.getByLabel("Move to city", { exact: true })).toBeDisabled();
-  await expect(editor).toContainText("This officer is a ruler. Appoint a successor first");
+  await expect(editor.getByLabel("Move to city", { exact: true })).toBeEnabled();
+  await editor.getByLabel("Move to city", { exact: true }).click();
+  await expect(page.getByRole("option", { name: "City 2", exact: true })).toBeVisible();
+  await expect(page.getByRole("option", { name: "City 5", exact: true })).toHaveCount(0);
+  await page.keyboard.press("Escape");
   await page.getByLabel("Language").selectOption("zh-CN");
   await expect(
     page.getByRole("region", { name: chinese("editor.title"), exact: true }),
-  ).toContainText(chinese("san3.relocationRuler"));
+  ).toContainText(chinese("san3.relocationHelp"));
   await page.getByLabel(chinese("app.language")).selectOption("en");
   await editor
     .getByRole("row")
     .filter({ has: page.getByText("Officer 2", { exact: true }) })
     .click();
-  await expect(editor).toContainText("Choose a different city in Move to city, preview");
+  await expect(editor).toContainText("Same-faction moves keep armies");
   await editor.getByLabel("Move to city", { exact: true }).click();
   await page.getByRole("option", { name: "City 5", exact: true }).click();
   await editor.getByLabel("Copy to records", { exact: true }).press("Space");

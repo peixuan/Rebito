@@ -7,7 +7,7 @@ export function appendSan3PlacementEffects(
   before: San3Document,
   after: San3Document,
   index: number,
-  prefix: "lifeEffect" | "presenceEffect" | "appearanceEffect",
+  prefix: "lifeEffect" | "presenceEffect" | "appearanceEffect" | "move",
   append: ReturnType<typeof san3OperationPreview>["append"],
 ) {
   const names = san3OperationLabels(before);

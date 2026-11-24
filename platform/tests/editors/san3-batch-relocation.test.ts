@@ -45,7 +45,7 @@ describe("SAN3 batch relocation and actionable eligibility", () => {
   it("rejects a mixed eligible/ineligible batch without changing any input", () => {
     const bytes = san3GovernanceFixture();
     const before = bytes.slice();
-    for (const target of ["0", "3", "599"])
+    for (const target of ["0", "599"])
       expect(() =>
         san3Adapter.apply(bytes, {
           ...draft,
@@ -61,19 +61,31 @@ describe("SAN3 batch relocation and actionable eligibility", () => {
     expect(bytes).toEqual(before);
   });
 
+  it("offers leadership and equipment moves that retain valid same-faction state", () => {
+    for (const [index, relative, value] of [
+      [0, 0, 0],
+      [3, 0, 0],
+      [1, 10, 0x71],
+      [1, 9, 0x81],
+    ] as const) {
+      const bytes = san3GovernanceFixture();
+      if (relative) bytes[governanceOfficer(index) + relative] = value;
+      const document = new San3Document(bytes);
+      const control = san3OperationFields(document, "officers", index)[0];
+      expect(control?.readonly).toBe(false);
+      const destination = index === 3 ? 0 : 1;
+      expect(control?.choices?.some(({ value }) => value === destination)).toBe(true);
+      const result = new San3Document(relocateSan3Officers(document, [index], destination).bytes);
+      expect(result.officer(index).soldiers).toBe(document.officer(index).soldiers);
+      if (relative) expect(result.read(governanceOfficer(index) + relative, 1)).toBe(value);
+    }
+  });
+
   it("shows the same specific blocker enforced by publication", () => {
     const cases = [
-      [0, 0, 0, "relocationRuler"],
-      [3, 0, 0, "relocationGovernor"],
       [599, 0, 0, "relocationNoRoster"],
       [1, 8, 0x84, "relocationBattleOrDead"],
       [1, 8, 0x90, "relocationBattleOrDead"],
-      [1, 8, 0x88, "relocationTask"],
-      [1, 26, 1, "relocationTask"],
-      [1, 27, 0x21, "relocationTask"],
-      [1, 9, 0x81, "relocationStatus"],
-      [1, 10, 0x71, "relocationEquipment"],
-      [1, 11, 0xe1, "relocationEquipment"],
     ] as const;
     for (const [index, relative, value, reason] of cases) {
       const bytes = san3GovernanceFixture();

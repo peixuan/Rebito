@@ -131,17 +131,18 @@ replayed. Any invalid request rejects the complete operation without publication
   executing command. Two player flags survived original Save and a fresh
   SRAM-only Load. The sandboxed browser flow checks canonical drafts, language
   switches, actual checkpoint writeback and unchanged native companions.
-- Relocation and qualified appointments maintain city/role/strategist links.
-  Moving an officer disbands their army. In-place civil conversion requires no army.
-  Native base abilities, not treasure bonuses, determine appointment qualifications.
-  To move, capture at the ordinary city command menu, select an officer, choose
-  **Move to city**, preview and save edits. For a batch, choose the destination
-  first, select **Copy to records** targets and click **Copy changed fields**.
-  Inspect all army and roster effects before saving. Resume, reopen the game's
-  officer list and use its Save command for native persistence. Disabled controls
-  explain the specific prerequisite: leadership handover, task/status resolution,
-  native equipment removal or roster introduction. Mixed eligible/ineligible
-  batches fail atomically, without moving only part of the selection.
+- Relocation keeps same-faction armies, equipment and personal status. Governors
+  and rulers can move; offices, capital chains and rosters follow automatically.
+  It cancels only departing task participants. Changing faction releases the army
+  and former commitments, refunds equipment to capped source stores, and previews
+  losses. Empty noncurrent cities become neutral. The executing city cannot be
+  emptied while native code retains its command context; battle/dead records stay
+  separate. Native base abilities still determine qualified appointments.
+  Capture at the normal city command menu, choose **Move to city**, preview and
+  save. For a batch, select **Copy to records**, then **Copy changed fields**.
+  Resume, reopen the map/list, and save inside the game. Original ordinary,
+  governor and ruler moves retained their armies and full rosters after Save and
+  a fresh SRAM-only Load. Invalid selections reject the entire batch.
 - Service/discovery changes support civil recruitment, resignation, hidden/free
   transitions and explicit introduction of registered unappeared officers.
   Withdrawal to unappeared removes membership without rewinding appearance events;

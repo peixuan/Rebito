@@ -17,16 +17,23 @@ export function san3OperationFields(
   }));
   if (module === "officers") {
     const current = document.officer(index).city;
-    let readonly = false;
+    const choices = cities.filter(({ value }) => value === current);
     let help = message("san3.relocationHelp");
-    try {
-      relocateSan3Officers(document, [index], current === 0 ? 1 : 0);
-    } catch (error) {
-      readonly = true;
-      help = message("san3.relocationBlocked", {
-        reason: displayMessage(error) ?? message("san3.invalidRelocation"),
-      });
+    let blocked: unknown;
+    for (const choice of cities) {
+      if (choice.value === current) continue;
+      try {
+        relocateSan3Officers(document, [index], choice.value);
+        choices.push(choice);
+      } catch (error) {
+        blocked ??= error;
+      }
     }
+    const readonly = choices.every(({ value }) => value === current);
+    if (readonly)
+      help = message("san3.relocationBlocked", {
+        reason: displayMessage(blocked) ?? message("san3.invalidRelocation"),
+      });
     return [
       {
         key: `move.${index}.city`,
@@ -36,7 +43,7 @@ export function san3OperationFields(
         value: current,
         min: 0,
         max: 45,
-        choices: cities,
+        choices,
         readonly,
         help,
       },

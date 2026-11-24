@@ -140,9 +140,16 @@ describe("Japanese Mega-CD atomic officer relocation", () => {
     const restoredData = new DataView(restored.buffer);
     for (const { offset, width, before, after } of result.writes) {
       expect(document.read(offset, width)).toBe(before);
-      expect(width === 1 ? data.getUint8(offset) : data.getUint16(offset)).toBe(after);
+      expect(
+        width === 1
+          ? data.getUint8(offset)
+          : width === 2
+            ? data.getUint16(offset)
+            : data.getUint32(offset),
+      ).toBe(after);
       if (width === 1) restoredData.setUint8(offset, before);
-      else restoredData.setUint16(offset, before);
+      else if (width === 2) restoredData.setUint16(offset, before);
+      else restoredData.setUint32(offset, before);
     }
     expect(restored).toEqual(original);
     expect(document.copy()).toEqual(original);
@@ -160,7 +167,7 @@ describe("Japanese Mega-CD atomic officer relocation", () => {
     expect(new DataView(released.bytes.buffer).getUint16(officer(12))).toBe(2);
     expect(released.bytes[officer(2) + 12]).toBe(5);
     expect(released.bytes[officer(2) + 17]).toBe(0xff);
-    expect(released.bytes[officer(2) + 15]).toBe(75);
+    expect(released.bytes[officer(2) + 15]).toBe(0);
   });
 
   it("clears the advisor reference when no advisor remains in the source city", () => {
@@ -170,7 +177,7 @@ describe("Japanese Mega-CD atomic officer relocation", () => {
     expect(data.getUint16(officer(0))).toBe(2);
   });
 
-  it("rejects unsafe states, ruler/governor changes and invalid batches without mutation", () => {
+  it("rejects battle/death, implicit ruler defection and invalid batches without mutation", () => {
     const original = fixture();
     const document = new San3Document(original);
     for (const indices of [[], [2, 2], [2, 4], [0], [600], [-1], [1.5], [531]])
@@ -179,18 +186,8 @@ describe("Japanese Mega-CD atomic officer relocation", () => {
       expect(() => relocateSan3Officers(document, [2], destination)).toThrow();
     for (const [relative, value] of [
       [8, 4],
-      [8, 8],
       [8, 16],
-      [9, 64],
-      [9, 8],
-      [9, 16],
-      [9, 1],
-      [10, 1],
-      [10, 4],
-      [11, 8],
-      [11, 1],
-      [26, 3],
-      [27, 1],
+      [12, 0],
     ] as const) {
       const input = fixture();
       input[officer(2) + relative] = value;
@@ -203,6 +200,27 @@ describe("Japanese Mega-CD atomic officer relocation", () => {
     data.setUint16(officer(1), 3);
     expect(() => relocateSan3Officers(new San3Document(governor), [2], 1)).toThrow();
     expect(document.copy()).toEqual(original);
+  });
+
+  it("automatically resolves equipment, missions and personal commitments on defection", () => {
+    const bytes = fixture();
+    bytes[city(0) + 24] = 8;
+    bytes[officer(2) + 8] = 0x89;
+    bytes[officer(2) + 9] = 0x5b;
+    bytes[officer(2) + 10] = 0x71;
+    bytes[officer(2) + 11] = 11;
+    bytes[officer(2) + 26] = 3;
+    bytes[officer(2) + 27] = 2;
+    const result = relocateSan3Officers(new San3Document(bytes), [2], 1);
+    const output = new San3Document(result.bytes);
+    expect(output.read(city(0) + 40, 2)).toBe(15);
+    expect(output.read(city(0) + 24, 1)).toBe(0);
+    expect(result.cancelledTasks).toEqual([{ index: 2, kind: 3 }]);
+    expect(result.bytes.slice(officer(2) + 8, officer(2) + 12)).toEqual(
+      new Uint8Array([128, 0, 112, 0]),
+    );
+    bytes[officer(2) + 26] = 9;
+    expect(() => relocateSan3Officers(new San3Document(bytes), [2], 1)).toThrow();
   });
 
   it("rejects cycles, shared membership and inconsistent references before any write", () => {
