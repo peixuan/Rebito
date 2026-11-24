@@ -1,8 +1,9 @@
 import { message } from "../../shared/messages.ts";
 import { EditorError, type EditorField } from "../types.ts";
+import { canSwitchSan3Army, editSan3Army } from "./army.ts";
 import { cityDetailFields } from "./city-fields.ts";
 import { customMetadataFields, validateCustomFields } from "./custom-fields.ts";
-import { type San3Document, san3Attributes, san3Layout } from "./document.ts";
+import { San3Document, san3Attributes, san3Layout } from "./document.ts";
 import { officerTraitFields, validateOfficerTraits } from "./officer-traits.ts";
 
 export interface San3Field extends EditorField {
@@ -64,10 +65,16 @@ export function cityFields(document: San3Document, index: number): San3Field[] {
   return [...resources, ...cityDetailFields(document, index)];
 }
 
-export function officerFields(document: San3Document, index: number): San3Field[] {
+export function officerFields(
+  document: San3Document,
+  index: number,
+  changes: Record<string, number> = {},
+): San3Field[] {
   const officer = document.officer(index);
   const offset = document.offset("officers", index);
   const equipped = (document.read(offset + 10, 1) & 15) !== 0;
+  const canSwitch = canSwitchSan3Army(document, index);
+  const soldiers = changes[`officer.${index}.soldiers`] ?? officer.soldiers;
   const military = (
     [
       ["soldiers", 2, 2, officer.soldierLimit],
@@ -83,14 +90,18 @@ export function officerFields(document: San3Document, index: number): San3Field[
     offset: offset + relative,
     width,
     value: document.read(offset + relative, width),
-    min: id === "soldiers" && officer.soldiers > 0 ? 1 : 0,
+    min: id === "soldiers" && !canSwitch && officer.soldiers > 0 ? 1 : 0,
     max,
-    // Disband/recruit and ruler loyalty involve additional state, not just a number.
     readonly:
       !officer.available ||
-      (id === "loyalty" ? officer.role === 0 : officer.soldiers === 0) ||
+      (id === "loyalty" ? officer.role === 0 : officer.soldiers === 0 && !canSwitch) ||
       (id === "soldiers" && equipped),
-    ...(id === "soldiers" && equipped ? { help: message("san3.equippedTroopsHelp") } : {}),
+    ...((id === "training" || id === "morale") && soldiers === 0
+      ? { enabledByField: `officer.${index}.soldiers` }
+      : {}),
+    ...(id === "soldiers"
+      ? { help: message(equipped ? "san3.equippedTroopsHelp" : "san3.armyEditHelp") }
+      : {}),
   }));
   return [...military, ...attributeFields(document, index), ...officerTraitFields(document, index)];
 }
@@ -108,7 +119,7 @@ export function findSan3Field(
         ? cityFields(document, index)
         : match[1] === "custom"
           ? customMetadataFields(document, index, changes)
-          : officerFields(document, index);
+          : officerFields(document, index, changes);
     const field = fields.find((candidate) => candidate.key === key);
     if (field) return field;
   }
@@ -121,6 +132,12 @@ export function editSan3(document: San3Document, changes: Record<string, number>
   validateOfficerTraits(document, changes);
   const edits = Object.entries(changes).map(([key, value]) => {
     const field = findSan3Field(document, key, changes);
+    if (field.columnId === "training" || field.columnId === "morale") {
+      const index = Number(key.split(".")[1]);
+      const soldiers = changes[`officer.${index}.soldiers`] ?? document.officer(index).soldiers;
+      if (soldiers === 0 && (changes[`officer.${index}.soldiers`] !== 0 || value !== 0))
+        throw new EditorError("invalid_edit", message("editor.invalidEdit"));
+    }
     let maximum = field.max;
     if (field.columnId === "soldiers") {
       const index = Number(key.split(".")[1]);
@@ -133,9 +150,17 @@ export function editSan3(document: San3Document, changes: Record<string, number>
       throw new EditorError("invalid_edit", message("editor.invalidEdit"));
     return { field, before: field.value, after: value };
   });
-  const bytes = document.copy();
+  let bytes = document.copy();
   const data = new DataView(bytes.buffer);
+  const transitions = new Set(
+    edits
+      .filter(({ field, before, after }) => field.columnId === "soldiers" && (!before || !after))
+      .map(({ field }) => Number(field.key.split(".")[1])),
+  );
+  const armyFields = new Set(["soldiers", "training", "morale"]);
   for (const { field, after } of edits) {
+    if (transitions.has(Number(field.key.split(".")[1])) && armyFields.has(field.columnId))
+      continue;
     if (field.width === 1) {
       const shift = field.shift ?? 0;
       const value =
@@ -147,5 +172,34 @@ export function editSan3(document: San3Document, changes: Record<string, number>
     } else if (field.width === 2) data.setUint16(field.offset, after);
     else data.setUint32(field.offset, after);
   }
-  return { bytes, edits };
+  const armyEffects: { key: string; label: EditorField["label"]; before: number; after: number }[] =
+    [];
+  for (const index of transitions) {
+    const before = new San3Document(bytes);
+    const training = changes[`officer.${index}.training`];
+    const morale = changes[`officer.${index}.morale`];
+    const result = editSan3Army(before, index, {
+      soldiers: changes[`officer.${index}.soldiers`] as number,
+      ...(training === undefined ? {} : { training }),
+      ...(morale === undefined ? {} : { morale }),
+    });
+    const after = new San3Document(result.bytes);
+    for (const id of ["training", "morale"] as const)
+      if (
+        changes[`officer.${index}.${id}`] === undefined &&
+        before.officer(index)[id] !== after.officer(index)[id]
+      )
+        armyEffects.push({
+          key: `armyEffect.${index}.${id}`,
+          label: message("editor.columnLabel", {
+            group:
+              before.officer(index).name || message("san3.officerRecord", { index: index + 1 }),
+            field: message(`san3.${id}`),
+          }),
+          before: before.officer(index)[id],
+          after: after.officer(index)[id],
+        });
+    bytes = result.bytes;
+  }
+  return { bytes, edits, armyEffects };
 }

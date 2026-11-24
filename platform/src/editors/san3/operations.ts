@@ -91,7 +91,7 @@ export function editSan3Campaign(document: San3Document, changes: Record<string,
   }
   const result = editSan3(document, scalar);
   let current = new San3Document(result.bytes);
-  const operationPreview: EditorView["preview"] = [];
+  const operationPreview: EditorView["preview"] = [...result.armyEffects];
   if (Object.keys(governors).length) {
     const appointed = editSan3Governors(current, governors);
     if (

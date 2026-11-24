@@ -214,5 +214,6 @@
   "san3.taskSummary": "{kind}；进度{elapsed}/{total}个月；成效{effect}",
   "san3.spyTaskSummary": "{kind}：{city}；进度{elapsed}/{total}个月；分值{effect}",
   "san3.separateWorkflow": "任务、归属或状态操作请分别保存，便于核对它们带来的关联变化。",
-  "san3.equipmentUnavailable": "无法更换装备：请核对来源城市的归属、港口条件、库存数量和库存上限。"
+  "san3.equipmentUnavailable": "无法更换装备：请核对来源城市的归属、港口条件、库存数量和库存上限。",
+  "san3.armyEditHelp": "设为零会解散军队并清空训练和士气；新建军队时，未填写的训练和士气默认为零，不扣征兵费用。请先处理任务、恢复、潜伏状态及已分配装备。"
 }

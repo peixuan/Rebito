@@ -214,5 +214,6 @@
   "san3.taskSummary": "{kind}; {elapsed}/{total} months; result {effect}",
   "san3.spyTaskSummary": "{kind} in {city}; {elapsed}/{total} months; score {effect}",
   "san3.separateWorkflow": "Apply task, membership, or status workflows separately from other edits so their dependent changes can be reviewed.",
-  "san3.equipmentUnavailable": "Equipment exchange is unavailable: check source-city ownership, port access, stock shortages and inventory limits."
+  "san3.equipmentUnavailable": "Equipment exchange is unavailable: check source-city ownership, port access, stock shortages and inventory limits.",
+  "san3.armyEditHelp": "Set zero to disband; training and morale are cleared. Creating an army initializes omitted training and morale to zero. No recruitment cost is charged. Tasks, recovery, covert activity and reserved equipment must be resolved first."
 }
