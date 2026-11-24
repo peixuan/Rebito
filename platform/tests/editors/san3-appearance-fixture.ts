@@ -1,10 +1,12 @@
 import { san3Layout } from "../../src/editors/san3/document.ts";
+import { san3GlyphLayout } from "../../src/editors/san3/names.ts";
 import { san3TreasureLayout } from "../../src/editors/san3/treasures.ts";
 import {
   governanceCity as city,
   governanceOfficer as officer,
   san3GovernanceFixture,
 } from "./san3-governance-fixture.ts";
+import { san3NameFixture } from "./san3-name-fixture.ts";
 
 const custom = (slot: number) => san3Layout.custom.offset + slot * 28;
 
@@ -12,6 +14,12 @@ const custom = (slot: number) => san3Layout.custom.offset + slot * 28;
 export function san3AppearanceFixture() {
   const bytes = san3GovernanceFixture();
   const data = new DataView(bytes.buffer);
+  const alphabet = san3NameFixture();
+  bytes.set(
+    alphabet.subarray(san3GlyphLayout.offset, san3GlyphLayout.offset + san3GlyphLayout.count * 2),
+    san3GlyphLayout.offset,
+  );
+  for (let index = 0; index < 311; index++) data.setUint16(0x478f0 + index * 2, 0x8000 + index);
   data.setUint16(0x78788, 189);
   bytes[0x7dc2e] = 1;
   bytes[0x7dc28] = 0xa5;

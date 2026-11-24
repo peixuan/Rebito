@@ -88,6 +88,7 @@
   "san3.presetHelp": "临时创建默认值，不写入原生存档。请在能力分配前修改；按此创建出的武将可以正常保存，但模板在冷启动或重新加载创建模块后恢复默认。保留模板请使用即时存档，已有武将不受影响。",
   "san3.custom": "新武将",
   "san3.customProfile": "新武将资料",
+  "san3.appearancePending": "待登场",
   "san3.gender": "性别",
   "san3.male": "男性",
   "san3.female": "女性",

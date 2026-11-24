@@ -44,7 +44,8 @@ export function appendSan3PlacementEffects(
     [17, "faction"],
     [19, "originFaction"],
   ] as const) {
-    const oldValue = before.read(base + relative, 1);
+    // Pending custom rows use zero placeholders, not existing faction membership.
+    const oldValue = before.officer(index).role === 255 ? 255 : before.read(base + relative, 1);
     const newValue = after.read(base + relative, 1);
     const faction = (value: number) => (value < 21 || value === 255 ? names.faction(value) : value);
     if (oldValue !== newValue)

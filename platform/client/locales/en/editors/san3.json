@@ -88,6 +88,7 @@
   "san3.presetHelp": "Temporary creation defaults, not native-save data. Edit before allocation. Created officers can be saved normally, but these defaults reset on a cold boot or module reload. Keep a checkpoint to preserve them. Existing officers are unchanged.",
   "san3.custom": "Custom officers",
   "san3.customProfile": "Custom officer profile",
+  "san3.appearancePending": "Pending introduction",
   "san3.gender": "Gender",
   "san3.male": "Male",
   "san3.female": "Female",

@@ -8,7 +8,9 @@ import {
 import {
   placeSan3Unaffiliated,
   requireSan3Definition,
+  requireUnplacedSan3Custom,
   resetSan3OfficerPlacement,
+  san3RegistrationPortrait,
 } from "./governance-presence.ts";
 import { inspectSan3Treasures } from "./treasures.ts";
 
@@ -40,16 +42,19 @@ export function setSan3OfficerPresence(
     document.read(0x7dc26, 2) === index ||
     (member
       ? member.city !== city || previousRole === role || target.serving[0] === index
-      : previousRole !== 7)
+      : previousRole !== 7 && previousRole !== 255)
   )
     throw invalidGovernance();
   if (role === 4 && (target.faction === 255 || member?.kind === "serving"))
     throw invalidGovernance();
-  requireSan3Definition(document, index);
+  if (!member && previousRole === 255) requireUnplacedSan3Custom(document, index);
+  const registration = !member ? san3RegistrationPortrait(document, index) : undefined;
+  if (!registration) requireSan3Definition(document, index);
   if (member) requireIdleGovernor(document, index);
   if (member && (document.read(base + 10, 1) & 15) !== 0) throw invalidGovernance();
   const inventory = inspectSan3Treasures(document);
   const edit = governanceEdit(document);
+  if (registration) edit.write(registration.offset, 2, registration.portrait);
   if (member) {
     const remaining = target[member.kind].filter((candidate) => candidate !== index);
     edit.write(
@@ -89,6 +94,7 @@ export function setSan3OfficerPresence(
       faction: role === 4 ? target.faction : 255,
       previousFaction: document.read(base + 17, 1),
       introduced: !member,
+      ...(registration ? { registeredPortrait: registration.portrait } : {}),
       soldiersRemoved: member?.kind === "serving" ? document.read(base + 2, 2) : 0,
       advisorRemoved: target.advisor === index,
     },

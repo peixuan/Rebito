@@ -124,9 +124,7 @@ describe("SAN3 service and discovery controls", () => {
     expect(san3PresenceFields(document, 0).every((field) => field.readonly)).toBe(true);
     expect(san3PresenceFields(document, 599)[0]).toMatchObject({
       readonly: true,
-      choices: [
-        { value: 255, label: { messageId: "editor.unknownValue", parameters: { value: 255 } } },
-      ],
+      choices: [{ value: 255, label: { messageId: "san3.appearancePending" } }],
     });
     for (const draft of [
       { "presence.0.role": 5 },

@@ -1,5 +1,6 @@
-import { type San3Document, san3Layout } from "./document.ts";
-import { type governanceEdit, invalidGovernance } from "./governance-core.ts";
+import { San3Document, san3Layout } from "./document.ts";
+import { type governanceEdit, invalidGovernance, requireIdleGovernor } from "./governance-core.ts";
+import { createSan3NameCodec, decodeSan3Name } from "./names.ts";
 
 /** Reject unused custom slots and definitions that cannot be rendered safely. */
 export function requireSan3Definition(document: San3Document, index: number) {
@@ -26,6 +27,50 @@ export function requireSan3Definition(document: San3Document, index: number) {
     if (day < 1 || day > days || age < 1 || age > 99 || document.read(definition + 3, 1) > 1)
       throw invalidGovernance();
   }
+}
+
+/** Native pending and unused custom records have no roster and may retain zero placeholders. */
+export function requireUnplacedSan3Custom(document: San3Document, index: number) {
+  const base = document.offset("officers", index);
+  requireIdleGovernor(document, index);
+  if (
+    index < san3Layout.historical.count ||
+    document.read(base + 12, 1) !== 255 ||
+    ![0, 65535].includes(document.read(base, 2)) ||
+    ![0, 255].includes(document.read(base + 16, 1)) ||
+    ![0, 255].includes(document.read(base + 17, 1)) ||
+    document.read(base + 2, 2) !== 0 ||
+    document.read(base + 21, 1) !== 0 ||
+    document.read(base + 22, 1) !== 0 ||
+    (document.read(base + 10, 1) & 15) !== 0
+  )
+    throw invalidGovernance();
+}
+
+/** Register a filled unused definition with an original default portrait; never invent names. */
+export function san3RegistrationPortrait(document: San3Document, index: number) {
+  if (index < san3Layout.historical.count) return undefined;
+  const slot = index - san3Layout.historical.count;
+  const offset = san3Layout.custom.offset + slot * san3Layout.custom.stride;
+  if (document.read(offset, 2) !== 65535) return undefined;
+  requireUnplacedSan3Custom(document, index);
+  const bytes = document.copy();
+  const codec = createSan3NameCodec(bytes);
+  for (const [kind, relative, length] of [
+    ["kanji", 13, 7],
+    ["kana", 20, 8],
+  ] as const) {
+    const text = decodeSan3Name(bytes.subarray(offset + relative, offset + relative + length));
+    if (!text.trim()) throw invalidGovernance();
+    codec.encode(kind, text);
+  }
+  if (Object.values(document.attributes(index)).some((value) => value < 1))
+    throw invalidGovernance();
+  const gender = document.read(offset + 3, 1);
+  const portrait = slot < 8 ? (gender === 0 ? 231 : 239) : gender === 0 ? 247 : 277;
+  new DataView(bytes.buffer).setUint16(offset, portrait);
+  requireSan3Definition(new San3Document(bytes), index);
+  return { offset, portrait };
 }
 
 /** Caller has detached the officer and validated the destination list. */

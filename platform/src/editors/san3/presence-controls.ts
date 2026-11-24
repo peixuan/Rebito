@@ -17,9 +17,11 @@ const placementCity = (document: San3Document, index: number) => {
 };
 
 const roleLabel = (value: number) =>
-  value >= 0 && value <= 7
-    ? message(`san3.role${value}`)
-    : message("editor.unknownValue", { value });
+  value === 255
+    ? message("san3.appearancePending")
+    : value >= 0 && value <= 7
+      ? message(`san3.role${value}`)
+      : message("editor.unknownValue", { value });
 
 /** Only list operations are canonical intents; army and allegiance effects are derived. */
 export function editSan3Presence(document: San3Document, draft: Record<string, number>) {
@@ -68,6 +70,14 @@ export function editSan3Presence(document: San3Document, draft: Record<string, n
         names.city(request.city),
       );
     }
+    if ("registeredPortrait" in change && typeof change.registeredPortrait === "number")
+      append(
+        `presenceEffect.${index}.portrait`,
+        names.officer(index),
+        "portrait",
+        message("san3.unregistered"),
+        change.registeredPortrait,
+      );
     if (request.role === 7)
       append(
         `presenceEffect.${index}.roster`,
@@ -133,7 +143,7 @@ export function san3PresenceFields(
       min: 0,
       max: 45,
       choices: Array.from({ length: 46 }, (_, value) => ({ value, label: names.city(value) })),
-      readonly: current.role !== 7 || choices.length < 2,
+      readonly: ![7, 255].includes(current.role) || choices.length < 2,
       help: message("san3.appearanceHelp"),
     },
   ];
