@@ -239,5 +239,11 @@
   "san3.establishInfiltration": "Serve secretly for faction",
   "san3.establishInfiltrationHelp": "Turn an idle officer already serving here into an insider for the selected foreign faction. Current city, faction, army and role stay unchanged. Set prior service below; it replaces any stored value. Rulers, governors and conflicting states cannot be selected. Apply separately from deployment or ending affiliation.",
   "san3.infiltrationPriorService": "Prior service for covert faction",
-  "san3.infiltrationPriorServiceHelp": "Used only when establishing an insider. Together with current service, the value must total 1–256; the native return computes current plus prior service minus one. The preview shows any previous stored value being replaced."
+  "san3.infiltrationPriorServiceHelp": "Used only when establishing an insider. Together with current service, the value must total 1–256; the native return computes current plus prior service minus one. The preview shows any previous stored value being replaced.",
+  "san3.cityReserves": "City reserves",
+  "san3.deploymentUsed": "Deployed during this battle",
+  "san3.deploymentAvailable": "Allow deployment",
+  "san3.deploymentSpent": "Already deployed; cannot deploy again",
+  "san3.reserveInstructions": "Capture at a battle command menu. These controls change the defended city's reserve deployment eligibility. Use the game's Retreat and Deploy commands to move units off or onto the battlefield.",
+  "san3.reserveHelp": "The original editor called this 'in battle', but the game also keeps it set after a unit withdraws into the city. Allowing deployment again preserves previous losses and morale; it does not place a unit on the map."
 }

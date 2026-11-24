@@ -239,5 +239,11 @@
   "san3.establishInfiltration": "为其他势力担任内应",
   "san3.establishInfiltrationHelp": "让已在此任职的空闲武将成为所选敌方势力的内应。当前城市、所属势力、军队和身份保持不变。下方填写此前为潜伏势力仕官的年数，会替换已有值；君主、太守及存在冲突状态的武将不能设置。请与埋伏投放或结束潜伏分别预览。",
   "san3.infiltrationPriorService": "此前为潜伏势力仕官年数",
-  "san3.infiltrationPriorServiceHelp": "仅用于建立内应关系。与当前仕官年数之和须为 1–256；原版归队时按当前年数加此前年数再减一计算。预览会显示被替换的原有值。"
+  "san3.infiltrationPriorServiceHelp": "仅用于建立内应关系。与当前仕官年数之和须为 1–256；原版归队时按当前年数加此前年数再减一计算。预览会显示被替换的原有值。",
+  "san3.cityReserves": "城内预备队",
+  "san3.deploymentUsed": "本场已出阵",
+  "san3.deploymentAvailable": "允许出阵",
+  "san3.deploymentSpent": "本场已出阵，禁止再次出阵",
+  "san3.reserveInstructions": "请在战场命令菜单采集进度。这里修改守城方城内预备队的出阵资格；部队进入或离开战场，仍请使用游戏的“出阵”和“退却”命令。",
+  "san3.reserveHelp": "原修改器将此标记称为“战斗中”，但部队退回城内后，游戏仍保留该标记。重新允许出阵会保留之前的兵力损失和士气，不会直接把部队放上地图。"
 }
