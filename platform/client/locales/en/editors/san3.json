@@ -245,5 +245,16 @@
   "san3.deploymentAvailable": "Allow deployment",
   "san3.deploymentSpent": "Already deployed; cannot deploy again",
   "san3.reserveInstructions": "Capture at a battle command menu. These controls change the defended city's reserve deployment eligibility. Use the game's Retreat and Deploy commands to move units off or onto the battlefield.",
-  "san3.reserveHelp": "The original editor called this 'in battle', but the game also keeps it set after a unit withdraws into the city. Allowing deployment again preserves previous losses and morale; it does not place a unit on the map."
+  "san3.reserveHelp": "The original editor called this 'in battle', but the game also keeps it set after a unit withdraws into the city. Allowing deployment again preserves previous losses and morale; it does not place a unit on the map.",
+  "san3.dead": "Deceased",
+  "san3.lifeChanges": "Life and revival",
+  "san3.lifeHelp": "Hand over leadership and resolve missions first. Death removes the officer from city lists and passes belongings to their ruler, or returns them to the pool.",
+  "san3.revivalCity": "Revival city",
+  "san3.revivalHelp": "Revives a registered deceased officer as a free officer in this city. Former armies and missions are not restored.",
+  "san3.rosterMembership": "City roster",
+  "san3.retiredSoldiers": "Soldiers retired",
+  "san3.storedRetiredSoldiers": "Retired army record",
+  "san3.belongingsRecipient": "Belongings recipient",
+  "san3.inBattle": "Battle assignment",
+  "san3.role7": "Not yet appeared"
 }

@@ -245,5 +245,16 @@
   "san3.deploymentAvailable": "允许出阵",
   "san3.deploymentSpent": "本场已出阵，禁止再次出阵",
   "san3.reserveInstructions": "请在战场命令菜单采集进度。这里修改守城方城内预备队的出阵资格；部队进入或离开战场，仍请使用游戏的“出阵”和“退却”命令。",
-  "san3.reserveHelp": "原修改器将此标记称为“战斗中”，但部队退回城内后，游戏仍保留该标记。重新允许出阵会保留之前的兵力损失和士气，不会直接把部队放上地图。"
+  "san3.reserveHelp": "原修改器将此标记称为“战斗中”，但部队退回城内后，游戏仍保留该标记。重新允许出阵会保留之前的兵力损失和士气，不会直接把部队放上地图。",
+  "san3.dead": "已死亡",
+  "san3.lifeChanges": "生死与复活",
+  "san3.lifeHelp": "请先移交君主或太守职位，并结束任务。死亡会移出城市名单，宝物由所属君主继承；无所属势力时则归还宝物池。",
+  "san3.revivalCity": "复活城市",
+  "san3.revivalHelp": "将有有效资料的已死亡武将复活为本城在野武将，不恢复原来的军队和任务。",
+  "san3.rosterMembership": "城市名单",
+  "san3.retiredSoldiers": "解除的兵士",
+  "san3.storedRetiredSoldiers": "原军队记录",
+  "san3.belongingsRecipient": "宝物继承者",
+  "san3.inBattle": "参战状态",
+  "san3.role7": "尚未登场"
 }
