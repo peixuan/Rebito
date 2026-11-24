@@ -45,7 +45,7 @@ describe("SAN3 treasure presentation", () => {
     expect(officer.fields.find(({ columnId }) => columnId === "bookCopies")).toMatchObject({
       value: 2,
     });
-    expect(officer.batchKeys).not.toContain("book.1.copies");
+    expect(officer.batchKeys).toContain("book.1.copies");
     const noops = { "treasure.1.owner": 65535, "book.1.copies": 0 };
     expect(san3Adapter.view(bytes, { module: "treasures", changes: noops }).changes).toEqual({});
     expect(() => san3Adapter.apply(bytes, { changes: noops })).toThrow("editor.noChanges");

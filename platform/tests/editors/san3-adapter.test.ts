@@ -111,6 +111,7 @@ describe("SAN3 editor view", () => {
         "serviceYears",
         "originServiceYears",
         "bookCopies",
+        ...Array.from({ length: 12 }, (_, index) => `personalTreasure${index + 1}`),
       ],
     );
     expect(view.columns.filter(({ defaultVisible }) => defaultVisible).map(({ id }) => id)).toEqual(

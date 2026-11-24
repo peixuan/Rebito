@@ -26,6 +26,7 @@ import { san3MergeFields } from "./merge-view.ts";
 import { san3NamePresetAction } from "./name-presets.ts";
 import { san3OperationFields } from "./operation-fields.ts";
 import { editSan3Campaign } from "./operations.ts";
+import { san3PersonalTreasureFields } from "./personal-treasures.ts";
 import { san3PresenceFields } from "./presence-controls.ts";
 import { san3PresetAdapter } from "./preset-adapter.ts";
 import { san3ShipbuildingFields } from "./shipbuilding.ts";
@@ -345,6 +346,7 @@ export const san3Adapter: EditorAdapter = {
         ...(module === "factions" ? san3MergeFields(document, Number(selected)) : []),
         ...(module === "cities" ? san3ShipbuildingFields(document, Number(selected)) : []),
         ...(module === "officers" ? san3BookFields(document, Number(selected)) : []),
+        ...(module === "officers" ? san3PersonalTreasureFields(document, Number(selected)) : []),
         ...(module === "officers"
           ? san3TaskFields(document, Number(selected), original, operationChanges)
           : []),
@@ -381,7 +383,16 @@ export const san3Adapter: EditorAdapter = {
       ...(module === "treasures"
         ? {}
         : {
-            batchKeys: [...selectedFields, ...operationFields]
+            batchKeys: [
+              ...selectedFields,
+              ...operationFields,
+              ...(module === "officers"
+                ? [
+                    ...san3BookFields(document, Number(selected)),
+                    ...san3PersonalTreasureFields(document, Number(selected)),
+                  ]
+                : []),
+            ]
               .filter(
                 (field) =>
                   !field.readonly &&

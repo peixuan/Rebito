@@ -157,6 +157,11 @@ replayed. Any invalid request rejects the complete operation without publication
   Claiming the hidden seal consumes its discovery marker. Event custodians and
   unsafe global recipients stay locked; item bonuses are game-derived.
 
+Personal treasure checkboxes can give the same item to several officers without
+changing global ownership or consuming a hidden item. Books and personal flags
+support batch copying. Ordinary bonuses use personal flags; special events may
+still consult global ownership. Save inside the game to retain these edits.
+
 Resolve ongoing missions, recovery/covert activity and allocated equipment before
 operations whose controls require it. Do not bypass these prerequisites with raw
 pointers or flags. Malformed lists hide relationship controls while leaving safe
