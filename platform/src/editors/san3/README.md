@@ -82,8 +82,9 @@ Custom slots retain the `0xffff` unregistered portrait sentinel. Editing a
 definition does not register it. Calendar checks validate the final month/day
 pair; portrait choices are backed by the game lookup. The optional 68-name
 preset creates a previewable name/reading draft and preserves registration and
-abilities. Both languages use the same names. Numeric batches expand only
-explicit scalar edits; names and relationship workflows remain separate.
+abilities. Both languages use the same names. Batches expand explicit scalar
+edits and officer relocation destinations; names and other relationship workflows
+remain separate. Every selected target is validated before any change is published.
 
 ## Coherent campaign operations
 
@@ -105,6 +106,14 @@ replayed. Any invalid request rejects the complete operation without publication
 - Relocation and qualified appointments maintain city/role/strategist links.
   Moving an officer disbands their army. In-place civil conversion requires no army.
   Native base abilities, not treasure bonuses, determine appointment qualifications.
+  To move, capture at the ordinary city command menu, select an officer, choose
+  **Move to city**, preview and save edits. For a batch, choose the destination
+  first, select **Copy to records** targets and click **Copy changed fields**.
+  Inspect all army and roster effects before saving. Resume, reopen the game's
+  officer list and use its Save command for native persistence. Disabled controls
+  explain the specific prerequisite: leadership handover, task/status resolution,
+  native equipment removal or roster introduction. Mixed eligible/ineligible
+  batches fail atomically, without moving only part of the selection.
 - Service/discovery changes support civil recruitment, resignation, hidden/free
   transitions and explicit introduction of registered unappeared officers.
   Withdrawal to unappeared removes membership without rewinding appearance events;

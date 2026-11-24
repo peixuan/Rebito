@@ -15,7 +15,8 @@ export interface San3RelocationWrite {
 }
 
 const invalidGraph = () => new EditorError("invalid_save", message("editor.invalidSave"));
-const invalidMove = () => new EditorError("invalid_edit", message("san3.invalidRelocation"));
+const invalidMove = (reason = "invalidRelocation") =>
+  new EditorError("invalid_edit", message(`san3.${reason}`));
 
 /** Validate the reachable lists; unused/dead records need not belong to a city. */
 export function inspectSan3Lists(document: San3Document) {
@@ -115,21 +116,21 @@ export function relocateSan3Officers(
     const source = membership.get(index);
     const role = document.read(base + 0x0c, 1);
     const task = document.read(base + 0x1a, 1);
+    if (!source) throw invalidMove("relocationNoRoster");
+    if (source.city === destination) throw invalidMove();
+    if (role === 0 || rulers.has(index)) throw invalidMove("relocationRuler");
+    if (cities[source.city]?.serving[0] === index) throw invalidMove("relocationGovernor");
+    if ((document.read(base + 8, 1) & 0x14) !== 0) throw invalidMove("relocationBattleOrDead");
     if (
-      !source ||
-      source.city === destination ||
-      role === 0 ||
-      rulers.has(index) ||
-      cities[source.city]?.serving[0] === index ||
-      (document.read(base + 8, 1) & 0x1c) !== 0 ||
-      (document.read(base + 9, 1) & 0x7f) !== 0 ||
-      // Allocated weapons/ships require native inventory refunds before moving.
-      (document.read(base + 10, 1) & 0x0f) !== 0 ||
-      (document.read(base + 11, 1) & 0x0f) !== 0 ||
+      (document.read(base + 8, 1) & 8) !== 0 ||
       (task !== 0 && task !== 0xff) ||
       document.read(base + 0x1b, 1) !== 0
     )
-      throw invalidMove();
+      throw invalidMove("relocationTask");
+    if ((document.read(base + 9, 1) & 0x7f) !== 0) throw invalidMove("relocationStatus");
+    // Native unequipping refunds the allocated stock before relocation disbands troops.
+    if ((document.read(base + 10, 1) & 15) !== 0 || (document.read(base + 11, 1) & 15) !== 0)
+      throw invalidMove("relocationEquipment");
     return {
       index,
       fromCity: source.city,

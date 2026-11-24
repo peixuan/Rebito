@@ -166,8 +166,11 @@ maps their gameplay controls and explicit differences through coherent operation
 custom base abilities, four creation templates, custom names/profiles, city economy,
 armies, tasks, life/discovery, covert status, governance and land/naval combat.
 Unknown bytes, list pointers and battlefield coordinates are intentionally excluded.
-A fresh callback-level audit found remaining delegation, scheduled custom appearance
-and batch-relocation UI gaps; completion is not claimed until these are verified.
+A fresh callback-level audit found delegation, scheduled custom appearance and
+batch-relocation UI gaps. Batch relocation now has an atomic multi-record action,
+explicit steps and per-officer blocked reasons. Sixteen related unit tests, both
+type checks, build and a sandboxed real-core browser flow pass. Delegation and
+scheduled appearance remain under original-game verification.
 
 Historical base abilities are now read-only in both UI and API, including mixed
 and batch drafts. Original-game Save/Load retained an unsaved second ability set

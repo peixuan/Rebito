@@ -236,6 +236,7 @@ export const san3Adapter: EditorAdapter = {
       operationPreview,
     } = prepare(bytes, draft);
     const selectedFields = fields(document, data, module, Number(selected));
+    const operationFields = san3OperationFields(document, module, Number(selected));
     const stateFields = module === "officers" ? san3StateFields(original, Number(selected)) : [];
     const treasures =
       module === "treasures" ? san3TreasureView(document, Number(selected)) : undefined;
@@ -322,7 +323,7 @@ export const san3Adapter: EditorAdapter = {
             (field.columnId !== "role" &&
               !(field.columnId === "originFaction" && stateFields.length > 0)),
         ),
-        ...san3OperationFields(document, module, Number(selected)),
+        ...operationFields,
         ...(module === "cities" ? san3GovernorFields(document, Number(selected)) : []),
         ...san3TerritoryFields(document, module, Number(selected)),
         ...(module === "factions" ? san3MergeFields(document, Number(selected)) : []),
@@ -356,7 +357,11 @@ export const san3Adapter: EditorAdapter = {
       ],
       ...(module === "factions" || module === "treasures"
         ? {}
-        : { batchKeys: selectedFields.filter((field) => !field.readonly).map(({ key }) => key) }),
+        : {
+            batchKeys: [...selectedFields, ...operationFields]
+              .filter((field) => !field.readonly)
+              .map(({ key }) => key),
+          }),
       ...(module === "custom" ? { textFields: customNameFields(document, Number(selected)) } : {}),
       ...(module === "officers"
         ? { textFields: [san3ReadingField(document, Number(selected))] }

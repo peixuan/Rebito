@@ -31,7 +31,7 @@ scope differences and persistence boundaries; each is part of the review.
 | Current army           | Soldiers, training, morale, loyalty                                      | Existing armies, recruitment and disbanding; dependent effects previewed                                                                   |
 | Personality/service    | Nibbles, compatibility, morality, lifespan, current/prior service        | Native masks and safe return arithmetic; historical traits remain context                                                                  |
 | Completed action       | Raw flag                                                                 | Eligible idle officers; task operations show the dependent flag change                                                                     |
-| Relocation             | Dedicated tool and independent city/faction writes                       | Validated lists, explicit disbanding, allegiance and strategist repair                                                                     |
+| Relocation             | Dedicated multi-selection tool and independent city/faction writes       | Single/batch destinations with validated lists, explicit disbanding, allegiance and strategist repair                                      |
 | Officer role           | Raw 0..7 selector                                                        | Qualified appointments, civil recruitment, free/hidden conversion, introduction and withdrawal; leadership changes have dedicated controls |
 | Death                  | Raw flag                                                                 | Death with list removal and inheritance; revival into a chosen city's free roster                                                          |
 | Treasures              | Raw inventory mask                                                       | Unique ownership and masks together, shared book limit, seal discovery cleanup                                                             |
@@ -45,7 +45,7 @@ scope differences and persistence boundaries; each is part of the review.
 | Equipment              | Editable unknown allocation nibble                                       | Stock-balanced weapon/ship exchange at verified land/naval command menus                                                                   |
 | Mobility               | Unrestricted live-officer byte                                           | Deployed land/naval units' remaining mobility in the reviewed 0..90 range                                                                  |
 | In-battle flag         | Raw bit setter                                                           | Verified city-reserve deployment eligibility; native Deploy/Retreat maintains map placement                                                |
-| Numeric batches        | Selected rows in editable dialogs                                        | Explicit scalar edits expand atomically; every target is validated                                                                         |
+| Numeric batches        | Selected rows in editable dialogs                                        | Scalar edits and relocation destinations expand atomically; other relationship workflows remain separate                                   |
 
 ## Deliberate semantic boundaries
 

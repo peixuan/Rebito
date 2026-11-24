@@ -1,8 +1,10 @@
 import { message } from "../../shared/messages.ts";
-import { EditorError } from "../types.ts";
+import { EditorError, type EditorField } from "../types.ts";
 import { customMetadataFields } from "./custom-fields.ts";
 import { San3Document, san3Layout } from "./document.ts";
-import { attributeFields, cityFields, editSan3, officerFields, type San3Field } from "./fields.ts";
+import { attributeFields, cityFields, officerFields } from "./fields.ts";
+import { san3OperationFields } from "./operation-fields.ts";
+import { editSan3Campaign } from "./operations.ts";
 import { editSan3Presets, presetFields, San3PresetDocument, san3PresetLayout } from "./presets.ts";
 
 export type San3BatchKind = "city" | "officer" | "custom" | "preset";
@@ -35,14 +37,18 @@ export function expandSan3Batch(
   )
     throw invalid();
 
-  function fields(index: number, draft: Record<string, number>): San3Field[] {
+  function fields(index: number, draft: Record<string, number>): EditorField[] {
     if (sourceKind === "preset") {
       if (!(document instanceof San3PresetDocument)) throw invalid();
       return presetFields(document, index);
     }
     if (!(document instanceof San3Document)) throw invalid();
     if (sourceKind === "city") return cityFields(document, index);
-    if (sourceKind === "officer") return officerFields(document, index);
+    if (sourceKind === "officer")
+      return [
+        ...officerFields(document, index),
+        ...san3OperationFields(document, "officers", index),
+      ];
     return [
       ...attributeFields(document, san3Layout.historical.count + index),
       ...customMetadataFields(document, index, draft),
@@ -66,6 +72,6 @@ export function expandSan3Batch(
   // These helpers validate complete final dates, troop limits and creation budgets.
   // Their owned output buffers are discarded; this function only returns draft intents.
   if (document instanceof San3PresetDocument) editSan3Presets(document, expanded);
-  else editSan3(document, expanded);
+  else editSan3Campaign(document, expanded);
   return expanded;
 }

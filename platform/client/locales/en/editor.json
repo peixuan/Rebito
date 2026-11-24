@@ -35,6 +35,6 @@
   "editor.batchTargets": "Copy to records",
   "editor.batchApply": "Copy changed fields",
   "editor.batchSelected": "{count} selected",
-  "editor.batchHelp": "Only explicitly changed numeric fields are copied. Names and structural operations are excluded. Every target must be valid; review before saving.",
+  "editor.batchHelp": "Copies changed fields that this editor allows in batches; names are excluded. Every target must be valid. Review all changes and side effects before saving.",
   "editor.captureRequired": "Capture the paused game again before editing. Applying changes or resuming play ends the previous editing session."
 }

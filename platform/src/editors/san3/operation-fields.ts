@@ -1,4 +1,4 @@
-import { message } from "../../shared/messages.ts";
+import { displayMessage, message } from "../../shared/messages.ts";
 import type { EditorField } from "../types.ts";
 import { type San3Document, san3Layout } from "./document.ts";
 import { inspectSan3Lists, relocateSan3Officers } from "./relocation.ts";
@@ -18,10 +18,14 @@ export function san3OperationFields(
   if (module === "officers") {
     const current = document.officer(index).city;
     let readonly = false;
+    let help = message("san3.relocationHelp");
     try {
       relocateSan3Officers(document, [index], current === 0 ? 1 : 0);
-    } catch {
+    } catch (error) {
       readonly = true;
+      help = message("san3.relocationBlocked", {
+        reason: displayMessage(error) ?? message("san3.invalidRelocation"),
+      });
     }
     return [
       {
@@ -34,7 +38,7 @@ export function san3OperationFields(
         max: 45,
         choices: cities,
         readonly,
-        help: message("san3.relocationHelp"),
+        help,
       },
     ];
   }
