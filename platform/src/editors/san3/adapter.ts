@@ -13,6 +13,7 @@ import { san3BattleAdapter } from "./battle-adapter.ts";
 import { san3CampaignContext, san3ReadingField } from "./campaign-context.ts";
 import { san3DelegationFields } from "./city-delegation.ts";
 import { factionContextFields, historicalContextFields } from "./context-fields.ts";
+import { san3CreationFields } from "./creation-view.ts";
 import { customMetadataFields } from "./custom-fields.ts";
 import { customNameFields, editCustomNames } from "./custom-names.ts";
 import { san3DiplomacyFields } from "./diplomacy.ts";
@@ -346,6 +347,9 @@ export const san3Adapter: EditorAdapter = {
                 !(field.columnId === "originFaction" && stateFields.length > 0))),
         ),
         ...(module === "factions" ? san3DiplomacyFields(document, Number(selected)) : []),
+        ...(module === "factions"
+          ? san3CreationFields(original, Number(selected), operationChanges)
+          : []),
         ...operationFields,
         ...(module === "cities" ? san3GovernorFields(document, Number(selected)) : []),
         ...(module === "cities" ? san3DelegationFields(document, Number(selected)) : []),

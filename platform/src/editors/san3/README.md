@@ -131,6 +131,15 @@ replayed. Any invalid request rejects the complete operation without publication
   executing command. Two player flags survived original Save and a fresh
   SRAM-only Load. The sandboxed browser flow checks canonical drafts, language
   switches, actual checkpoint writeback and unchanged native companions.
+- An unused faction slot can become a new faction in a neutral city or split off
+  an owned noncapital city. Choose a resident founder and Player/Computer control;
+  the city follows the selected resident. Serving followers, armies and resources stay together; loyalty becomes
+  100 and service 1 as an explicit editor policy. Diplomacy, counters and ownership
+  are initialized coherently. Current command cities, capitals and unresolved
+  missions/battles are excluded. The current queue is preserved: a new faction
+  acts in an available upcoming slot or joins the next month's queue.
+  Introduce an unused custom officer before selecting it as founder; the separate
+  registration-copy limitation still applies to custom definitions.
 - Relocation keeps same-faction armies, equipment and personal status. Governors
   and rulers can move; offices, capital chains and rosters follow automatically.
   It cancels only departing task participants. Changing faction releases the army

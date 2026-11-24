@@ -7,17 +7,24 @@ export function appendSan3PlacementEffects(
   before: San3Document,
   after: San3Document,
   index: number,
-  prefix: "lifeEffect" | "presenceEffect" | "appearanceEffect" | "move",
+  prefix: "lifeEffect" | "presenceEffect" | "appearanceEffect" | "move" | "foundingEffect",
   append: ReturnType<typeof san3OperationPreview>["append"],
 ) {
   const names = san3OperationLabels(before);
+  const nextNames = san3OperationLabels(after);
   const group = names.officer(index);
   const base = before.offset("officers", index);
   const effect = (id: string, oldValue: number, newValue: number) => {
     if (oldValue !== newValue) append(`${prefix}.${index}.${id}`, group, id, oldValue, newValue);
   };
   for (const [relative, width, id] of [
-    [2, 2, prefix === "lifeEffect" ? "storedRetiredSoldiers" : "soldiers"],
+    [
+      2,
+      2,
+      prefix === "lifeEffect" || (prefix === "foundingEffect" && before.officer(index).role > 4)
+        ? "storedRetiredSoldiers"
+        : "soldiers",
+    ],
     [15, 1, "loyalty"],
     [18, 1, "serviceYears"],
     [20, 1, "originServiceYears"],
@@ -47,9 +54,16 @@ export function appendSan3PlacementEffects(
     // Pending custom rows use zero placeholders, not existing faction membership.
     const oldValue = before.officer(index).role === 255 ? 255 : before.read(base + relative, 1);
     const newValue = after.read(base + relative, 1);
-    const faction = (value: number) => (value < 21 || value === 255 ? names.faction(value) : value);
+    const faction = (value: number, labels: typeof names) =>
+      value < 21 || value === 255 ? labels.faction(value) : value;
     if (oldValue !== newValue)
-      append(`${prefix}.${index}.${id}`, group, id, faction(oldValue), faction(newValue));
+      append(
+        `${prefix}.${index}.${id}`,
+        group,
+        id,
+        faction(oldValue, names),
+        faction(newValue, nextNames),
+      );
   }
   for (const [shift, id, labels] of [
     [0, "weapon", ["infantry", "warhorses", "crossbows", "heavyCrossbows"]],
