@@ -167,5 +167,6 @@
   "san3.mobility": "Remaining mobility",
   "san3.battleMobilityHelp": "Finish or cancel Move and return to your battle command menu before capturing. An open Move dialog caches points and can overwrite edits. The reviewed editor range is 0–90; this does not change future turns or strategic movement.",
   "san3.battleSummary": "{mobility} mobility points",
-  "san3.battleInstructions": "Original Japanese Mega-CD land combat only. Finish or cancel Move, return to your command menu, then capture for editing. Only deployed units’ remaining mobility is editable. Structural validation does not detect the menu or support naval combat; an unfinished Move may overwrite changes."
+  "san3.battleInstructions": "Original Japanese Mega-CD land combat only. Finish or cancel Move, return to your command menu, then capture for editing. Only deployed units’ remaining mobility is editable. Structural validation does not detect the menu or support naval combat; an unfinished Move may overwrite changes.",
+  "san3.invalidGovernance": "Choose consistent, idle city leadership. Resolve ongoing tasks, covert status and battles before changing governors or rulers."
 }
