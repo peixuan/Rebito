@@ -10,8 +10,8 @@ The earlier branch edits custom definitions and cities; its faction/live-officer
 edit callbacks are empty. The later branch adds live officers, ruler editing,
 relocation and a 68-name preset. Historical definitions are read-only in both.
 Rebito replaces independent raw writes with coherent operations that preserve
-native lists, ownership and related state. Full coverage below refers to those
-meaningful gameplay capabilities, not unrestricted debugger writes.
+native lists, ownership and related state. The mapping includes deliberate
+scope differences and persistence boundaries; each is part of the review.
 
 ## Gameplay mapping
 
@@ -24,7 +24,7 @@ meaningful gameplay capabilities, not unrestricted debugger writes.
 | Governor               | First officer in city list                                               | Explicit appointment repairs ordering and strategist links                                                                                 |
 | Ruler                  | Independent ruler ID                                                     | Same-city or cross-city succession updates capital, roles and live command caches                                                          |
 | Faction membership     | Raw officer/city faction fields                                          | Relocation, roster conversion, whole-city transfer or complete faction absorption                                                          |
-| Six abilities          | Custom editable, historical/live displayed                               | All six historical/custom base abilities editable, including unappeared records                                                            |
+| Six abilities          | Custom editable, historical/live displayed                               | Six custom abilities editable; historical definitions read-only because native saves exclude them                                          |
 | Custom profile         | Names, gender, birthday, age, portrait                                   | All fields with game encoding, calendar and verified portrait checks                                                                       |
 | Name preset            | Replace 68 custom name/reading pairs                                     | Previewable draft preserving abilities and registration state                                                                              |
 | Creation defaults      | No equivalent reachable control                                          | Four six-ability templates with native allocation capacity checks                                                                          |
@@ -94,10 +94,11 @@ BIOS, game executable, save, extracted font or private capture is distributed.
 
 The editor remains based on paused program RAM. Public snapshot replacement is
 acknowledged and read back; native save companions remain unchanged. Campaign
-persistence requires the game's Save command. Historical definitions and creation
-templates survive checkpoints but reload disc defaults on cold boot/module reload.
-Registered custom records can persist in native SRAM. Battle edits were exercised
-in command menus; their native-save persistence is not claimed.
+persistence requires the game's Save command. Historical definitions are read-only;
+the native payload excludes them. Creation templates remain explicitly temporary:
+they survive checkpoints and reset on cold boot/module reload. Created custom
+records can persist in native SRAM. Battle edits remain available with temporary
+state instructions; their native-save persistence is not claimed.
 
 Original-game acceptance includes all four creation rows, ability changes,
 custom names/profile data, native-save/cold-load campaign operations, real task

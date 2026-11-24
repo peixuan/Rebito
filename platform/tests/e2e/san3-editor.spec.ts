@@ -27,6 +27,9 @@ function strategicMemory() {
     view.setUint16(offset, 0xffff);
     bytes.set([50, 50, 50, 50, 50, 50, 1, 1, 20], offset + 4);
   }
+  view.setUint16(san3Layout.custom.offset + 28, 231);
+  bytes.set(new TextEncoder().encode("Custom"), san3Layout.custom.offset + 28 + 13);
+  for (let index = 0; index < 311; index++) view.setUint16(0x478f0 + index * 2, 0x8000 + index);
   for (let index = 0; index < san3Layout.cities.count; index++) {
     const offset = san3Layout.cities.offset + index * san3Layout.cities.stride;
     for (const relative of [4, 6, 8, 10]) view.setUint16(offset + relative, 0xffff);
@@ -61,7 +64,8 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   test.setTimeout(120_000);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  const { history, publishMemory } = await prepareSan3Editor(page, strategicMemory());
+  const memory = strategicMemory();
+  const { history, publishMemory } = await prepareSan3Editor(page, memory);
 
   await page.goto("/");
   await page.getByRole("button", { name: /SAN3 strategic editor fixture/ }).click();
@@ -116,27 +120,47 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
     ["Loyalty", "89"],
     ["Training", "67"],
     ["Morale", "78"],
+  ]) {
+    if (!label || !value) throw new Error("Missing officer edit");
+    await editor.getByLabel(label, { exact: true }).fill(value);
+    await editor.getByLabel(label, { exact: true }).press("Tab");
+  }
+  const abilities = [
     ["Land leadership", "91"],
     ["Naval leadership", "92"],
     ["Strength", "93"],
     ["Intelligence", "94"],
     ["Politics", "95"],
     ["Charisma", "96"],
-  ]) {
-    if (!label || !value) throw new Error("Missing officer edit");
-    await editor.getByLabel(label, { exact: true }).fill(value);
-    await editor.getByLabel(label, { exact: true }).press("Tab");
-  }
+  ] as const;
+  for (const [label] of abilities)
+    await expect(editor.getByLabel(label, { exact: true })).toBeDisabled();
   await page.getByLabel("Language").selectOption("zh-CN");
   await expect(
     page
       .getByRole("region", { name: chinese("editor.title"), exact: true })
       .getByLabel(chinese("san3.soldiers"), { exact: true }),
   ).toHaveValue("8765");
-  await expect(page.getByLabel(chinese("san3.strength"), { exact: true })).toHaveValue("93");
+  await expect(page.getByLabel(chinese("san3.strength"), { exact: true })).toHaveValue("80");
+  await expect(page.getByLabel(chinese("san3.strength"), { exact: true })).toBeDisabled();
   await page.getByLabel(chinese("app.language")).selectOption("en");
   await editor.getByRole("button", { name: "Custom officers", exact: true }).click();
   await expect(editor.getByLabel("Portrait", { exact: true })).toBeDisabled();
+  await editor
+    .getByRole("row")
+    .filter({ hasText: /^Custom/ })
+    .click();
+  for (const [label, value] of abilities) {
+    await editor.getByLabel(label, { exact: true }).fill(value);
+    await editor.getByLabel(label, { exact: true }).press("Tab");
+  }
+  await page.getByLabel("Language").selectOption("zh-CN");
+  await expect(page.getByLabel(chinese("san3.strength"), { exact: true })).toHaveValue("93");
+  await page.getByLabel(chinese("app.language")).selectOption("en");
+  await editor
+    .getByRole("row")
+    .filter({ hasText: /^Officer 533/ })
+    .click();
   await editor.getByRole("button", { name: "Preview 68 preset names", exact: true }).click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await page.getByRole("dialog").getByRole("button", { name: "Close", exact: true }).click();
@@ -219,8 +243,15 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
     training: 67,
     morale: 78,
   });
-  expect(Object.values(document.attributes(1))).toEqual([91, 92, 93, 94, 95, 96]);
-  expect(document.officer(1).soldierLimit).toBe(19_200);
+  expect(Object.values(document.attributes(1))).toEqual([70, 60, 80, 90, 50, 40]);
+  expect(document.officer(1).soldierLimit).toBe(17_000);
+  expect(Object.values(document.attributes(533))).toEqual([91, 92, 93, 94, 95, 96]);
+  expect(document.officer(533).soldierLimit).toBe(19_200);
+  expect(document.read(san3Layout.custom.offset + 28, 2)).toBe(231);
+  const { offset, count, stride } = san3Layout.historical;
+  expect(result.subarray(offset, offset + count * stride)).toEqual(
+    memory.subarray(offset, offset + count * stride),
+  );
   expect(result[123]).toBe(219);
   expect([
     ...result.subarray(san3Layout.custom.offset + 10, san3Layout.custom.offset + 13),
@@ -394,6 +425,12 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
     editor.getByRole("button", { name: "New officer creation defaults", exact: true }),
   ).toBeVisible();
   await expect(editor.getByRole("button", { name: "Cities", exact: true })).toHaveCount(0);
+  await expect(editor).toContainText("Temporary creation defaults, not native-save data.");
+  await page.getByLabel("Language").selectOption("zh-CN");
+  await expect(
+    page.getByRole("region", { name: chinese("editor.title"), exact: true }),
+  ).toContainText(chinese("san3.presetHelp"));
+  await page.getByLabel(chinese("app.language")).selectOption("en");
   await editor.getByLabel("Strength", { exact: true }).fill("73");
   await editor.getByLabel("Strength", { exact: true }).press("Tab");
   await editor.getByLabel("Copy to records", { exact: true }).press("Space");
@@ -426,7 +463,8 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   await publishMemory(san3BattleFixture());
   await page.getByRole("button", { name: "Refresh saves", exact: true }).click();
   await expect(editor.getByRole("button", { name: "Battle", exact: true })).toBeVisible();
-  await expect(editor).toContainText("Structural checks cannot detect the menu");
+  await expect(editor).toContainText("native-save persistence has not been verified.");
+  await expect(editor).toContainText("An unfinished command may overwrite changes.");
   await page.getByRole("button", { name: "Start game", exact: true }).click();
   await capture.click();
   await editor.getByLabel("Remaining mobility", { exact: true }).fill("90");

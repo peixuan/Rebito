@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, expect, it } from "vitest";
 import { runtimeIdentities } from "../../scripts/runtime-identities.ts";
+import { san3Attributes } from "../../src/editors/san3/document.ts";
 import { releaseId as identifyRelease } from "../../src/library/catalog.ts";
 import { type SaveMetadata, SaveService } from "../../src/saves/service.ts";
 import { loadConfig } from "../../src/server/config.ts";
@@ -54,8 +55,10 @@ function programRam(overlay = 0) {
     bytes[offset + 12] = index === 0 ? 0 : 3;
     bytes[offset + 15] = 94;
     bytes.writeUInt16BE(2000, offset + 2);
-    bytes[0x4021e + index * 30 + 5] = 70;
+    bytes.set([70, 60, 80, 90, 50, 40], 0x4021e + index * 30 + 5);
   }
+  bytes.writeUInt16BE(231, 0x78004);
+  bytes.fill(50, 0x78008, 0x7800e);
   return bytes;
 }
 
@@ -232,7 +235,7 @@ it("authorizes the owner before exposing or editing a captured CD game", async (
 it("publishes names and numeric edits together while preserving companions and ownership", async () => {
   const source = snapshot();
   const initial = await original(source.bytes);
-  const changes = { "city.0.gold": 123 };
+  const changes = { "city.0.gold": 123, "officer.532.strength": 95 };
   const textChanges = { "custom.0.kanji": "\u6f22\u5b57", "custom.67.kana": "\u304c\u3071" };
   const draft = { changes, textChanges };
   const payload = { file: stateFile, edits: [{ slot: 0, ...draft }] };
@@ -252,6 +255,7 @@ it("publishes names and numeric edits together while preserving companions and o
   const expected = Buffer.from(source.bytes);
   for (const [offset, bytes] of [
     [0x787c4 + 14, [0, 123]],
+    [0x78004 + 6, [95]],
     [0x78004 + 13, [0x8a, 0xbf, 0x8e, 0x9a, 0, 0, 0]],
     [0x78004 + 67 * 28 + 20, [0xb6, 0xde, 0xca, 0xdf, 0, 0, 0, 0]],
   ] as const)
@@ -300,6 +304,14 @@ it("requires initialized strategic data in the reviewed PicoDrive snapshot forma
 it("rejects unsupported fields and invalid batches without partially publishing", async () => {
   const initial = await original();
   const before = await saves.file(users[0]?.id ?? "", initial.id, stateFile);
+  const view = await request(initial.id, { module: "officers", record: "1" });
+  expect(view.statusCode).toBe(200);
+  for (const id of san3Attributes) {
+    expect(
+      view.json().fields.find((field: { columnId: string }) => field.columnId === id)?.readonly,
+    ).toBe(true);
+    expect(view.json().batchKeys).not.toContain(`officer.1.${id}`);
+  }
   for (const changes of [
     { "city.0.gold": 50_001 },
     { "city.0.faction": 1 },
@@ -308,6 +320,7 @@ it("rejects unsupported fields and invalid batches without partially publishing"
     { "officer.1.soldiers": 0 },
     { "officer.1.soldiers": 17_001 },
     { "officer.2.training": 50 },
+    ...san3Attributes.map((id) => ({ [`officer.1.${id}`]: 99, "officer.532.strength": 95 })),
   ]) {
     const mixed = { "city.0.food": 123_456, ...changes };
     expect((await request(initial.id, { changes: mixed })).statusCode).toBe(422);

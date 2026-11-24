@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { san3Adapter } from "../../src/editors/san3/adapter.ts";
-import { San3Document, san3Layout } from "../../src/editors/san3/document.ts";
+import { San3Document, san3Attributes, san3Layout } from "../../src/editors/san3/document.ts";
 import { san3Registration } from "../../src/editors/san3/registration.ts";
 
 function fixture() {
@@ -124,12 +124,27 @@ describe("SAN3 editor view", () => {
     expect(view.fields.every(({ readonly }) => readonly)).toBe(true);
   });
 
-  it("presents base abilities with checkpoint persistence guidance and canonical previews", () => {
+  it("locks historical abilities and previews editable registered custom abilities", () => {
     const bytes = fixture();
+    const custom = san3Layout.custom.offset + 67 * san3Layout.custom.stride;
+    new DataView(bytes.buffer).setUint16(custom, 231);
+    bytes.fill(80, custom + 4, custom + 10);
+    const historical = san3Adapter.view(bytes, { module: "officers", record: "1" });
+    for (const id of san3Attributes) {
+      const key = `officer.1.${id}`;
+      expect(historical.fields.find(({ columnId }) => columnId === id)?.readonly).toBe(true);
+      expect(historical.batchKeys).not.toContain(key);
+      const draft = { changes: { "city.0.gold": 99, [key]: 99 } };
+      expect(() => san3Adapter.view(bytes, draft)).toThrow();
+      expect(() => san3Adapter.apply(bytes, draft)).toThrow();
+    }
+    expect(historical.fields.find(({ columnId }) => columnId === "land")?.help).toEqual({
+      messageId: "san3.historicalAttributesHelp",
+    });
     const view = san3Adapter.view(bytes, {
       module: "officers",
-      record: "1",
-      changes: { "officer.1.strength": 99 },
+      record: "599",
+      changes: { "officer.599.strength": 99 },
     });
     expect(view.fields.find(({ columnId }) => columnId === "strength")).toMatchObject({
       value: 99,
@@ -138,19 +153,15 @@ describe("SAN3 editor view", () => {
       readonly: false,
     });
     expect(view.fields.find(({ columnId }) => columnId === "land")?.help).toEqual({
-      messageId: "san3.historicalAttributesHelp",
+      messageId: "san3.customAttributesHelp",
     });
-    expect(view.preview).toContainEqual(
-      expect.objectContaining({
-        key: "officer.1.strength",
-        before: 80,
-        after: 99,
-      }),
-    );
-    expect(view.records[1]?.cells.strength).toBe(99);
+    const effects = Object.fromEntries(view.preview.map(({ key, ...effect }) => [key, effect]));
+    expect(effects["officer.599.strength"]).toMatchObject({ before: 80, after: 99 });
+    expect(view.records[599]?.cells.strength).toBe(99);
     expect(JSON.stringify(view)).not.toMatch(/"(?:offset|width)":/);
     expect(
-      new San3Document(san3Adapter.apply(bytes, { changes: view.changes })).attributes(1).strength,
+      new San3Document(san3Adapter.apply(bytes, { changes: view.changes })).attributes(599)
+        .strength,
     ).toBe(99);
   });
 

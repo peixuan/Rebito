@@ -13,7 +13,7 @@ export interface San3Field extends EditorField {
   shift?: number;
 }
 
-/** Basic abilities are editable even before an officer appears in a scenario. */
+/** Only custom abilities belong to native saves; historical definitions are disc data. */
 export function attributeFields(document: San3Document, index: number): San3Field[] {
   const offset = document.attributeOffset(index);
   const values = document.attributes(index);
@@ -28,7 +28,7 @@ export function attributeFields(document: San3Document, index: number): San3Fiel
     value: values[id],
     min: 1,
     max: 100,
-    readonly: !valid,
+    readonly: index < san3Layout.historical.count || !valid,
     ...(relative === 0
       ? {
           help: message(

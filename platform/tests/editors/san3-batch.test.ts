@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { san3Adapter } from "../../src/editors/san3/adapter.ts";
 import { expandSan3Batch } from "../../src/editors/san3/batch.ts";
 import { san3BatchDraft } from "../../src/editors/san3/batch-action.ts";
-import { San3Document, san3Layout } from "../../src/editors/san3/document.ts";
+import { San3Document, san3Attributes, san3Layout } from "../../src/editors/san3/document.ts";
 import { San3PresetDocument, san3PresetLayout } from "../../src/editors/san3/presets.ts";
 
 /** Generated structures only; no original game tables or player data. */
@@ -32,6 +32,13 @@ function fixture() {
     data.setUint16(offset, 0xffff);
     bytes.set([0xc7, 1, 50, 50, 50, 50, 50, 50, 1, 31, 20], offset + 2);
   }
+  for (const index of [532, 533]) {
+    const offset = san3Layout.officers.offset + index * san3Layout.officers.stride;
+    data.setUint16(offset + 2, 1000);
+    bytes[offset + 12] = 3;
+    data.setUint16(san3Layout.custom.offset + (index - 532) * 28, 231);
+  }
+  for (let index = 0; index < 311; index++) data.setUint16(0x478f0 + index * 2, 0x8000 + index);
   return bytes;
 }
 
@@ -91,7 +98,7 @@ describe("SAN3 numeric batch drafts", () => {
       "city.0.food": 0,
       "city.1.food": 200,
       "city.1.gold": 50,
-      "officer.1.strength": 80,
+      "officer.532.strength": 80,
     };
     const before = { ...changes };
     const expanded = expandSan3Batch(document, changes, "city", 0, [1, 45]);
@@ -107,14 +114,14 @@ describe("SAN3 numeric batch drafts", () => {
     expect(
       expandSan3Batch(
         document,
-        { "officer.1.soldiers": 19_000, "officer.1.land": 90 },
+        { "officer.532.soldiers": 19_000, "officer.532.land": 90 },
         "officer",
-        1,
-        [2],
+        532,
+        [533],
       ),
-    ).toMatchObject({ "officer.2.soldiers": 19_000, "officer.2.land": 90 });
+    ).toMatchObject({ "officer.533.soldiers": 19_000, "officer.533.land": 90 });
     expect(() =>
-      expandSan3Batch(document, { "officer.1.soldiers": 19_000 }, "officer", 1, [2]),
+      expandSan3Batch(document, { "officer.532.soldiers": 19_000 }, "officer", 532, [533]),
     ).toThrow();
     expect(() =>
       expandSan3Batch(document, { "officer.1.loyalty": 90 }, "officer", 1, [2, 0]),
@@ -122,6 +129,19 @@ describe("SAN3 numeric batch drafts", () => {
     expect(() =>
       expandSan3Batch(document, { "officer.0.loyalty": 90 }, "officer", 0, [1]),
     ).toThrow();
+  });
+
+  it("rejects historical ability sources and targets instead of partially expanding a batch", () => {
+    const document = new San3Document(fixture());
+    const before = document.copy();
+    for (const id of san3Attributes) {
+      const historical = { [`officer.1.${id}`]: 90, "city.0.gold": 123 };
+      const custom = { [`officer.532.${id}`]: 90, "city.0.gold": 123 };
+      expect(() => expandSan3Batch(document, historical, "officer", 1, [532])).toThrow();
+      expect(() => expandSan3Batch(document, custom, "officer", 532, [533, 1])).toThrow();
+      expect(custom).toEqual({ [`officer.532.${id}`]: 90, "city.0.gold": 123 });
+    }
+    expect(document.copy()).toEqual(before);
   });
 
   it("maps custom abilities and metadata without copying strategic fields or names", () => {

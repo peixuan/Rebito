@@ -28,12 +28,10 @@ export const san3PresetAdapter: EditorAdapter = {
   view(bytes, draft) {
     const { document, edits, selected } = prepare(bytes, draft);
     const fields = presetFields(document, Number(selected)).map(
-      ({ offset: _offset, width: _width, ...field }, index) => ({
-        ...field,
-        ...(index === 0 ? { help: message("san3.presetHelp") } : {}),
-      }),
+      ({ offset: _offset, width: _width, ...field }) => field,
     );
     return {
+      instructions: message("san3.presetHelp"),
       slots: [{ index: 0, label: message("san3.checkpoint"), available: true }],
       slot: 0,
       modules: [{ id: "presets", label: message("san3.presetStats") }],

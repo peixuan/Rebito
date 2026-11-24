@@ -45,7 +45,8 @@ describe("Japanese Mega-CD creation defaults", () => {
     expect(view.records.map(({ cells }) => cells.bonus)).toEqual([90, 90, 70, 70]);
     expect(view.changes).toEqual({ "preset.0.land": 90 });
     expect(view.preview).toMatchObject([{ key: "preset.0.land", before: 40, after: 90 }]);
-    expect(view.fields[0]?.help).toEqual({ messageId: "san3.presetHelp" });
+    expect(view.instructions).toEqual({ messageId: "san3.presetHelp" });
+    expect(view.fields.every(({ help }) => help === undefined)).toBe(true);
     expect(JSON.stringify(view)).not.toMatch(/"(?:offset|width)":/);
     const edited = san3Adapter.apply(bytes, { changes: view.changes });
     expect(new San3PresetDocument(edited).values(0)[0]).toBe(90);

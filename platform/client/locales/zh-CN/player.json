@@ -35,7 +35,7 @@
   "player.backupName": "{game} · 本地备份 {date}",
   "player.lastSync": "上次同步：{time}",
   "player.captureEdit": "暂停并取档修改",
-  "player.snapshotEditApplied": "已确认修改在暂停的游戏中生效。请先继续游戏，再重新打开游戏内状态面板刷新显示。如需写入游戏自身的存档，请使用游戏内的保存功能。下轮修改前请重新取档。",
+  "player.snapshotEditApplied": "已确认修改在暂停的游戏中生效。请继续游戏，再重新打开游戏内状态面板。原生存档只保留游戏自身保存的数据，请按修改器提示保存；临时内存修改请用即时存档保留。下轮修改前请重新取档。",
   "player.captureEditHelp": "每轮修改前，先暂停并保存当前游戏状态。应用修改后，请先继续游戏，再重新打开游戏内状态面板刷新显示。",
   "player.captureRequired": "修改前请再次点击“暂停并取档修改”。应用修改或继续游戏后，需要重新获取当前进度。"
 }

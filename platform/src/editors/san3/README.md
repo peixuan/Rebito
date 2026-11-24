@@ -17,11 +17,22 @@ See the [two-branch feature comparison](PARITY.md) for the exact coverage bounda
 4. Use the original game's Save command to persist campaign changes in native
    SRAM. An editor write preserves all 73,728 native companion bytes.
 
-A checkpoint carries edited RAM, including historical definitions and creation
-presets. A cold boot or module reload restores those definitions from disc.
-Registered custom data and campaign state can persist through native saving.
-Battle edits are checkpoint operations; their native-save persistence is not
-established. These schemas cannot prove the game is between commands.
+A checkpoint carries the current RAM, including temporary creation presets and
+battle state. Native campaign Save serializes custom records and campaign data;
+it excludes historical definitions and creation templates. Historical abilities
+are therefore read-only in both the interface and edit API. Existing checkpoints
+with earlier historical edits are not silently rewritten; a fresh native-save
+boot restores the disc definitions.
+An in-session Load can retain even unsaved historical edits in RAM. The original
+game retained an unsaved second set after loading a slot, while a fresh runtime
+loading only that slot's SRAM restored all six disc values. In-session retention
+must not be presented as native-save persistence.
+
+Creation and battle operations remain available with explicit temporary-state
+instructions. Created custom officers can be saved normally; the creation
+templates themselves reset on a cold boot or module reload. Battle-state
+persistence through native saving is not established. These schemas cannot
+prove the game is between commands.
 
 ## Data and controls
 
@@ -33,7 +44,7 @@ word-swapped representation before parsing. Unknown bytes remain unchanged.
 | Cities                 | `0x787c4` | 46 / `0x34`    | Resources, economy, stocks, prices, ship queues and coherent ownership |
 | Live officers          | `0x79562` | 600 / `0x1e`   | Army, traits, tasks, life, membership and reviewed status transitions  |
 | Factions               | `0x79148` | 21 / `0x32`    | Succession and absorption; diplomacy is context                        |
-| Historical definitions | `0x4021e` | 532 / `0x1e`   | Six base abilities; other definition traits are context                |
+| Historical definitions | `0x4021e` | 532 / `0x1e`   | Read-only abilities and definition traits; excluded from native saves  |
 | Custom definitions     | `0x78004` | 68 / `0x1c`    | Names, six abilities, birthday, age, gender and verified portraits     |
 | Registration defaults  | `0x5d0ac` | 4 / 6 bytes    | Male/female, younger/older ability templates in `SETTEI.PRG`           |
 
@@ -44,9 +55,11 @@ weapon stocks use 0..9999. Warship stocks use 0..100. The five trade prices use
 1..255 because native trading divides by them. Food prices are rice per gold;
 equipment prices are gold per unit. Resource edits do not rescale other stocks.
 
-All six base abilities use 1..100. Army capacity follows the final draft's land
-and naval leadership: `10000 + 100 * max(land, naval)`. Changing abilities alone
-preserves existing troops. Explicit recruitment must fit the resulting limit.
+All six custom base abilities use 1..100. Historical abilities remain visible
+but cannot be edited, including through mixed drafts and batch actions. Army
+capacity follows the final draft's land and naval leadership:
+`10000 + 100 * max(land, naval)`. Changing custom abilities alone preserves
+existing troops. Explicit recruitment must fit the resulting limit.
 Soldiers can be created or disbanded for eligible idle, unequipped officers;
 zero clears training/morale, and a new army starts omitted values at zero.
 Training and loyalty use 0..100; morale can reach 120. Ruler loyalty is locked.

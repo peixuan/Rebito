@@ -42,9 +42,8 @@ describe("SAN3 coherent death and revival", () => {
     for (const id of ["soldiers", "loyalty", "training", "morale"])
       expect(officerFields(changed, 2).find((field) => field.columnId === id)?.readonly).toBe(true);
     expect(() => editSan3(changed, { "officer.2.soldiers": 1000 })).toThrow();
-    expect(
-      new San3Document(editSan3(changed, { "officer.2.land": 61 }).bytes).attributes(2).land,
-    ).toBe(61);
+    expect(() => editSan3(changed, { "officer.2.land": 61 })).toThrow();
+    expect(changed.attributes(2)).toEqual(document.attributes(2));
     expect(inspectSan3Governance(changed).cities[0]).toMatchObject({
       serving: [0, 1],
       advisor: 65535,

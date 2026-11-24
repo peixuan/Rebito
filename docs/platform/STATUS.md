@@ -162,10 +162,21 @@ preservation; this evidence does not establish every ability/event combination.
 The [Japanese Mega-CD SAN3 adapter](../../platform/src/editors/san3/README.md)
 remains a paused program-RAM editor. Both supplied GameCheatKits branches were
 reviewed against reachable controls. The [coverage mapping](../../platform/src/editors/san3/PARITY.md)
-now covers their meaningful gameplay features through coherent operations:
-base abilities, four creation templates, custom names/profiles, city economy,
+maps their gameplay controls and explicit differences through coherent operations:
+custom base abilities, four creation templates, custom names/profiles, city economy,
 armies, tasks, life/discovery, covert status, governance and land/naval combat.
 Unknown bytes, list pointers and battlefield coordinates are intentionally excluded.
+A fresh callback-level audit found remaining delegation, scheduled custom appearance
+and batch-relocation UI gaps; completion is not claimed until these are verified.
+
+Historical base abilities are now read-only in both UI and API, including mixed
+and batch drafts. Original-game Save/Load retained an unsaved second ability set
+within the same runtime, but a fresh SRAM-only boot restored all six disc defaults.
+That retention was residual RAM, not native persistence. Creation templates and
+battle actions remain available with explicit temporary-state guidance; created
+custom officers can be saved normally. Existing edited checkpoints are preserved.
+The boundary change passed 244 SAN3 unit/database tests, both type checks, build,
+targeted lint/scanning and the complete sandboxed SAN3 editor browser flow.
 
 Leadership changes include governors and cross-city succession with current-ruler
 cache repair. City transfer, abandonment and faction absorption maintain complete
