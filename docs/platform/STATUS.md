@@ -241,7 +241,10 @@ Hosted browser checks exposed SAN3 scenarios sharing a single account's real
 request budget; a failed upload also collided with its retry's immutable release.
 Each scenario and retry now owns a fixture account and distinct release. Production
 limits and isolation assertions remain unchanged. These synthetic accounts exist
-only in the disposable browser-test database.
+only in the disposable browser-test database. Creation-default editing has its own
+real-runtime flow so it does not consume the strategic workflow's request/time
+budget. Both tests retain schema transitions, bilingual drafts, actual PicoDrive
+writeback and unchanged native-save assertions.
 
 The game canvas now owns scrolling keys while focused, including repeated arrows
 and Space. Explicit Start/Resume hands it focus; controls selected during loading
