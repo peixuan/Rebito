@@ -95,6 +95,15 @@ both languages use the same names. Batches expand explicit scalar
 edits and officer relocation destinations; names and other relationship workflows
 remain separate. Every selected target is validated before any change is published.
 
+To introduce an unused custom officer, fill its name, reading, birthday, age and
+abilities, preview, then choose Serving/Free/Hidden and a city on the same custom
+officer page. Registration assigns the native default portrait and updates the
+complete roster atomically. Ordinary registered slots can instead be scheduled
+for a future automatic appearance when that scenario option is enabled. The
+native annual event, direct service and subsequent ruler appointment were checked
+in the original game. A cold title Load can show old or blank registration data;
+the second strategic Load described above restores the campaign definitions.
+
 ## Coherent campaign operations
 
 Structural workflows validate complete reachable lists. Workflow-specific checks

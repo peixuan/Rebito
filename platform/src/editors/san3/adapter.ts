@@ -6,6 +6,7 @@ import {
   type EditorField,
   type EditorView,
 } from "../types.ts";
+import { san3AppearanceFields } from "./appearance-view.ts";
 import { san3AppointmentFields } from "./appointment-fields.ts";
 import { san3BatchDraft } from "./batch-action.ts";
 import { san3BattleAdapter } from "./battle-adapter.ts";
@@ -178,8 +179,10 @@ function prepare(bytes: Uint8Array, draft: EditorDraft) {
   if (!modules.includes(module as Module)) throw invalid();
   if (module === "treasures" && draft.action) throw invalid();
   const original = new San3Document(bytes);
+  const names = editCustomNames(original, draft.textChanges ?? {});
+  const named = new San3Document(names.bytes);
   const result = editSan3Campaign(
-    original,
+    named,
     san3BatchDraft(
       original,
       draft,
@@ -193,8 +196,7 @@ function prepare(bytes: Uint8Array, draft: EditorDraft) {
     ),
   );
   const edits = result.edits.filter(({ before, after }) => before !== after);
-  const names = editCustomNames(new San3Document(result.bytes), draft.textChanges ?? {});
-  const document = new San3Document(names.bytes);
+  const document = new San3Document(result.bytes);
   const data = catalog(document);
   const count =
     module === "treasures" ? 13 : san3Layout[module as Exclude<Module, "treasures">].count;
@@ -210,12 +212,13 @@ function prepare(bytes: Uint8Array, draft: EditorDraft) {
   if (!/^(0|[1-9]\d{0,2})$/.test(selected) || Number(selected) >= count) throw invalid();
   return {
     original,
+    definitionDocument: "definitionDocument" in result ? result.definitionDocument : document,
     document,
     data,
     module: module as Module,
     selected,
     count,
-    output: names.bytes,
+    output: result.bytes,
     edits,
     textEdits: names.edits,
     operationChanges: result.operationChanges,
@@ -234,6 +237,7 @@ export const san3Adapter: EditorAdapter = {
       return san3PresetAdapter.view(bytes, draft);
     const {
       original,
+      definitionDocument,
       document,
       data,
       module,
@@ -245,6 +249,8 @@ export const san3Adapter: EditorAdapter = {
       operationPreview,
     } = prepare(bytes, draft);
     const selectedFields = fields(document, data, module, Number(selected));
+    const customOfficer =
+      module === "custom" ? Number(selected) + san3Layout.historical.count : undefined;
     const operationFields = san3OperationFields(document, module, Number(selected));
     const stateFields = module === "officers" ? san3StateFields(original, Number(selected)) : [];
     const treasures =
@@ -353,7 +359,8 @@ export const san3Adapter: EditorAdapter = {
           ? [
               ...stateFields,
               ...san3LifeFields(original, Number(selected), operationChanges),
-              ...san3PresenceFields(original, Number(selected), operationChanges),
+              ...san3PresenceFields(definitionDocument, Number(selected), operationChanges),
+              ...san3AppearanceFields(definitionDocument, Number(selected), operationChanges),
               ...san3InfiltrationFields(original, Number(selected)),
               ...lifecycleFields(original, Number(selected)).filter(
                 ({ key, columnId }) =>
@@ -364,6 +371,12 @@ export const san3Adapter: EditorAdapter = {
               value: operationChanges[field.key] ?? field.value,
             }))
           : []),
+        ...(customOfficer === undefined
+          ? []
+          : [
+              ...san3PresenceFields(definitionDocument, customOfficer, operationChanges),
+              ...san3AppearanceFields(definitionDocument, customOfficer, operationChanges),
+            ]),
       ],
       ...(module === "treasures"
         ? {}
