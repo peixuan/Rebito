@@ -123,7 +123,7 @@
   "san3.role4": "文官",
   "san3.role5": "在野",
   "san3.role6": "未发现",
-  "san3.originFaction": "原属势力",
+  "san3.originFaction": "原属或潜伏归属势力",
   "san3.lifecycle": "恢复与潜伏状态",
   "san3.finishRecovery": "结束恢复",
   "san3.finishRecoveryHelp": "清除恢复剩余月份和关联的等待状态。忙碌、死亡、谋反或战斗中的武将不可操作；请与该武将的其他现状修改及结构操作分别提交。",
@@ -131,10 +131,10 @@
   "san3.turncoatMonthsHelp": "独立的 0–3 个月倒计时，不会改变势力或取消任务；请与其他现状修改及结构操作分别提交。",
   "san3.endInfiltration": "结束潜伏关系",
   "san3.endInfiltrationHelp": "清除潜伏状态和累计月份，并移除原潜伏势力关系。当前城市与势力不变，原仕官年数保留；这不会让武将返回原势力。未经验证或忙碌的状态不可操作。",
-  "san3.recoveryMonths": "恢复剩余月份",
+  "san3.recoveryMonths": "剩余恢复月数",
   "san3.recoveryState": "恢复等待状态",
   "san3.infiltration": "正在潜伏",
-  "san3.infiltrationMonths": "潜伏累计月份",
+  "san3.infiltrationMonths": "已潜伏月数",
   "san3.governor": "太守",
   "san3.advisor": "城市军师",
   "san3.servingCount": "在任武将",
@@ -215,5 +215,10 @@
   "san3.spyTaskSummary": "{kind}：{city}；进度{elapsed}/{total}个月；分值{effect}",
   "san3.separateWorkflow": "任务、归属或状态操作请分别保存，便于核对它们带来的关联变化。",
   "san3.equipmentUnavailable": "无法更换装备：请核对来源城市的归属、港口条件、库存数量和库存上限。",
-  "san3.armyEditHelp": "设为零会解散军队并清空训练和士气；新建军队时，未填写的训练和士气默认为零，不扣征兵费用。请先处理任务、恢复、潜伏状态及已分配装备。"
+  "san3.armyEditHelp": "设为零会解散军队并清空训练和士气；新建军队时，未填写的训练和士气默认为零，不扣征兵费用。请先处理任务、恢复、潜伏状态及已分配装备。",
+  "san3.recoveryMonthsHelp": "设为 0 会立即恢复；正数用于开始或调整恢复期，由游戏逐月递减。已有的撤退恢复会保留原有行为。请先取消正在执行的任务。",
+  "san3.infiltrationMonthsHelp": "这是已过月数，不是剩余月数（0–7）。设为 7 后，游戏在下次月结时尝试让武将携军队返回原属势力。在野等待招募的内应会在加入势力后进入这一流程。",
+  "san3.originFactionHelp": "调整已有潜伏关系、变节状态或待执行谋反计划使用的原属势力，不会立即改变当前任职关系。游戏处理相应状态时会使用该势力；潜伏归队所需的当前与原属资历之和仍需有效。",
+  "san3.rebellionFaction": "驱虎计划指使势力",
+  "san3.rebellionFactionHelp": "选择一个势力来建立待执行的谋反计划，或选“无”取消计划。游戏会按月结时的谋反与战斗规则处理，可能造成伤亡、驱逐、死亡或城池易主。取消只会移除计划，保留已经记录的原属势力。"
 }

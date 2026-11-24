@@ -123,7 +123,7 @@
   "san3.role4": "Civil officer",
   "san3.role5": "Free officer",
   "san3.role6": "Undiscovered",
-  "san3.originFaction": "Previous faction",
+  "san3.originFaction": "Prior or covert origin faction",
   "san3.lifecycle": "Recovery and covert status",
   "san3.finishRecovery": "Finish recovery",
   "san3.finishRecoveryHelp": "Clear the recovery countdown and its associated hold. Busy, dead, rebelling or battling officers remain locked; apply separately from their other live traits or structural changes.",
@@ -134,7 +134,7 @@
   "san3.recoveryMonths": "Recovery months remaining",
   "san3.recoveryState": "Recovery hold",
   "san3.infiltration": "Infiltrating",
-  "san3.infiltrationMonths": "Infiltration months elapsed",
+  "san3.infiltrationMonths": "Covert service months elapsed",
   "san3.governor": "Governor",
   "san3.advisor": "City strategist",
   "san3.servingCount": "Serving officers",
@@ -215,5 +215,10 @@
   "san3.spyTaskSummary": "{kind} in {city}; {elapsed}/{total} months; score {effect}",
   "san3.separateWorkflow": "Apply task, membership, or status workflows separately from other edits so their dependent changes can be reviewed.",
   "san3.equipmentUnavailable": "Equipment exchange is unavailable: check source-city ownership, port access, stock shortages and inventory limits.",
-  "san3.armyEditHelp": "Set zero to disband; training and morale are cleared. Creating an army initializes omitted training and morale to zero. No recruitment cost is charged. Tasks, recovery, covert activity and reserved equipment must be resolved first."
+  "san3.armyEditHelp": "Set zero to disband; training and morale are cleared. Creating an army initializes omitted training and morale to zero. No recruitment cost is charged. Tasks, recovery, covert activity and reserved equipment must be resolved first.",
+  "san3.recoveryMonthsHelp": "Set 0 to recover immediately. A positive value starts or adjusts recovery; the game counts down each month. Existing retreat recovery retains its original behavior. Cancel any active task first.",
+  "san3.infiltrationMonthsHelp": "Elapsed months, not months remaining (0–7). At 7, the next monthly update attempts to return the officer and army to the origin faction. A free agent waiting for recruitment begins this process after joining a faction.",
+  "san3.originFactionHelp": "Change the origin used by an existing covert affiliation, turncoat state or pending rebellion plan. This does not immediately change current membership. The game uses this faction when resolving the existing state; current and prior service must remain safe for a covert return.",
+  "san3.rebellionFaction": "Drive-tiger instigator",
+  "san3.rebellionFactionHelp": "Choose a faction to establish a pending rebellion plan, or None to cancel it. The game resolves the plan through its monthly rebellion and combat rules. Outcomes can include casualties, expulsion, death or ownership changes. Cancelling only removes the plan and preserves the stored prior affiliation."
 }
