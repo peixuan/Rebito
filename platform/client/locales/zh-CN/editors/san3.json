@@ -130,7 +130,7 @@
   "san3.turncoatMonths": "作敌剩余月份",
   "san3.turncoatMonthsHelp": "独立的 0–3 个月倒计时，不会改变势力或取消任务；请与其他现状修改及结构操作分别提交。",
   "san3.endInfiltration": "结束潜伏关系",
-  "san3.endInfiltrationHelp": "清除潜伏状态和累计月份，并移除原潜伏势力关系。当前城市与势力不变，原仕官年数保留；这不会让武将返回原势力。未经验证或忙碌的状态不可操作。",
+  "san3.endInfiltrationHelp": "解除潜伏关系，清除已潜伏月数和原势力。当前城市、所属势力、身份、军队及此前仕官年数保持不变，等待招募的在野武将也可使用。此操作不会让武将归队；参战、死亡、未知潜伏状态及冲突的叛乱或变节状态仍被锁定。每次只选择一种潜伏操作。",
   "san3.recoveryMonths": "剩余恢复月数",
   "san3.recoveryState": "恢复等待状态",
   "san3.infiltration": "正在潜伏",
@@ -232,5 +232,12 @@
   "san3.transferCityHelp": "将非首都城池及全体在职武将一并转交，保留城内军队和库存；武将忠诚设为100、资历设为1年。选择中立会让全体在职武将在本城下野并解散军队。请先处理任务、潜伏和装备。当前命令所在城不能易主；首都需先通过继任迁都。",
   "san3.incomingGovernor": "中立城接任太守",
   "san3.incomingGovernorHelp": "选择本城在野／未发现武将，或接收势力中空闲的非太守武将。外来武将的军队会解散。请选定接收势力和太守后再预览。",
-  "san3.cancelledJoint": "取消联合进攻约定"
+  "san3.cancelledJoint": "取消联合进攻约定",
+  "san3.infiltrationOperations": "潜伏关系",
+  "san3.deployInfiltrator": "埋伏到敌方城市",
+  "san3.deployInfiltratorHelp": "每次预览只选择一种潜伏操作。将无兵力、无装备且空闲的武将派往敌城，成为等待招募的在野武将。解除现有任职、忠诚和训练，离开军师席位；记录原势力和此前仕官年数，供日后归队使用。",
+  "san3.establishInfiltration": "为其他势力担任内应",
+  "san3.establishInfiltrationHelp": "让已在此任职的空闲武将成为所选敌方势力的内应。当前城市、所属势力、军队和身份保持不变。下方填写此前为潜伏势力仕官的年数，会替换已有值；君主、太守及存在冲突状态的武将不能设置。请与埋伏投放或结束潜伏分别预览。",
+  "san3.infiltrationPriorService": "此前为潜伏势力仕官年数",
+  "san3.infiltrationPriorServiceHelp": "仅用于建立内应关系。与当前仕官年数之和须为 1–256；原版归队时按当前年数加此前年数再减一计算。预览会显示被替换的原有值。"
 }

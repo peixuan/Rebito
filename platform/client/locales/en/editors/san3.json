@@ -130,7 +130,7 @@
   "san3.turncoatMonths": "Turncoat months remaining",
   "san3.turncoatMonthsHelp": "An independent 0–3 month countdown. This does not change faction or cancel a mission; apply separately from other live traits and structural changes.",
   "san3.endInfiltration": "End covert affiliation",
-  "san3.endInfiltrationHelp": "Clear infiltration and its elapsed months, removing the previous covert faction. Current city and faction stay unchanged; previous service years are preserved. This does not return the officer to the former faction. Unverified or busy states remain locked.",
+  "san3.endInfiltrationHelp": "End the covert relationship and clear elapsed covert months and origin faction. Current city, faction, role, army and prior service stay unchanged, including for free agents awaiting recruitment. This does not return the officer to the origin faction. Battle, death, unverified covert flags and conflicting rebellion or turncoat states remain locked. Choose only one covert operation.",
   "san3.recoveryMonths": "Recovery months remaining",
   "san3.recoveryState": "Recovery hold",
   "san3.infiltration": "Infiltrating",
@@ -232,5 +232,12 @@
   "san3.transferCityHelp": "Transfer a noncapital city and its serving officers together, preserving its armies and stores. Officers receive loyalty 100 and one service year. Choose Neutral to release all serving officers locally and disband their armies. Resolve active tasks, covert activity and equipment first. The current command city cannot change owner; move a capital by succession first.",
   "san3.incomingGovernor": "Governor for neutral city",
   "san3.incomingGovernorHelp": "Choose a local free/hidden officer, or an idle non-governor from the receiving faction. An incoming army is disbanded. Select both the receiving faction and governor before previewing.",
-  "san3.cancelledJoint": "Joint-attack agreement cancelled"
+  "san3.cancelledJoint": "Joint-attack agreement cancelled",
+  "san3.infiltrationOperations": "Covert affiliation",
+  "san3.deployInfiltrator": "Deploy to foreign city",
+  "san3.deployInfiltratorHelp": "Choose one covert operation per preview. Deploy an idle officer without troops or equipment to a foreign city as a free agent awaiting recruitment. Current membership, loyalty and training are cleared; the officer leaves any strategist seat. Their origin and prior service are recorded for a possible return.",
+  "san3.establishInfiltration": "Serve secretly for faction",
+  "san3.establishInfiltrationHelp": "Turn an idle officer already serving here into an insider for the selected foreign faction. Current city, faction, army and role stay unchanged. Set prior service below; it replaces any stored value. Rulers, governors and conflicting states cannot be selected. Apply separately from deployment or ending affiliation.",
+  "san3.infiltrationPriorService": "Prior service for covert faction",
+  "san3.infiltrationPriorServiceHelp": "Used only when establishing an insider. Together with current service, the value must total 1–256; the native return computes current plus prior service minus one. The preview shows any previous stored value being replaced."
 }
