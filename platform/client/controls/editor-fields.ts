@@ -1,3 +1,4 @@
+import { resolveSan3TaskFields, retainSan3TaskChanges } from "../../src/editors/san3/task-rules.ts";
 import type { EditorField, EditorView } from "../../src/editors/types.ts";
 
 /** Drop semantic no-ops without converting derived preview effects into writable changes. */
@@ -11,7 +12,10 @@ export function resolveEditorFields(
   fields: EditorField[],
   changes: Record<string, number> = {},
 ): EditorField[] {
-  const values = fields.map((field) => ({ ...field, value: changes[field.key] ?? field.value }));
+  const values = resolveSan3TaskFields(fields, changes).map((field) => ({
+    ...field,
+    value: changes[field.key] ?? field.value,
+  }));
   const byKey = new Map(values.map((field) => [field.key, field]));
   return values.map((field) => {
     const maximum = field.maximumField ? byKey.get(field.maximumField) : undefined;
@@ -46,5 +50,5 @@ export function changeEditorField(
 ) {
   const field = resolveEditorFields(fields, changes).find((entry) => entry.key === key);
   if (!field || field.readonly) return { ...changes };
-  return { ...changes, [key]: value };
+  return retainSan3TaskChanges(fields, { ...changes, [key]: value }, key);
 }

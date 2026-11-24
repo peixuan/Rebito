@@ -98,3 +98,26 @@ it("shows wrapped totals while keeping derived controls read-only for every base
   }
   expect(changeEditorField(fields, next, "missing", 5)).toEqual(next);
 });
+
+it("resolves task inputs while assembling a complete assignment without a server roundtrip", () => {
+  const fields = [
+    field("task.3.kind", 255),
+    field("task.3.totalMonths", 1, { readonly: true }),
+    field("task.3.elapsedMonths", 0, { readonly: true }),
+    field("task.3.effect", 0, { readonly: true }),
+    field("task.3.targetCity", 0, { readonly: true }),
+  ];
+  let draft = changeEditorField(fields, {}, "task.3.kind", 7);
+  draft = changeEditorField(fields, draft, "task.3.totalMonths", 4);
+  draft = changeEditorField(fields, draft, "task.3.targetCity", 12);
+  expect(draft).toEqual({ "task.3.kind": 7, "task.3.totalMonths": 4, "task.3.targetCity": 12 });
+  const resolved = resolveEditorFields(fields, draft);
+  expect(resolved.find(({ key }) => key === "task.3.effect")).toMatchObject({
+    readonly: false,
+    max: 240,
+  });
+  expect(resolved.find(({ key }) => key === "task.3.elapsedMonths")?.max).toBe(3);
+  const cancelled = changeEditorField(fields, draft, "task.3.kind", 255);
+  expect(cancelled).toEqual({ "task.3.kind": 255 });
+  expect(changeEditorField(fields, cancelled, "task.3.targetCity", 4)).toEqual(cancelled);
+});
