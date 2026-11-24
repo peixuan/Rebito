@@ -8,9 +8,13 @@ import { prepareSan3Editor } from "./san3-session.ts";
 
 test("assembles task controls locally and applies a paused memory assignment", async ({ page }) => {
   test.setTimeout(90_000);
-  const { history } = await prepareSan3Editor(page, san3GovernanceFixture(), "SAN3 task fixture");
+  const { game, history } = await prepareSan3Editor(
+    page,
+    san3GovernanceFixture(),
+    "SAN3 task fixture",
+  );
   await page.goto("/");
-  await page.getByRole("button", { name: /SAN3 task fixture/ }).click();
+  await page.getByRole("button", { name: game.title }).click();
   await page.getByRole("button", { name: "Open profile", exact: true }).click();
   await page.getByRole("button", { name: "Start game", exact: true }).click();
   await page.getByRole("button", { name: "Capture for editing", exact: true }).click();

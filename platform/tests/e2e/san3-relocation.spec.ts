@@ -10,14 +10,14 @@ test("offers valid leader moves and applies a reviewed multi-officer relocation"
   page,
 }) => {
   test.setTimeout(90_000);
-  const { history } = await prepareSan3Editor(
+  const { game, history } = await prepareSan3Editor(
     page,
     san3GovernanceFixture(),
     "SAN3 relocation fixture",
     0x5e,
   );
   await page.goto("/");
-  await page.getByRole("button", { name: /SAN3 relocation fixture/ }).click();
+  await page.getByRole("button", { name: game.title }).click();
   await page.getByRole("button", { name: "Open profile", exact: true }).click();
   await page.getByRole("button", { name: "Start game", exact: true }).click();
   await page.getByRole("button", { name: "Capture for editing", exact: true }).click();

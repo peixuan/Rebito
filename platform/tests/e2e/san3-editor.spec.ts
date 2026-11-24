@@ -65,10 +65,10 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   const memory = strategicMemory();
-  const { history, publishMemory } = await prepareSan3Editor(page, memory);
+  const { game, history, publishMemory } = await prepareSan3Editor(page, memory);
 
   await page.goto("/");
-  await page.getByRole("button", { name: /SAN3 strategic editor fixture/ }).click();
+  await page.getByRole("button", { name: game.title }).click();
   await page.getByRole("button", { name: "Open profile", exact: true }).click();
   await page.getByRole("button", { name: "Start game", exact: true }).click();
   const capture = page.getByRole("button", { name: "Capture for editing", exact: true });

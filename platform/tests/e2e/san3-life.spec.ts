@@ -16,9 +16,9 @@ test("retires an officer with inheritance and revives in the chosen city", async
   data.setUint16(san3Layout.historical.offset + 2 * 30, 1);
   data.setUint16(san3TreasureLayout.owners + 2, 2);
   data.setUint16(governanceOfficer(2) + 4, 2);
-  const { history } = await prepareSan3Editor(page, program, "SAN3 life fixture");
+  const { game, history } = await prepareSan3Editor(page, program, "SAN3 life fixture");
   await page.goto("/");
-  await page.getByRole("button", { name: /SAN3 life fixture/ }).click();
+  await page.getByRole("button", { name: game.title }).click();
   await page.getByRole("button", { name: "Open profile", exact: true }).click();
   await page.getByRole("button", { name: "Start game", exact: true }).click();
   const capture = page.getByRole("button", { name: "Capture for editing", exact: true });

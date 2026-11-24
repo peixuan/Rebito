@@ -237,6 +237,12 @@ and 95.07% branch coverage), lint, both type checks and the production build.
 Complete browser and hosted checks for the exact release, automatic deployment
 and production save-preservation acceptance remain required for promotion.
 
+Hosted browser checks exposed SAN3 scenarios sharing a single account's real
+request budget; a failed upload also collided with its retry's immutable release.
+Each scenario and retry now owns a fixture account and distinct release. Production
+limits and isolation assertions remain unchanged. These synthetic accounts exist
+only in the disposable browser-test database.
+
 The game canvas now owns scrolling keys while focused, including repeated arrows
 and Space. Explicit Start/Resume hands it focus; controls selected during loading
 and background resumes retain their existing focus. Real MD and DOS browser cases

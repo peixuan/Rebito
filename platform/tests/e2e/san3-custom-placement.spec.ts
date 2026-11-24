@@ -16,9 +16,9 @@ test("registers a filled custom officer and schedules appearances with canonical
   const officer = san3Layout.officers.offset + 542 * 30;
   program.fill(0, officer, officer + 30);
   program[officer + 12] = 255;
-  const { history } = await prepareSan3Editor(page, program, "SAN3 custom placement fixture");
+  const { game, history } = await prepareSan3Editor(page, program, "SAN3 custom placement fixture");
   await page.goto("/");
-  await page.getByRole("button", { name: /SAN3 custom placement fixture/ }).click();
+  await page.getByRole("button", { name: game.title }).click();
   await page.getByRole("button", { name: "Open profile", exact: true }).click();
   await page.getByRole("button", { name: "Start game", exact: true }).click();
   const capture = page.getByRole("button", { name: "Capture for editing", exact: true });

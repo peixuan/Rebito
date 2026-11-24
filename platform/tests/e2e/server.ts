@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { loadConfig } from "../../src/server/config.ts";
@@ -50,7 +50,10 @@ for (const [index, name] of [
   "admin-cd",
   "admin-jinyong",
   "admin-ps4",
-  "admin-san3",
+  // SAN3 flows use one file each; reserve a second identity for the configured retry.
+  ...(await readdir("tests/e2e"))
+    .filter((file) => file.startsWith("san3-") && file.endsWith(".spec.ts"))
+    .flatMap((file) => [0, 1].map((retry) => `admin-${file.slice(0, -8)}-${retry}`)),
   ...["nes", "md", "smd", "sms", "gg", "zip"].map((extension) => `admin-console-${extension}`),
 ].entries()) {
   // Fixture setup represents distinct clients; keep the real public rate limits enabled.

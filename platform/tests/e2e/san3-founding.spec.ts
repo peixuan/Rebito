@@ -17,9 +17,9 @@ test("founds a computer faction with a persistent bilingual preview and atomic c
   data.setUint32(0x7dbb6, san3Layout.factions.offset + 50);
   data.setUint32(0x7dc22, san3Layout.factions.offset);
   data.setUint32(0x7dc2a, san3Layout.cities.offset);
-  const { history } = await prepareSan3Editor(page, memory, "SAN3 founding fixture", 0x68);
+  const { game, history } = await prepareSan3Editor(page, memory, "SAN3 founding fixture", 0x68);
   await page.goto("/");
-  await page.getByRole("button", { name: /SAN3 founding fixture/ }).click();
+  await page.getByRole("button", { name: game.title }).click();
   await page.getByRole("button", { name: "Open profile", exact: true }).click();
   await page.getByRole("button", { name: "Start game", exact: true }).click();
   await page.getByRole("button", { name: "Capture for editing", exact: true }).click();

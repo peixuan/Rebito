@@ -18,9 +18,9 @@ test("absorbs a faction with canonical contracts and a bilingual draft", async (
       program[san3Layout.factions.offset + faction * 50 + relative] = 255;
   data.setUint32(san3Layout.factions.offset + 6, 2);
   program[san3Layout.factions.offset + 36] = 1;
-  const { history } = await prepareSan3Editor(page, program, "SAN3 merger fixture");
+  const { game, history } = await prepareSan3Editor(page, program, "SAN3 merger fixture");
   await page.goto("/");
-  await page.getByRole("button", { name: /SAN3 merger fixture/ }).click();
+  await page.getByRole("button", { name: game.title }).click();
   await page.getByRole("button", { name: "Open profile", exact: true }).click();
   await page.getByRole("button", { name: "Start game", exact: true }).click();
   await page.getByRole("button", { name: "Capture for editing", exact: true }).click();

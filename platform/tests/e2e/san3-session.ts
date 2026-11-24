@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
-import { expect, type Page } from "@playwright/test";
+import { basename } from "node:path";
+import { expect, type Page, test } from "@playwright/test";
 import type { RuntimeHandle, RuntimeProgress, RuntimeWindow } from "../../client/runtime/types.ts";
 import { openSnapshotMemory } from "../../src/editors/snapshots/memory.ts";
 import type { Game } from "../../src/library/catalog.ts";
@@ -18,10 +19,12 @@ export async function prepareSan3Editor(
   title = "SAN3 strategic editor fixture",
   marker = 0x5a,
 ) {
-  await useSession(page.context(), "admin-san3");
+  const { file, retry } = test.info();
+  await useSession(page.context(), `admin-${basename(file, ".spec.ts")}-${retry}`);
+  title = `${title} attempt ${retry + 1}`;
   const track = discTrack();
   track[2000] = marker;
-  // Distinct test games share a database but must not reuse the same immutable release.
+  // Each attempt owns a release, including after a partially completed failed attempt.
   track.set(createHash("sha256").update(title).digest(), 2001);
   const uploaded = await page.request.post("/api/admin/games", {
     headers: { origin: "http://localhost:4317" },

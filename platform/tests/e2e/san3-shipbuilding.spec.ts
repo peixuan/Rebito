@@ -19,9 +19,9 @@ test("edits independent port queues without completing ships or spending resourc
   program[city + 42] = 2 | (5 << 3) | (1 << 6);
   program.set([99, 25, 12], city + 43);
   program[0x7dc0a] = 1;
-  const { history } = await prepareSan3Editor(page, program, "SAN3 shipbuilding fixture");
+  const { game, history } = await prepareSan3Editor(page, program, "SAN3 shipbuilding fixture");
   await page.goto("/");
-  await page.getByRole("button", { name: /SAN3 shipbuilding fixture/ }).click();
+  await page.getByRole("button", { name: game.title }).click();
   await page.getByRole("button", { name: "Open profile", exact: true }).click();
   await page.getByRole("button", { name: "Start game", exact: true }).click();
   const capture = page.getByRole("button", { name: "Capture for editing", exact: true });

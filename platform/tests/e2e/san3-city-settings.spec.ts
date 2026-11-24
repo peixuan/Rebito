@@ -12,9 +12,14 @@ test("previews translated delegation modes and preserves unrelated city flags", 
   const memory = san3GovernanceFixture();
   memory[governanceCity(1) + 21] = 0x80;
   memory[governanceCity(1) + 23] = 0xe5;
-  const { history } = await prepareSan3Editor(page, memory, "SAN3 city settings fixture", 0x5f);
+  const { game, history } = await prepareSan3Editor(
+    page,
+    memory,
+    "SAN3 city settings fixture",
+    0x5f,
+  );
   await page.goto("/");
-  await page.getByRole("button", { name: /SAN3 city settings fixture/ }).click();
+  await page.getByRole("button", { name: game.title }).click();
   await page.getByRole("button", { name: "Open profile", exact: true }).click();
   await page.getByRole("button", { name: "Start game", exact: true }).click();
   await page.getByRole("button", { name: "Capture for editing", exact: true }).click();

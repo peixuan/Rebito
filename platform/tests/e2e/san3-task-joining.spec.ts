@@ -23,9 +23,9 @@ test("joins an existing task with stable preview, cancellation and paused writeb
     program[officer(index) + 27] = 0x24;
     data.setUint16(officer(index) + 28, 0x1218);
   }
-  const { history } = await prepareSan3Editor(page, program, "SAN3 task joining fixture");
+  const { game, history } = await prepareSan3Editor(page, program, "SAN3 task joining fixture");
   await page.goto("/");
-  await page.getByRole("button", { name: /SAN3 task joining fixture/ }).click();
+  await page.getByRole("button", { name: game.title }).click();
   await page.getByRole("button", { name: "Open profile", exact: true }).click();
   await page.getByRole("button", { name: "Start game", exact: true }).click();
   const capture = page.getByRole("button", { name: "Capture for editing", exact: true });

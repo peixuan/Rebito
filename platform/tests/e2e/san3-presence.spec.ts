@@ -16,9 +16,9 @@ test("recruits and introduces officers through coherent service and discovery li
   for (let index = 1; index < 13; index++)
     data.setUint16(san3TreasureLayout.owners + index * 2, 65535);
   for (const index of [2, 11]) data.setUint16(san3Layout.historical.offset + index * 30, 1);
-  const { history } = await prepareSan3Editor(page, program, "SAN3 presence fixture");
+  const { game, history } = await prepareSan3Editor(page, program, "SAN3 presence fixture");
   await page.goto("/");
-  await page.getByRole("button", { name: /SAN3 presence fixture/ }).click();
+  await page.getByRole("button", { name: game.title }).click();
   await page.getByRole("button", { name: "Open profile", exact: true }).click();
   await page.getByRole("button", { name: "Start game", exact: true }).click();
   const capture = page.getByRole("button", { name: "Capture for editing", exact: true });

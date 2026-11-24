@@ -9,9 +9,13 @@ test("preserves reserve eligibility drafts across battle views and writes them b
   page,
 }) => {
   test.setTimeout(90_000);
-  const { history } = await prepareSan3Editor(page, san3ReserveFixture(), "SAN3 reserves fixture");
+  const { game, history } = await prepareSan3Editor(
+    page,
+    san3ReserveFixture(),
+    "SAN3 reserves fixture",
+  );
   await page.goto("/");
-  await page.getByRole("button", { name: /SAN3 reserves fixture/ }).click();
+  await page.getByRole("button", { name: game.title }).click();
   await page.getByRole("button", { name: "Open profile", exact: true }).click();
   await page.getByRole("button", { name: "Start game", exact: true }).click();
   await page.getByRole("button", { name: "Capture for editing", exact: true }).click();

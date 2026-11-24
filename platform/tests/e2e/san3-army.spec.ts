@@ -8,9 +8,13 @@ test("disbands and creates armies while preserving native saves and showing depe
   page,
 }) => {
   test.setTimeout(90_000);
-  const { history } = await prepareSan3Editor(page, san3GovernanceFixture(), "SAN3 army fixture");
+  const { game, history } = await prepareSan3Editor(
+    page,
+    san3GovernanceFixture(),
+    "SAN3 army fixture",
+  );
   await page.goto("/");
-  await page.getByRole("button", { name: /SAN3 army fixture/ }).click();
+  await page.getByRole("button", { name: game.title }).click();
   await page.getByRole("button", { name: "Open profile", exact: true }).click();
   await page.getByRole("button", { name: "Start game", exact: true }).click();
   await page.getByRole("button", { name: "Capture for editing", exact: true }).click();
