@@ -1,14 +1,14 @@
 import { message } from "../../shared/messages.ts";
 import { EditorError } from "../types.ts";
 import { San3Document, san3Layout } from "./document.ts";
-import { inspectSan3Lists } from "./relocation.ts";
+import { san3ListContext } from "./list-context.ts";
 
 export const invalidGovernance = () =>
   new EditorError("invalid_edit", message("san3.invalidGovernance"));
 
 /** Leadership changes require an intact capital and all existing membership chains. */
 export function inspectSan3Governance(document: San3Document) {
-  const graph = inspectSan3Lists(document);
+  const graph = san3ListContext(document);
   const factionCities = Array.from({ length: san3Layout.factions.count }, (_, faction) => {
     const cities: number[] = [];
     const { ruler, active } = document.faction(faction);

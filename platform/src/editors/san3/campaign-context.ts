@@ -1,14 +1,14 @@
 import { type DisplayText, message } from "../../shared/messages.ts";
 import type { EditorField, EditorTextField } from "../types.ts";
 import { type San3Document, san3Layout } from "./document.ts";
+import { san3ListContext } from "./list-context.ts";
 import { decodeSan3Name } from "./names.ts";
-import { inspectSan3Lists } from "./relocation.ts";
 
 /** Compute list-derived context once per view; malformed lists never become guessed totals. */
 export function san3CampaignContext(document: San3Document) {
-  let graph: ReturnType<typeof inspectSan3Lists> | undefined;
+  let graph: ReturnType<typeof san3ListContext> | undefined;
   try {
-    graph = inspectSan3Lists(document);
+    graph = san3ListContext(document);
   } catch {
     /* Scalar inspection remains available. */
   }

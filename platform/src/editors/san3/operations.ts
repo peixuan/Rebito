@@ -3,6 +3,7 @@ import { EditorError, type EditorView } from "../types.ts";
 import { editSan3Appointments } from "./appointment-draft.ts";
 import { San3Document, san3Layout } from "./document.ts";
 import { editSan3, findSan3Field } from "./fields.ts";
+import { editSan3Governors } from "./governance-draft.ts";
 import { editSan3Lifecycle } from "./lifecycle.ts";
 import { relocateSan3Officers } from "./relocation.ts";
 import { replaceSan3Ruler } from "./ruler-change.ts";
@@ -24,10 +25,15 @@ export function editSan3Campaign(document: San3Document, changes: Record<string,
   const lifecycle: Record<string, number> = Object.create(null);
   const treasures: Record<string, number> = Object.create(null);
   const appointments: Record<string, number> = Object.create(null);
+  const governors: Record<string, number> = Object.create(null);
   const operationChanges: Record<string, number> = {};
   for (const [key, value] of Object.entries(changes)) {
     const move = /^move\.(0|[1-9]\d{0,2})\.city$/.exec(key);
     const ruler = /^ruler\.(0|[1-9]\d?)\.officer$/.exec(key);
+    if (key.startsWith("governor.")) {
+      governors[key] = value;
+      continue;
+    }
     if (key.startsWith("lifecycle.")) {
       lifecycle[key] = value;
       continue;
@@ -82,6 +88,21 @@ export function editSan3Campaign(document: San3Document, changes: Record<string,
   const result = editSan3(document, scalar);
   let current = new San3Document(result.bytes);
   const operationPreview: EditorView["preview"] = [];
+  if (Object.keys(governors).length) {
+    const appointed = editSan3Governors(current, governors);
+    if (
+      Object.keys(appointed.changes).length &&
+      (moves.size ||
+        rulers.size ||
+        lifecycleKeys.length ||
+        treasureEdits.length ||
+        Object.keys(appointments).length)
+    )
+      throw invalid();
+    current = new San3Document(appointed.bytes);
+    Object.assign(operationChanges, appointed.changes);
+    operationPreview.push(...appointed.preview);
+  }
   if (Object.keys(appointments).length) {
     const appointed = editSan3Appointments(current, appointments);
     if (

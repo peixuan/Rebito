@@ -15,6 +15,7 @@ import { customMetadataFields } from "./custom-fields.ts";
 import { customNameFields, editCustomNames } from "./custom-names.ts";
 import { San3Document, san3Layout } from "./document.ts";
 import { attributeFields, cityFields, officerFields } from "./fields.ts";
+import { san3GovernorFields } from "./governance-fields.ts";
 import { lifecycleFields } from "./lifecycle.ts";
 import { san3NamePresetAction } from "./name-presets.ts";
 import { san3OperationFields } from "./operation-fields.ts";
@@ -308,6 +309,7 @@ export const san3Adapter: EditorAdapter = {
       fields: treasures?.fields ?? [
         ...selectedFields.filter((field) => module !== "officers" || field.columnId !== "role"),
         ...san3OperationFields(document, module, Number(selected)),
+        ...(module === "cities" ? san3GovernorFields(document, Number(selected)) : []),
         ...(module === "officers" ? san3BookFields(document, Number(selected)) : []),
         ...(module === "officers"
           ? san3AppointmentFields(

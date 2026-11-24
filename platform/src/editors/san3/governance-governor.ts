@@ -6,11 +6,12 @@ import {
   requireIdleGovernor,
 } from "./governance-core.ts";
 
-/**
- * Appoint a same-city governor. Keep both armies: an armed civil predecessor
- * explicitly becomes a military officer instead of entering native redistribution.
- */
-export function appointSan3Governor(document: San3Document, city: number, successor: number) {
+/** Shared read-only nomination checks; dropdowns must not simulate whole transactions. */
+export function requireSan3GovernorCandidate(
+  document: San3Document,
+  city: number,
+  successor: number,
+) {
   const cityBase = document.offset("cities", city);
   const nextBase = document.offset("officers", successor);
   const graph = inspectSan3Governance(document);
@@ -29,6 +30,19 @@ export function appointSan3Governor(document: San3Document, city: number, succes
     throw invalidGovernance();
   requireIdleGovernor(document, previous);
   requireIdleGovernor(document, successor);
+  return { cityBase, nextBase, lists, previous };
+}
+
+/**
+ * Appoint a same-city governor. Keep both armies: an armed civil predecessor
+ * explicitly becomes a military officer instead of entering native redistribution.
+ */
+export function appointSan3Governor(document: San3Document, city: number, successor: number) {
+  const { cityBase, nextBase, lists, previous } = requireSan3GovernorCandidate(
+    document,
+    city,
+    successor,
+  );
   const oldBase = document.offset("officers", previous);
   const formerRoleBefore = document.read(oldBase + 12, 1);
   const formerRoleAfter =
