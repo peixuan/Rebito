@@ -5,6 +5,8 @@ branches: `master` at `151071e7848943c7088c02634eb2b1dbcaa5e96d` and `master2` a
 `688d076d6748ecab3d5ff9402f80179a8c5d6b62`. Reachable controls and their edit
 callbacks establish legacy behavior; serializer methods alone do not.
 Reference code was inspected, not copied into this implementation.
+The review inventory covers 95 callback fields and 215 displayed columns,
+including raw diagnostics; these counts are not claims of 310 independent edits.
 
 The earlier branch edits custom definitions and cities; its faction/live-officer
 edit callbacks are empty. The later branch adds live officers, ruler editing,
@@ -24,21 +26,24 @@ scope differences and persistence boundaries; each is part of the review.
 | Governor               | First officer in city list                                               | Explicit appointment repairs ordering and strategist links                                                                                 |
 | Delegation             | Low two bits of a city flag byte                                         | Four named administration modes with governor, command-city and battle checks; upper bits preserved                                        |
 | Ruler                  | Independent ruler ID                                                     | Same-city or cross-city succession updates capital, roles and live command caches                                                          |
+| New faction            | No equivalent reachable control                                          | Neutral settlement or noncapital city secession into an unused slot, retaining coherent followers and armies                               |
+| Faction settings       | Diplomacy displayed; ruler was the only reachable faction edit           | Bilateral alliances, directed hostility, Player/Computer control, map symbols and remaining-turn order                                     |
 | Faction membership     | Raw officer/city faction fields                                          | Relocation, roster conversion, whole-city transfer or complete faction absorption                                                          |
 | Six abilities          | Custom editable, historical/live displayed                               | Six custom abilities editable; historical definitions read-only because native saves exclude them                                          |
 | Custom profile         | Names, gender, birthday, age, portrait                                   | All fields with game encoding, calendar and verified portrait checks                                                                       |
+| Custom appearance      | Unnamed definition byte and raw pending role                             | Explicit future year for a registered ordinary slot; native annual appearance selects the city                                             |
 | Custom preset          | Replace 68 custom name/reading pairs                                     | Previewable names plus six abilities at 100; registration and live membership remain explicit                                              |
-| Creation defaults      | No equivalent reachable control                                          | Four six-ability templates with native allocation capacity checks                                                                          |
+| Creation defaults      | No equivalent reachable control                                          | Four temporary templates; maximum defaults set all six abilities to 100 and adjust the reviewed allocation consumers                       |
 | Current army           | Soldiers, training, morale, loyalty                                      | Existing armies, recruitment and disbanding; dependent effects previewed                                                                   |
 | Personality/service    | Nibbles, compatibility, morality, lifespan, current/prior service        | Independent stored values across officer states; native masks preserved and service-counter wrapping explained                             |
 | Completed action       | Raw flag                                                                 | Eligible idle officers; task operations show the dependent flag change                                                                     |
-| Relocation             | Dedicated multi-selection tool and independent city/faction writes       | Single/batch destinations with validated lists, explicit disbanding, allegiance and strategist repair                                      |
+| Relocation             | Dedicated multi-selection tool and independent city/faction writes       | Single/batch moves; same-faction leaders and armies retained, allegiance changes refund equipment and release armies                       |
 | Officer role           | Raw 0..7 selector                                                        | Qualified appointments, civil recruitment, free/hidden conversion, introduction and withdrawal; leadership changes have dedicated controls |
 | Death                  | Raw flag                                                                 | Death with list removal and inheritance; revival into a chosen city's free roster                                                          |
-| Treasures              | Raw inventory mask                                                       | Unique ownership and masks together, shared book limit, seal discovery cleanup                                                             |
+| Treasures              | Raw inventory mask                                                       | Independent duplicate personal flags and seven books per officer; separate global ownership and seal discovery                             |
 | Recovery               | Raw flags/counter                                                        | Start, adjust or finish recovery with associated hold handling                                                                             |
 | Turncoat/covert clocks | Raw packed counters                                                      | Independent turncoat months and elapsed covert months with checked bounds                                                                  |
-| Prior faction          | Independent faction field                                                | Change a valid stored affiliation; no immediate membership transfer                                                                        |
+| Prior faction          | Independent faction field                                                | Change the active foreign affiliation used by an idle officer's covert/turncoat/drive-tiger state; no immediate membership transfer        |
 | Covert activity        | Raw status flag                                                          | Deploy a free agent, establish an insider or end affiliation while preserving current membership                                           |
 | Rebellion              | Raw flag                                                                 | Establish/cancel a drive-tiger plan; native rules determine consequences                                                                   |
 | Tasks                  | Raw kind, packed clock and result                                        | Start/change/cancel complete native groups, adjust clocks/results, join a compatible group and select spy destinations                     |
@@ -56,11 +61,17 @@ Structural operations reject ambiguous or inconsistent lists. Workflow-specific
 checks reject conflicting combinations; permitted independent scalar edits remain
 compatible. Their derived effects are preview-only.
 
-Leaders hand over before death, relocation, resignation or withdrawal. Active
-missions and allocated equipment must be resolved where required. Withdrawn
+Leaders hand over before death, resignation or withdrawal. Same-faction relocation
+maintains offices and capital links directly, preserving armies and equipment.
+Relocation cancels departing task participants; a change of allegiance refunds
+equipment to bounded stores, releases armies and clears former commitments.
+Other workflows still require resolving missions/equipment where relevant. Withdrawn
 unappeared officers leave city lists; this does not rewind event queues, years
 or already consumed appearance events. A later return uses explicit introduction.
-Unused custom slots require original in-game registration before introduction.
+Filled unused custom slots can be registered and placed directly, including into
+service. Definition edits and placement may share a draft. Automatic appearance
+instead requires the enabled scenario option and a continuous registered prefix
+of ordinary custom slots, with an explicitly chosen future year.
 
 Joining a task copies its complete existing clock/result and caps the native
 group at ten. Create a first task, then add idle officers. Spying remains an
@@ -78,9 +89,9 @@ Use native Deploy/Retreat. Naval/field reserve lists have no corresponding contr
 ## Context and debugger exclusions
 
 Historical portrait, birth year, lineage and other definition traits remain
-read-only, separate from live traits. Faction context includes alliances,
-hostility, joint-attack and nomadic-mission fields, matching the legacy display
-scope. Necessary contract cleanup during absorption/abandonment is previewed.
+read-only, separate from live traits. Joint-attack and nomadic-mission fields
+remain context; alliances and hostility now have explicit editors beyond the
+legacy display scope. Contract cleanup during absorption/abandonment is previewed.
 City totals derive from verified lists; malformed graphs omit totals rather
 than inventing values. Named role, prior faction and phonetic reading remain
 visible. Territory names come from the loaded game, not a distributed table.
@@ -103,14 +114,18 @@ the native payload excludes them. Creation templates remain explicitly temporary
 they survive checkpoints and reset on cold boot/module reload. Created custom
 records enter native campaign SRAM, but a fresh title Load uses the independent
 registration copy. Repeat Load from the strategic system menu to restore the
-campaign's custom definitions. Battle edits remain available with temporary
-state instructions; their native-save persistence is not claimed.
+campaign's custom definitions, including newly registered names and portraits.
+The editor does not synchronize that separate global registration file.
+Battle edits remain available with temporary state instructions; their native-save persistence is not claimed.
 
-Original-game acceptance includes all four creation rows, ability changes,
-custom names/profile data, native-save/cold-load campaign operations, real task
-monthly settlement, covert recruitment/return, ship completion/cancellation,
+Original-game acceptance includes younger male/female creation defaults, a
+six-100 male registration followed by native Save/cold Load, custom profile data,
+scheduled appearance, direct service, native-save/cold-load campaign operations,
+real task monthly settlement, covert recruitment/return, ship completion/cancellation,
 land/naval movement, equipment exchange and reserve redeployment. See the
 [adapter guide](README.md) for exact exercised cases and limitations.
+Older creation rows have static consumer and generated-test coverage, not a
+confirmed original-game traversal of the 70-point allocation branch.
 
 Synthetic unit tests cover masks, malformed data, canonical replay, atomic
 failure and unrelated bytes. Browser flows use real cores with original generated

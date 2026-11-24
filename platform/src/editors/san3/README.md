@@ -32,11 +32,13 @@ Creation and battle operations remain available with explicit temporary-state
 instructions. Campaign Save includes custom definitions, but the original title
 Load uses the separate registration copy instead. After a fresh native-save boot,
 load the same campaign slot once more from the strategic system menu to restore
-its custom definitions. This was verified with different saved and unsaved values
-and identical SRAM bytes across the fresh runtime. Checkpoints already contain
-the edited definitions. The creation
-templates themselves reset on a cold boot or module reload. Battle-state
-persistence through native saving is not established. These schemas cannot
+its custom definitions. A newly introduced custom ruler can initially have a blank
+name or the wrong portrait; the second Load restores these too. This was verified
+with different saved and unsaved values and identical SRAM bytes across the fresh
+runtime. The editor does not synchronize the separate global registration file.
+Checkpoints already contain the edited definitions. Creation templates reset on
+a cold boot or module reload. Battle-state persistence through native saving is
+not established. These schemas cannot
 prove the game is between commands.
 
 ## Data and controls
@@ -48,7 +50,7 @@ word-swapped representation before parsing. Unknown bytes remain unchanged.
 | ---------------------- | --------- | -------------- | ---------------------------------------------------------------------- |
 | Cities                 | `0x787c4` | 46 / `0x34`    | Resources, economy, stocks, prices, ship queues and coherent ownership |
 | Live officers          | `0x79562` | 600 / `0x1e`   | Army, traits, tasks, life, membership and reviewed status transitions  |
-| Factions               | `0x79148` | 21 / `0x32`    | Succession and absorption; diplomacy is context                        |
+| Factions               | `0x79148` | 21 / `0x32`    | Creation, succession, absorption, diplomacy, control and symbols       |
 | Historical definitions | `0x4021e` | 532 / `0x1e`   | Read-only abilities and definition traits; excluded from native saves  |
 | Custom definitions     | `0x78004` | 68 / `0x1c`    | Names, six abilities, birthday, age, gender and verified portraits     |
 | Registration defaults  | `0x5d0ac` | 4 / 6 bytes    | Male/female, younger/older ability templates in `SETTEI.PRG`           |
@@ -86,11 +88,11 @@ double-byte characters or seven reading bytes, including separate voicing marks.
 Equivalent text preserves the original encoding. All 1,064 historical name and
 reading fields round-tripped in private original-game memory checks.
 
-Custom slots retain the `0xffff` unregistered portrait sentinel. Editing a
-definition does not register it. Calendar checks validate the final month/day
-pair; portrait choices are backed by the game lookup. The optional 68-name
-preset creates a previewable name/reading draft and fills all six abilities with
-100, including unused slots. It preserves registration and live membership;
+Custom slots retain the `0xffff` unregistered portrait sentinel until explicit
+introduction. Editing a definition alone does not register it. Calendar checks
+validate the final month/day pair; portrait choices are backed by the game lookup.
+The optional 68-name preset creates a previewable name/reading draft and fills
+all six abilities with 100, including unused slots. It preserves registration and live membership;
 both languages use the same names. Batches expand explicit scalar
 edits and officer relocation destinations; names and other relationship workflows
 remain separate. Every selected target is validated before any change is published.
@@ -99,10 +101,15 @@ To introduce an unused custom officer, fill its name, reading, birthday, age and
 abilities, preview, then choose Serving/Free/Hidden and a city on the same custom
 officer page. Registration assigns the native default portrait and updates the
 complete roster atomically. Ordinary registered slots can instead be scheduled
-for a future automatic appearance when that scenario option is enabled. The
-native annual event, direct service and subsequent ruler appointment were checked
-in the original game. A cold title Load can show old or blank registration data;
-the second strategic Load described above restores the campaign definitions.
+for a future automatic appearance when that scenario option is enabled. This
+requires ordinary slots 8..67 (zero-based) and a registered prefix beginning at
+slot 8 because the native annual scan stops at the first unused record. The year
+must be later than the current year; the game chooses the arrival city. Scheduling detaches
+existing membership and previews any army/strategist cleanup. It does not rewind
+historical appearance events. The native annual event, direct service and
+subsequent ruler appointment were checked in the original game. A cold title Load
+can show old or blank registration data; the second strategic Load described
+above restores the campaign definitions.
 
 ## Coherent campaign operations
 
@@ -113,7 +120,8 @@ replayed. Any invalid request rejects the complete operation without publication
 
 - Governor appointments repair city ordering and strategist references. Succession
   may choose an officer from another owned city, moves the capital and refreshes
-  active ruler caches. Armies survive. Leaders must hand over before leaving.
+  active ruler caches. Armies survive. Death, resignation and withdrawal still
+  require handing over leadership; same-faction relocation maintains it directly.
 - City administration offers direct, military, production and adaptive modes.
   Military/civil governors require delegation. The executing city, battles and
   inconsistent leadership remain locked. This workflow preserves all other city
@@ -126,11 +134,11 @@ replayed. Any invalid request rejects the complete operation without publication
 - Faction absorption transfers all cities and armies, reconciles player control,
   allegiance and contracts, and demotes the former ruler. The current turn faction
   cannot be dissolved. Previews include cancelled agreements and status cleanup.
-- Active factions expose Player/Computer control, including batch changes. Native
-  dispatch reads the flag again; this does not reorder turns or interrupt an
-  executing command. Two player flags survived original Save and a fresh
-  SRAM-only Load. The sandboxed browser flow checks canonical drafts, language
-  switches, actual checkpoint writeback and unchanged native companions.
+- Active factions expose Player/Computer control and map symbols. Alliances update
+  both sides; hostility is directed and uses 0..100. Turn order moves only upcoming
+  active factions within the current queue; completed/current turns remain fixed.
+  Native dispatch reads control again without interrupting an executing command.
+  These settings share a draft, separately from ownership changes.
 - An unused faction slot can become a new faction in a neutral city or split off
   an owned noncapital city. Choose a resident founder and Player/Computer control;
   the city follows the selected resident. Serving followers, armies and resources stay together; loyalty becomes
@@ -153,7 +161,8 @@ replayed. Any invalid request rejects the complete operation without publication
   governor and ruler moves retained their armies and full rosters after Save and
   a fresh SRAM-only Load. Invalid selections reject the entire batch.
 - Service/discovery changes support civil recruitment, resignation, hidden/free
-  transitions and explicit introduction of registered unappeared officers.
+  transitions and explicit introduction of unappeared officers, including pending
+  custom officers and complete unused custom definitions.
   Withdrawal to unappeared removes membership without rewinding appearance events;
   return treasures first. A consumed event will not repeat; use introduction later.
 - Death removes membership and passes belongings to the ruler or returns them to
@@ -174,7 +183,8 @@ still consult global ownership. Save inside the game to retain these edits.
 Resolve ongoing missions, recovery/covert activity and allocated equipment before
 operations whose controls require it. Do not bypass these prerequisites with raw
 pointers or flags. Malformed lists hide relationship controls while leaving safe
-scalar fields readable. Expensive graph checks run for selected records only.
+scalar fields readable. Expensive relationship choices are built for selected
+records only; scalar/book/personal-treasure batches skip relocation choices.
 
 ## Tasks, status and shipbuilding
 
@@ -205,7 +215,7 @@ Controls require a player-controlled, nondelegated port with a valid roster.
 ## Registration and battle
 
 Registration overlay 4 verifies the template consumers and allocation routines.
-Each ability uses 1..100 while leaving room for the complete native 90-point
+Ordinary templates use 1..100 while leaving room for the complete native 90-point
 (under 30) or 70-point (at least 30) grant. Edit before allocation. Templates
 survive checkpoints, not cold boot or reloading `SETTEI.PRG`. The maximum-defaults
 button fills all four rows with 100 and disables additional allocation through
@@ -242,19 +252,30 @@ copied implementation; proprietary data and disassembly are never fixtures.
 Original sandboxed Chrome/PicoDrive checks on 2026-11-22 through 2026-11-24 used
 acknowledged public snapshot replacement, stable paused readback and unchanged
 native companions. In-game Save followed by a fresh instance supplied only SRAM
-verified campaign resources, custom records, relocation, appointments, treasures,
+verified campaign resources, relocation, appointments, treasures,
 governors, cross-city succession, territory/faction changes, life/membership,
 covert counters and ship queues. Ship clocks 1/2/3 survived cold load; the next
 month completed two heavy ships, while cancelling the medium queue added none.
+Custom definitions required the second strategic Load described above. The native
+annual event introduced a scheduled custom officer in a game-chosen hidden roster;
+its resulting membership survived native saving and a fresh load.
+
+New-faction checks used historical officers to create one faction from a neutral
+city and one from an owned noncapital city with three serving officers. Both
+retained their complete ownership, diplomacy/control, counters, rosters, armies and resources
+after native Save and a fresh SRAM-only Load. The next month's generated queue
+dispatched both as player turns. This does not establish every secession scenario.
 
 Native task processing confirmed shared training progression and cancellation.
 Covert tests observed actual recruitment, return and drive-tiger consequences.
-All four registration rows were consumed by original allocation flows; older
-rows used the 70-point grant, while registered young data survived native saving.
+Original allocation flows consumed the younger male/female rows and their
+90-point grant. All four rows, including the older 70-point consumers, have
+static and generated-test coverage; the older path lacks confirmed native traversal.
+Registered younger data survived native saving.
 Land/naval battle checks covered mobility, stock-balanced ship exchange and
 retreat/redeployment eligibility. Army creation/disbanding was verified in the
-strategic campaign. These are exercised
-cases, not proof of every possible campaign event or emulator version.
+strategic campaign. These are exercised cases, not proof of every possible
+campaign event or emulator version.
 
 Generated tests cover malformed data, atomic failure, canonical replay, draft
 retention, masks and unrelated-byte preservation. Browser tests use redistributable

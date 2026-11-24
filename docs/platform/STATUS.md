@@ -161,61 +161,87 @@ preservation; this evidence does not establish every ability/event combination.
 
 The [Japanese Mega-CD SAN3 adapter](../../platform/src/editors/san3/README.md)
 remains a paused program-RAM editor. Both supplied GameCheatKits branches were
-reviewed against reachable controls. The [coverage mapping](../../platform/src/editors/san3/PARITY.md)
-maps their gameplay controls and explicit differences through coherent operations:
-custom base abilities, four creation templates, custom names/profiles, city economy,
-armies, tasks, life/discovery, covert status, governance and land/naval combat.
-Unknown bytes, list pointers and battlefield coordinates are intentionally excluded.
-A fresh callback-level audit found delegation, scheduled custom appearance and
-batch-relocation UI gaps. Batch relocation now has an atomic multi-record action,
-explicit steps and per-officer blocked reasons. Sixteen related unit tests, both
-type checks, build and a sandboxed real-core browser flow pass. City administration
-now exposes all four native modes with guarded eligibility and masked writes.
-Military, production and adaptive settings survived original Save and a fresh
-SRAM-only Load, preserving roster/army/ownership state. Direct management has
-native-code and unit-test coverage. Scheduled appearance remains under verification.
+reviewed against 95 callback fields and 215 displayed columns, including diagnostics.
+The [coverage mapping](../../platform/src/editors/san3/PARITY.md) records coherent
+gameplay replacements and deliberate exclusions; it is not a raw debugger clone.
+Unknown bytes, arbitrary list links and battlefield coordinates remain excluded.
 
 Historical base abilities are now read-only in both UI and API, including mixed
 and batch drafts. Original-game Save/Load retained an unsaved second ability set
 within the same runtime, but a fresh SRAM-only boot restored all six disc defaults.
-That retention was residual RAM, not native persistence. Creation templates and
-battle actions remain available with explicit temporary-state guidance; created
-custom officers can be saved normally. Existing edited checkpoints are preserved.
-The boundary change passed 244 SAN3 unit/database tests, both type checks, build,
-targeted lint/scanning and the complete sandboxed SAN3 editor browser flow.
+That retention was residual RAM, not native persistence. Creation and battle
+operations remain available with explicit temporary-state guidance. Existing
+edited checkpoints are preserved. Native campaign Save includes custom records,
+but a fresh title Load uses separate global registration data. A second Load from
+the strategic system menu restores the campaign's edited definitions, including
+a newly introduced ruler's name and portrait. The editor does not synchronize
+that global registration file or claim native battle-save persistence.
+
+The current candidate adds direct service/placement for complete unused custom
+definitions, and future automatic appearance for registered ordinary slots with
+the scenario option enabled. The native annual event and subsequent saved roster
+were verified; scheduling keeps the native registered-prefix rule. Custom names,
+abilities and placement share one draft. Maximum creation defaults set six 100s
+and use reviewed allocation operands to reach confirmation without spare points.
+A younger male registration retained the complete record after registration Save
+and a fresh SRAM-only boot. Younger male/female ordinary templates have native
+allocation evidence; older rows have static/generated-test coverage only.
 
 Leadership changes include governors and cross-city succession with current-ruler
-cache repair. City transfer, abandonment and faction absorption maintain complete
-rosters, allegiance and contracts. Death/revival and recruitment/discovery preview
-army, strategist and inheritance effects. Withdrawal preserves the appearance
-time line; consumed events are not replayed. Tasks preserve shared clocks/results,
-allow idle officers to join groups of up to ten, and show action-flag effects.
-Construction uses actual port ship queues, not the legacy task-9 label. Battle
-equipment exchanges reconcile stocks; reserve deployment eligibility preserves
-losses and uses native Deploy/Retreat for map placement.
+cache repair. Same-faction relocation preserves armies, equipment and leadership;
+departing task participants are cancelled. Allegiance changes refund equipment
+and release armies, with named effects. Single/batch ordinary, governor and ruler
+moves survived original Save and fresh SRAM-only Load. City transfer, abandonment,
+absorption, life/discovery and covert workflows preserve coherent lists/contracts.
+Four administration modes expose native delegation; military, production and
+adaptive modes have cold-load evidence, direct management has static/unit evidence.
 
-Original-game checks exercised all four creation rows, army/equipment changes,
+Personal treasure flags can duplicate items without changing global owners. Books
+cap at seven per officer independently of the native issuance counter. Factions
+expose bilateral alliances, directed hostility, control, symbols and remaining-turn
+order. New factions can settle a neutral city or split off a noncapital city.
+Original-game tests created both kinds, preserved 101 changed values after native
+Save/cold Load and reached both new player turns in the next month's native queue.
+The original faction retained its other cities. This does not prove every secession.
+
+Tasks preserve shared clocks/results, allow idle officers to join groups of up to
+ten, and preview action-flag effects. Construction uses actual port ship queues,
+not the legacy task-9 label. Battle equipment exchanges reconcile stocks; reserve
+eligibility preserves losses and uses native Deploy/Retreat for map placement.
+
+Original-game checks exercised younger creation rows, army/equipment changes,
 leadership/territory/life/discovery operations, task-group monthly settlement,
 covert recruitment/return, ship completion/cancellation and land/naval commands.
-Campaign edits survived original Save followed by fresh native-SRAM-only loads.
-Checkpoint writeback preserved all 73,728 native companion bytes. Historical
-abilities and creation defaults reload disc data on cold boot/module reload;
-battle edit persistence through native saving is not established. These are
-verified cases for this edition, not universal campaign/emulator compatibility.
+The tested campaign operations survived native saving and cold loading, subject
+to the custom-definition second-Load behavior above. Checkpoint writeback preserved
+all 73,728 native companion bytes. These are verified cases for this edition,
+not universal campaign/emulator compatibility.
 
 Selected city controls share an immutable, document-scoped list context; even
 72 valid governor candidates require one graph traversal. Actual edits still
 validate the resulting document. Original mutable relocation graphs remain
 independent, and malformed-list failures cannot contaminate other documents.
+Scalar/book/personal-treasure batches skip relocation destination construction;
+explicit move batches still validate every destination and the complete final draft.
 
 Editor writes require a fresh paused capture after every resume. Failed published
 writeback retains the pause and original retry target. Clean captures can switch
 between campaign, registration and battle schemas; dirty drafts remain protected
 against cloud changes. Synthetic runtime tests exercise actual PicoDrive snapshot
 load/readback rather than replacing the emulator with a mock.
-Both games passed private original-game edit, in-game save and fresh native-save
-boot checks. This is evidence for those editions and tested fields, not universal
-ROM compatibility; proprietary samples and diagnostic output are not published.
+Focused sandboxed browser checks cover custom service/scheduling, personal-item
+batches and relocation with canonical draft/language retention, actual paused
+writeback and unchanged native companions. Proprietary samples and diagnostics
+remain private. The candidate passes all 873 unit/database tests (98.97% line
+and 95.07% branch coverage), lint, both type checks and the production build.
+Complete browser and hosted checks for the exact release, automatic deployment
+and production save-preservation acceptance remain required for promotion.
+
+The game canvas now owns scrolling keys while focused, including repeated arrows
+and Space. Explicit Start/Resume hands it focus; controls selected during loading
+and background resumes retain their existing focus. Real MD and DOS browser cases
+verify game input, stable page position and ordinary editor/language keyboard use.
+Failed stops retain the input handlers until a successful stop.
 
 Earlier original-game acceptance verified base strength/agility/mental
 235/227/220 and totals 245/230/220. Removing and restoring the weapon changed
@@ -227,7 +253,7 @@ The read-only combat UI passed all 554 unit/integration tests, lint, types and
 build, plus its sandbox-enabled browser flow. Published CI remains the acceptance
 record for the complete browser suite and container checks.
 
-The SAN3 parity candidate passed all 790 unit/database tests (99% line and
+The earlier SAN3 parity baseline passed all 790 unit/database tests (99% line and
 94.86% branch coverage), lint, both type checks and production build. The local
 full test run bounded workers to four; no test or timeout was relaxed. Focused
 sandboxed browser checks cover actual runtime writeback, unchanged native SRAM,
