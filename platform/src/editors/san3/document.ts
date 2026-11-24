@@ -146,6 +146,7 @@ export class San3Document {
     const faction = this.read(offset + 0x11, 1);
     const available =
       role <= 4 &&
+      (this.read(offset + 8, 1) & 0x10) === 0 &&
       city < san3Layout.cities.count &&
       faction < san3Layout.factions.count &&
       this.faction(faction).active &&
