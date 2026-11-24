@@ -256,5 +256,10 @@
   "san3.storedRetiredSoldiers": "Retired army record",
   "san3.belongingsRecipient": "Belongings recipient",
   "san3.inBattle": "Battle assignment",
-  "san3.role7": "Not yet appeared"
+  "san3.role7": "Not yet appeared",
+  "san3.presenceRole": "Service and discovery",
+  "san3.presenceChanges": "Service and discovery",
+  "san3.presenceHelp": "Leaders hand over first; resolve missions and allocated equipment. Civil service joins this city's faction; free or hidden states disband the army and retain belongings.",
+  "san3.appearanceCity": "Appearance city",
+  "san3.appearanceHelp": "Unappeared registered officers enter the selected city's list. Civil service requires an owned city. Existing officers use relocation to change cities."
 }

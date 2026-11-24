@@ -3,11 +3,13 @@ import { EditorError } from "../types.ts";
 import type { San3Document } from "./document.ts";
 import { san3InfiltrationDraft } from "./infiltration-view.ts";
 import { editSan3Life } from "./life-controls.ts";
+import { editSan3Presence } from "./presence-controls.ts";
 import { san3StateDraft } from "./state-view.ts";
 import { san3TaskDraft } from "./task-view.ts";
 import { san3TerritoryDraft } from "./territory-draft.ts";
 
 const workflows = [
+  { prefix: "presence.", edit: editSan3Presence },
   { prefix: "life.", edit: editSan3Life },
   { prefix: "infiltration.", edit: san3InfiltrationDraft },
   { prefix: "ownership.", edit: san3TerritoryDraft },

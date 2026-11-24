@@ -22,6 +22,7 @@ import { lifecycleFields } from "./lifecycle.ts";
 import { san3NamePresetAction } from "./name-presets.ts";
 import { san3OperationFields } from "./operation-fields.ts";
 import { editSan3Campaign } from "./operations.ts";
+import { san3PresenceFields } from "./presence-controls.ts";
 import { san3PresetAdapter } from "./preset-adapter.ts";
 import { san3StateFields } from "./state-view.ts";
 import { san3TaskFields } from "./task-view.ts";
@@ -329,6 +330,7 @@ export const san3Adapter: EditorAdapter = {
           ? [
               ...san3StateFields(original, Number(selected)),
               ...san3LifeFields(original, Number(selected), operationChanges),
+              ...san3PresenceFields(original, Number(selected), operationChanges),
               ...san3InfiltrationFields(original, Number(selected)),
               ...lifecycleFields(original, Number(selected)).filter(
                 ({ key, columnId }) =>
