@@ -306,5 +306,8 @@
   "san3.taskJoinChoice": "{task} — {leader} ({count} officers)",
   "san3.taskGroupSize": "Task group participants",
   "san3.taskJoinHelp": "Join a same-city group with fewer than ten participants. Its existing duration, progress and result are copied without changing current members or charging resources; this officer's action becomes completed. To create a group, assign the first officer normally, then let others join. Spies remain individual. Preview this operation separately from other task edits.",
-  "san3.booksDiscarded": "Books beyond the recipient’s seven-copy capacity"
+  "san3.booksDiscarded": "Books beyond the recipient’s seven-copy capacity",
+  "san3.relocationCurrentCityEmpty": "This would empty the city whose command is still executing. End that city's turn and capture again while another city is current, or leave one officer behind.",
+  "san3.relocationCityBattle": "This would empty a city involved in battle. Finish the battle before changing its ownership.",
+  "san3.relocationDiscarded": "{city}: discarded {stock}"
 }

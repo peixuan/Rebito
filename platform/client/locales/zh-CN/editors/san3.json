@@ -306,5 +306,8 @@
   "san3.taskJoinChoice": "{task} — {leader}（{count} 人）",
   "san3.taskGroupSize": "任务组人数",
   "san3.taskJoinHelp": "加入同城且不足十人的任务组，沿用其现有工期、进度和成效，不改写已有成员、不扣资源；此武将将标记为行动完毕。新建多人组时，先正常给一名武将分派任务，再让其他人加入。密探仍独立执行。请与其他任务修改分别预览。",
-  "san3.booksDiscarded": "超过继承者七本容量而丢弃的兵法书"
+  "san3.booksDiscarded": "超过继承者七本容量而丢弃的兵法书",
+  "san3.relocationCurrentCityEmpty": "这会搬空仍在执行命令的当前城市。请结束该城回合，轮到其它城市时重新抓取，或在原城至少留下一名武将。",
+  "san3.relocationCityBattle": "这会搬空正在发生战事的城市。请先结束战斗，再改变其归属。",
+  "san3.relocationDiscarded": "{city}：损失的{stock}"
 }
