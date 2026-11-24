@@ -145,7 +145,7 @@
   "san3.succession": "Ruler replacement",
   "san3.replaceRuler": "New ruler",
   "san3.relocationHelp": "Return to the strategic menu and remove equipment first. Moving disbands troops, clears training/morale/action, and repairs city lists. Rulers, governors and busy officers cannot move. Apply separately from their other live traits or ruler changes.",
-  "san3.rulerChangeHelp": "Choose an idle, unequipped officer already in the capital. Armies stay intact; the former ruler becomes an officer with loyalty 100. City leadership and advisor links are updated.",
+  "san3.rulerChangeHelp": "Choose an idle officer serving this faction. A successor in another city makes that city the capital; the former ruler stays in the old capital as governor. Armies and player control are preserved. Review all leadership, advisor and delegation changes before saving.",
   "san3.invalidRelocation": "Cannot move this officer: check city lists, ruler/governor status, assigned equipment and ongoing actions.",
   "san3.invalidRulerChange": "Choose an idle, unequipped successor in the same capital; delegated or inconsistent leadership cannot be replaced.",
   "san3.treasures": "Treasures",
@@ -173,5 +173,6 @@
   "san3.appointGovernor": "New governor",
   "san3.formerGovernorRole": "Former governor's role",
   "san3.delegation": "Delegation mode",
-  "san3.governorHelp": "Choose an idle officer already serving in this noncapital city. Armies stay intact; an armed civil predecessor becomes a military officer. Advisor and delegation changes appear in the preview. Apply separately from other structural operations."
+  "san3.governorHelp": "Choose an idle officer already serving in this noncapital city. Armies stay intact; an armed civil predecessor becomes a military officer. Advisor and delegation changes appear in the preview. Apply separately from other structural operations.",
+  "san3.capital": "Capital"
 }

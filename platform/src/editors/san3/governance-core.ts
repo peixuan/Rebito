@@ -6,6 +6,18 @@ import { san3ListContext } from "./list-context.ts";
 export const invalidGovernance = () =>
   new EditorError("invalid_edit", message("san3.invalidGovernance"));
 
+/** UCOM commands read the current ruler cache while its faction pointer stays stable. */
+export function updateSan3RulerCache(
+  document: San3Document,
+  faction: number,
+  successor: number,
+  write: (offset: number, width: 2, value: number) => void,
+): void {
+  if (document.read(0x7dc22, 4) !== document.offset("factions", faction)) return;
+  if (document.read(0x7dc26, 2) !== document.faction(faction).ruler) throw invalidGovernance();
+  write(0x7dc26, 2, successor);
+}
+
 /** Leadership changes require an intact capital and all existing membership chains. */
 export function inspectSan3Governance(document: San3Document) {
   const graph = san3ListContext(document);

@@ -6,7 +6,8 @@ import { editSan3, findSan3Field } from "./fields.ts";
 import { editSan3Governors } from "./governance-draft.ts";
 import { editSan3Lifecycle } from "./lifecycle.ts";
 import { relocateSan3Officers } from "./relocation.ts";
-import { replaceSan3Ruler } from "./ruler-change.ts";
+import { succeedSan3Ruler } from "./ruler-change.ts";
+import { san3RulerPreview } from "./ruler-preview.ts";
 import { san3TreasureOwnerLabel } from "./treasure-view.ts";
 import { editSan3Treasures, inspectSan3Treasures } from "./treasures.ts";
 
@@ -189,32 +190,10 @@ export function editSan3Campaign(document: San3Document, changes: Record<string,
     current = new San3Document(moved.bytes);
   }
   for (const [faction, successor] of [...rulers].sort(([a], [b]) => a - b)) {
-    const replaced = replaceSan3Ruler(current, faction, successor);
-    const change = replaced.change;
-    operationPreview.push({
-      key: `ruler.${faction}.officer`,
-      label: message("san3.replaceRuler"),
-      before: officerName(current, change.previousRuler),
-      after: officerName(current, successor),
-    });
-    for (const index of [change.previousRuler, successor]) {
-      for (const [id, relative] of [
-        ["role", 12],
-        ["loyalty", 15],
-      ] as const) {
-        const base = current.offset("officers", index);
-        operationPreview.push({
-          key: `ruler.${faction}.${index}.${id}`,
-          label: message("editor.columnLabel", {
-            group: officerName(current, index),
-            field: message(`san3.${id}`),
-          }),
-          before: current.read(base + relative, 1),
-          after: replaced.bytes[base + relative] ?? 0,
-        });
-      }
-    }
-    current = new San3Document(replaced.bytes);
+    const replaced = succeedSan3Ruler(current, faction, successor);
+    const next = new San3Document(replaced.bytes);
+    operationPreview.push(...san3RulerPreview(current, next, faction));
+    current = next;
   }
   return { bytes: current.copy(), edits: result.edits, operationChanges, operationPreview };
 }

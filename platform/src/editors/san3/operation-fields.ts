@@ -2,7 +2,7 @@ import { message } from "../../shared/messages.ts";
 import type { EditorField } from "../types.ts";
 import { type San3Document, san3Layout } from "./document.ts";
 import { inspectSan3Lists, relocateSan3Officers } from "./relocation.ts";
-import { replaceSan3Ruler } from "./ruler-change.ts";
+import { succeedSan3Ruler } from "./ruler-change.ts";
 
 /** Eligibility is determined by the same structural validator used when publishing. */
 export function san3OperationFields(
@@ -47,11 +47,11 @@ export function san3OperationFields(
   const choices = [name(ruler)];
   try {
     const { membership, cities: lists } = inspectSan3Lists(document);
-    const capital = membership.get(ruler)?.city;
-    for (const candidate of capital === undefined ? [] : (lists[capital]?.serving ?? [])) {
+    for (const [candidate, member] of membership) {
+      if (member.kind !== "serving" || lists[member.city]?.faction !== index) continue;
       if (candidate === ruler) continue;
       try {
-        replaceSan3Ruler(document, index, candidate);
+        succeedSan3Ruler(document, index, candidate);
         choices.push(name(candidate));
       } catch {
         /* Unsafe successors remain unavailable; publication rechecks the same rules. */

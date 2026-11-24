@@ -45,7 +45,7 @@ describe("Japanese Mega-CD same-capital ruler replacement", () => {
     const bytes = fixture();
     const initial = san3Adapter.view(bytes, { module: "factions", record: "0" });
     const field = initial.fields.find(({ columnId }) => columnId === "replaceRuler");
-    expect(field?.choices?.map(({ value }) => value)).toEqual([0, 1, 2, 3]);
+    expect(field?.choices?.map(({ value }) => value)).toEqual([0, 1, 2, 3, 4]);
     expect(field?.readonly).toBe(false);
     const view = san3Adapter.view(bytes, { changes: { "ruler.0.officer": 1 } });
     expect(view.changes).toEqual({ "ruler.0.officer": 1 });

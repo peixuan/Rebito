@@ -4,6 +4,7 @@ import {
   inspectSan3Governance,
   invalidGovernance,
   requireIdleGovernor,
+  updateSan3RulerCache,
 } from "./governance-core.ts";
 
 /**
@@ -50,6 +51,7 @@ export function succeedSan3RulerAcrossCities(
   const newCityBase = document.offset("cities", newCapital);
   const advisorAfter = target.advisor === successor ? 0xffff : target.advisor;
   const edit = governanceEdit(document);
+  updateSan3RulerCache(document, faction, successor, edit.write);
   edit.write(factionBase, 2, successor);
   edit.cities(faction, [newCapital, ...cities.filter((city) => city !== newCapital)]);
   edit.serving(newCapital, [successor, ...target.serving.filter((index) => index !== successor)]);

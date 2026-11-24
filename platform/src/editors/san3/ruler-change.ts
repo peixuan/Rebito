@@ -1,9 +1,20 @@
 import { message } from "../../shared/messages.ts";
 import { EditorError } from "../types.ts";
 import { San3Document, san3Layout } from "./document.ts";
+import { updateSan3RulerCache } from "./governance-core.ts";
+import { succeedSan3RulerAcrossCities } from "./governance-succession.ts";
 import { inspectSan3Lists } from "./relocation.ts";
 
 const invalid = () => new EditorError("invalid_edit", message("san3.invalidRulerChange"));
+
+/** Choose a reviewed succession workflow without moving officers between cities. */
+export function succeedSan3Ruler(document: San3Document, faction: number, successor: number) {
+  const current = document.faction(faction).ruler;
+  if (current === 0xffff) throw invalid();
+  return document.officer(current).city === document.officer(successor).city
+    ? replaceSan3Ruler(document, faction, successor)
+    : succeedSan3RulerAcrossCities(document, faction, successor);
+}
 
 /** A living ruler may abdicate only to an idle, unequipped officer in the capital. */
 function idle(document: San3Document, index: number): boolean {
@@ -71,6 +82,7 @@ export function replaceSan3Ruler(document: San3Document, faction: number, succes
     else data.setUint16(offset, after);
   };
   write(factionBase, 2, successor);
+  updateSan3RulerCache(document, faction, successor, write);
   write(cityBase + 4, 2, successor);
   write(cityBase + 10, 2, advisor);
   for (const [position, index] of serving.entries())
