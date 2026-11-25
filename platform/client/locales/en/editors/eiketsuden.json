@@ -1,4 +1,5 @@
 {
+  "eiketsuden.resourceRequired": "The uploaded game must contain the original BAKDATA.R3 resource for character and item information.",
   "eiketsuden.characters": "Characters",
   "eiketsuden.campaign": "Campaign",
   "eiketsuden.progress": "Progress and troop class",

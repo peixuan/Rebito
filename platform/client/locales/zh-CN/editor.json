@@ -1,4 +1,6 @@
 {
+  "editor.eiketsudenTitle": "三国志英杰传（DOS 原版）",
+  "editor.eiketsudenDescription": "适用于繁体中文 DOS 原版。请成对同步 MSAVE0–4.R3S 和对应的 ESAVE0–4.R3S。先在游戏中存档并同步，修改后再读取该存档；修改不会直接改变游戏内存，未结束的战斗也不会自动成为原生存档。",
   "editor.san3Title": "三国志 III（Mega-CD）",
   "editor.san3Description": "适用于原版日文 Mega-CD 版。在战略指令菜单取档修改战役数据，再用游戏内保存保留修改。历史武将基础能力只读。创建默认值（能力分配前）和战斗修改属于即时内存操作，请用即时存档保留。修改后重新打开游戏内面板刷新显示。",
   "editor.phantasyStar4Title": "梦幻之星4（MD）",

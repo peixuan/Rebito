@@ -1,4 +1,5 @@
 {
+  "eiketsuden.resourceRequired": "上传的游戏包需要包含原版 BAKDATA.R3，以读取武将和物品资料。",
   "eiketsuden.characters": "人物",
   "eiketsuden.campaign": "战役",
   "eiketsuden.progress": "成长与兵种",

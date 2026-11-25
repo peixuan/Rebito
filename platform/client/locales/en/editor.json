@@ -1,4 +1,6 @@
 {
+  "editor.eiketsudenTitle": "Sangokushi Eiketsuden (original DOS)",
+  "editor.eiketsudenDescription": "For the original Traditional Chinese DOS game. Synchronize MSAVE0–4.R3S with the matching ESAVE0–4.R3S files. Save and synchronize before editing, then load that slot inside the game. Edits do not update game memory; unfinished battles are not native saves.",
   "editor.san3Title": "Romance of the Three Kingdoms III (Mega-CD)",
   "editor.san3Description": "For the original Japanese Mega-CD edition. Capture at a strategic command menu to edit campaign data; save in the game to retain it. Historical base abilities are read-only. Creation defaults (before allocation) and battle edits are temporary memory operations; keep checkpoints for them. Reopen game panels after editing.",
   "editor.phantasyStar4Title": "Phantasy Star IV (MD)",

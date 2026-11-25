@@ -127,6 +127,11 @@ it("requires an authenticated administrator and same-origin mutation before acce
       system: "md",
     }),
     expect.objectContaining({ id: "san3", label: message("editor.san3Title"), system: "segacd" }),
+    expect.objectContaining({
+      id: "eiketsuden",
+      label: message("editor.eiketsudenTitle"),
+      system: "dos",
+    }),
   ]);
 });
 
