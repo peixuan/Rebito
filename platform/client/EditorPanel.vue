@@ -347,6 +347,7 @@ onBeforeUnmount(() => {
           <FieldGrid
             :key="`${view.file}:${view.slot}:${view.selected}`"
             :fields="fields"
+            :unavailable="view.unavailableFields ?? []"
             :disabled="busy || stale || captureRequired"
             @change="change"
             @valid="(key, valid) => (valid ? invalid.delete(key) : invalid.add(key))"
@@ -356,12 +357,14 @@ onBeforeUnmount(() => {
           />
           <div class="editor-actions">
             <EditorBatchControls
-              v-if="view.batchKeys?.length"
+              v-if="view.batchKeys"
               :key="`${view.file}:${view.slot}:${view.module}`"
               :view="view"
               :keys="view.batchKeys"
               :changes="draft(view.file, view.slot)"
-              :disabled="busy || stale || captureRequired || Boolean(invalid.size)"
+              :disabled="
+                busy || stale || captureRequired || Boolean(invalid.size) || !view.batchKeys.length
+              "
               @apply="
                 (targets) =>
                   perform(() =>

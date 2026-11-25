@@ -43,6 +43,12 @@ prove the game is between commands.
 
 ## Data and controls
 
+All eight module entries remain visible. Disabled entries explain which game
+phase to capture. Within a module, unavailable operations stay visible with their
+prerequisites, including founding, covert activity, task joining and shipbuilding.
+A dash means no validated field is available; it is not a zero read from memory.
+These descriptions do not add writable keys or bypass the domain checks.
+
 Guest integers are big-endian; the snapshot layer normalizes PicoDrive's
 word-swapped representation before parsing. Unknown bytes remain unchanged.
 

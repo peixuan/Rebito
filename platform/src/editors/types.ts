@@ -39,6 +39,13 @@ export interface EditorTextField {
   readonly?: boolean;
   help?: DisplayText;
 }
+/** A capability absent from this capture; never a numeric value or writable key. */
+export interface EditorUnavailableField {
+  id: string;
+  label: DisplayText;
+  group: DisplayText;
+  reason: DisplayText;
+}
 export interface EditorView {
   /** Optional guidance for the reviewed game phase represented by this view. */
   instructions?: DisplayText;
@@ -64,6 +71,7 @@ export interface EditorView {
   }[];
   selected: string;
   fields: EditorField[];
+  unavailableFields?: EditorUnavailableField[];
   /** Numeric source keys that this adapter permits copying to other records. */
   batchKeys?: string[];
   textFields?: EditorTextField[];

@@ -73,6 +73,7 @@ test("founds a computer faction with a persistent bilingual preview and atomic c
   expect(saved?.manifest.artifacts.find(({ name }) => name === "save.srm")).toEqual(
     before?.manifest.artifacts.find(({ name }) => name === "save.srm"),
   );
-  await expect(editor.getByLabel("Found a faction here", { exact: true })).toHaveCount(0);
+  await expect(editor.getByLabel("Found a faction here", { exact: true })).toBeVisible();
+  await expect(editor.getByLabel("Found a faction here", { exact: true })).toBeDisabled();
   await page.getByRole("button", { name: "Stop game", exact: true }).click();
 });

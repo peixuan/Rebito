@@ -10,5 +10,18 @@
   "san3.navigation.requiresStrategy": "回到战略大地图后重新捕获。",
   "san3.navigation.requiresBattle": "进入战斗后重新捕获。",
   "san3.navigation.requiresCreation": "进入新武将登记界面后重新捕获。",
-  "san3.navigation.requiresReserves": "本次捕获没有可用的城市预备队名单。"
+  "san3.navigation.requiresReserves": "本次捕获没有可用的城市预备队名单。",
+  "san3.diplomacy": "势力外交",
+  "san3.unavailable.relationships": "当前城市与武将名单关系无法确认，请回到战略大地图重新捕获。",
+  "san3.unavailable.neutralCity": "仅在接管中立城市时使用，且需要有效的武将名单。",
+  "san3.unavailable.shipbuilding": "需要玩家势力直属的港口城市，有在任武将，且船只库存有效。",
+  "san3.unavailable.inventory": "当前全局宝物数据无法确认，请重新捕获后再修改兵书数量。",
+  "san3.unavailable.tasks": "需要符合条件的在任武将，且城市任务组状态一致。",
+  "san3.unavailable.joining": "需要空闲武将，且同城已有可以加入的共同任务组。",
+  "san3.unavailable.infiltration": "该武将当前没有可执行的谍报操作，请检查身份、任务、潜伏状态及其他活动势力。",
+  "san3.unavailable.appearance": "需要已登记的普通新武将、有效剧本并开启自动登场。君主、太守、忙碌中或携带军备、宝物的武将不能重新安排登场。",
+  "san3.unavailable.activeFaction": "请选中已有君主的活动势力。",
+  "san3.unavailable.turnOrder": "本次捕获没有有效的月度回合队列，请回到战略大地图重新捕获。",
+  "san3.unavailable.unusedFaction": "请选中空余势力名额来建立新势力。",
+  "san3.unavailable.diplomacy": "需要选中活动势力，且至少还有另一个活动势力。"
 }

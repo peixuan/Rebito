@@ -378,7 +378,7 @@ export const san3Adapter: EditorAdapter = {
               ...san3InfiltrationFields(original, Number(selected)),
               ...lifecycleFields(original, Number(selected)).filter(
                 ({ key, columnId }) =>
-                  columnId === "turncoatMonths" || Object.hasOwn(operationChanges, key),
+                  columnId !== "endInfiltration" || Object.hasOwn(operationChanges, key),
               ),
             ].map((field) => ({
               ...field,

@@ -2,19 +2,28 @@
 import Checkbox from "primevue/checkbox";
 import Select from "primevue/select";
 import { computed } from "vue";
-import type { EditorField } from "../../src/editors/types.ts";
+import type { EditorField, EditorUnavailableField } from "../../src/editors/types.ts";
 import { textIdentity } from "../../src/shared/messages.ts";
 import { t, translate } from "../i18n.ts";
 import BoundedNumber from "./BoundedNumber.vue";
 
-const props = defineProps<{ fields: EditorField[]; disabled?: boolean }>();
+const props = defineProps<{
+  fields: EditorField[];
+  unavailable?: EditorUnavailableField[];
+  disabled?: boolean;
+}>();
 const emit = defineEmits<{
   change: [key: string, value: number];
   valid: [key: string, value: boolean];
   pending: [key: string, value: boolean];
 }>();
 const groups = computed(() => [
-  ...new Map(props.fields.map((field) => [textIdentity(field.group), field.group])),
+  ...new Map(
+    [...props.fields, ...(props.unavailable ?? [])].map((field) => [
+      textIdentity(field.group),
+      field.group,
+    ]),
+  ),
 ]);
 function options(field: EditorField) {
   const known =
@@ -83,6 +92,22 @@ function options(field: EditorField) {
         />
         <small v-if="field.help" class="field-help">{{ translate(field.help) }}</small>
       </div>
+      <div
+        v-for="field in unavailable?.filter((item) => textIdentity(item.group) === id)"
+        :key="field.id"
+        class="field-row unavailable-field"
+      >
+        <label :for="`unavailable-${field.id}`">{{ translate(field.label) }}</label>
+        <input
+          :id="`unavailable-${field.id}`"
+          value="—"
+          disabled
+          :aria-describedby="`unavailable-reason-${field.id}`"
+        >
+        <small :id="`unavailable-reason-${field.id}`" class="field-help">{{
+          translate(field.reason)
+        }}</small>
+      </div>
     </fieldset>
   </div>
 </template>
@@ -119,5 +144,14 @@ legend {
   color: #627386;
   font-size: 11px;
   line-height: 1.4;
+}
+.unavailable-field input {
+  width: 100%;
+  min-width: 0;
+  padding: 5px 8px;
+  border: 1px solid var(--p-form-field-border-color);
+  border-radius: var(--p-form-field-border-radius);
+  background: var(--p-form-field-disabled-background);
+  color: var(--p-form-field-disabled-color);
 }
 </style>

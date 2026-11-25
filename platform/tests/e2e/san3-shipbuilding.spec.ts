@@ -28,9 +28,12 @@ test("edits independent port queues without completing ships or spending resourc
   await capture.click();
   const editor = page.getByRole("region", { name: "Save editor", exact: true });
   await expect(editor.getByLabel("Population", { exact: true })).toBeEnabled();
-  await expect(editor.getByLabel("Heavy warships: months remaining", { exact: true })).toHaveCount(
-    0,
-  );
+  await expect(
+    editor.getByLabel("Heavy warships: months remaining", { exact: true }),
+  ).toBeVisible();
+  await expect(
+    editor.getByLabel("Heavy warships: months remaining", { exact: true }),
+  ).toBeDisabled();
   await editor
     .getByRole("row")
     .filter({ has: page.getByText("City 2", { exact: true }) })

@@ -10,5 +10,18 @@
   "san3.navigation.requiresStrategy": "Capture again at the strategic map.",
   "san3.navigation.requiresBattle": "Capture again during battle.",
   "san3.navigation.requiresCreation": "Capture again during new officer registration.",
-  "san3.navigation.requiresReserves": "This capture has no valid city reserve roster."
+  "san3.navigation.requiresReserves": "This capture has no valid city reserve roster.",
+  "san3.diplomacy": "Diplomacy",
+  "san3.unavailable.relationships": "City and officer relationships could not be verified. Capture again at the strategic map.",
+  "san3.unavailable.neutralCity": "Only used when claiming a neutral city with a valid officer roster.",
+  "san3.unavailable.shipbuilding": "Requires a player-controlled port with serving officers, direct administration and valid ship stocks.",
+  "san3.unavailable.inventory": "The global treasure inventory could not be verified. Capture again before changing book copies.",
+  "san3.unavailable.tasks": "Requires an eligible serving officer and a consistent task group in the city.",
+  "san3.unavailable.joining": "Requires an idle officer and an eligible shared task group in the same city.",
+  "san3.unavailable.infiltration": "No covert operation is eligible for this officer. Check role, assignment, covert status and the other active factions.",
+  "san3.unavailable.appearance": "Requires a registered ordinary custom officer and automatic appearance enabled in a valid scenario. Rulers, governors, busy officers and officers carrying equipment or treasures cannot be rescheduled.",
+  "san3.unavailable.activeFaction": "Select an active faction with a ruler.",
+  "san3.unavailable.turnOrder": "This capture has no valid monthly turn queue. Capture again at the strategic map.",
+  "san3.unavailable.unusedFaction": "Select an unused faction slot to found a new faction.",
+  "san3.unavailable.diplomacy": "Requires the selected faction and at least one other faction to be active."
 }
