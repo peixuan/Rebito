@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import Checkbox from "primevue/checkbox";
 import Select from "primevue/select";
-import { computed } from "vue";
+import { computed, useId } from "vue";
 import type { EditorField, EditorUnavailableField } from "../../src/editors/types.ts";
-import { textIdentity } from "../../src/shared/messages.ts";
+import { type DisplayText, textIdentity } from "../../src/shared/messages.ts";
 import { t, translate } from "../i18n.ts";
 import BoundedNumber from "./BoundedNumber.vue";
 
 const props = defineProps<{
   fields: EditorField[];
   unavailable?: EditorUnavailableField[];
+  groupOrder?: DisplayText[];
   disabled?: boolean;
 }>();
 const emit = defineEmits<{
@@ -17,14 +18,35 @@ const emit = defineEmits<{
   valid: [key: string, value: boolean];
   pending: [key: string, value: boolean];
 }>();
-const groups = computed(() => [
-  ...new Map(
-    [...props.fields, ...(props.unavailable ?? [])].map((field) => [
-      textIdentity(field.group),
-      field.group,
-    ]),
-  ),
-]);
+const prefix = useId();
+const groups = computed(() => {
+  const all = [...props.fields, ...(props.unavailable ?? [])];
+  const labels = [...(props.groupOrder ?? []), ...all.map((field) => field.group)];
+  return [...new Map(labels.map((label) => [textIdentity(label), label]))]
+    .filter(([id]) => all.some((field) => textIdentity(field.group) === id))
+    .map(([id, label], index) => {
+      const fields = props.fields.filter((field) => textIdentity(field.group) === id);
+      const unavailable = (props.unavailable ?? []).filter(
+        (field) => textIdentity(field.group) === id,
+      );
+      const help = [
+        ...fields.map((field) => field.help),
+        ...unavailable.map((field) => field.reason),
+      ].filter((value): value is DisplayText => value !== undefined);
+      return {
+        id: `${prefix}-${index}`,
+        label,
+        fields,
+        unavailable,
+        notes: [...new Map(help.map((text) => [textIdentity(text), text])).values()],
+      };
+    });
+});
+function noteId(group: (typeof groups.value)[number], help: DisplayText | undefined) {
+  return help === undefined
+    ? undefined
+    : `${group.id}-note-${group.notes.findIndex((note) => textIdentity(note) === textIdentity(help))}`;
+}
 function options(field: EditorField) {
   const known =
     field.choices?.map((choice) => ({ ...choice, label: translate(choice.label) })) ?? [];
@@ -42,14 +64,19 @@ function options(field: EditorField) {
 </script>
 
 <template>
-  <div class="field-grid">
-    <fieldset v-for="[ id, group ] in groups" :key="id">
-      <legend>{{ translate(group) }}</legend>
-      <div
-        v-for="field in fields.filter((item) => textIdentity(item.group) === id)"
-        :key="field.key"
-        class="field-row"
-      >
+  <nav
+    v-if="groupOrder?.length && groups.length > 1"
+    class="field-index"
+    :aria-label="t('editor.sections')"
+  >
+    <a v-for="group in groups" :key="group.id" :href="`#${group.id}`">{{
+      translate(group.label)
+    }}</a>
+  </nav>
+  <div class="field-grid" :class="{ organized: groupOrder?.length }">
+    <fieldset v-for="group in groups" :id="group.id" :key="group.id" tabindex="-1">
+      <legend>{{ translate(group.label) }}</legend>
+      <div v-for="field in group.fields" :key="field.key" class="field-row">
         <label :for="`field-${field.key}`" :title="translate(field.help)">{{
           translate(field.label)
         }}</label>
@@ -59,6 +86,7 @@ function options(field: EditorField) {
           :model-value="Boolean(field.value)"
           binary
           :disabled="disabled || field.readonly"
+          :aria-describedby="noteId(group, field.help)"
           @update:model-value="emit('change', field.key, $event ? 1 : 0)"
         />
         <Select
@@ -73,6 +101,7 @@ function options(field: EditorField) {
           option-disabled="disabled"
           filter
           :disabled="disabled || field.readonly"
+          :aria-describedby="noteId(group, field.help)"
           @update:model-value="emit('change', field.key, $event)"
         >
           <template #value>{{
@@ -86,27 +115,30 @@ function options(field: EditorField) {
           :model-value="field.value"
           :spec="field"
           :disabled="Boolean(disabled || field.readonly)"
+          :description="noteId(group, field.help)"
           @update:model-value="emit('change', field.key, $event)"
           @valid="emit('valid', field.key, $event)"
           @pending="emit('pending', field.key, $event)"
         />
-        <small v-if="field.help" class="field-help">{{ translate(field.help) }}</small>
       </div>
-      <div
-        v-for="field in unavailable?.filter((item) => textIdentity(item.group) === id)"
-        :key="field.id"
-        class="field-row unavailable-field"
-      >
+      <div v-for="field in group.unavailable" :key="field.id" class="field-row unavailable-field">
         <label :for="`unavailable-${field.id}`">{{ translate(field.label) }}</label>
         <input
           :id="`unavailable-${field.id}`"
           value="—"
           disabled
-          :aria-describedby="`unavailable-reason-${field.id}`"
+          :aria-describedby="noteId(group, field.reason)"
         >
-        <small :id="`unavailable-reason-${field.id}`" class="field-help">{{
-          translate(field.reason)
-        }}</small>
+      </div>
+      <div v-if="group.notes.length" class="field-notes">
+        <p
+          v-for="(note, index) in group.notes"
+          :id="`${group.id}-note-${index}`"
+          :key="textIdentity(note)"
+          class="field-help"
+        >
+          {{ translate(note) }}
+        </p>
       </div>
     </fieldset>
   </div>
@@ -122,7 +154,7 @@ function options(field: EditorField) {
 fieldset {
   margin: 0;
   padding: 8px 10px;
-  border: 1px solid #dfe5eb;
+  border: 1px solid var(--p-content-border-color);
   border-radius: 6px;
   min-width: 0;
 }
@@ -140,10 +172,35 @@ legend {
   font-size: 13px;
 }
 .field-help {
-  grid-column: 1 / -1;
-  color: #627386;
+  margin: 4px 0;
+  color: var(--p-text-muted-color);
   font-size: 11px;
   line-height: 1.4;
+}
+.organized {
+  display: block;
+  columns: 2 18rem;
+}
+.organized fieldset {
+  break-inside: avoid;
+  margin-bottom: 12px;
+  scroll-margin-top: 12px;
+}
+.field-index {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 12px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+.field-index a {
+  color: var(--p-primary-color);
+  text-underline-offset: 3px;
+}
+.field-notes {
+  border-top: 1px solid var(--p-content-border-color);
+  margin-top: 8px;
+  padding-top: 4px;
 }
 .unavailable-field input {
   width: 100%;

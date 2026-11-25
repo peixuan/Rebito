@@ -337,24 +337,6 @@ onBeforeUnmount(() => {
           <h4>
             {{ translate(view.records.find((record) => record.id === view?.selected)?.label) }}
           </h4>
-          <TextFields
-            v-if="view.textFields?.length"
-            :fields="view.textFields"
-            :changes="textDraft(view.file, view.slot)"
-            :disabled="busy || stale || captureRequired"
-            @change="changeText"
-          />
-          <FieldGrid
-            :key="`${view.file}:${view.slot}:${view.selected}`"
-            :fields="fields"
-            :unavailable="view.unavailableFields ?? []"
-            :disabled="busy || stale || captureRequired"
-            @change="change"
-            @valid="(key, valid) => (valid ? invalid.delete(key) : invalid.add(key))"
-            @pending="
-              (key, pending) => (pending ? pendingInput.add(key) : pendingInput.delete(key))
-            "
-          />
           <div class="editor-actions">
             <EditorBatchControls
               v-if="view.batchKeys"
@@ -385,6 +367,25 @@ onBeforeUnmount(() => {
               @click="perform(() => runAction(action))"
             />
           </div>
+          <TextFields
+            v-if="view.textFields?.length"
+            :fields="view.textFields"
+            :changes="textDraft(view.file, view.slot)"
+            :disabled="busy || stale || captureRequired"
+            @change="changeText"
+          />
+          <FieldGrid
+            :key="`${view.file}:${view.slot}:${view.selected}`"
+            :fields="fields"
+            :unavailable="view.unavailableFields ?? []"
+            :group-order="view.fieldGroupOrder ?? []"
+            :disabled="busy || stale || captureRequired"
+            @change="change"
+            @valid="(key, valid) => (valid ? invalid.delete(key) : invalid.add(key))"
+            @pending="
+              (key, pending) => (pending ? pendingInput.add(key) : pendingInput.delete(key))
+            "
+          />
         </div>
       </div>
       <div class="editor-footer">
@@ -460,7 +461,7 @@ onBeforeUnmount(() => {
 }
 .module-catalog {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: start;
 }
 .module-catalog .module-entry {
@@ -481,23 +482,36 @@ onBeforeUnmount(() => {
   gap: 12px;
 }
 .editor-content.has-records {
-  grid-template-columns: minmax(250px, 0.85fr) minmax(0, 1.4fr);
+  grid-template-columns: minmax(250px, 0.7fr) minmax(0, 2fr);
+  align-items: start;
+}
+.editor-content > :first-child:not(.record-detail) {
+  position: sticky;
+  top: 12px;
 }
 .record-detail {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 .record-detail h4 {
   margin: 0 0 8px;
 }
 .editor-actions {
-  margin-top: 10px;
+  margin: 0 0 12px;
+  padding: 8px;
+  background: var(--p-content-hover-background);
+  border-radius: 6px;
+}
+.editor-actions:empty {
+  display: none;
 }
 .editor-footer {
   position: sticky;
   bottom: 0;
   padding: 10px 0 0;
   margin-top: 12px;
-  background: white;
+  background: var(--p-content-background);
   font-size: 12px;
 }
 .editor-footer span {
@@ -506,6 +520,14 @@ onBeforeUnmount(() => {
 @media (max-width: 850px) {
   .editor-content.has-records {
     grid-template-columns: 1fr;
+  }
+  .editor-content > :first-child:not(.record-detail) {
+    position: static;
+  }
+}
+@media (max-width: 600px) {
+  .module-catalog {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 </style>

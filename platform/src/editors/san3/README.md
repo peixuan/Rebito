@@ -48,6 +48,9 @@ phase to capture. Within a module, unavailable operations stay visible with thei
 prerequisites, including founding, covert activity, task joining and shipbuilding.
 A dash means no validated field is available; it is not a zero read from memory.
 These descriptions do not add writable keys or bypass the domain checks.
+Section links jump directly to expanded controls. Common edits precede operations
+and read-only reference data; repeated guidance appears once per section. The
+record list and batch actions remain separate from the ordinary validated draft.
 
 Guest integers are big-endian; the snapshot layer normalizes PicoDrive's
 word-swapped representation before parsing. Unknown bytes remain unchanged.

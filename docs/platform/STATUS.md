@@ -38,8 +38,15 @@ live hosted acceptance record.
 
 SAN3 navigation now keeps all eight feature modules visible across strategic,
 battle and registration captures. Unavailable modules explain the required phase;
-the server still rejects cross-phase requests. Record-level availability and the
-compact editor layout are the next part of this interface review.
+the server still rejects cross-phase requests. Record-level operations remain
+visible with disabled, valueless placeholders when their prerequisites fail.
+The compact layout keeps sections expanded, adds direct section links, separates
+common settings from read-only context, and puts batch controls above the fields.
+Shared field guidance is deduplicated without removing its accessible descriptions.
+The local candidate passed 881 unit/database tests (98.98% line, 95.10% branch),
+lint, types, build and dependency audit. Its sandboxed real-core layout flow checks
+English/Chinese drafts, 1280/768/390-pixel layouts, paused writeback and unchanged
+native saves. Hosted checks and production preservation still gate promotion.
 
 Rebito uses TypeScript, Vue, Fastify and PostgreSQL. Games run in browsers; the
 server owns identity, private revisions, game management and optional pure editors.

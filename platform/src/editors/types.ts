@@ -72,6 +72,8 @@ export interface EditorView {
   selected: string;
   fields: EditorField[];
   unavailableFields?: EditorUnavailableField[];
+  /** Optional stable section order for a dense view; unknown groups follow it. */
+  fieldGroupOrder?: DisplayText[];
   /** Numeric source keys that this adapter permits copying to other records. */
   batchKeys?: string[];
   textFields?: EditorTextField[];

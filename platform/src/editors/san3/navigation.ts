@@ -1,6 +1,7 @@
 import { message } from "../../shared/messages.ts";
 import type { EditorView } from "../types.ts";
 import { san3Availability } from "./availability.ts";
+import { san3FieldLayout } from "./layout.ts";
 
 const modules = [
   "cities",
@@ -17,7 +18,7 @@ const modules = [
 export function san3Navigation(view: EditorView): EditorView {
   const available = new Set(view.modules.map(({ id }) => id));
   return {
-    ...san3Availability(view),
+    ...san3FieldLayout(san3Availability(view)),
     modules: modules.map((id) => ({
       id,
       label: message(

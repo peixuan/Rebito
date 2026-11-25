@@ -10,6 +10,7 @@ const props = defineProps<{
   spec: NumberSpec;
   id: string;
   disabled?: boolean;
+  description?: string | undefined;
 }>();
 const emit = defineEmits<{
   "update:modelValue": [value: number];
@@ -67,7 +68,7 @@ function commit() {
       :disabled="disabled"
       :invalid="Boolean(error)"
       :aria-invalid="Boolean(error)"
-      :aria-describedby="`${id}-feedback`"
+      :aria-describedby="`${id}-feedback ${description ?? ''}`.trim()"
       @input="
         dirty = true;
         emit('pending', true);

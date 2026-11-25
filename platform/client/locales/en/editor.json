@@ -13,6 +13,7 @@
   "editor.selectRecord": "Select a valid record.",
   "editor.noChanges": "There are no changes to save.",
   "editor.title": "Save editor",
+  "editor.sections": "Jump to editor section",
   "editor.saved": "Edits were saved as a new revision. Check the game window for synchronization results.",
   "editor.slot": "Save slot to edit",
   "editor.file": "File to edit",

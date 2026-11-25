@@ -12,6 +12,7 @@
   "san3.navigation.requiresCreation": "进入新武将登记界面后重新捕获。",
   "san3.navigation.requiresReserves": "本次捕获没有可用的城市预备队名单。",
   "san3.diplomacy": "势力外交",
+  "san3.factionSettings": "势力设置",
   "san3.unavailable.relationships": "当前城市与武将名单关系无法确认，请回到战略大地图重新捕获。",
   "san3.unavailable.neutralCity": "仅在接管中立城市时使用，且需要有效的武将名单。",
   "san3.unavailable.shipbuilding": "需要玩家势力直属的港口城市，有在任武将，且船只库存有效。",

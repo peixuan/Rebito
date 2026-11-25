@@ -13,6 +13,7 @@
   "editor.selectRecord": "请选择有效记录。",
   "editor.noChanges": "没有需要保存的修改。",
   "editor.title": "存档修改器",
+  "editor.sections": "跳到修改分组",
   "editor.saved": "修改已保存为新版本。运行中游戏的同步结果见游戏窗口。",
   "editor.slot": "编辑存档槽",
   "editor.file": "编辑文件",
