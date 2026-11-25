@@ -1,3 +1,5 @@
+import { unlink } from "node:fs/promises";
+import { join } from "node:path";
 import { afterAll, beforeAll, expect, it, vi } from "vitest";
 import { createPlatform } from "../../src/server/platform.ts";
 import * as reclamation from "../../src/storage/history-reclamation.ts";
@@ -158,4 +160,32 @@ it("automatically rotates successful HTTP saves while preserving an explicitly p
   expect(await fixture.service.file(owner, protectedId, "save.dat")).toEqual(Buffer.from([50]));
   if (!base) throw new Error("Missing head");
   expect(await fixture.service.file(owner, base, "save.dat")).toEqual(Buffer.from([63]));
+});
+
+it("lets only the owner delete damaged progress after reviewing its protected history", async () => {
+  const profile = await fixture.repository.create(owner, "test-game", "Broken save");
+  const head = await fixture.append(profile.id, null, 183, owner);
+  const [file] = head.manifest.artifacts;
+  if (!file) throw new Error("Missing test artifact");
+  await unlink(join(fixture.directory, "blobs", file.sha256));
+  const url = `/api/profiles/${profile.id}/deletion`;
+  const review = () => app.inject({ url, headers: { cookie } });
+  const confirm = (token: string, session = cookie, source = origin) =>
+    app.inject({
+      method: "POST",
+      url,
+      headers: { cookie: session, origin: source },
+      payload: { token },
+    });
+  expect((await app.inject(url)).statusCode).toBe(401);
+  const planned = (await review()).json();
+  expect((await confirm(planned.token, other)).statusCode).toBe(404);
+  expect((await confirm(planned.token, cookie, "https://other.example")).statusCode).toBe(403);
+  expect((await confirm("bad")).statusCode).toBe(400);
+  await fixture.repository.protect(owner, head.id, false, true);
+  expect((await confirm(planned.token)).statusCode).toBe(409);
+  const updated = (await review()).json();
+  expect(updated).toMatchObject({ protectedRevisions: 1, revisions: 1 });
+  expect((await confirm(updated.token)).statusCode).toBe(200);
+  expect((await review()).statusCode).toBe(404);
 });

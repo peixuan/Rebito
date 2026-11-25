@@ -3,6 +3,7 @@ import type { Pool } from "pg";
 import { historyPlan, pruneHistory } from "../storage/history.ts";
 import { pendingHistoryFiles, reclaimHistory } from "../storage/history-reclamation.ts";
 import type { StorageLimits } from "../storage/limits.ts";
+import { deleteProfile, profileDeletionImpact } from "../storage/profile-deletion.ts";
 import { idParameters } from "./http-schema.ts";
 
 /** Register behind privateApi and the storage activity guard. Cleanup is exclusive. */
@@ -12,6 +13,18 @@ export function registerHistory(
   directory: string,
   limits: StorageLimits,
 ) {
+  const confirmedCleanup = {
+    config: { exclusiveStorage: true, rotateHistory: true },
+    schema: {
+      params: idParameters,
+      body: {
+        type: "object",
+        additionalProperties: false,
+        required: ["token"],
+        properties: { token: { type: "string", pattern: "^[a-f0-9]{64}$" } },
+      },
+    },
+  } as const;
   async function reclaim(owner: string) {
     try {
       return await reclaimHistory(database, directory, owner);
@@ -32,24 +45,26 @@ export function registerHistory(
   );
   app.post<{ Params: { id: string }; Body: { token: string } }>(
     "/api/profiles/:id/history/cleanup",
-    {
-      config: { exclusiveStorage: true, rotateHistory: true },
-      schema: {
-        params: idParameters,
-        body: {
-          type: "object",
-          additionalProperties: false,
-          required: ["token"],
-          properties: { token: { type: "string", pattern: "^[a-f0-9]{64}$" } },
-        },
-      },
-    },
+    confirmedCleanup,
     async (request) => {
       const preview = await pruneHistory(database, request.ownerId, limits, {
         profileId: request.params.id,
         token: request.body.token,
       });
       return { preview, ...(await reclaim(request.ownerId)) };
+    },
+  );
+  app.get<{ Params: { id: string } }>(
+    "/api/profiles/:id/deletion",
+    { schema: { params: idParameters } },
+    (request) => profileDeletionImpact(database, request.ownerId, request.params.id),
+  );
+  app.post<{ Params: { id: string }; Body: { token: string } }>(
+    "/api/profiles/:id/deletion",
+    confirmedCleanup,
+    async (request) => {
+      await deleteProfile(database, request.ownerId, request.params.id, request.body.token);
+      return reclaim(request.ownerId);
     },
   );
   app.post(

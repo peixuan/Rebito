@@ -30,6 +30,13 @@ compatible with these headers; do not disable the policy to use an unpinned CDN.
 | `GET /api/revisions/:id/file?name=...` | Download one owned artifact                     |
 | `POST /api/profiles/:id/restore`       | Restore `revisionId` against `baseRevision`     |
 
+A profile owner can preview permanent removal with `GET /api/profiles/:id/deletion`.
+The response names the profile and counts its revisions and protected checkpoints.
+`POST` to the same path with `{token}` confirms that exact impact. A changed head
+or protection flag requires a fresh preview (409). This also works for empty profiles
+and damaged game data. After metadata removal, cleanup rechecks shared references
+before unlinking unique files. Interrupted cleanup resumes in the background.
+
 Uploads contain one text field `metadata`: JSON with `kind`, `releaseId`, required
 nullable `baseRevision`, and `runtime` for snapshots. File parts use their portable
 relative filenames. Limits are 128 files and 64 MiB total, with two simultaneous
