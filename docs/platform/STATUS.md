@@ -159,6 +159,13 @@ save-preservation acceptance for its exact revision, without weakening any gate.
 
 ## Console memory editors
 
+A full-browser review exposed an unconfirmed PicoDrive load. Investigation
+independently reproduced the pinned wrapper's temporary-file cleanup race: an old
+timer can remove a newer queued load. The console adapter now owns and cancels
+that cleanup, retaining the existing core API, bounded lifetime and strict
+readback checks. This fixes a proven race without claiming it was the sole cause
+of that observed failure. Re-run real-core and full hosted acceptance for release.
+
 Reviewed Genesis Plus GX and PicoDrive snapshots now expose canonical guest RAM
 to pure game editors. Runtime identities are pinned separately from administrator
 game associations. Capture for editing pauses and publishes one base; writeback

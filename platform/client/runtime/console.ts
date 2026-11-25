@@ -4,6 +4,11 @@ import { type ConsoleControls, consoleControls } from "./console-controls.ts";
 import { guardConsolePlayback } from "./console-guard.ts";
 import { consoleLocale } from "./console-locale.ts";
 import { restoreEditedState } from "./console-state.ts";
+import {
+  type ConsoleStateLoader,
+  type ConsoleStateManager,
+  createConsoleStateLoader,
+} from "./console-state-loader.ts";
 import { consoleSystems } from "./console-systems.ts";
 import { runtimeIdentity } from "./identity.ts";
 import type { RuntimeFile, RuntimeHandle, RuntimeLaunch, RuntimeProgress } from "./types.ts";
@@ -12,15 +17,13 @@ interface Emulator extends ConsoleControls {
   pause(dontUpdate?: boolean): void;
   play(dontUpdate?: boolean): void;
   on(event: string, callback: () => void): void;
-  gameManager: {
+  gameManager: ConsoleStateManager & {
     FS: {
       filesystems: { MEMFS: unknown };
       mount(type: unknown, options: object, path: string): void;
       unmount(path: string): void;
     };
-    writeFile(path: string, bytes: Uint8Array): void;
     getState(): Uint8Array;
-    loadState(bytes: Uint8Array): void;
     loadSaveFiles(): void;
     restart(): void;
     setVariable(name: string, value: string): void;
@@ -104,7 +107,7 @@ export async function startConsole(launch: RuntimeLaunch): Promise<RuntimeHandle
       exitEmulation: false,
     },
   });
-  await new Promise<void>((resolve, reject) => {
+  const stateLoader = await new Promise<ConsoleStateLoader>((resolve, reject) => {
     emulator.on("exit", () => reject(new MessageError(message("runtime.startFailed"))));
     emulator.on("saveDatabaseLoaded", () => {
       // This event precedes ROM loading. Replace IDBFS with a memory mount
@@ -133,14 +136,15 @@ export async function startConsole(launch: RuntimeLaunch): Promise<RuntimeHandle
             emulator.gameManager.loadSaveFiles();
           }
         }
+        const loader = createConsoleStateLoader(emulator.gameManager);
         if (state) {
-          emulator.gameManager.loadState(new Uint8Array(state.bytes));
+          loader.load(state.bytes);
           // RetroArch applies a queued state load at its next frame boundary.
           await new Promise<void>((done) =>
             requestAnimationFrame(() => requestAnimationFrame(() => done())),
           );
         }
-        resolve();
+        resolve(loader);
       })().catch(reject);
     });
   });
@@ -176,7 +180,7 @@ export async function startConsole(launch: RuntimeLaunch): Promise<RuntimeHandle
               restoreEditedState(
                 {
                   pause: playback.pause,
-                  load: (bytes) => emulator.gameManager.loadState(bytes),
+                  load: stateLoader.load,
                   capture,
                   advance: playback.advance,
                 },
@@ -189,6 +193,7 @@ export async function startConsole(launch: RuntimeLaunch): Promise<RuntimeHandle
     async stop() {
       bindings.dispose();
       playback.pause();
+      stateLoader.dispose();
       for (const value of urls) URL.revokeObjectURL(value);
     },
   };

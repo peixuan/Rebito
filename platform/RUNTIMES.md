@@ -88,6 +88,15 @@ See [snapshot synchronization](SYNCHRONIZATION.md#console-memory-editing),
 [Phantasy Star IV](src/editors/phantasy-star4/README.md) and
 [Romance of the Three Kingdoms III](src/editors/san3/README.md).
 
+State loads use one adapter-owned temporary file and cancel its previous cleanup
+timer before replacing it. The pinned wrapper's `GameManager.loadState` instead
+reuses `game.state` with independent five-second timers: an earlier timer can
+delete a later queued load. A controlled-clock reproduction with the shipped
+wrapper confirmed that lifecycle race. The adapter calls the same named-file core
+entrypoint, retains the five-second cleanup and removes its file on stop. This
+does not weaken changed-byte/native-save readback, alter snapshot identities or
+republish a failed edit; unconfirmed loads still remain paused for explicit retry.
+
 The player shows an expanded keyboard-to-controller guide for player one after
 startup. The optional `RuntimeControls` capability keeps the page independent of
 EmulatorJS: the console adapter reads the active scheme's labels and current keys
