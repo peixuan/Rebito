@@ -1,4 +1,8 @@
 {
+  "library.profileDeletionChanged": "This profile changed. Refresh the deletion details and review them again.",
+  "library.deleteProfile": "Delete profile",
+  "library.deleteProfilePrompt": "Permanently delete “{name}” and its saved progress?",
+  "library.deleteProfileImpact": "Includes {count} saved revisions and {protected} protected checkpoints.",
   "library.previewSize": "The game archive must not exceed 64 MiB.",
   "library.archiveCount": "The archive contains too many files.",
   "library.previewExpandedSize": "The expanded game archive must not exceed 256 MiB.",

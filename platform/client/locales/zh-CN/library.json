@@ -1,4 +1,8 @@
 {
+  "library.profileDeletionChanged": "这份个人进度已变化。请刷新后重新核对要删除的内容。",
+  "library.deleteProfile": "删除个人进度",
+  "library.deleteProfilePrompt": "永久删除“{name}”及其全部存档吗？",
+  "library.deleteProfileImpact": "共 {count} 个存档版本，其中 {protected} 个已受保护。",
   "library.previewSize": "游戏文件不能超过 64 MiB。",
   "library.archiveCount": "压缩包文件过多。",
   "library.previewExpandedSize": "游戏包展开后不能超过 256 MiB。",

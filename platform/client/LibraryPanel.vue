@@ -10,7 +10,9 @@ import type { DisplayText } from "../src/shared/messages.ts";
 import type { Profile } from "../src/storage/revisions.ts";
 import { api, errorText } from "./api.ts";
 import { t, translate } from "./i18n.ts";
+import ProfileDeletion from "./ProfileDeletion.vue";
 
+const deletion = ref<Profile>();
 const emit = defineEmits<{ open: [game: Game, profile: Profile]; changed: [] }>();
 const games = ref<Game[]>([]);
 const profiles = ref<Profile[]>([]);
@@ -62,6 +64,11 @@ async function createProfile() {
   } finally {
     busy.value = false;
   }
+}
+function deleted(id: string) {
+  profiles.value = profiles.value.filter((profile) => profile.id !== id);
+  deletion.value = undefined;
+  emit("changed");
 }
 function choose(game: Game) {
   selected.value = game;
@@ -115,16 +122,30 @@ onMounted(refresh);
         }}</span>
       </button>
     </div>
+    <ProfileDeletion
+      v-if="deletion"
+      :key="deletion.id"
+      :profile="deletion"
+      @close="deletion = undefined"
+      @deleted="deleted"
+    />
     <section v-if="selected" class="profile-panel" :aria-label="t('library.profiles')">
       <h3>{{ t("library.profileTitle", { title: selected.title }) }}</h3>
       <p class="muted">{{ t("library.profileHelp") }}</p>
       <div v-for="profile in gameProfiles" :key="profile.id" class="profile-row">
-        <span>{{ profile.name }}</span>
+        <span class="profile-name">{{ profile.name }}</span>
         <Button
           :label="t('library.openProfile')"
           size="small"
           severity="secondary"
           @click="emit('open', selected, profile)"
+        />
+        <Button
+          :label="t('library.deleteProfile')"
+          variant="text"
+          severity="danger"
+          size="small"
+          @click="deletion = profile"
         />
       </div>
       <form class="toolbar" @submit.prevent="createProfile">
@@ -146,3 +167,10 @@ onMounted(refresh);
     </section>
   </section>
 </template>
+
+<style scoped>
+.profile-name {
+  margin-inline-end: auto;
+  overflow-wrap: anywhere;
+}
+</style>

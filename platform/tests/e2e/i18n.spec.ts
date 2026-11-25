@@ -103,7 +103,7 @@ test("keeps a real console alive while translating its controller guide", async 
   await page
     .locator(".profile-row")
     .filter({ has: page.getByText(profileName, { exact: true }) })
-    .getByRole("button")
+    .getByRole("button", { name: "Open profile", exact: true })
     .click();
   await page.getByRole("button", { name: "Start game", exact: true }).click();
   await expect(page.getByRole("button", { name: "Pause game", exact: true })).toBeEnabled();
