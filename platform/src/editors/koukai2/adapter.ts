@@ -16,9 +16,14 @@ function prepare(bytes: Uint8Array, draft: EditorDraft) {
     const changes = draft.action
       ? document.action(slot, draft.action.id, draft.action.record, draft.changes)
       : (draft.changes ?? {});
-    const preview = document.preview(slot, changes);
-    const output = document.render(slot, changes);
-    return { slot, changes, preview, output, document: new KoukaiDocument(output) };
+    const { output, preview } = document.edit(slot, changes);
+    return {
+      slot,
+      changes,
+      preview,
+      output,
+      document: preview.length ? new KoukaiDocument(output) : document,
+    };
   } catch (cause) {
     throw new EditorError("invalid_edit", displayMessage(cause) ?? message("editor.invalidEdit"));
   }

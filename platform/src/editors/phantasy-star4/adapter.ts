@@ -27,6 +27,11 @@ function fieldCatalog(columnId: string) {
   if (columnId === "skill") return "skills";
   return undefined;
 }
+function catalogSize(catalog: "items" | "techniques" | "skills") {
+  return { items: layout.itemCount, techniques: layout.techniqueCount, skills: layout.skillCount }[
+    catalog
+  ];
+}
 function choiceName(catalog: "items" | "techniques" | "skills", id: number) {
   const name = message(`phantasyStar4.${catalog}.${id}`);
   return catalog === "skills" && id >= 48
@@ -40,28 +45,24 @@ function label(module: Module, index: number): DisplayText {
       ? message("phantasyStar4.position", { index: index + 1 })
       : message(`phantasyStar4.characters.${index}`);
 }
+function recordFields(document: PhantasyStar4Document, module: Module, index: number) {
+  return module === "party"
+    ? partyFields(document)
+    : module === "inventory"
+      ? inventoryFields(document, index)
+      : module === "abilities"
+        ? abilityFields(document, index)
+        : characterFields(document, index);
+}
+
 function fields(document: PhantasyStar4Document, module: Module, index: number): EditorField[] {
-  const result =
-    module === "party"
-      ? partyFields(document)
-      : module === "inventory"
-        ? inventoryFields(document, index)
-        : module === "abilities"
-          ? abilityFields(document, index)
-          : characterFields(document, index);
-  return result.map(({ offset: _, width: __, ...field }) => {
+  return recordFields(document, module, index).map(({ offset: _, width: __, ...field }) => {
     const catalog = fieldCatalog(field.columnId);
-    const count =
-      catalog === "items"
-        ? layout.itemCount
-        : catalog === "techniques"
-          ? layout.techniqueCount
-          : layout.skillCount;
     return {
       ...field,
       ...(catalog
         ? {
-            choices: Array.from({ length: count }, (_, value) => ({
+            choices: Array.from({ length: catalogSize(catalog) }, (_, value) => ({
               value,
               label: choiceName(catalog, value),
             })),
@@ -145,7 +146,8 @@ export const createPhantasyStar4Adapter = (rules?: PhantasyStar4Rules): EditorAd
         (effect) => !preview.some(({ key }) => key === effect.key),
       ),
     );
-    const held = document.inventory().flatMap((id, index) => (id === 0 ? [] : [index]));
+    const inventory = document.inventory();
+    const held = inventory.flatMap((id, index) => (id === 0 ? [] : [index]));
     const selectedHeld = held.indexOf(Number(selected));
     return {
       slots: [{ index: 0, label: message("phantasyStar4.checkpoint"), available: true }],
@@ -174,7 +176,7 @@ export const createPhantasyStar4Adapter = (rules?: PhantasyStar4Rules): EditorAd
         label: label(module, index),
         summary:
           module === "inventory"
-            ? itemName(document.inventory()[index] ?? 0)
+            ? itemName(inventory[index] ?? 0)
             : module === "party"
               ? message("phantasyStar4.party")
               : message(
@@ -192,10 +194,13 @@ export const createPhantasyStar4Adapter = (rules?: PhantasyStar4Rules): EditorAd
                 : [],
         available: true,
         cells: Object.fromEntries(
-          fields(document, module, index).map((field) => [
-            field.columnId,
-            field.choices?.find(({ value }) => value === field.value)?.label ?? field.value,
-          ]),
+          recordFields(document, module, index).map(({ columnId, value }) => {
+            const catalog = fieldCatalog(columnId);
+            return [
+              columnId,
+              catalog && value < catalogSize(catalog) ? choiceName(catalog, value) : value,
+            ];
+          }),
         ),
       })),
       selected,

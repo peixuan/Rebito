@@ -54,6 +54,11 @@ export function fieldsFor(
 /** Rows expose useful sortable values without constructing every skill choice list. */
 export function rowsFor(document: JinyongDocument, module: JinyongModule): EditorView["records"] {
   const count = module === "inventory" ? layout.items.count : layout.persons.count;
+  const bag = new Map(
+    (module === "inventory" ? document.inventory() : [])
+      .filter(({ id }) => id !== -1)
+      .map(({ id, amount }, index) => [id, { quantity: amount, position: index + 1 }]),
+  );
   const rows = Array.from({ length: count }, (_, index) => {
     const cells: Record<string, number | DisplayText> = {};
     if (module === "skills") {
@@ -61,6 +66,8 @@ export function rowsFor(document: JinyongDocument, module: JinyongModule): Edito
       cells.learned = Array.from({ length: 10 }, (_, slot) =>
         document.word(start + slot * 2),
       ).filter((id) => id > 0).length;
+    } else if (module === "inventory") {
+      Object.assign(cells, bag.get(index) ?? { quantity: 0, position: 0 });
     } else {
       for (const field of fieldsFor(document, module, index))
         cells[field.columnId] = displayValue(field, field.value);

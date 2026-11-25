@@ -89,8 +89,13 @@ export class KoukaiDocument {
     return readField(this.bytes, field);
   }
   preview(slot: number, changes: Changes) {
+    const entries = Object.entries(changes);
+    if (!entries.length) {
+      this.context(slot);
+      return [];
+    }
     const fields = this.fields(slot);
-    return Object.entries(changes)
+    return entries
       .map(([key, after]) => {
         const field = fields.get(key);
         if (!field) throw new MessageError(message("koukai2.unknownField", { key }));
@@ -99,11 +104,14 @@ export class KoukaiDocument {
       })
       .filter(({ before, after }) => before !== after);
   }
-  render(slot: number, changes: Changes): Uint8Array {
+  edit(slot: number, changes: Changes) {
     const preview = this.preview(slot, changes);
     const result = new Uint8Array(this.bytes);
     for (const { field, after } of preview) writeField(result, field, after);
-    return result;
+    return { output: result, preview };
+  }
+  render(slot: number, changes: Changes): Uint8Array {
+    return this.edit(slot, changes).output;
   }
   action(slot: number, action: string, record: string, pending: Changes = {}): Changes {
     const edited = new KoukaiDocument(this.render(slot, pending));
