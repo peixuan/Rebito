@@ -10,8 +10,9 @@ no-store`; request limits are per authenticated user. Do not add private routes
 outside the `privateApi` scope or remove the ownership checks in the save service.
 
 Client errors use stable codes: `unauthenticated` (401), `invalid_origin` (403),
-`not_found` (404), `conflict` (409), `release_mismatch` (400), `quota_exceeded` (507), or `invalid_request`
-for other rejected input. Internal errors return no stack trace or database details.
+`not_found` (404), `conflict` (409), `release_mismatch` (400), or `invalid_request` for other rejected input.
+Capacity failures return 507 with `quota_exceeded` (account), `site_quota_exceeded`
+(all accounts), or `disk_space_low` (filesystem reserve). Internal errors return no stack trace or database details.
 Cross-user resources behave as absent.
 
 Headers restrict scripts and connections to this origin and enable browser

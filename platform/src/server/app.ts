@@ -51,9 +51,13 @@ export function createApp(logStream?: { write(message: string): void }) {
     if (error instanceof EditorError)
       return reply.code(422).send({ error: error.code, displayMessage: error.displayMessage });
     if (error instanceof ProgressError) {
-      const status = { not_found: 404, conflict: 409, release_mismatch: 400, quota_exceeded: 507 }[
-        error.code
-      ];
+      const status = {
+        not_found: 404,
+        conflict: 409,
+        release_mismatch: 400,
+        quota_exceeded: 507,
+        site_quota_exceeded: 507,
+      }[error.code];
       return reply.code(status).send({ error: error.code });
     }
     const candidate =

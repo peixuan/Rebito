@@ -4,6 +4,10 @@ Personal storage defaults to 2 GiB, 2,000 revisions and 100 profiles. The byte
 limit counts complete, uncompressed logical revisions, not a promised physical
 disk reservation. Identical files already share content-addressed blobs.
 
+The site-wide defaults are 10 GiB and 10,000 revisions across all owners. Both
+include protected points and restores. The revision count also bounds zero-byte
+saves. Configure them with `MAX_TOTAL_SAVE_BYTES` and `MAX_TOTAL_REVISIONS`.
+
 ## Retention contract
 
 - Current profile heads and explicitly protected points are never rotated away.
@@ -27,7 +31,15 @@ online storage lease and re-evaluate the plan in a transaction. Surviving revisi
 parents may bypass removed ancestors; their IDs, manifests, bytes and profile heads
 do not change. Do not rebase a stale runtime or edit during this compaction.
 
-Record candidate blob hashes durably with the metadata deletion. Remove a file only
+For an explicit whole-profile removal, the owner reviews the count of all revisions
+and protected points. A confirmation binds the profile, owner, name, head, revision
+IDs and protection flags. An empty profile can be removed without opening a game.
+
+Record candidate blob hashes before writing save files and with metadata deletion.
+Successful publication clears its candidates in the same transaction as the head.
+The global counter updates in that transaction, serializing the capacity check across
+writers while keeping file I/O concurrent. Rollback releases the claimed capacity.
+A failed upload leaves candidates for the reclaimer. Remove a file only
 after rechecking every remaining reference, including other users and profiles.
 Interrupted physical reclamation is retryable. A failed save must retain its last
 published head; pending writeback remains paused. Cleanup must drain active handlers

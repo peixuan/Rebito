@@ -2,6 +2,7 @@ import { resolve } from "node:path";
 import { z } from "zod";
 import { defaultLibraryBytes } from "../library/upload-settings.ts";
 import { type StorageLimits, storageLimitSchema } from "../storage/limits.ts";
+import { defaultSiteLimits, type SiteSaveLimits } from "../storage/site-quota.ts";
 
 export interface ServerConfig {
   readonly origin: string;
@@ -14,6 +15,7 @@ export interface ServerConfig {
   readonly storageLimits: StorageLimits;
   readonly minimumFreeBytes: number;
   readonly adminUserIds: readonly string[];
+  readonly siteSaveLimits: SiteSaveLimits;
   readonly maximumLibraryBytes: number;
   readonly initialAdmin?: {
     readonly email: string;
@@ -106,6 +108,20 @@ export function loadConfig(environment: Environment): ServerConfig {
     port,
     allowRegistration: registration === "true",
     minimumFreeBytes,
+    siteSaveLimits: {
+      bytes: z
+        .number()
+        .int()
+        .min(1)
+        .max(1024 ** 4)
+        .parse(Number(environment.MAX_TOTAL_SAVE_BYTES ?? defaultSiteLimits.bytes)),
+      revisions: z
+        .number()
+        .int()
+        .min(1)
+        .max(10_000_000)
+        .parse(Number(environment.MAX_TOTAL_REVISIONS ?? defaultSiteLimits.revisions)),
+    },
     maximumLibraryBytes: z
       .number()
       .int()

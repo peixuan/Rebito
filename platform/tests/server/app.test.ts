@@ -28,6 +28,7 @@ describe("HTTP service boundary", () => {
     ["conflict", 409],
     ["release_mismatch", 400],
     ["quota_exceeded", 507],
+    ["site_quota_exceeded", 507],
   ] as const)("maps domain error %s to a stable client response", async (code, status) => {
     const instance = app();
     instance.get("/domain-error", () => {

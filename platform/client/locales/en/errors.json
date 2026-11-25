@@ -2,6 +2,7 @@
   "errors.uploadBusy": "The server is processing other uploads. Please try again shortly.",
   "errors.queueTimeout": "Saving timed out after automatic retries. Your progress remains in this page. Please try again shortly.",
   "errors.uploadSize": "The upload exceeds the allowed size.",
+  "errors.siteQuota": "The server save limit has been reached. Keep the game open. Free space by deleting unneeded progress, or contact the administrator.",
   "errors.quota": "Your storage quota is full. Keep this page open. Clean up unprotected history or review protected points before retrying; an administrator can adjust the quota.",
   "errors.diskSpace": "The server has insufficient disk space. Your progress has not been saved. Keep this page open and ask an administrator to free space before retrying.",
   "errors.rateLimit": "Too many requests. Please try again shortly.",

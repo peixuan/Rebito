@@ -1,4 +1,5 @@
 import type { Pool } from "pg";
+import { siteQuotaMigration } from "./site-quota.ts";
 
 const initialSchema = `
 CREATE TABLE profiles (
@@ -76,6 +77,8 @@ export async function migrateStorage(database: Pool): Promise<void> {
         INSERT INTO schema_versions VALUES (4);
       `);
     }
+    const siteQuota = await client.query("SELECT version FROM schema_versions WHERE version = 5");
+    if (siteQuota.rowCount === 0) await client.query(siteQuotaMigration);
     await client.query("COMMIT");
   } catch (error) {
     await client.query("ROLLBACK");

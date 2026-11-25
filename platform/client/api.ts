@@ -51,6 +51,7 @@ export function errorText(error: unknown): DisplayMessage {
     if (error.message === "upload_busy") return message("errors.uploadBusy");
     if (error.message === "save_queue_timeout") return message("errors.queueTimeout");
     if (error.status === 413) return message("errors.uploadSize");
+    if (error.message === "site_quota_exceeded") return message("errors.siteQuota");
     if (error.message === "quota_exceeded") return message("errors.quota");
     if (error.message === "disk_space_low") return message("errors.diskSpace");
     if (error.status === 429) return message("errors.rateLimit");

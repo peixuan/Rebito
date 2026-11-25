@@ -25,6 +25,7 @@ export async function reclaimHistory(
     "SELECT sha256 FROM history_cleanup WHERE $1::text IS NULL OR owner_id=$1 ORDER BY sha256 LIMIT 128",
     [owner ?? null],
   );
+  if (!jobs.rows.length) return { reclaimedBytes: 0, pendingFiles: 0 };
   const referenced = await referencedBlobs(database);
   const root = join(directory, "blobs");
   let reclaimedBytes = 0;
@@ -32,7 +33,12 @@ export async function reclaimHistory(
     if (!/^[a-f0-9]{64}$/.test(sha256)) throw new Error("Invalid cleanup digest");
     if (!referenced.has(sha256)) {
       reclaimedBytes += await removeOwnedFile(root, sha256, remove);
-      await syncDirectory(root);
+      try {
+        await syncDirectory(root);
+      } catch (error) {
+        // A failed first upload may never have created the blob directory.
+        if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+      }
     }
     await database.query("DELETE FROM history_cleanup WHERE sha256=$1", [sha256]);
   }

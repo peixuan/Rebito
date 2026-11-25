@@ -1,7 +1,12 @@
 import { randomUUID } from "node:crypto";
 import type { Pool, PoolClient } from "pg";
-import { assertProgressManifest, type ProgressManifest } from "../domain/artifacts.ts";
+import {
+  type ArtifactRef,
+  assertProgressManifest,
+  type ProgressManifest,
+} from "../domain/artifacts.ts";
 import { type StorageLimits, storageLimitSchema, storageUsage } from "./limits.ts";
+import { defaultSiteLimits, type SiteSaveLimits, siteUsage } from "./site-quota.ts";
 
 export interface Profile {
   readonly id: string;
@@ -22,7 +27,12 @@ export interface Revision {
 }
 
 export class ProgressError extends Error {
-  readonly code: "not_found" | "conflict" | "release_mismatch" | "quota_exceeded";
+  readonly code:
+    | "not_found"
+    | "conflict"
+    | "release_mismatch"
+    | "quota_exceeded"
+    | "site_quota_exceeded";
   constructor(code: ProgressError["code"]) {
     super(code);
     this.code = code;
@@ -37,7 +47,13 @@ const revisionColumns = `r.id, r.profile_id AS "profileId", r.parent_id AS "pare
 export class RevisionRepository {
   private readonly database: Pool;
   readonly limits: StorageLimits;
-  constructor(database: Pool, limits: StorageLimits = storageLimitSchema.parse({})) {
+  private readonly siteLimits: SiteSaveLimits;
+  constructor(
+    database: Pool,
+    limits: StorageLimits = storageLimitSchema.parse({}),
+    siteLimits = defaultSiteLimits,
+  ) {
+    this.siteLimits = siteLimits;
     this.database = database;
     this.limits = storageLimitSchema.parse(limits);
   }
@@ -62,15 +78,33 @@ export class RevisionRepository {
     return { used: await storageUsage(this.database, owner), limits: this.limits };
   }
 
-  async assertCapacity(
+  async assertCapacity(owner: string, manifest: ProgressManifest) {
+    const bytes = await this.assertOwnerCapacity(this.database, owner, manifest);
+    const used = await siteUsage(this.database);
+    if (used.bytes + bytes > this.siteLimits.bytes || used.revisions >= this.siteLimits.revisions)
+      throw new ProgressError("site_quota_exceeded");
+  }
+
+  private async assertOwnerCapacity(
+    database: Pick<Pool, "query">,
     owner: string,
     manifest: ProgressManifest,
-    database: Pick<Pool, "query"> = this.database,
   ) {
     const used = await storageUsage(database, owner);
     const bytes = manifest.artifacts.reduce((total, artifact) => total + artifact.size, 0);
     if (used.revisions >= this.limits.revisions || used.bytes + bytes > this.limits.bytes)
       throw new ProgressError("quota_exceeded");
+    return bytes;
+  }
+
+  /** Record candidates before disk I/O. Exclusive cleanup waits for live writers. */
+  async trackPendingFiles(owner: string, artifacts: readonly ArtifactRef[]) {
+    await this.database.query(
+      `INSERT INTO history_cleanup(sha256, size, owner_id)
+       SELECT DISTINCT sha256, size, $2 FROM jsonb_to_recordset($1) AS file(sha256 text, size bigint)
+       ORDER BY sha256 ON CONFLICT (sha256) DO NOTHING`,
+      [JSON.stringify(artifacts), owner],
+    );
   }
 
   async list(owner: string): Promise<Profile[]> {
@@ -155,13 +189,19 @@ export class RevisionRepository {
       if (!profile) throw new ProgressError("not_found");
       if (profile.headId !== base) throw new ProgressError("conflict");
       if (profile.releaseId !== manifest.releaseId) throw new ProgressError("release_mismatch");
-      await this.assertCapacity(owner, manifest, client);
+      await this.assertOwnerCapacity(client, owner, manifest);
       const id = randomUUID();
       const result = await client.query<Revision>(
         `INSERT INTO revisions AS r(id, profile_id, parent_id, source, manifest)
          VALUES ($1, $2, $3, $4, $5) RETURNING ${revisionColumns}`,
         [id, profileId, base, source, JSON.stringify(manifest)],
       );
+      const used = await siteUsage(client);
+      if (used.bytes > this.siteLimits.bytes || used.revisions > this.siteLimits.revisions)
+        throw new ProgressError("site_quota_exceeded");
+      await client.query("DELETE FROM history_cleanup WHERE sha256 = ANY($1::text[])", [
+        manifest.artifacts.map((artifact) => artifact.sha256),
+      ]);
       await client.query("UPDATE profiles SET head_id=$1 WHERE id=$2", [id, profileId]);
       return result.rows[0] as Revision;
     });

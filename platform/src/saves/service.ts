@@ -1,5 +1,9 @@
 import { createHash } from "node:crypto";
-import { assertProgressManifest, type ProgressManifest } from "../domain/artifacts.ts";
+import {
+  type ArtifactRef,
+  assertProgressManifest,
+  type ProgressManifest,
+} from "../domain/artifacts.ts";
 import type { LocalBlobStore } from "../storage/blobs.ts";
 import {
   ProgressError,
@@ -41,13 +45,7 @@ export class SaveService {
     assertProgressManifest(manifest);
     await this.preflight(owner, profileId, base, metadata.releaseId);
     await this.revisions.assertCapacity(owner, manifest);
-    for (const [index, file] of files.entries()) {
-      const stored = await this.blobs.put(file.bytes);
-      const expected = manifest.artifacts[index];
-      if (stored.sha256 !== expected?.sha256 || stored.size !== expected.size) {
-        throw new Error("Save bytes changed during publication");
-      }
-    }
+    await this.storeFiles(owner, files, manifest.artifacts);
     // The transaction checks the head again: another request may have won meanwhile.
     return this.revisions.publish(owner, profileId, base, manifest, source);
   }
@@ -95,13 +93,22 @@ export class SaveService {
     };
     assertProgressManifest(manifest);
     await this.revisions.assertCapacity(owner, manifest);
+    await this.storeFiles(owner, files, replacements);
+    return this.revisions.publish(owner, revision.profileId, revisionId, manifest, "editor");
+  }
+
+  private async storeFiles(
+    owner: string,
+    files: readonly SaveFile[],
+    artifacts: readonly ArtifactRef[],
+  ) {
+    await this.revisions.trackPendingFiles(owner, artifacts);
     for (const [index, file] of files.entries()) {
       const stored = await this.blobs.put(file.bytes);
-      const expected = replacements[index];
+      const expected = artifacts[index];
       if (stored.sha256 !== expected?.sha256 || stored.size !== expected.size)
         throw new Error("Save bytes changed during publication");
     }
-    return this.revisions.publish(owner, revision.profileId, revisionId, manifest, "editor");
   }
 
   private async preflight(

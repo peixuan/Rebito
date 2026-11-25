@@ -49,6 +49,7 @@ it("shows useful messages without echoing server details", () => {
     );
   }
   expect(errorText(new Error("network"))).toEqual(message("errors.connection"));
+  expect(errorText(new ApiError("site_quota_exceeded", 507))).toEqual(message("errors.siteQuota"));
   expect(errorText(new ApiError("quota_exceeded", 507))).toEqual(message("errors.quota"));
   expect(errorText(new ApiError("disk_space_low", 507))).toEqual(message("errors.diskSpace"));
   expect(errorText(new ApiError("upload_busy", 503))).toEqual(message("errors.uploadBusy"));

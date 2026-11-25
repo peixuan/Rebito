@@ -16,6 +16,14 @@ recent safety points and protected checkpoints remain. Existing history is prote
 on first upgrade. Quota exhaustion still stops saves if these required points fill
 the budget. See the [retention contract](../docs/platform/HISTORY_RETENTION.md).
 
+The site also caps retained saves at 10 GiB and 10,000 revisions across all accounts by default.
+The count limit also covers empty saves. Set
+`MAX_TOTAL_SAVE_BYTES` to the budget for saves on your volume, leaving room for
+games, PostgreSQL, logs and backups. Lowering it preserves existing history.
+Once full, users can review old revisions or delete an entire personal profile
+from the library. The confirmation includes protected points. Logical capacity
+returns when the deletion commits. Shared content stays on disk while referenced.
+
 Before new blob writes the app leaves a configurable 1 GiB free-space margin. A
 failed upload preserves the published head; the player remains paused for retry.
 The guard covers this app process's pending writes, not all filesystem writers or

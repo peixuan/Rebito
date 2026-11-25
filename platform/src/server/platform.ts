@@ -76,7 +76,7 @@ async function createServices(config: ServerConfig, database: Pool, activity: St
   });
   const library = await LocalLibrary.load(join(config.dataDirectory, "library"));
   const saves = new SaveService(
-    new RevisionRepository(database, config.storageLimits),
+    new RevisionRepository(database, config.storageLimits, config.siteSaveLimits),
     new LocalBlobStore(join(config.dataDirectory, "blobs"), config.minimumFreeBytes),
   );
   registerIdentity(app, auth, config);
