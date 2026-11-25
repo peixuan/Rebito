@@ -58,6 +58,12 @@ test("plays during admission retries and uploads later writes in the next cohere
       });
     } else await route.continue();
   });
+  const committed = page.waitForResponse(
+    (response) =>
+      response.request().method() === "POST" &&
+      response.url().endsWith(`/api/profiles/${runtime.profile.id}/revisions`) &&
+      response.status() === 201,
+  );
   await runtime.tick();
   await expect.poll(() => bodies.length).toBe(1);
   await expect.poll(runtime.events).toEqual(["readNativeFiles", "capture", "resume"]);
@@ -70,6 +76,12 @@ test("plays during admission retries and uploads later writes in the next cohere
     body.toString("latin1").replace(/----WebKitFormBoundary\w+/g, "BOUNDARY"),
   );
   expect(normalized[1]).toBe(normalized[0]);
+  // Publication precedes the asynchronous history refresh; require this exact revision.
+  const revision = await (await committed).json();
+  await expect(page.getByRole("link", { name: "SAVE.DAT", exact: true }).first()).toHaveAttribute(
+    "href",
+    `/api/revisions/${revision.id}/file?name=SAVE.DAT`,
+  );
   expect(await runtime.savedFile("SAVE.DAT")).toBe("SECOND\r\n");
   expect(await runtime.savedFile("slots/INDEX.DAT")).toBe("INDEX FIRST\r\n");
   await page.unroute(uploads);
