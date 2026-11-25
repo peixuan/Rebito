@@ -1,7 +1,7 @@
 {
   "records.search": "Search records",
   "records.columns": "Visible columns",
-  "records.selectedColumns": "{count} columns",
+  "records.selectedColumns": "{count} column | {count} columns",
   "records.companionsOnly": "Companions only",
   "records.record": "Record",
   "records.description": "Description",

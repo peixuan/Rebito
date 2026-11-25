@@ -89,6 +89,7 @@ export function characterFields(document: PhantasyStar4Document, index: number) 
     }
     const computed = combatStats.find(([stat]) => stat === id);
     if (computed) {
+      value.group = message("phantasyStar4.combatTotals");
       value.help = message("phantasyStar4.rulesRequiredHelp");
       if (bonuses) {
         const [stat, attribute] = computed;
@@ -140,6 +141,7 @@ export function abilityFields(document: PhantasyStar4Document, index: number) {
       !document.rules,
     ),
     ...(!document.rules ? { help: message("phantasyStar4.rulesRequiredHelp") } : {}),
+    section: message("phantasyStar4.techniques"),
     group: message("phantasyStar4.techniqueSlot", { index: slot + 1 }),
   }));
   for (let slot = 0; slot < 8; slot++) {
@@ -159,6 +161,7 @@ export function abilityFields(document: PhantasyStar4Document, index: number) {
           !document.rules,
         ),
         ...(!document.rules ? { help: message("phantasyStar4.rulesRequiredHelp") } : {}),
+        section: message("phantasyStar4.skills"),
         group,
       },
       {
@@ -174,6 +177,7 @@ export function abilityFields(document: PhantasyStar4Document, index: number) {
         ),
         maximumField: `ability.${index}.maxUses.${slot}`,
         enabledByField: `ability.${index}.skill.${slot}`,
+        section: message("phantasyStar4.skills"),
         group,
       },
       {
@@ -189,6 +193,7 @@ export function abilityFields(document: PhantasyStar4Document, index: number) {
         ),
         enabledByField: `ability.${index}.skill.${slot}`,
         help: message("phantasyStar4.maxUsesHelp"),
+        section: message("phantasyStar4.skills"),
         group,
       },
     );

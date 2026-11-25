@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import type { Profile, Revision } from "../../src/storage/revisions.ts";
 import { editorFixture } from "../editors/fixture.ts";
+import { checkEditorLayout } from "./editor-layout.ts";
 import { openEditor } from "./editor-session.ts";
 import { sourcePerson } from "./source-labels.ts";
 
@@ -21,6 +22,7 @@ test("sorts numeric columns and retains record, search and validation state", as
   await editor.getByLabel("Visible columns").press("Space");
   await page.getByRole("option", { name: "Abilities · Leadership", exact: true }).click();
   await page.keyboard.press("Escape");
+  await expect(editor.getByText("1 column", { exact: true })).toBeVisible();
   const header = editor.getByRole("columnheader", { name: /Abilities · Leadership/ });
   await header.click();
   const rows = editor.locator("tbody tr");
@@ -47,6 +49,7 @@ test("sorts numeric columns and retains record, search and validation state", as
       .getByRole("group", { name: "Sailor affiliation", exact: true })
       .getByText("Unrecognized original value #165"),
   ).toBeVisible();
+  await checkEditorLayout(editor, "crew-en");
   await leadership.fill("-");
   await leadership.press("Tab");
   await expect(editor.getByRole("button", { name: "Save edits", exact: true })).toBeDisabled();

@@ -4,6 +4,7 @@ import type { EditorField, EditorUnavailableField } from "../../src/editors/type
 import { type DisplayText, textIdentity } from "../../src/shared/messages.ts";
 import { t, translate } from "../i18n.ts";
 import EditorFieldControl from "./EditorFieldControl.vue";
+import { fieldSections } from "./field-sections.ts";
 
 const props = defineProps<{
   fields: EditorField[];
@@ -17,58 +18,61 @@ const emit = defineEmits<{
   pending: [key: string, value: boolean];
 }>();
 const prefix = useId();
-const groups = computed(() => {
-  const all = [...props.fields, ...(props.unavailable ?? [])];
-  const labels = [...(props.groupOrder ?? []), ...all.map((field) => field.group)];
-  return [...new Map(labels.map((label) => [textIdentity(label), label]))]
-    .filter(([id]) => all.some((field) => textIdentity(field.group) === id))
-    .map(([id, label], index) => {
-      const fields = props.fields.filter((field) => textIdentity(field.group) === id);
-      const unavailable = (props.unavailable ?? []).filter(
-        (field) => textIdentity(field.group) === id,
+const groups = computed(() =>
+  fieldSections(props.fields, props.unavailable ?? [], props.groupOrder ?? []).map(
+    (group, index) => {
+      const id = `${prefix}-section-${index}`;
+      const notes = [...group.notes].map(
+        ([key, text], i) => [key, { text, id: `${id}-note-${i}` }] as const,
       );
-      const help = [
-        ...fields.map((field) => field.help),
-        ...unavailable.map((field) => field.reason),
-      ].filter((value): value is DisplayText => value !== undefined);
+      const blocks = [...group.blocks.values()];
       return {
-        id: `${prefix}-${index}`,
-        label,
-        fields,
-        unavailable,
-        notes: [...new Map(help.map((text) => [textIdentity(text), text])).values()],
+        ...group,
+        id,
+        blocks,
+        repeated: blocks.some((block) => block.label),
+        notes: new Map(notes),
       };
-    });
-});
-function noteId(group: (typeof groups.value)[number], help: DisplayText | undefined) {
-  return help === undefined
-    ? undefined
-    : `${group.id}-note-${group.notes.findIndex((note) => textIdentity(note) === textIdentity(help))}`;
-}
+    },
+  ),
+);
 </script>
 
 <template>
-  <nav
-    v-if="groupOrder?.length && groups.length > 1"
-    class="field-index"
-    :aria-label="t('editor.sections')"
-  >
+  <nav v-if="groups.length > 1" class="field-index" :aria-label="t('editor.sections')">
     <a v-for="group in groups" :key="group.id" :href="`#${group.id}`">{{
       translate(group.label)
     }}</a>
   </nav>
-  <div class="field-grid" :class="{ organized: groupOrder?.length }">
+  <div class="field-grid" :class="{ organized: groupOrder?.length && groups.length > 3 }">
     <fieldset v-for="group in groups" :id="group.id" :key="group.id" tabindex="-1">
       <legend>{{ translate(group.label) }}</legend>
-      <div v-for="field in group.fields" :key="field.key" class="field-row">
-        <EditorFieldControl
-          :field="field"
-          :description="noteId(group, field.help)"
-          :disabled="Boolean(disabled)"
-          @change="(key, value) => emit('change', key, value)"
-          @valid="(key, value) => emit('valid', key, value)"
-          @pending="(key, value) => emit('pending', key, value)"
-        />
+      <div :class="{ 'slot-grid': group.repeated }">
+        <div
+          v-for="block in group.blocks"
+          :key="textIdentity(block.label ?? group.label)"
+          class="field-block"
+          :class="{ slot: block.label }"
+          :role="block.label ? 'group' : undefined"
+          :aria-label="block.label ? translate(block.label) : undefined"
+        >
+          <strong v-if="block.label" class="slot-label">{{ translate(block.label) }}</strong>
+          <div
+            v-for="field in block.fields"
+            :key="field.key"
+            class="field-row"
+            :class="{ choice: field.choices }"
+          >
+            <EditorFieldControl
+              :field="field"
+              :description="field.help ? group.notes.get(textIdentity(field.help))?.id : undefined"
+              :disabled="Boolean(disabled)"
+              @change="(key, value) => emit('change', key, value)"
+              @valid="(key, value) => emit('valid', key, value)"
+              @pending="(key, value) => emit('pending', key, value)"
+            />
+          </div>
+        </div>
       </div>
       <div v-for="field in group.unavailable" :key="field.id" class="field-row unavailable-field">
         <label :for="`unavailable-${field.id}`">{{ translate(field.label) }}</label>
@@ -76,17 +80,12 @@ function noteId(group: (typeof groups.value)[number], help: DisplayText | undefi
           :id="`unavailable-${field.id}`"
           value="—"
           disabled
-          :aria-describedby="noteId(group, field.reason)"
+          :aria-describedby="group.notes.get(textIdentity(field.reason))?.id"
         >
       </div>
-      <div v-if="group.notes.length" class="field-notes">
-        <p
-          v-for="(note, index) in group.notes"
-          :id="`${group.id}-note-${index}`"
-          :key="textIdentity(note)"
-          class="field-help"
-        >
-          {{ translate(note) }}
+      <div v-if="group.notes.size" class="field-notes">
+        <p v-for="note in group.notes.values()" :id="note.id" :key="note.id" class="field-help">
+          {{ translate(note.text) }}
         </p>
       </div>
     </fieldset>
@@ -96,29 +95,83 @@ function noteId(group: (typeof groups.value)[number], help: DisplayText | undefi
 <style scoped>
 .field-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 235px), 1fr));
-  gap: 10px;
-  align-items: start;
+  gap: 12px;
 }
 fieldset {
   margin: 0;
-  padding: 8px 10px;
+  padding: 8px 12px 12px;
   border: 1px solid var(--p-content-border-color);
-  border-radius: 6px;
+  border-radius: 8px;
   min-width: 0;
+  scroll-margin-top: 12px;
 }
 legend {
   padding: 0 5px;
-  font-weight: 600;
-  font-size: 13px;
+  font-weight: 650;
+  font-size: 14px;
+}
+.field-block {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 8px 14px;
 }
 .field-row {
   display: grid;
-  grid-template-columns: minmax(5.5rem, 1fr) minmax(0, 1fr);
-  gap: 4px 8px;
-  align-items: center;
-  margin: 5px 0;
+  align-content: end;
+  gap: 4px;
+  min-width: 0;
+  max-width: 100%;
+  flex: 0 1 8.5rem;
   font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.field-row.choice {
+  flex-basis: 12rem;
+}
+.slot,
+.field-row :deep(.p-select) {
+  min-width: 0;
+  max-width: 100%;
+}
+.field-row :deep(input) {
+  max-width: 100%;
+}
+@media (max-width: 600px) {
+  .field-block:not(.slot) > .choice {
+    flex-basis: calc(50% - 7px);
+  }
+}
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+  gap: 8px;
+}
+.slot {
+  align-content: start;
+  padding: 8px;
+  gap: 6px;
+  background: var(--p-content-hover-background);
+  border-radius: 6px;
+}
+.slot-label,
+.slot .choice {
+  flex-basis: 100%;
+}
+.slot .field-row:not(.choice) {
+  flex: 1 1 5rem;
+}
+.slot-label {
+  font-size: 12px;
+}
+.organized .field-block {
+  display: block;
+}
+.organized .field-row {
+  grid-template-columns: minmax(5.5rem, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  margin: 5px 0;
 }
 .field-help {
   margin: 4px 0;

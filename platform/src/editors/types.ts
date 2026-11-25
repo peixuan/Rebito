@@ -5,6 +5,8 @@ export interface EditorField {
   key: string;
   label: DisplayText;
   group: DisplayText;
+  /** Optional section containing repeated slot groups in their physical order. */
+  section?: DisplayText;
   columnId: string;
   value: number;
   min: number;

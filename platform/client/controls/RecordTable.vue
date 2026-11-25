@@ -61,19 +61,19 @@ function captureSort() {
 // Keep order stable while editing a cell. Explicit sorting or loading another
 // record refreshes the sort values; the displayed cells always show the draft.
 watch(() => props.rows, captureSort, { immediate: true });
+const localizedRows = computed(() => localize(props.rows));
 const visible = computed(() => {
   const terms = state.value.query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
-  return localize(props.rows)
-    .filter(
-      (row) =>
-        (!state.value.filtered || !props.filter || row.tags.includes(props.filter.tag)) &&
-        terms.every((term) =>
-          [row.label, row.summary, ...Object.values(row.cells)]
-            .join(" ")
-            .toLocaleLowerCase()
-            .includes(term),
-        ),
-    )
+  return localizedRows.value
+    .filter((row) => {
+      if (state.value.filtered && props.filter && !row.tags.includes(props.filter.tag))
+        return false;
+      if (!terms.length) return true;
+      const text = [row.label, row.summary, ...Object.values(row.cells)]
+        .join(" ")
+        .toLocaleLowerCase();
+      return terms.every((term) => text.includes(term));
+    })
     .map((row) => ({
       ...row,
       sortCells: Object.fromEntries(
@@ -97,6 +97,7 @@ const visible = computed(() => {
         :disabled="disabled"
       />
       <MultiSelect
+        v-if="columns.length"
         v-model="state.columns"
         :options="columns"
         option-label="label"
@@ -106,7 +107,7 @@ const visible = computed(() => {
         :placeholder="t('records.columns')"
         size="small"
         :max-selected-labels="0"
-        :selected-items-label="t('records.selectedColumns', { count: '{0}' })"
+        :selected-items-label="t('records.selectedColumns', { count: state.columns.length })"
         :disabled="disabled"
       />
       <label v-if="filter" :for="filterId"
@@ -120,7 +121,7 @@ const visible = computed(() => {
       size="small"
       striped-rows
       scrollable
-      scroll-height="25rem"
+      scroll-height="min(38vh, 25rem)"
       selection-mode="single"
       :meta-key-selection="false"
       :selection="visible.find((row) => row.id === selected)"
@@ -158,6 +159,12 @@ const visible = computed(() => {
 <style scoped>
 .record-table {
   min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 8px;
+}
+.record-table :deep(th) {
+  white-space: nowrap;
 }
 .table-tools {
   display: flex;
@@ -180,7 +187,7 @@ const visible = computed(() => {
 }
 small {
   display: block;
-  color: #627386;
+  color: var(--p-text-muted-color);
   margin-top: 6px;
   font-size: 11px;
 }

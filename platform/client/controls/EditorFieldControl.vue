@@ -31,6 +31,9 @@ const options = computed(() => {
         ...known,
       ];
 });
+const selectedLabel = computed(
+  () => options.value.find((option) => option.value === props.field.value)?.label,
+);
 </script>
 
 <template>
@@ -50,6 +53,7 @@ const options = computed(() => {
     v-else-if="field.choices"
     :input-id="`field-${field.key}`"
     :aria-label="translate(field.label)"
+    :title="selectedLabel"
     :model-value="field.value"
     size="small"
     :options="options"
@@ -61,7 +65,7 @@ const options = computed(() => {
     :aria-describedby="description"
     @update:model-value="emit('change', field.key, $event)"
   >
-    <template #value>{{ options.find((option) => option.value === field.value)?.label }}</template>
+    <template #value>{{ selectedLabel }}</template>
   </Select>
   <BoundedNumber
     v-else

@@ -1,4 +1,6 @@
 {
+  "jinyong.martialTraining": "Weapon and unarmed skills",
+  "jinyong.medicinePoison": "Medicine and poison",
   "jinyong.position": "Bag position",
   "jinyong.positionHelp": "Changes the actual in-game order after saving and reloading. Column sorting only changes this table. Add an item before moving it.",
   "jinyong.ownedOnly": "Owned items only",

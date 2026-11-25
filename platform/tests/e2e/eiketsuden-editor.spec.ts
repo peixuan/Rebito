@@ -3,6 +3,7 @@ import { zipSync } from "fflate";
 import type { Profile, Revision } from "../../src/storage/revisions.ts";
 import { eiketsudenCompanion, eiketsudenFixture } from "../editors/eiketsuden-fixture.ts";
 import { eiketsudenRulesFixture } from "../editors/eiketsuden-rules-fixture.ts";
+import { checkEditorLayout } from "./editor-layout.ts";
 import { chinese } from "./locales.ts";
 import { useSession } from "./session.ts";
 
@@ -110,6 +111,7 @@ test("edits paired DOS saves with bounded bilingual drafts and read-only referen
   await expect(
     translated.getByRole("combobox", { name: chinese("eiketsuden.troopClass") }),
   ).toHaveText(chinese("eiketsuden.class.6"));
+  await checkEditorLayout(translated, "equipment-zh");
   await page.getByRole("combobox", { name: chinese("app.language") }).selectOption("en");
   await editor.getByLabel("File to edit").click();
   await page.getByRole("option", { name: "MSAVE4.R3S", exact: true }).click();

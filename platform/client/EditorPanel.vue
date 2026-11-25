@@ -73,6 +73,8 @@ const count = computed(() =>
     .flatMap((slots) => [...slots.values()])
     .reduce((sum, values) => sum + Object.keys(values).length, 0),
 );
+const navigationLocked = computed(() => busy.value || stale.value || invalid.size > 0);
+const editingLocked = computed(() => busy.value || stale.value || Boolean(props.captureRequired));
 const fields = computed(() =>
   resolveEditorFields(
     view.value?.fields ?? [],
@@ -275,7 +277,7 @@ onBeforeUnmount(() => {
     <div class="toolbar">
       <h3>{{ t("editor.title") }}</h3>
       <Select
-        v-if="view"
+        v-if="view && view.slots.length > 1"
         :model-value="view.slot"
         :options="localize(view.slots)"
         option-label="label"
@@ -283,16 +285,17 @@ onBeforeUnmount(() => {
         :option-disabled="(slot) => !slot.available"
         :aria-label="t('editor.slot')"
         size="small"
-        :disabled="busy || stale || Boolean(invalid.size)"
+        :disabled="navigationLocked"
         @update:model-value="perform(() => navigate({ slot: $event }))"
       />
+      <span v-else-if="view" class="slot-context">{{ translate(view.slots[0]?.label) }}</span>
       <Select
         v-if="view && view.files.length > 1"
         :model-value="view.file"
         :options="view.files"
         :aria-label="t('editor.file')"
         size="small"
-        :disabled="busy || stale || Boolean(invalid.size)"
+        :disabled="navigationLocked"
         @update:model-value="perform(() => navigate({ file: $event }))"
       />
       <Button
@@ -323,7 +326,7 @@ onBeforeUnmount(() => {
             :severity="module.id === view.module ? 'primary' : 'secondary'"
             :aria-pressed="module.id === view.module"
             :aria-describedby="module.description ? `module-description-${module.id}` : undefined"
-            :disabled="busy || stale || Boolean(invalid.size) || Boolean(module.unavailableReason)"
+            :disabled="navigationLocked || Boolean(module.unavailableReason)"
             @click="perform(() => navigate({ module: module.id }))"
           />
           <small v-if="module.description" :id="`module-description-${module.id}`">
@@ -335,16 +338,18 @@ onBeforeUnmount(() => {
         </div>
       </nav>
       <div class="editor-content" :class="{ 'has-records': view.records.length > 1 }">
-        <RecordTable
-          v-if="view.records.length > 1"
-          :rows="view.records"
-          :columns="view.columns"
-          :filter="view.filter"
-          :selected="view.selected"
-          :view-key="view.module"
-          :disabled="busy || stale || Boolean(invalid.size)"
-          @select="perform(() => navigate({ record: $event }))"
-        />
+        <KeepAlive>
+          <RecordTable
+            v-if="view.records.length > 1"
+            :rows="view.records"
+            :columns="view.columns"
+            :filter="view.filter"
+            :selected="view.selected"
+            :view-key="view.module"
+            :disabled="navigationLocked"
+            @select="perform(() => navigate({ record: $event }))"
+          />
+        </KeepAlive>
         <div class="record-detail">
           <h4>
             {{ translate(view.records.find((record) => record.id === view?.selected)?.label) }}
@@ -356,9 +361,7 @@ onBeforeUnmount(() => {
               :view="view"
               :keys="view.batchKeys"
               :changes="draft(view.file, view.slot)"
-              :disabled="
-                busy || stale || captureRequired || Boolean(invalid.size) || !view.batchKeys.length
-              "
+              :disabled="navigationLocked || captureRequired || !view.batchKeys.length"
               @apply="
                 (targets) =>
                   perform(() =>
@@ -375,7 +378,7 @@ onBeforeUnmount(() => {
               :title="translate(action.help)"
               size="small"
               severity="secondary"
-              :disabled="busy || stale || captureRequired || Boolean(invalid.size)"
+              :disabled="navigationLocked || captureRequired"
               @click="perform(() => runAction(action))"
             />
           </div>
@@ -383,7 +386,7 @@ onBeforeUnmount(() => {
             v-if="view.textFields?.length"
             :fields="view.textFields"
             :changes="textDraft(view.file, view.slot)"
-            :disabled="busy || stale || captureRequired"
+            :disabled="editingLocked"
             @change="changeText"
           />
           <FieldGrid
@@ -391,7 +394,7 @@ onBeforeUnmount(() => {
             :fields="fields"
             :unavailable="view.unavailableFields ?? []"
             :group-order="view.fieldGroupOrder ?? []"
-            :disabled="busy || stale || captureRequired"
+            :disabled="editingLocked"
             @change="change"
             @valid="(key, valid) => (valid ? invalid.delete(key) : invalid.add(key))"
             @pending="
@@ -406,7 +409,7 @@ onBeforeUnmount(() => {
           :label="t('editor.preview')"
           size="small"
           severity="secondary"
-          :disabled="busy || stale || Boolean(invalid.size)"
+          :disabled="navigationLocked"
           @click="
             perform(async () => {
               await refresh();
@@ -436,7 +439,12 @@ onBeforeUnmount(() => {
       :style="{ width: 'min(95vw, 700px)' }"
     >
       <DataTable :value="previewRows" size="small" scrollable scroll-height="55vh">
-        <Column v-if="(view?.files.length ?? 0) > 1" field="file" :header="t('editor.file')" sortable />
+        <Column
+          v-if="(view?.files.length ?? 0) > 1"
+          field="file"
+          :header="t('editor.file')"
+          sortable
+        />
         <Column field="slot" :header="t('editor.slotColumn')" sortable />
         <Column field="label" :header="t('editor.fieldColumn')" sortable />
         <Column field="before" :header="t('editor.before')" />
@@ -453,6 +461,15 @@ onBeforeUnmount(() => {
 }
 .editor .toolbar {
   gap: 8px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--p-content-border-color);
+}
+.slot-context {
+  color: var(--p-text-muted-color);
+  font-size: 12px;
+}
+.editor .toolbar > :last-child {
+  margin-inline-start: auto;
 }
 .editor h3 {
   margin: 0;
@@ -470,7 +487,17 @@ onBeforeUnmount(() => {
   align-items: center;
 }
 .editor-tabs {
-  margin: 12px 0;
+  margin: 10px 0 14px;
+}
+.editor-tabs:not(.module-catalog) {
+  padding: 6px;
+  gap: 4px;
+  border-radius: 8px;
+  background: var(--p-content-hover-background);
+}
+.editor-tabs:not(.module-catalog) button[aria-pressed="false"] {
+  background: transparent;
+  border-color: transparent;
 }
 .module-catalog {
   display: grid;
@@ -495,7 +522,7 @@ onBeforeUnmount(() => {
   gap: 12px;
 }
 .editor-content.has-records {
-  grid-template-columns: minmax(250px, 0.7fr) minmax(0, 2fr);
+  grid-template-columns: minmax(18rem, 1fr) minmax(0, 2.25fr);
   align-items: start;
 }
 .editor-content > :first-child:not(.record-detail) {
@@ -509,6 +536,8 @@ onBeforeUnmount(() => {
 }
 .record-detail h4 {
   margin: 0 0 8px;
+  overflow-wrap: anywhere;
+  font-size: 16px;
 }
 .editor-actions {
   margin: 0 0 12px;
@@ -522,17 +551,20 @@ onBeforeUnmount(() => {
 .editor-footer {
   position: sticky;
   bottom: 0;
-  padding: 10px 0 0;
+  padding: 8px 0;
+  z-index: 1;
+  border-top: 1px solid var(--p-content-border-color);
   margin-top: 12px;
   background: var(--p-content-background);
   font-size: 12px;
 }
 .editor-footer span {
   margin-right: auto;
+  flex: 1 1 9rem;
 }
 @media (max-width: 850px) {
   .editor-content.has-records {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .editor-content > :first-child:not(.record-detail) {
     position: static;

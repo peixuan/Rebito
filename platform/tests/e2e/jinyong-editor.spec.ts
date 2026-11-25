@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { zipSync } from "fflate";
 import type { Profile, Revision } from "../../src/storage/revisions.ts";
 import { jinyongFixture } from "../editors/jinyong-fixture.ts";
+import { checkEditorLayout } from "./editor-layout.ts";
 import { chinese } from "./locales.ts";
 import { useSession } from "./session.ts";
 
@@ -76,6 +77,8 @@ test("associates the original editor and preserves bilingual drafts across nativ
   await editor.getByLabel("Maximum health", { exact: true }).press("Tab");
   await editor.getByRole("button", { name: "Learned martial arts", exact: true }).click();
   const firstArt = editor.getByRole("group", { name: "Martial art slot 1", exact: true });
+  await expect(editor.getByRole("group", { name: /^Martial art slot \d+$/ })).toHaveCount(10);
+  await checkEditorLayout(editor, "martial-arts-en");
   await firstArt.getByLabel("Martial art", { exact: true }).click();
   await page.getByRole("option", { name: "Test92", exact: true }).click();
   await firstArt.getByLabel("Proficiency", { exact: true }).fill("900");
