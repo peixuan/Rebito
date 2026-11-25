@@ -133,6 +133,19 @@ test("edits paired DOS saves with bounded bilingual drafts and read-only referen
   await money.press("Tab");
   await editor.getByRole("button", { name: "Characters", exact: true }).click();
   await expect(level).toHaveValue("99");
+  await editor.getByRole("button", { name: "Preview edits", exact: true }).click();
+  const preview = page.getByRole("dialog");
+  for (const [file, moneyAfter] of [
+    ["MSAVE0.R3S", "2000"],
+    ["MSAVE4.R3S", "10000"],
+  ] as const) {
+    const moneyRow = preview
+      .getByRole("row")
+      .filter({ hasText: file })
+      .filter({ hasText: "Money" });
+    await expect(moneyRow.getByRole("cell", { name: moneyAfter, exact: true })).toBeVisible();
+  }
+  await page.keyboard.press("Escape");
   await editor.getByRole("button", { name: "Save edits", exact: true }).click();
   await expect(editor.getByRole("status")).toContainText("Edits were saved as a new revision");
   const profiles: Profile[] = await (await page.request.get("/api/profiles")).json();

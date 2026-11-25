@@ -80,8 +80,10 @@ const fields = computed(() =>
   ),
 );
 const previewRows = computed(() =>
-  [...(previews.get(view.value?.file ?? "") ?? [])].flatMap(([slot, values]) =>
-    values.map((value) => ({ ...localize(value), slot: slot + 1 })),
+  [...previews].flatMap(([file, slots]) =>
+    [...slots].flatMap(([slot, values]) =>
+      values.map((value) => ({ ...localize(value), file, slot: slot + 1 })),
+    ),
   ),
 );
 watch(dirty, (value) => emit("dirty", value));
@@ -434,6 +436,7 @@ onBeforeUnmount(() => {
       :style="{ width: 'min(95vw, 700px)' }"
     >
       <DataTable :value="previewRows" size="small" scrollable scroll-height="55vh">
+        <Column v-if="(view?.files.length ?? 0) > 1" field="file" :header="t('editor.file')" sortable />
         <Column field="slot" :header="t('editor.slotColumn')" sortable />
         <Column field="label" :header="t('editor.fieldColumn')" sortable />
         <Column field="before" :header="t('editor.before')" />
