@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import Checkbox from "primevue/checkbox";
-import Select from "primevue/select";
 import { computed, useId } from "vue";
 import type { EditorField, EditorUnavailableField } from "../../src/editors/types.ts";
 import { type DisplayText, textIdentity } from "../../src/shared/messages.ts";
 import { t, translate } from "../i18n.ts";
-import BoundedNumber from "./BoundedNumber.vue";
+import EditorFieldControl from "./EditorFieldControl.vue";
 
 const props = defineProps<{
   fields: EditorField[];
@@ -47,20 +45,6 @@ function noteId(group: (typeof groups.value)[number], help: DisplayText | undefi
     ? undefined
     : `${group.id}-note-${group.notes.findIndex((note) => textIdentity(note) === textIdentity(help))}`;
 }
-function options(field: EditorField) {
-  const known =
-    field.choices?.map((choice) => ({ ...choice, label: translate(choice.label) })) ?? [];
-  return known.some((choice) => choice.value === field.value)
-    ? known
-    : [
-        {
-          value: field.value,
-          label: t("controls.unknownOriginal", { value: field.value }),
-          disabled: true,
-        },
-        ...known,
-      ];
-}
 </script>
 
 <template>
@@ -77,48 +61,13 @@ function options(field: EditorField) {
     <fieldset v-for="group in groups" :id="group.id" :key="group.id" tabindex="-1">
       <legend>{{ translate(group.label) }}</legend>
       <div v-for="field in group.fields" :key="field.key" class="field-row">
-        <label :for="`field-${field.key}`" :title="translate(field.help)">{{
-          translate(field.label)
-        }}</label>
-        <Checkbox
-          v-if="field.boolean"
-          :input-id="`field-${field.key}`"
-          :model-value="Boolean(field.value)"
-          binary
-          :disabled="disabled || field.readonly"
-          :aria-describedby="noteId(group, field.help)"
-          @update:model-value="emit('change', field.key, $event ? 1 : 0)"
-        />
-        <Select
-          v-else-if="field.choices"
-          :input-id="`field-${field.key}`"
-          :aria-label="translate(field.label)"
-          :model-value="field.value"
-          size="small"
-          :options="options(field)"
-          option-label="label"
-          option-value="value"
-          option-disabled="disabled"
-          filter
-          :disabled="disabled || field.readonly"
-          :aria-describedby="noteId(group, field.help)"
-          @update:model-value="emit('change', field.key, $event)"
-        >
-          <template #value>{{
-            translate(field.choices.find((choice) => choice.value === field.value)?.label) ||
-            t("controls.unknownOriginal", { value: field.value })
-          }}</template>
-        </Select>
-        <BoundedNumber
-          v-else
-          :id="`field-${field.key}`"
-          :model-value="field.value"
-          :spec="field"
-          :disabled="Boolean(disabled || field.readonly)"
+        <EditorFieldControl
+          :field="field"
           :description="noteId(group, field.help)"
-          @update:model-value="emit('change', field.key, $event)"
-          @valid="emit('valid', field.key, $event)"
-          @pending="emit('pending', field.key, $event)"
+          :disabled="Boolean(disabled)"
+          @change="(key, value) => emit('change', key, value)"
+          @valid="(key, value) => emit('valid', key, value)"
+          @pending="(key, value) => emit('pending', key, value)"
         />
       </div>
       <div v-for="field in group.unavailable" :key="field.id" class="field-row unavailable-field">
