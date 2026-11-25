@@ -50,6 +50,8 @@ for (const [index, name] of [
   "admin-cd",
   "admin-jinyong",
   "admin-ps4",
+  "admin-eiketsuden-0",
+  "admin-eiketsuden-1",
   // SAN3 flows use one file each; reserve a second identity for the configured retry.
   ...(await readdir("tests/e2e"))
     .filter((file) => file.startsWith("san3-") && file.endsWith(".spec.ts"))
