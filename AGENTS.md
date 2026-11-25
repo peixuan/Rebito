@@ -47,6 +47,9 @@ because an upstream documentation page lists a feature.
 ## Implementation
 
 - Separate platform services, emulator adapters, game manifests and editor modules.
+- For editor changes, use the [editor workspace guide](platform/EDITORS.md#working-on-the-editor-workspace)
+  to locate the adapter, controls and browser regression. Keep slot groups expanded,
+  preserve original game names and preview every file/slot that will be published.
 - Keep save transformation independent of HTTP, UI, storage and authentication.
 - Model game saves, emulator snapshots and writable file collections separately.
 - Workspace synchronization must capture the running game before reloading server
@@ -75,9 +78,11 @@ because an upstream documentation page lists a feature.
 - Online deletion must hold the exclusive storage activity lease, recheck the
   confirmed impact, and durably record cleanup before removing history. All live
   handlers/import entrypoints must participate; retries must recheck shared references.
-- Keep per-user quotas transactional across profiles. Preserve the application
-  storage lease when adding entrypoints; offline collection must exclude active
-  writers. Read [storage operations](platform/OPERATIONS.md) before maintenance.
+- Enforce personal limits across profiles and site limits across owners in the
+  publication transaction. Whole-profile removal must confirm the current head
+  and protected history. See the [retention contract](docs/platform/HISTORY_RETENTION.md).
+- Preserve the application storage lease when adding entrypoints; offline collection
+  must exclude active writers. Read [storage operations](platform/OPERATIONS.md) before maintenance.
   Callers must await `app.close()` before ending the database pool; ending the pool
   inside an app close hook can deadlock against its dedicated storage lease.
 - Retention never removes current heads, their predecessors, recent safety points

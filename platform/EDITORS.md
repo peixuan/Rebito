@@ -5,6 +5,47 @@ identity and emulator APIs. The service must authorize a revision, choose the
 adapter from its immutable game release, transform a copy and publish through the
 normal revision check. Requests contain known field keys/values, never byte offsets.
 
+## Working on the editor workspace
+
+| Editor directory | Data edited                                         | Browser regression                          |
+| ---------------- | --------------------------------------------------- | ------------------------------------------- |
+| `koukai2`        | DOS native save, multiple slots                     | `editor-controls.spec.ts`, `editor.spec.ts` |
+| `jinyong`        | DOS R/S/D save group, one group per slot            | `jinyong-editor.spec.ts`                    |
+| `eiketsuden`     | Paired DOS strategic/battle saves                   | `eiketsuden-editor.spec.ts`                 |
+| `phantasy-star4` | Paused Mega Drive runtime state                     | `ps4-editor.spec.ts`                        |
+| `san3`           | Paused Mega CD runtime state, phase-specific fields | `san3-editor.spec.ts`                       |
+
+Start with the adapter's `registration.ts`, field declarations and expected-byte tests
+under `tests/editors`. List rows need only labels, summary and sortable cells. Build
+choices and help for the selected record. Use `field.group` for related controls and
+`field.section` to group repeated slots under a single navigation link. Sections stay
+expanded. Declare unavailable fields with their reason when a game phase limits editing.
+
+`client/EditorPanel.vue` owns per-file and per-slot drafts, previews and publication.
+`client/controls/FieldGrid.vue` groups fields and guidance. `EditorFieldControl.vue`
+renders the input and `RecordTable.vue` owns module-specific search, sorting and columns.
+Use localized descriptors for interface text. Preserve in-game names from the data
+or localized catalog, including Chinese names in the English UI. Changing language
+must preserve the selected record, unsaved input and unknown original values.
+
+Run the adapter's expected-byte tests, then its Playwright spec under `tests/e2e`
+against a disposable PostgreSQL service. Rebuild the browser client before running
+Playwright. For native files, compare downloaded bytes after editing and verify the
+declared writeback group. For console changes, verify a fresh capture from the resumed
+core. Snapshot fixtures and a successful preview alone only establish model behavior.
+
+For example, from `platform/` with `PG_TEST_URL` pointing at a disposable database
+service that allows test database creation, run:
+
+```sh
+npx vitest run tests/editors
+npm run build
+npm run test:e2e -- editor-controls.spec.ts
+```
+
+Use the matching spec from the table for the adapter being changed. Keep the browser
+sandbox enabled. Set `PLAYWRIGHT_CHANNEL=chrome` to use installed Google Chrome.
+
 ## Adapter registry and game association
 
 Each game editor has its own directory under `src/editors/<game>/`. Its pure

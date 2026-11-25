@@ -2,6 +2,29 @@
 
 Updated: 2026-11-25 (Asia/Shanghai).
 
+## Editor workspace and personal saves
+
+The editor workspace keeps records, field groups and save actions visible together.
+Repeated martial arts, techniques and skills share section navigation. Combat totals
+in Phantasy Star IV are distinct from editable base values. Draft preview includes
+every edited file and slot. See the [editor handoff](../../platform/EDITORS.md#working-on-the-editor-workspace)
+for the five adapters, their data boundaries and the matching browser fixtures.
+
+Players can remove a whole profile from the library, including an empty profile or
+one whose game data cannot be opened. Confirmation names the profile and counts
+protected revisions. Concurrent saves or protection changes invalidate that
+confirmation. Site defaults are 10 GiB and 10,000 revisions, alongside 2 GiB,
+2,000 revisions and 100 profiles per account. See the
+[retention contract](HISTORY_RETENTION.md) for accounting, rotation and disk cleanup.
+
+Local verification used disposable PostgreSQL, synthetic save data and sandboxed
+Chrome. Five accounts simultaneously published different 1 MiB saves at a 5 MiB
+site limit. All five downloads matched their submitted bytes, and the next write
+returned 507. A separate run removed a profile with a missing blob, rejected a
+stale confirmation, retained the other owner's data and reused the released quota.
+The local suite passed 929 unit and database tests and all 93 browser regressions.
+Production rollout and operator-selected disk budgets are separate deployment steps.
+
 ## Reviewed source and history
 
 The owner authorized a baseline-preserving replay and a follow-up review of public
