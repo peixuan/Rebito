@@ -109,6 +109,24 @@ and runtime shutdown finish. A real-DOS regression holds the publication respons
 after commit and verifies that a subsequent restore uses the new head. Ordinary
 background synchronization retains its existing concurrent-import conflict handling.
 
+## Original DOS Sangokushi Eiketsuden editor
+
+The `eiketsuden` adapter supports the original Traditional Chinese DOS format:
+five paired MSAVE/ESAVE slots, character levels, experience, troop classes, eight
+item slots and campaign money. Base abilities and stored troops remain read-only;
+event state and unknown bytes are preserved. Uploaded `BAKDATA.R3` supplies names
+and reference abilities through a bounded metadata parser. The compact bilingual
+UI reuses the existing editor table, field controls and revision workflow. See
+[setup, format and evidence](../../platform/src/editors/eiketsuden/README.md).
+
+Native editor groups now include required companions in guarded live writeback.
+Missing pairs cannot be published; an orphaned slot does not hide complete slots.
+The private original game retained nine representative edits after loading and
+saving again. All 915 local unit/database tests pass (99.01% line, 95.09% branch),
+along with lint, types, production build, dependency audit, the Eiketsuden browser
+flow and the shared real-DOS synchronization regression. Complete browser, hosted
+checks and deployed save preservation still gate promotion of the exact revision.
+
 ## Original DOS Heroes of Jin Yong editor
 
 The `jinyong` adapter adds characters, ten learned-art slots and inventory/silver

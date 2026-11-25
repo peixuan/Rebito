@@ -55,3 +55,64 @@ References are format research, not incorporated source code:
 
 Public tests generate their own byte layouts and labels. Keep runtime captures,
 resource tables and executable analysis in private evidence directories.
+
+## Website configuration and use
+
+Choose **Sangokushi Eiketsuden (original DOS)** in the administrator's editor
+selector. This association can be changed without uploading the game again.
+The uploaded game must include the original `BAKDATA.R3` resource. A bounded ZIP
+reader retrieves only this metadata member, checks its length and CRC, and rejects
+ambiguous copies. Names come from the user's game, not a redistributed game table.
+Missing or unsupported metadata produces an explanation instead of invented names
+or attributes. The editor adds no dependency, HTTP endpoint or persistence service.
+
+For the reviewed archive, start `REKO3.COM` with no arguments and `auto` CPU cycles.
+Declare all ten native paths, including their archive directory prefix if present:
+
+```text
+MSAVE0.R3S
+ESAVE0.R3S
+MSAVE1.R3S
+ESAVE1.R3S
+MSAVE2.R3S
+ESAVE2.R3S
+MSAVE3.R3S
+ESAVE3.R3S
+MSAVE4.R3S
+ESAVE4.R3S
+```
+
+Save inside the game, synchronize, and select the desired `MSAVE` file in the
+editor. Characters default to the current party; disable that filter to search
+all 384 records. Levels accept 1–99, experience 0–99, troop classes 0–18 and money
+0–10000. Each of eight item slots accepts an original item or an empty selection;
+duplicates are allowed. Sorting the table does not rearrange native records.
+Base abilities and stored troops remain visible as read-only reference values.
+
+Save edits to publish a private revision, then load that same slot inside the
+game. For a running game, both members of every edited slot are checked against
+the captured base before writeback. `ESAVE` remains byte-identical; its length
+and event contents are deliberately opaque. A missing companion blocks that slot
+but does not hide later complete slots. Changed runtime files, stale cloud heads
+and failed writeback retain the existing pause, conflict and recovery behavior.
+
+## Acceptance
+
+On 2026-11-25, the production DOS adapter loaded a privately edited original save
+in sandboxed Chrome. Saving through the game's own menu retained nine edits across
+two characters and campaign money: level 99, experience 99, a changed class, five
+item/level changes and money 10000. An earlier load/battle check showed class/level
+derived troop capacity replacing a manually inflated count. These are representative
+original-game checks, not proof for every later scenario, dump or MOD.
+
+Guarded live writeback then changed money to 9000 in that same running DOS session,
+with both slot members checked and `ESAVE` unchanged. The in-memory display stayed
+at 10000 until reloading the slot, after which the game displayed 9000. No runtime
+restart or replacement of unrelated files was needed.
+
+Synthetic tests cover malformed saves/resources, unknown-byte preservation,
+read-only writes, paired paths, ownership, five-slot atomic edits and concurrent
+writers. Browser acceptance covers administrator association, bilingual drafts,
+clamping, cross-file edits and exact downloaded bytes. The shared real-DOS test
+also changes an otherwise untouched companion during editing and confirms that
+publication is rejected without losing the running game or the draft.
