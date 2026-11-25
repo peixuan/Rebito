@@ -26,7 +26,7 @@ const props = defineProps<{
   revisionId: string;
   workspaceBusy: boolean;
   captureRequired?: boolean;
-  publish?: (revisionId: string, batch: EditorBatch) => Promise<Revision>;
+  publish?: (revisionId: string, batch: EditorBatch, syncFiles: string[]) => Promise<Revision>;
 }>();
 const emit = defineEmits<{ saved: [revision: Revision]; dirty: [value: boolean] }>();
 const view = ref<EditorResponse | null>(null);
@@ -45,6 +45,7 @@ const drafts = reactive(new Map<string, Map<number, Changes>>());
 const textDrafts = reactive(new Map<string, Map<number, Record<string, string>>>());
 const previews = reactive(new Map<string, Map<number, EditorResponse["preview"]>>());
 const selections = new Map<string, string>();
+const fileGroups = new Map<string, string[]>();
 function draft(file: string, slot: number): Changes {
   if (!drafts.has(file)) drafts.set(file, new Map());
   const slots = drafts.get(file);
@@ -124,6 +125,7 @@ async function refresh(selection: EditorQuery = {}) {
   textDrafts.get(response.file)?.set(response.slot, response.textChanges ?? {});
   if (!previews.has(response.file)) previews.set(response.file, new Map());
   previews.get(response.file)?.set(response.slot, response.preview);
+  fileGroups.set(response.file, response.syncFiles);
   view.value = response;
   selections.set(`${response.file}:${response.slot}:${response.module}`, response.selected);
 }
@@ -192,13 +194,20 @@ async function save() {
     notice.value = message("editor.noChanges");
     return;
   }
+  // Each pending file retains its group after navigation to another record or file.
+  const syncFiles = files.flatMap(({ file }) => {
+    const group = fileGroups.get(file);
+    if (!group) throw new Error("Missing editor synchronization group");
+    return group;
+  });
   const revision = props.publish
-    ? await props.publish(base.value, { files })
+    ? await props.publish(base.value, { files }, [...new Set(syncFiles)])
     : await api<Revision>(`revisions/${base.value}/editor`, { files });
   base.value = revision.id;
   drafts.clear();
   textDrafts.clear();
   previews.clear();
+  fileGroups.clear();
   emit("saved", revision);
   await refresh();
   notice.value = message("editor.saved");
@@ -207,6 +216,7 @@ async function discard() {
   drafts.clear();
   textDrafts.clear();
   previews.clear();
+  fileGroups.clear();
   selections.clear();
   invalid.clear();
   pendingInput.clear();

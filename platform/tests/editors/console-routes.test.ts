@@ -180,6 +180,7 @@ it("previews privately and publishes only verified memory while preserving compa
   expect(preview.json()).toMatchObject({
     file: stateFile,
     files: [stateFile],
+    syncFiles: [stateFile],
     changes: { "party.money": 12345 },
   });
   expect(await history(initial.profileId)).toHaveLength(1);

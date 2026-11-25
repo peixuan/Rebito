@@ -74,11 +74,13 @@ test("synchronizes live DOS saves and editor updates without restarting the runt
       )
       .toBe(createHash("sha256").update(dosEditorSave(amount)).digest("hex"));
   }
-  async function saveInsideDos(source: string, amount: number) {
+  async function saveInsideDos(source: string, amount: number, target = "KOUKAI2.DAT") {
     await page.frameLocator("iframe").locator("canvas").click();
-    await page.keyboard.type(`copy /y ${source}.DAT KOUKAI2.DAT`, { delay: 25 });
+    await page.keyboard.type(`copy /y ${source}.DAT ${target.replaceAll("/", "\\")}`, {
+      delay: 25,
+    });
     await page.keyboard.press("Enter", { delay: 150 });
-    await expectFile(amount);
+    await expectFile(amount, target);
   }
   async function downloaded() {
     const url = await page
@@ -132,6 +134,41 @@ test("synchronizes live DOS saves and editor updates without restarting the runt
   await expectFile(123, "FIRST.DAT");
   await expectFile(456, "NEXT.DAT");
   expect(await downloaded()).toEqual(Buffer.from(dosEditorSave(777)));
+
+  // Synthetic adapter metadata exercises the shared UI boundary with a real DOS
+  // file change. The companion is checked even though this draft only edits money.
+  const previewUrl = "**/api/revisions/*/editor/preview";
+  await page.route(previewUrl, async (route) => {
+    const response = await route.fetch();
+    const body = await response.json();
+    await route.fulfill({
+      response,
+      json: {
+        ...body,
+        syncFiles: body.file === "KOUKAI2.DAT" ? [body.file, "slots/SECOND.DAT"] : [body.file],
+      },
+    });
+  });
+  const versionsBeforeCompanion = await page
+    .getByRole("link", { name: "KOUKAI2.DAT", exact: true })
+    .count();
+  await money.fill("889");
+  await money.press("Tab");
+  await editor.getByLabel("File to edit").click();
+  await page.getByRole("option", { name: "slots/SECOND.DAT", exact: true }).click();
+  await saveInsideDos("FIRST", 123, "slots/SECOND.DAT");
+  await editor.getByRole("button", { name: "Save edits", exact: true }).click();
+  await expect(editor.getByRole("alert")).toContainText("The in-game save has changed");
+  await expectFile(777);
+  await expect(page.getByRole("link", { name: "KOUKAI2.DAT", exact: true })).toHaveCount(
+    versionsBeforeCompanion,
+  );
+  await refresh.click();
+  await expect(editor.getByRole("alert").filter({ hasText: "A newer save exists" })).toBeVisible();
+  await editor.getByRole("button", { name: "Discard draft and reload", exact: true }).click();
+  await page.unrouteAll({ behavior: "wait" });
+  await editor.getByLabel("File to edit").click();
+  await page.getByRole("option", { name: "KOUKAI2.DAT", exact: true }).click();
 
   await game.getByRole("button", { name: "Pause game", exact: true }).click();
   await money.fill("888");

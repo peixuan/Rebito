@@ -2,6 +2,7 @@ import type { LocalLibrary } from "../library/catalog.ts";
 import type { SaveService } from "../saves/service.ts";
 import { message } from "../shared/messages.ts";
 import { bindGameData } from "./game-data.ts";
+import { nativeFileGroup } from "./native-files.ts";
 import { findEditor } from "./registry.ts";
 import { assertSnapshotBinding } from "./snapshots/binding.ts";
 import { openSnapshotMemory } from "./snapshots/memory.ts";
@@ -66,6 +67,7 @@ export class EditorService {
         instructions: registration.instructions,
         file: name,
         files: [name],
+        syncFiles: [name],
         bytes: memory.bytes,
         replaceState: memory.replace,
       };
@@ -73,7 +75,7 @@ export class EditorService {
     if (revision.manifest.kind === "snapshot")
       throw new EditorError("unsupported_editor", message("editor.unsupported"));
     const paths = new Set(game.saveFiles.map((name) => name.normalize("NFC").toLowerCase()));
-    const files = revision.manifest.artifacts
+    const candidates = revision.manifest.artifacts
       .filter(
         (artifact) =>
           artifact.size === adapter.size &&
@@ -81,14 +83,34 @@ export class EditorService {
           (adapter.acceptsFile?.(artifact.name) ?? true),
       )
       .map((artifact) => artifact.name);
-    const selected = file ?? files[0];
-    if (!selected || !files.includes(selected))
+    if (!candidates.length || (file !== undefined && !candidates.includes(file)))
       throw new EditorError("no_editable_save", message("editor.saveRequired"));
+    const boundAdapter = await bindGameData(this.library, game, registration);
+    const groups = new Map<string, string[]>();
+    let incomplete: EditorError | undefined;
+    for (const name of candidates) {
+      try {
+        groups.set(
+          name,
+          nativeFileGroup(boundAdapter, name, game.saveFiles, revision.manifest.artifacts),
+        );
+      } catch (error) {
+        if (!(error instanceof EditorError) || name === file) throw error;
+        incomplete = error;
+      }
+    }
+    // An orphaned earlier slot must not hide a later complete native save.
+    const files = [...groups.keys()];
+    const selected = file ?? files[0];
+    const syncFiles = selected ? groups.get(selected) : undefined;
+    if (!selected || !syncFiles)
+      throw incomplete ?? new EditorError("no_editable_save", message("editor.saveRequired"));
     return {
-      adapter,
+      adapter: boundAdapter,
       instructions: registration.instructions,
       files,
       file: selected,
+      syncFiles,
       bytes: await this.saves.file(owner, revisionId, selected),
       replaceState: undefined,
     };
@@ -99,6 +121,7 @@ export class EditorService {
     return {
       file: opened.file,
       files: opened.files,
+      syncFiles: opened.syncFiles,
       instructions: opened.instructions,
       ...opened.adapter.view(opened.bytes, query),
     };

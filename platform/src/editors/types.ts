@@ -101,6 +101,8 @@ export interface EditorAdapter {
   supportsText?: boolean;
   /** Optional native filename boundary for formats also used by game resources. */
   acceptsFile?(name: string): boolean;
+  /** Required native companions; omitted size permits variable-length opaque files. */
+  requiredFiles?(name: string): { name: string; size?: number }[];
   view(bytes: Uint8Array, draft: EditorDraft): EditorView;
   apply(bytes: Uint8Array, draft: EditorDraft): Uint8Array;
 }

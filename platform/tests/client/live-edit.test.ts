@@ -68,6 +68,32 @@ test("rejects missing or unsynchronized local files before publication", async (
   expect(files.replace).not.toHaveBeenCalled();
 });
 
+test("guards an unchanged companion and retains it during verified writeback", async () => {
+  const { files, download, original, edited } = fixture();
+  const source = original.manifest.artifacts[0];
+  if (!source) throw new Error("Missing fixture artifact");
+  const companion = { ...source, name: "INDEX.DAT" };
+  const addCompanion = (value: Revision): Revision => ({
+    ...value,
+    manifest: { ...value.manifest, artifacts: [...value.manifest.artifacts, companion] },
+  });
+  const base = addCompanion(original);
+  const next = addCompanion(edited);
+  const group = ["SAVE.DAT", "INDEX.DAT"];
+  files.read.mockImplementation(async (name) => (name === "INDEX.DAT" ? after : before));
+  await expect(prepareLiveEdit(files, base, group)).rejects.toMatchObject({ status: 422 });
+  expect(download).not.toHaveBeenCalled();
+  expect(files.replace).not.toHaveBeenCalled();
+  files.read.mockResolvedValue(before);
+  const apply = await prepareLiveEdit(files, base, group);
+  download.mockResolvedValueOnce(new Response(after)).mockResolvedValueOnce(new Response(before));
+  await apply(next);
+  expect(files.replace).toHaveBeenCalledExactlyOnceWith([
+    { name: "SAVE.DAT", previous: before, bytes: after },
+    { name: "INDEX.DAT", previous: before, bytes: before },
+  ]);
+});
+
 test("rejects another parent, profile, game or publication source without writing", async () => {
   const { files, download, original, edited } = fixture();
   const apply = await prepareLiveEdit(files, original, ["SAVE.DAT"]);

@@ -60,15 +60,9 @@ async function refreshWorkspace() {
   if (player.value?.active) await player.value.save();
   else await perform(refresh);
 }
-async function publishEdit(revisionId: string, batch: EditorBatch) {
+async function publishEdit(revisionId: string, batch: EditorBatch, syncFiles: string[]) {
   const publish = () => api<Revision>(`revisions/${revisionId}/editor`, batch);
-  return player.value
-    ? player.value.publishEdit(
-        revisionId,
-        batch.files.map((entry) => entry.file),
-        publish,
-      )
-    : publish();
+  return player.value ? player.value.publishEdit(revisionId, syncFiles, publish) : publish();
 }
 async function upload() {
   if (!files.value.length || busy.value || cloudEditLocked.value) return;
