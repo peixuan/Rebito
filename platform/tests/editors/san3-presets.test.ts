@@ -56,7 +56,10 @@ describe("Japanese Mega-CD creation defaults", () => {
       record: "2",
       changes: { "preset.0.land": 90, "preset.2.strength": 54 },
     });
-    expect(view.modules.map(({ id }) => id)).toEqual(["presets"]);
+    expect(
+      view.modules.filter(({ unavailableReason }) => !unavailableReason).map(({ id }) => id),
+    ).toEqual(["presets"]);
+    expect(view.modules).toHaveLength(8);
     expect(view.records.map(({ cells }) => cells.bonus)).toEqual([90, 90, 70, 70]);
     expect(view.changes).toEqual({ "preset.0.land": 90 });
     expect(view.preview).toMatchObject([{ key: "preset.0.land", before: 40, after: 90 }]);

@@ -44,7 +44,13 @@ export interface EditorView {
   instructions?: DisplayText;
   slots: { index: number; label: DisplayText; available: boolean }[];
   slot: number;
-  modules: { id: string; label: DisplayText }[];
+  modules: {
+    id: string;
+    label: DisplayText;
+    description?: DisplayText;
+    /** Discoverable even when this capture cannot provide the module's fields. */
+    unavailableReason?: DisplayText;
+  }[];
   module: string;
   columns: { id: string; label: DisplayText; defaultVisible?: boolean }[];
   filter?: { tag: string; label: DisplayText; defaultEnabled?: boolean };

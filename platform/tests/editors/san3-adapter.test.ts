@@ -78,6 +78,9 @@ describe("SAN3 editor view", () => {
       "custom",
       "factions",
       "treasures",
+      "battle",
+      "reserves",
+      "presets",
     ]);
     expect(view).toMatchObject({ slot: 0, selected: "0", actions: [], changes: {}, preview: [] });
     expect(view.records[0]).toMatchObject({

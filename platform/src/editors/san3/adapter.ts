@@ -27,6 +27,7 @@ import { san3LifeFields } from "./life-controls.ts";
 import { lifecycleFields } from "./lifecycle.ts";
 import { san3MergeFields } from "./merge-view.ts";
 import { san3NamePresetAction } from "./name-presets.ts";
+import { san3Navigation } from "./navigation.ts";
 import { san3OperationFields } from "./operation-fields.ts";
 import { editSan3Campaign } from "./operations.ts";
 import { san3PersonalTreasureFields } from "./personal-treasures.ts";
@@ -239,9 +240,9 @@ export const san3Adapter: EditorAdapter = {
   supportsText: true,
   view(bytes, draft) {
     if (bytes.length === san3Layout.size && bytes[0x4abc4] === 0 && bytes[0x4abc5] === 1)
-      return san3BattleAdapter.view(bytes, draft);
+      return san3Navigation(san3BattleAdapter.view(bytes, draft));
     if (bytes.length === san3Layout.size && bytes[0x4abc4] === 0 && bytes[0x4abc5] === 4)
-      return san3PresetAdapter.view(bytes, draft);
+      return san3Navigation(san3PresetAdapter.view(bytes, draft));
     const {
       original,
       definitionDocument,
@@ -289,7 +290,7 @@ export const san3Adapter: EditorAdapter = {
         after,
       })),
     );
-    return {
+    return san3Navigation({
       slots: [{ index: 0, label: message("san3.checkpoint"), available: true }],
       slot: 0,
       modules: modules.map((id) => ({ id, label: message(`san3.${id}`) })),
@@ -422,7 +423,7 @@ export const san3Adapter: EditorAdapter = {
       },
       textChanges: Object.fromEntries(textEdits.map(({ key, after }) => [key, after])),
       preview: [...preview, ...operationPreview],
-    };
+    });
   },
   apply(bytes, draft) {
     if (bytes.length === san3Layout.size && bytes[0x4abc4] === 0 && bytes[0x4abc5] === 1)

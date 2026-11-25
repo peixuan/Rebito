@@ -1,0 +1,14 @@
+{
+  "san3.navigation.cities": "Resources, economy, equipment, administration and shipbuilding",
+  "san3.navigation.officers": "Abilities, armies, service, movement, tasks and personal treasures",
+  "san3.navigation.custom": "Names, abilities, registration and scheduled appearance",
+  "san3.navigation.factions": "Player control, symbols, diplomacy, turn order and founding",
+  "san3.navigation.treasures": "Global ownership, holders and discovery state",
+  "san3.navigation.battle": "Troops, equipment, movement and battle status · immediate effects",
+  "san3.navigation.reserves": "City reserve deployment · current battle only",
+  "san3.navigation.presets": "Creation templates and maximum abilities · current session only",
+  "san3.navigation.requiresStrategy": "Capture again at the strategic map.",
+  "san3.navigation.requiresBattle": "Capture again during battle.",
+  "san3.navigation.requiresCreation": "Capture again during new officer registration.",
+  "san3.navigation.requiresReserves": "This capture has no valid city reserve roster."
+}

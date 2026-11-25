@@ -1,0 +1,14 @@
+{
+  "san3.navigation.cities": "资源、经济、军备、委任与造船",
+  "san3.navigation.officers": "能力、军队、仕官、移动、任务与个人宝物",
+  "san3.navigation.custom": "姓名、能力、登记与登场年份",
+  "san3.navigation.factions": "玩家控制、图标、外交、回合顺序与建国",
+  "san3.navigation.treasures": "全局归属、持有者与发现状态",
+  "san3.navigation.battle": "兵力、装备、移动力与战斗状态 · 即时修改",
+  "san3.navigation.reserves": "城市预备队出战状态 · 仅限当前战斗",
+  "san3.navigation.presets": "创建模板与满能力 · 仅限当前运行",
+  "san3.navigation.requiresStrategy": "回到战略大地图后重新捕获。",
+  "san3.navigation.requiresBattle": "进入战斗后重新捕获。",
+  "san3.navigation.requiresCreation": "进入新武将登记界面后重新捕获。",
+  "san3.navigation.requiresReserves": "本次捕获没有可用的城市预备队名单。"
+}

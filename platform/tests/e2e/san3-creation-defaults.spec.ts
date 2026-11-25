@@ -59,7 +59,9 @@ test("switches to registration and writes bilingual creation defaults into the r
   await expect(
     editor.getByRole("button", { name: "New officer creation defaults", exact: true }),
   ).toBeVisible();
-  await expect(editor.getByRole("button", { name: "Cities", exact: true })).toHaveCount(0);
+  await expect(editor.getByRole("button", { name: "Cities", exact: true })).toBeVisible();
+  await expect(editor.getByRole("button", { name: "Cities", exact: true })).toBeDisabled();
+  await expect(editor).toContainText("Capture again at the strategic map.");
   await expect(editor).toContainText("Temporary creation defaults, not native-save data.");
   await page.getByLabel("Language").selectOption("zh-CN");
   await expect(

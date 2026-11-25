@@ -3,6 +3,7 @@ import { previewedEditorChanges } from "../../client/controls/editor-fields.ts";
 import { san3Adapter } from "../../src/editors/san3/adapter.ts";
 import { San3BattleDocument } from "../../src/editors/san3/battle.ts";
 import { san3BattleAdapter } from "../../src/editors/san3/battle-adapter.ts";
+import { san3Navigation } from "../../src/editors/san3/navigation.ts";
 import type { EditorDraft } from "../../src/editors/types.ts";
 import { san3BattleFixture } from "./san3-battle-fixture.ts";
 
@@ -19,7 +20,7 @@ describe("SAN3 battle editor boundary", () => {
     expect(view.selected).toBe("1");
     expect(view.changes).toEqual({ "battle.0.mobility": 90 });
     expect(previewedEditorChanges(view)).toEqual(view.changes);
-    expect(san3Adapter.view(bytes, draft)).toEqual(view);
+    expect(san3Adapter.view(bytes, draft)).toEqual(san3Navigation(view));
     expect(view.instructions).toEqual({ messageId: "san3.battleInstructions" });
     expect(view.preview).toMatchObject([{ key: "battle.0.mobility", before: 5, after: 90 }]);
     expect(view.fields[0]?.key).toBe("battle.1.mobility");

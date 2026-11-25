@@ -1,6 +1,6 @@
 # Platform work status
 
-Updated: 2026-11-24 (Asia/Shanghai).
+Updated: 2026-11-25 (Asia/Shanghai).
 
 ## Reviewed source and history
 
@@ -35,6 +35,11 @@ published commit; [GitHub Actions](https://github.com/peixuan/Rebito/actions) is
 live hosted acceptance record.
 
 ## Implemented boundaries
+
+SAN3 navigation now keeps all eight feature modules visible across strategic,
+battle and registration captures. Unavailable modules explain the required phase;
+the server still rejects cross-phase requests. Record-level availability and the
+compact editor layout are the next part of this interface review.
 
 Rebito uses TypeScript, Vue, Fastify and PostgreSQL. Games run in browsers; the
 server owns identity, private revisions, game management and optional pure editors.

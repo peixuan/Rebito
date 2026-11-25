@@ -299,17 +299,28 @@ onBeforeUnmount(() => {
     }}</Message>
     <template v-if="view">
       <p class="editor-guidance">{{ translate(view.instructions) }}</p>
-      <nav class="editor-tabs" :aria-label="t('editor.modules')">
-        <Button
-          v-for="module in view.modules"
-          :key="module.id"
-          :label="translate(module.label)"
-          size="small"
-          :severity="module.id === view.module ? 'primary' : 'secondary'"
-          :aria-pressed="module.id === view.module"
-          :disabled="busy || stale || Boolean(invalid.size)"
-          @click="perform(() => navigate({ module: module.id }))"
-        />
+      <nav
+        class="editor-tabs"
+        :class="{ 'module-catalog': view.modules.some((entry) => entry.description) }"
+        :aria-label="t('editor.modules')"
+      >
+        <div v-for="module in view.modules" :key="module.id" class="module-entry">
+          <Button
+            :label="translate(module.label)"
+            size="small"
+            :severity="module.id === view.module ? 'primary' : 'secondary'"
+            :aria-pressed="module.id === view.module"
+            :aria-describedby="module.description ? `module-description-${module.id}` : undefined"
+            :disabled="busy || stale || Boolean(invalid.size) || Boolean(module.unavailableReason)"
+            @click="perform(() => navigate({ module: module.id }))"
+          />
+          <small v-if="module.description" :id="`module-description-${module.id}`">
+            {{ translate(module.description) }}
+            <span v-if="module.unavailableReason" class="module-reason">{{
+              translate(module.unavailableReason)
+            }}</span>
+          </small>
+        </div>
       </nav>
       <div class="editor-content" :class="{ 'has-records': view.records.length > 1 }">
         <RecordTable
@@ -443,6 +454,24 @@ onBeforeUnmount(() => {
 }
 .editor-tabs {
   margin: 12px 0;
+}
+.module-catalog {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+  align-items: start;
+}
+.module-catalog .module-entry {
+  display: grid;
+  gap: 4px;
+}
+.module-entry small {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--p-text-muted-color);
+}
+.module-reason {
+  display: block;
+  font-weight: 600;
 }
 .editor-content {
   display: grid;
