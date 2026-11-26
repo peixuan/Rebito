@@ -7,6 +7,8 @@ import { type DisplayText, displayMessage, MessageError, message } from "../src/
 import type { Profile, Revision } from "../src/storage/revisions.ts";
 import { ApiError, errorText } from "./api.ts";
 import { formatDate, i18n, t, translate } from "./i18n.ts";
+import NesCheatPanel from "./nes-cheats/NesCheatPanel.vue";
+import type { NesCheats } from "./nes-cheats/runtime.ts";
 import PlayerControls from "./PlayerControls.vue";
 import { runtimeIdentity } from "./runtime/identity.ts";
 import { prepareLiveEdit } from "./runtime/live-edit.ts";
@@ -36,6 +38,7 @@ const frame = ref<HTMLIFrameElement | null>(null);
 const active = ref(false);
 const ready = ref(false);
 const touch = shallowRef<TouchInput | null>(null);
+const nesCheats = shallowRef<NesCheats | null>(null);
 const controls = shallowRef<RuntimeControls | null>(null);
 const busy = ref(false);
 const stopping = ref(false);
@@ -138,6 +141,7 @@ async function boot() {
         return;
       }
       handle = started;
+      nesCheats.value = started.nesCheats ?? null;
       touch.value = started.touch ?? null;
       controls.value = started.controls ?? null;
       ready.value = true;
@@ -157,6 +161,7 @@ async function stop() {
   snapshotSession.invalidate();
   const current = handle;
   handle = null;
+  nesCheats.value = null;
   touch.value = null;
   controls.value = null;
   recoverProgress = null;
@@ -546,5 +551,11 @@ defineExpose({
         @load="boot"
       />
     </TouchDeck>
+    <NesCheatPanel
+      v-if="nesCheats"
+      :key="profileId + nesCheats.romSha256"
+      :port="nesCheats"
+      :disabled="busy || workspaceBusy || pendingSync || conflict || stopping"
+    />
   </section>
 </template>

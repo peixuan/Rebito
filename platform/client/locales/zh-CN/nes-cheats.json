@@ -1,3 +1,15 @@
 {
-  "nesCheats.invalidCode": "请输入有效的 NES 金手指代码，同时最多启用 32 条。"
+  "nesCheats.invalidCode": "请输入有效的 NES 金手指代码，同时最多启用 32 条。",
+  "nesCheats.title": "NES 金手指",
+  "nesCheats.codes": "金手指代码",
+  "nesCheats.scope": "规则在当前游戏中即时生效。要保留游戏进度，请使用游戏窗口的保存按钮。结束游戏会清除启用的规则。",
+  "nesCheats.code": "代码",
+  "nesCheats.name": "备注（选填）",
+  "nesCheats.enable": "应用代码",
+  "nesCheats.formats": "可输入一条 6 位或 8 位的 Game Genie 字母代码，也可输入十六进制地址与数值，如 00FE:09。部分代码会改变游戏读取到的数值，底层存储的字节仍可能保持原值。",
+  "nesCheats.remove": "移除",
+  "nesCheats.removeCode": "移除 {code}",
+  "nesCheats.limit": "每次游戏最多可保留 32 条规则。",
+  "nesCheats.overlap": "请先关闭这个地址上已启用的规则。",
+  "nesCheats.applyFailed": "模拟器未能应用这些规则。"
 }
