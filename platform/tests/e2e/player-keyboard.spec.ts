@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { expect, test } from "@playwright/test";
+import { centerPixel } from "./console-pixel.ts";
 import { useSession } from "./session.ts";
 
 for (const handoff of ["start", "resume"]) {
@@ -26,27 +27,7 @@ for (const handoff of ["start", "resume"]) {
     await expect(page.getByRole("button", { name: "Pause game" })).toBeEnabled({ timeout: 30_000 });
     const runtime = page.frames().find((frame) => frame.url().endsWith("/runtime.html"));
     if (!runtime) throw new Error("Missing real game runtime");
-    const pixel = () =>
-      runtime.locator("canvas").evaluate(
-        (canvas: HTMLCanvasElement) =>
-          new Promise<number[]>((resolve) =>
-            requestAnimationFrame(() => {
-              const gl = canvas.getContext("webgl2") ?? canvas.getContext("webgl");
-              if (!gl) throw new Error("Missing real MD frame");
-              const value = new Uint8Array(4);
-              gl.readPixels(
-                canvas.width / 2,
-                canvas.height / 2,
-                1,
-                1,
-                gl.RGBA,
-                gl.UNSIGNED_BYTE,
-                value,
-              );
-              resolve([...value]);
-            }),
-          ),
-      );
+    const pixel = () => centerPixel(runtime.locator("canvas"));
     await expect.poll(async () => (await pixel())[2]).toBeGreaterThan(150);
     if (handoff === "resume") {
       await page.getByRole("button", { name: "Pause game" }).click();

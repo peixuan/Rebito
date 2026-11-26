@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 import { openSnapshotMemory } from "../../src/editors/snapshots/memory.ts";
 import type { Profile, Revision } from "../../src/storage/revisions.ts";
 import { ps4FixtureRom } from "../library/ps4-fixture.ts";
+import { centerPixel } from "./console-pixel.ts";
 import { checkEditorLayout } from "./editor-layout.ts";
 import { chinese } from "./locales.ts";
 import { useSession } from "./session.ts";
@@ -48,6 +49,9 @@ test("associates the MD editor and applies bilingual drafts to the paused runnin
   await page.getByRole("button", { name: "Start game", exact: true }).click();
   const capture = page.getByRole("button", { name: "Capture for editing", exact: true });
   await expect(capture).toBeEnabled({ timeout: 30_000 });
+  // The fixture displays blue only after it finishes copying the characters into RAM.
+  const canvas = page.frameLocator('iframe[src$="/runtime.html"]').locator("canvas");
+  await expect.poll(async () => (await centerPixel(canvas))[2]).toBeGreaterThan(150);
   await capture.click();
   const editor = page.getByRole("region", { name: "Save editor" });
   await expect(editor).toContainText("Verified with Ken Tse Chinese 1.6");
