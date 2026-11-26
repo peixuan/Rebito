@@ -9,6 +9,7 @@ export default defineConfig({
         "src/**/*.ts",
         "client/api.ts",
         "client/library-archive.ts",
+        "client/nes-cheats/*.ts",
         "client/locale-preference.ts",
         "client/runtime/console-locale.ts",
         "client/runtime/console-controls.ts",
