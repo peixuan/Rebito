@@ -16,6 +16,11 @@ export interface NesCheats {
 
 /** Rules belong to one runtime. Rebuild enabled entries because the core ignores disabled slots. */
 export function createNesCheats(core: NesCore, romSha256: string): NesCheats {
+  let installed: readonly string[] = [];
+  function replace(codes: readonly string[]) {
+    core.resetCheat();
+    for (const [index, code] of codes.entries()) core.setCheat(index, true, code);
+  }
   return {
     romSha256,
     readRam: () => readNesRam(core.getState()),
@@ -27,9 +32,15 @@ export function createNesCheats(core: NesCore, romSha256: string): NesCheats {
         if (!normalized) throw new MessageError(message("nesCheats.invalidCode"));
         checked.add(normalized);
       }
-      core.resetCheat();
-      let index = 0;
-      for (const code of checked) core.setCheat(index++, true, code);
+      const next = [...checked];
+      try {
+        replace(next);
+      } catch (cause) {
+        // A core call can fail after earlier slots were installed.
+        replace(installed);
+        throw cause;
+      }
+      installed = next;
     },
   };
 }

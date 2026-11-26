@@ -84,6 +84,26 @@ describe("NES codes", () => {
     "a".repeat(34),
   ])("rejects %s", (code) => expect(normalizeNesCode(code)).toBeNull());
 
+  it("restores the previous rules after a partial installation fails", () => {
+    const installed: string[] = [];
+    const core = {
+      getState: vi.fn(),
+      resetCheat: () => {
+        installed.length = 0;
+      },
+      setCheat: (index: number, _enabled: boolean, code: string) => {
+        if (code === "AAAAAA") throw new Error("core halted");
+        installed[index] = code;
+      },
+    };
+    const port = createNesCheats(core, "test-rom");
+    port.setCodes(["00FE:01"]);
+    expect(() => port.setCodes(["00FD:03", "AAAAAA"])).toThrow("core halted");
+    expect(installed).toEqual(["00FE:01"]);
+    port.setCodes([]);
+    expect(installed).toEqual([]);
+  });
+
   it("replaces one runtime's complete code list only after validating it", () => {
     const core = { getState: vi.fn(), resetCheat: vi.fn(), setCheat: vi.fn() };
     const port = createNesCheats(core, "test-rom");
