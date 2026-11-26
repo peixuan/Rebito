@@ -66,4 +66,26 @@ test("manages session-only cheats in the NES player", async ({ page }) => {
       timeout: 500,
     });
   }).toPass({ timeout: 5000 });
+
+  await page.setViewportSize({ width: 320, height: 720 });
+  const group = Array.from(
+    { length: 20 },
+    (_, i) => `01${i.toString(16).padStart(2, "0")}:01`,
+  ).join("+");
+  await files.getByLabel("Open a RetroArch .cht file").setInputFiles({
+    name: "group.cht",
+    mimeType: "text/plain",
+    buffer: Buffer.from(`cheats = 1\ncheat0_desc = "Portable group"\ncheat0_code = "${group}"`),
+  });
+  await files.getByRole("combobox").selectOption({ label: "Portable group" });
+  await files.getByRole("button", { name: "Apply code" }).click();
+  const row = panel.getByRole("checkbox", { name: /Portable group/ });
+  await expect(row).toBeChecked();
+  const content = await panel.evaluate((node) => ({
+    right: node.getBoundingClientRect().right,
+    width: node.clientWidth,
+    scroll: node.scrollWidth,
+  }));
+  expect(content.right).toBeLessThanOrEqual(320);
+  expect(content.scroll).toBeLessThanOrEqual(content.width + 1);
 });

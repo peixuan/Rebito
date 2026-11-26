@@ -14,12 +14,13 @@ const selected = ref("");
 const query = ref("");
 const error = ref<DisplayText>("");
 let ticket = 0;
-const matches = computed(
-  () =>
-    imported.value?.entries.filter((entry) =>
-      (entry.name + " " + entry.code).toLowerCase().includes(query.value.trim().toLowerCase()),
-    ) ?? [],
-);
+const matches = computed(() => {
+  const entries = imported.value?.entries ?? [];
+  const term = query.value.trim().toLowerCase();
+  return term
+    ? entries.filter((entry) => `${entry.name} ${entry.code}`.toLowerCase().includes(term))
+    : entries;
+});
 async function load(event: Event) {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];

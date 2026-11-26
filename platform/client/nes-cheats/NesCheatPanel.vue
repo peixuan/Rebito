@@ -162,6 +162,10 @@ li,
   flex-wrap: wrap;
   gap: 0.5rem;
 }
+.rule-toggle {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 li {
   justify-content: space-between;
   border-top: 1px solid var(--p-content-border-color);
