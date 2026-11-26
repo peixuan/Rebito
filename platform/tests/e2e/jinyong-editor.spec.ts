@@ -134,7 +134,7 @@ test("associates the original editor and preserves bilingual drafts across nativ
   const history: Revision[] = await (
     await page.request.get(`/api/profiles/${profile?.id}/revisions`)
   ).json();
-  expect(history).toHaveLength(2);
+  expect(history).toHaveLength(1);
   expect(history[0]?.source).toBe("editor");
   for (const file of files) {
     const expected = Buffer.from(file.buffer);

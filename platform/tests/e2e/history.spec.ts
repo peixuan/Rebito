@@ -8,7 +8,7 @@ test("protects important history and previews bilingual cleanup without changing
 }, info) => {
   await useSession(page.context(), "history");
   await page.goto("/");
-  await page.getByRole("button", { name: /DOS save test/ }).click();
+  await page.getByRole("button", { name: /Test game/ }).click();
   await page.getByLabel("Profile name").fill("Protected history");
   await page.getByRole("button", { name: "Create profile" }).click();
   await page.getByRole("button", { name: "Open profile" }).click();

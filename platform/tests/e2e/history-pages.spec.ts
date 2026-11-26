@@ -6,7 +6,7 @@ test("manages old protected points without replacing the workspace head", async 
   test.setTimeout(60_000);
   await useSession(page.context(), "history-pages");
   await page.goto("/");
-  await page.getByRole("button", { name: /DOS save test/ }).click();
+  await page.getByRole("button", { name: /Test game/ }).click();
   await page.getByLabel("Profile name").fill("Older checkpoints");
   await page.getByRole("button", { name: "Create profile" }).click();
   await page.getByRole("button", { name: "Open profile" }).click();

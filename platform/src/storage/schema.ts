@@ -1,4 +1,5 @@
 import type { Pool } from "pg";
+import { dosReleasePattern } from "./dos-retention.ts";
 import { quotaSettingsMigration } from "./quota-settings.ts";
 import { siteQuotaMigration } from "./site-quota.ts";
 
@@ -82,6 +83,16 @@ export async function migrateStorage(database: Pool): Promise<void> {
     if (siteQuota.rowCount === 0) await client.query(siteQuotaMigration);
     const settings = await client.query("SELECT version FROM schema_versions WHERE version = 6");
     if (!settings.rowCount) await client.query(quotaSettingsMigration);
+    const dosBackups = await client.query("SELECT version FROM schema_versions WHERE version = 7");
+    if (!dosBackups.rowCount) {
+      // Keep every point users already had when switching DOS to a single working save.
+      await client.query(
+        `UPDATE revisions r SET protected=true FROM profiles p
+        WHERE p.id=r.profile_id AND p.release_id ~ $1 AND NOT r.protected`,
+        [dosReleasePattern],
+      );
+      await client.query("INSERT INTO schema_versions VALUES (7)");
+    }
     await client.query("COMMIT");
   } catch (error) {
     await client.query("ROLLBACK");

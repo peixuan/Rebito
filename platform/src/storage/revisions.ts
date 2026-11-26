@@ -5,6 +5,7 @@ import {
   assertProgressManifest,
   type ProgressManifest,
 } from "../domain/artifacts.ts";
+import { dosReleasePattern, retireDosHead } from "./dos-retention.ts";
 import { type StorageLimits, storageLimitSchema, storageUsage } from "./limits.ts";
 import { quotaSettings } from "./quota-settings.ts";
 import { defaultSiteLimits, type SiteSaveLimits, siteUsage } from "./site-quota.ts";
@@ -81,25 +82,59 @@ export class RevisionRepository {
     return { used: await storageUsage(this.database, owner), limits: account };
   }
 
-  async assertCapacity(owner: string, manifest: ProgressManifest) {
-    const { account, site } = await quotaSettings(this.database, this.limits, this.siteLimits);
-    const bytes = await this.assertOwnerCapacity(this.database, owner, manifest, account);
-    const used = await siteUsage(this.database);
-    if (used.bytes + bytes > site.bytes || used.revisions >= site.revisions)
-      throw new ProgressError("site_quota_exceeded");
+  async assertCapacity(
+    owner: string,
+    profileId: string,
+    base: string | null,
+    manifest: ProgressManifest,
+  ) {
+    await this.transaction(owner, async (client) => {
+      const { site, bytes, count } = await this.checkPublication(
+        client,
+        owner,
+        profileId,
+        base,
+        manifest,
+      );
+      const used = await siteUsage(client);
+      if (used.bytes + bytes > site.bytes || used.revisions + count > site.revisions)
+        throw new ProgressError("site_quota_exceeded");
+    });
   }
 
-  private async assertOwnerCapacity(
-    database: Pick<Pool, "query">,
+  /** Both preflight and commit check the same locked head and its net quota cost. */
+  private async checkPublication(
+    database: PoolClient,
     owner: string,
+    profileId: string,
+    base: string | null,
     manifest: ProgressManifest,
-    limits: StorageLimits,
   ) {
+    const { account, site } = await quotaSettings(database, this.limits, this.siteLimits);
+    const {
+      rows: [profile],
+    } = await database.query(
+      `SELECT p.release_id, p.head_id, r.parent_id,
+        CASE WHEN p.head_id IS NOT NULL AND NOT r.protected AND p.release_id ~ $3
+          THEN revision_bytes(r.manifest) END AS credit
+       FROM profiles p LEFT JOIN revisions r ON r.id=p.head_id
+       WHERE p.id=$1 AND p.owner_id=$2 FOR UPDATE OF p`,
+      [profileId, owner, dosReleasePattern],
+    );
+    if (!profile) throw new ProgressError("not_found");
+    if (profile.head_id !== base) throw new ProgressError("conflict");
+    if (profile.release_id !== manifest.releaseId) throw new ProgressError("release_mismatch");
+    const replaced =
+      profile.credit === null
+        ? undefined
+        : { bytes: Number(profile.credit), parentId: profile.parent_id };
+    const bytes =
+      manifest.artifacts.reduce((sum, file) => sum + file.size, 0) - (replaced?.bytes ?? 0);
+    const count = replaced ? 0 : 1;
     const used = await storageUsage(database, owner);
-    const bytes = manifest.artifacts.reduce((total, artifact) => total + artifact.size, 0);
-    if (used.revisions >= limits.revisions || used.bytes + bytes > limits.bytes)
+    if (used.revisions + count > account.revisions || used.bytes + bytes > account.bytes)
       throw new ProgressError("quota_exceeded");
-    return bytes;
+    return { site, bytes, count, replaced };
   }
 
   /** Record candidates before disk I/O. Exclusive cleanup waits for live writers. */
@@ -183,33 +218,41 @@ export class RevisionRepository {
     base: string | null,
     manifest: ProgressManifest,
     source: RevisionSource,
+    backup = false,
   ): Promise<Revision> {
     assertProgressManifest(manifest);
     return this.transaction(owner, async (client) => {
-      const locked = await client.query<Profile>(
-        `SELECT ${profileColumns} FROM profiles WHERE id=$1 AND owner_id=$2 FOR UPDATE`,
-        [profileId, owner],
+      const { site, replaced } = await this.checkPublication(
+        client,
+        owner,
+        profileId,
+        base,
+        manifest,
       );
-      const profile = locked.rows[0];
-      if (!profile) throw new ProgressError("not_found");
-      if (profile.headId !== base) throw new ProgressError("conflict");
-      if (profile.releaseId !== manifest.releaseId) throw new ProgressError("release_mismatch");
-      const { account, site } = await quotaSettings(client, this.limits, this.siteLimits);
-      await this.assertOwnerCapacity(client, owner, manifest, account);
       const id = randomUUID();
       const result = await client.query<Revision>(
-        `INSERT INTO revisions AS r(id, profile_id, parent_id, source, manifest)
-         VALUES ($1, $2, $3, $4, $5) RETURNING ${revisionColumns}`,
-        [id, profileId, base, source, JSON.stringify(manifest)],
+        `INSERT INTO revisions AS r(id, profile_id, parent_id, source, manifest, protected)
+         VALUES ($1, $2, $3, $4, $5, $6) RETURNING ${revisionColumns}`,
+        [
+          id,
+          profileId,
+          replaced ? replaced.parentId : base,
+          source,
+          JSON.stringify(manifest),
+          backup,
+        ],
       );
+      await client.query("UPDATE profiles SET head_id=$1 WHERE id=$2", [id, profileId]);
+      if (replaced && base) await retireDosHead(client, owner, base);
       const used = await siteUsage(client);
       if (used.bytes > site.bytes || used.revisions > site.revisions)
         throw new ProgressError("site_quota_exceeded");
       await client.query("DELETE FROM history_cleanup WHERE sha256 = ANY($1::text[])", [
         manifest.artifacts.map((artifact) => artifact.sha256),
       ]);
-      await client.query("UPDATE profiles SET head_id=$1 WHERE id=$2", [id, profileId]);
-      return result.rows[0] as Revision;
+      // A publication receipt identifies the verified input for clients applying live edits.
+      // A subsequent history read exposes the compacted chain of retained revisions.
+      return { ...(result.rows[0] as Revision), parentId: base };
     });
   }
 

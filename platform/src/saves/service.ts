@@ -33,6 +33,7 @@ export class SaveService {
     metadata: SaveMetadata,
     files: readonly SaveFile[],
     source: RevisionSource,
+    backup = false,
   ) {
     const manifest: ProgressManifest = {
       ...metadata,
@@ -43,11 +44,10 @@ export class SaveService {
       })),
     };
     assertProgressManifest(manifest);
-    await this.preflight(owner, profileId, base, metadata.releaseId);
-    await this.revisions.assertCapacity(owner, manifest);
+    await this.revisions.assertCapacity(owner, profileId, base, manifest);
     await this.storeFiles(owner, files, manifest.artifacts);
     // The transaction checks the head again: another request may have won meanwhile.
-    return this.revisions.publish(owner, profileId, base, manifest, source);
+    return this.revisions.publish(owner, profileId, base, manifest, source, backup);
   }
 
   /** Publish a whole edit group once, reusing all unchanged immutable blobs. */
@@ -78,7 +78,6 @@ export class SaveService {
     // A stale snapshot would restore old memory over the changed native file.
     if ((revision.manifest.kind === "snapshot") !== snapshot)
       throw new Error("Use the matching native or snapshot editing path");
-    await this.preflight(owner, revision.profileId, revisionId, revision.manifest.releaseId);
     const replacements = files.map(({ name, bytes }) => ({
       name,
       size: bytes.length,
@@ -92,7 +91,7 @@ export class SaveService {
       ),
     };
     assertProgressManifest(manifest);
-    await this.revisions.assertCapacity(owner, manifest);
+    await this.revisions.assertCapacity(owner, revision.profileId, revisionId, manifest);
     await this.storeFiles(owner, files, replacements);
     return this.revisions.publish(owner, revision.profileId, revisionId, manifest, "editor");
   }
@@ -109,19 +108,6 @@ export class SaveService {
       if (stored.sha256 !== expected?.sha256 || stored.size !== expected.size)
         throw new Error("Save bytes changed during publication");
     }
-  }
-
-  private async preflight(
-    owner: string,
-    profileId: string,
-    base: string | null,
-    releaseId: string,
-  ) {
-    // Reject unauthorized and already stale writes before creating any blobs.
-    const profile = (await this.revisions.list(owner)).find((entry) => entry.id === profileId);
-    if (!profile) throw new ProgressError("not_found");
-    if (profile.headId !== base) throw new ProgressError("conflict");
-    if (profile.releaseId !== releaseId) throw new ProgressError("release_mismatch");
   }
 
   async file(owner: string, revisionId: string, name: string): Promise<Uint8Array> {

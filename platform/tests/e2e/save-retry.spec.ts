@@ -44,17 +44,20 @@ test("automatically retries busy DOS autosaves and exit saves without recapturin
   expect(await frame.evaluate(() => (window as Window & { captures?: number }).captures)).toBe(1);
   expect(frame?.isDetached()).toBe(false);
   await expect(page.getByRole("button", { name: "Pause game", exact: true })).toBeEnabled();
+  const autosaved = await page
+    .getByRole("link", { name: "SAVE.DAT", exact: true })
+    .getAttribute("href");
+  expect(await (await page.request.get(autosaved ?? "")).text()).toBe("SECOND\r\n");
   await writeDosSave(page, "THIRD");
   await page.getByRole("button", { name: "Stop game", exact: true }).click();
   await expect(page.getByRole("button", { name: "Start game", exact: true })).toBeVisible();
   expect(attempts).toBe(5);
   const [profile] = (await (await page.request.get("/api/profiles")).json()) as Profile[];
   const history = await (await page.request.get(`/api/profiles/${profile?.id}/revisions`)).json();
-  expect(history).toHaveLength(2);
-  for (const [index, value] of ["THIRD", "SECOND"].entries()) {
-    const file = await page.request.get(`/api/revisions/${history[index].id}/file?name=SAVE.DAT`);
-    expect(await file.text()).toBe(`${value}\r\n`);
-  }
+  expect(history).toHaveLength(1);
+  expect((await page.request.get(autosaved ?? "")).status()).toBe(404);
+  const file = await page.request.get(`/api/revisions/${history[0].id}/file?name=SAVE.DAT`);
+  expect(await file.text()).toBe("THIRD\r\n");
 });
 
 test("never rebases a queued retry over a newer cloud head and preserves local files", async ({

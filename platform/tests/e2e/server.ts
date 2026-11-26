@@ -44,6 +44,7 @@ for (const [index, name] of [
   "history",
   "history-pages",
   "history-runtime",
+  ...[0, 1].flatMap((retry) => [`refresh-${retry}`, `restore-${retry}`]),
   "console",
   "editor",
   "admin",

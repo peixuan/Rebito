@@ -8,6 +8,7 @@ export interface HistoryEntry {
   protected: boolean;
   current: boolean;
   parentId?: string | null;
+  dos?: boolean;
 }
 
 export const historyRetention = { recent: 10, daily: 7, weekly: 4, minimum: 2 } as const;
@@ -47,9 +48,10 @@ export function planHistory<Entry extends HistoryEntry>(
     group.push(entry);
     profiles.set(entry.profileId, group);
     if (entry.current || entry.protected) required.add(entry.id);
-    if (entry.current && entry.parentId) required.add(entry.parentId);
+    if (!entry.dos && entry.current && entry.parentId) required.add(entry.parentId);
   }
   for (const group of profiles.values()) {
+    if (group[0]?.dos) continue;
     for (const entry of group.slice(0, historyRetention.minimum)) required.add(entry.id);
     const rolling = group.filter((entry) => !entry.protected);
     for (const entry of rolling.slice(0, historyRetention.recent)) retained.add(entry.id);

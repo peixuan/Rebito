@@ -18,5 +18,13 @@
   "history.cleaned": "Removed {count} revisions and released {size} of disk space. Current progress is unchanged.",
   "history.pending": "History cleanup is committed. Some disk reclamation is pending and will retry automatically; you can also retry below.",
   "history.retry": "Retry file reclamation",
-  "history.reclaimed": "Pending file reclamation is complete."
+  "history.reclaimed": "Pending file reclamation is complete.",
+  "history.backupGame": "Back up current game",
+  "history.backupStored": "Back up this cloud save",
+  "history.backup": "Backup",
+  "history.removeBackup": "Remove backup",
+  "history.backedUp": "The current game was saved as a backup.",
+  "history.dosPolicy": "DOS keeps one current save with all its files and in-game slots. Back up a point you want to restore later.",
+  "history.removeBackupHelp": "Removing a backup makes its files eligible for cleanup. A current save remains until replaced by the next save.",
+  "history.dosKeep": "The current save and {count} backups will stay."
 }

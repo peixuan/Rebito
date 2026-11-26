@@ -181,6 +181,7 @@ onMounted(() => perform(refresh));
       </form>
     </section>
     <HistoryPanel
+      :dos="game.system === 'dos'"
       :profile-id="profile.id"
       :revisions="revisions"
       :head="head"

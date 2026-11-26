@@ -12,11 +12,20 @@ saves. Configure them with `MAX_TOTAL_SAVE_BYTES` and `MAX_TOTAL_REVISIONS`.
 
 - Current profile heads and explicitly protected points are never rotated away.
 - Existing revisions become protected when retention is first installed.
-- New ordinary history keeps ten recent points per profile, one per day for seven
+- DOS keeps one unprotected working revision per profile. Each successful publication
+  replaces the previous ordinary head in the same transaction, including imports,
+  edits and restores. It covers the complete native group and its runtime overlay.
+  Credit the retired head before enforcing quotas. A failed or competing write
+  preserves the winning head. Every DOS revision present at upgrade becomes a
+  protected backup. **Back up current game** captures and protects the running
+  game's files together. **Back up this cloud save** preserves an already synced
+  revision without copying files. Both survive future saves until explicitly
+  released. Backups count toward the same quotas.
+- Console history keeps ten recent points per profile, one per day for seven
   days and one per week for four weeks. These sets overlap; they are not additive
   guarantees. Daily/weekly buckets are elapsed UTC durations, independent of locale.
 - Above 80% of either account budget, discard older ordinary history first, retaining
-  the two newest points per profile as well as heads, their actual predecessors and
+  the two newest points per console profile as well as heads, their actual predecessors and
   protected points. The hard
   quota still applies if these protected bytes alone fill it; never delete them to
   make an upload succeed.

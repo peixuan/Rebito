@@ -53,7 +53,7 @@ test("clamps compact fields, preserves cross-module drafts and saves multiple sl
   const history: Revision[] = await (
     await page.request.get(`/api/profiles/${profile?.id}/revisions`)
   ).json();
-  expect(history).toHaveLength(2);
+  expect(history).toHaveLength(1);
   expect(history[0]?.source).toBe("editor");
   const result = await (
     await page.request.get(`/api/revisions/${history[0]?.id}/file?name=KOUKAI2.DAT`)

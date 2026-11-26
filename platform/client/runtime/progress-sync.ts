@@ -26,6 +26,7 @@ export async function publishProgress(
   releaseId: string,
   baseRevision: string | null,
   progress: RuntimeProgress,
+  backup = false,
 ) {
   const body = new FormData();
   body.append(
@@ -35,6 +36,7 @@ export async function publishProgress(
       runtime: progress.runtime,
       releaseId,
       baseRevision,
+      ...(backup ? { backup: true } : {}),
     }),
   );
   for (const file of progress.files) body.append("file", new Blob([file.bytes]), file.name);

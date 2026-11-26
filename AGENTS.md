@@ -85,7 +85,9 @@ because an upstream documentation page lists a feature.
   must exclude active writers. Read [storage operations](platform/OPERATIONS.md) before maintenance.
   Callers must await `app.close()` before ending the database pool; ending the pool
   inside an app close hook can deadlock against its dedicated storage lease.
-- Retention never removes current heads, their predecessors, recent safety points
+- DOS replaces its unprotected head atomically, retaining manual backups and crediting
+  the superseded revision at admission. Keep the original base in the publication
+  receipt for verified live writeback. Console retention keeps heads, predecessors, recent safety points
   or protected checkpoints. Protect pre-existing history during migration. Recheck
   manual cleanup previews under the exclusive lease and persist file cleanup intent
   atomically with metadata compaction. Drain the history worker before closing its

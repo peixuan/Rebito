@@ -11,7 +11,8 @@ The default per-account limits are 100 profiles, 2,000 revisions and 2 GiB of lo
 history. Identical blob contents share physical space; each retained revision still
 counts its full logical size. DOS automatic sync publishes only when native files
 change. Repeated manual captures and different snapshots can still grow history.
-Ordinary history now rotates automatically; current heads, their predecessors,
+DOS keeps a single working revision plus protected backups. Console history
+rotates automatically; current heads, their predecessors,
 recent safety points and protected checkpoints remain. Existing history is protected
 on first upgrade. Quota exhaustion still stops saves if these required points fill
 the budget. See the [retention contract](../docs/platform/HISTORY_RETENTION.md).

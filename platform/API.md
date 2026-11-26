@@ -44,11 +44,15 @@ and damaged game data. After metadata removal, cleanup rechecks shared reference
 before unlinking unique files. Interrupted cleanup resumes in the background.
 
 Uploads contain one text field `metadata`: JSON with `kind`, `releaseId`, required
-nullable `baseRevision`, and `runtime` for snapshots. File parts use their portable
+nullable `baseRevision`, and `runtime` for snapshots. Optional `backup: true`
+protects the captured revision in the publication transaction. File parts use their portable
 relative filenames. Limits are 128 files and 64 MiB total, with two simultaneous
 uploads per process. Hashes are computed by the server. A conflict never replaces
 the newer head; fetch history before choosing how to retry. Restore creates a new
-revision and retains both the original and intervening versions.
+revision. For DOS, publication replaces the ordinary head and keeps protected
+backups; console history rotates. The publication response's `parentId` identifies
+the exact input accepted (including live editor writeback). History reads link
+only the revisions still retained.
 
 ## Editors
 

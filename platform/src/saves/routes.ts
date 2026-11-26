@@ -10,7 +10,7 @@ import type { SaveFile, SaveMetadata, SaveService } from "./service.ts";
 import { UploadBusyError, UploadQueue } from "./upload-queue.ts";
 
 type Params = { Params: { id: string } };
-type Upload = SaveMetadata & { baseRevision: string | null };
+type Upload = SaveMetadata & { baseRevision: string | null; backup?: boolean };
 function badRequest(message: string, statusCode = 400) {
   return Object.assign(new Error(message), { statusCode });
 }
@@ -122,6 +122,7 @@ export async function registerSaves(
   app.post<Params & { Body: { expected: boolean; protected: boolean } }>(
     "/api/revisions/:id/protection",
     {
+      config: { rotateHistory: true },
       schema: {
         params: idParameters,
         body: {
@@ -172,7 +173,7 @@ export async function registerSaves(
       try {
         const revision = await uploads.run(controller.signal, async () => {
           const { metadata, files } = await readUpload(request);
-          const { baseRevision, ...progress } = metadata;
+          const { baseRevision, backup, ...progress } = metadata;
           return service.publish(
             request.ownerId,
             request.params.id,
@@ -180,6 +181,7 @@ export async function registerSaves(
             progress,
             files,
             "game",
+            backup,
           );
         });
         return reply.code(201).send(revision);

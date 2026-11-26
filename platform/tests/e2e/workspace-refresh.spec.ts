@@ -5,8 +5,8 @@ import { openDosWorkspace, writeDosSave } from "./dos-workspace.ts";
 
 test("waits for the published cloud head before restarting after a delayed history refresh", async ({
   page,
-}) => {
-  await openDosWorkspace(page, "Delayed refresh");
+}, info) => {
+  await openDosWorkspace(page, "Delayed refresh", `refresh-${info.retry}`);
   await writeDosSave(page, "SECOND");
   let release = () => {};
   const barrier = new Promise<void>((resolve) => {
@@ -39,8 +39,8 @@ test("waits for the published cloud head before restarting after a delayed histo
     const revisions: Revision[] = await (
       await page.request.get(`/api/profiles/${profile.id}/revisions`)
     ).json();
-    expect(revisions).toHaveLength(2);
-    expect(revisions[0]?.parentId).toBe(revisions[1]?.id);
+    expect(revisions).toHaveLength(1);
+    expect(revisions[0]?.parentId).toBeNull();
     for (const revision of revisions) {
       const saved = await page.request.get(`/api/revisions/${revision.id}/file?name=SAVE.DAT`);
       expect(await saved.text()).toBe("SECOND\r\n");
@@ -53,8 +53,8 @@ test("waits for the published cloud head before restarting after a delayed histo
 
 test("blocks history restores and imports until an in-flight DOS stop is published", async ({
   page,
-}) => {
-  await openDosWorkspace(page, "Restore after stop");
+}, info) => {
+  await openDosWorkspace(page, "Restore after stop", `restore-${info.retry}`);
   const frame = page.frames().find((entry) => entry.url().endsWith("/runtime.html"));
   if (!frame) throw new Error("Missing DOS runtime");
   await expect
@@ -76,6 +76,11 @@ test("blocks history restores and imports until an in-flight DOS stop is publish
     return published.json();
   }
   const first = await publish();
+  await page
+    .locator(`[data-revision-id="${first.id}"]`)
+    .getByRole("button", { name: "Back up this cloud save", exact: true })
+    .click();
+  await expect(page.locator(`[data-revision-id="${first.id}"]`)).toContainText("Backup");
   await writeDosSave(page, "SECOND");
   const second = await publish();
   const restore = page
@@ -101,6 +106,7 @@ test("blocks history restores and imports until an in-flight DOS stop is publish
   try {
     await page.getByRole("button", { name: "Stop game", exact: true }).click();
     await expect.poll(() => waiting).toBe(true);
+    expect(stopped?.id).not.toBe(second.id);
     expect(stopped?.parentId).toBe(second.id);
     await expect(restore).toBeDisabled();
     await expect(page.getByLabel("Save files", { exact: true })).toBeDisabled();
@@ -113,6 +119,7 @@ test("blocks history restores and imports until an in-flight DOS stop is publish
     const restored = await response;
     expect(restored.status()).toBe(201);
     const revision: Revision = await restored.json();
+    expect(revision.id).not.toBe(stopped?.id);
     expect(revision.parentId).toBe(stopped?.id);
     const bytes = await page.request.get(`/api/revisions/${revision.id}/file?name=SAVE.DAT`);
     expect(await bytes.text()).toBe("FIRST\r\n");

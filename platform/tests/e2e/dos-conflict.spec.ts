@@ -89,5 +89,5 @@ test("requires an explicit discard before using the newer cloud branch", async (
   expect(profiles.find((entry) => entry.id === profile.id)?.headId).toBe(remote.id);
   expect(
     await (await page.request.get(`/api/profiles/${profile.id}/revisions`)).json(),
-  ).toHaveLength(2);
+  ).toHaveLength(1);
 });

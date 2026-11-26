@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import type { Pool } from "pg";
 import { assertProgressManifest, type ProgressManifest } from "../domain/artifacts.ts";
 import type { BlobRef } from "./blobs.ts";
+import { dosReleasePattern } from "./dos-retention.ts";
 import type { StorageLimits } from "./limits.ts";
 import { quotaSettings } from "./quota-settings.ts";
 import { referencedBlobs } from "./references.ts";
@@ -37,9 +38,9 @@ export async function historyPlan(
   }
   const result = await database.query<StoredHistory>(
     `SELECT r.id, r.profile_id AS "profileId", r.parent_id AS "parentId", r.protected,
-      r.created_at AS "createdAt", r.manifest, r.id=p.head_id AS current
+      r.created_at AS "createdAt", r.manifest, r.id=p.head_id AS current, p.release_id ~ $2 AS dos
      FROM revisions r JOIN profiles p ON p.id=r.profile_id WHERE p.owner_id=$1 ORDER BY r.id`,
-    [owner],
+    [owner, dosReleasePattern],
   );
   const rows = result.rows.map((row) => {
     assertProgressManifest(row.manifest);

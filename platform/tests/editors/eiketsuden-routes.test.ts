@@ -138,6 +138,7 @@ it("publishes five groups once and preserves opaque companions, unknown bytes an
   if (!first) throw new Error("Missing fixture save");
   first.bytes[1702] = 254; // An unknown eighth item remains untouched.
   const revision = await original(source);
+  await saves.revisions.protect(users[0]?.id ?? "", revision.id, false, true);
   const files = Array.from({ length: 5 }, (_, slot) =>
     edit(slot, { "campaign.0.money": 1000 + slot, "characters.0.level": 50 + slot }),
   );
@@ -228,5 +229,5 @@ it("admits one competing writer without rebasing or overwriting the winner", asy
     await saves.file(users[0]?.id ?? "", results[winner]?.json().id, primary(0)),
   );
   expect(bytes.readUInt16LE(35)).toBe([123, 456][winner]);
-  expect(await history(revision.profileId)).toHaveLength(2);
+  expect(await history(revision.profileId)).toHaveLength(1);
 });

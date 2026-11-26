@@ -18,5 +18,13 @@
   "history.cleaned": "已清理 {count} 个历史版本，释放磁盘空间 {size}。当前进度未改变。",
   "history.pending": "历史清理已提交，部分磁盘回收尚未完成，后台会自动重试，也可点击下方按钮重试。",
   "history.retry": "重试文件回收",
-  "history.reclaimed": "待处理的文件回收已完成。"
+  "history.reclaimed": "待处理的文件回收已完成。",
+  "history.backupGame": "备份当前游戏进度",
+  "history.backupStored": "备份这份云存档",
+  "history.backup": "备份",
+  "history.removeBackup": "取消备份",
+  "history.backedUp": "已将当前游戏进度存为备份。",
+  "history.dosPolicy": "DOS 每份进度只保留一份当前存档，包含整组文件和游戏内的存档槽。想留住某个时间点时，可以手动备份。",
+  "history.removeBackupHelp": "取消备份后，旧版本将被清理。当前存档会保留到下一次保存。",
+  "history.dosKeep": "当前存档和 {count} 个备份将保留。"
 }

@@ -155,7 +155,7 @@ test("edits paired DOS saves with bounded bilingual drafts and read-only referen
   const history: Revision[] = await (
     await page.request.get(`/api/profiles/${profile?.id}/revisions`)
   ).json();
-  expect(history).toHaveLength(2);
+  expect(history).toHaveLength(1);
   expect(history[0]?.source).toBe("editor");
   for (const file of files) {
     const expected = Buffer.from(file.buffer);

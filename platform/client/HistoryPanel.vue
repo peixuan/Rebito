@@ -14,9 +14,11 @@ const props = defineProps<{
   profileId: string;
   revisions: Revision[];
   head: string | null;
+  dos: boolean;
   disabled: boolean;
 }>();
 const emit = defineEmits<{ restore: [revision: Revision]; changed: []; busy: [value: boolean] }>();
+const removeLabel = computed(() => t(props.dos ? "history.removeBackup" : "history.unprotect"));
 const busy = ref(false);
 const visible = ref(false);
 const selected = ref<Revision | null>(null);
@@ -132,7 +134,7 @@ async function retry() {
         @click="retry"
       />
     </div>
-    <p class="muted">{{ t("history.policy") }}</p>
+    <p class="muted">{{ t(dos ? "history.dosPolicy" : "history.policy") }}</p>
     <Message v-if="error" severity="error" role="alert">{{ translate(error) }}</Message>
     <Message v-if="notice" severity="info" role="status">{{ translate(notice) }}</Message>
     <p v-if="!entries.length" class="muted">{{ t("saves.empty") }}</p>
@@ -155,7 +157,9 @@ async function retry() {
           }}</span
         >
         <span class="muted"> · {{ formatDate(revision.createdAt) }}</span>
-        <strong v-if="revision.protected"> · {{ t("history.protected") }}</strong>
+        <strong v-if="revision.protected">
+          · {{ t(dos ? "history.backup" : "history.protected") }}</strong
+        >
         <div class="toolbar">
           <a
             v-for="file in revision.manifest.artifacts"
@@ -170,7 +174,9 @@ async function retry() {
       </div>
       <div class="toolbar">
         <Button
-          :label="revision.protected ? t('history.unprotect') : t('history.protect')"
+          :label="
+            revision.protected ? removeLabel : t(dos ? 'history.backupStored' : 'history.protect')
+          "
           size="small"
           variant="text"
           :disabled="disabled || busy"
@@ -206,7 +212,7 @@ async function retry() {
     </div>
     <Dialog
       v-model:visible="visible"
-      :header="selected ? t('history.unprotect') : t('history.review')"
+      :header="selected ? removeLabel : t('history.review')"
       modal
       :closable="!busy"
       :close-on-escape="!busy"
@@ -214,7 +220,7 @@ async function retry() {
     >
       <template v-if="selected">
         <p>{{ formatDate(selected.createdAt) }}</p>
-        <p>{{ t("history.unprotectHelp") }}</p>
+        <p>{{ t(dos ? "history.removeBackupHelp" : "history.unprotectHelp") }}</p>
       </template>
       <template v-else-if="preview">
         <p>
@@ -226,7 +232,11 @@ async function retry() {
             })
           }}
         </p>
-        <p>{{ t("history.keepHelp", { count: preview.protectedRevisions }) }}</p>
+        <p>
+          {{
+            t(dos ? "history.dosKeep" : "history.keepHelp", { count: preview.protectedRevisions })
+          }}
+        </p>
         <p class="muted">{{ t("history.sharedHelp") }}</p>
         <div class="history-removals">
           <table v-if="preview.revisions.length">
@@ -254,7 +264,7 @@ async function retry() {
           @click="visible = false"
         />
         <Button
-          :label="selected ? t('history.unprotect') : t('history.confirm')"
+          :label="selected ? removeLabel : t('history.confirm')"
           severity="danger"
           :loading="busy"
           :disabled="busy || disabled || (!selected && !preview?.revisions.length)"

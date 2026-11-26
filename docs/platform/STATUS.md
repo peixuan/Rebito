@@ -2,6 +2,23 @@
 
 Updated: 2026-11-25 (Asia/Shanghai).
 
+## Save limits and DOS backups
+
+Game management now exposes persistent site/account save quotas with optimistic
+concurrency. Host disk reserve remains an operator setting. DOS publications
+replace the ordinary working head atomically, while manual backups and pre-upgrade
+versions survive. Console retention is unchanged. See the
+[retention contract](HISTORY_RETENTION.md) and [configuration](../../platform/CONFIGURATION.md).
+
+Local PostgreSQL tests cover replacement at both hard limits, failed and racing
+writes, migration and full-group restoration. Browser regressions cover a real DOS
+backup, subsequent saves, restart, restore and removal, plus the admin settings dialog.
+
+The previous production release was exercised with a disposable Koukai2 profile.
+Publishing its complete native file group and an edit, then deleting the profile,
+returned two versions, 1,316,204 logical bytes and 328,991 unique file bytes.
+All six original profiles, 66 revision records and 91 referenced blob digests matched.
+
 ## Editor workspace and personal saves
 
 The editor workspace keeps records, field groups and save actions visible together.

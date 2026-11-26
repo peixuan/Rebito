@@ -123,6 +123,7 @@ it("previews without writing and atomically publishes several slots as a new pri
   });
   expect(preview.headers["cache-control"]).toBe("no-store");
   expect(await saves.revisions.history(users[0]?.id ?? "", initial.profileId)).toHaveLength(1);
+  await saves.revisions.protect(users[0]?.id ?? "", initial.id, false, true);
   const body = batch(123);
   body.edits.push({ slot: 9, changes: { money: 456 } });
   const result = await request(initial.id, body, true);
@@ -269,7 +270,7 @@ it("publishes multiple editable files once and rejects an invalid later file ato
   group.files[1] = { ...batch(456), file: "SECOND.DAT" };
   const result = await request(initial.id, group, true);
   expect(result.statusCode).toBe(201);
-  expect(await saves.revisions.history(owner, profile.id)).toHaveLength(2);
+  expect(await saves.revisions.history(owner, profile.id)).toHaveLength(1);
   for (const [name, money] of [
     ["KOUKAI2.DAT", 123],
     ["SECOND.DAT", 456],

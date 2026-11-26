@@ -105,6 +105,7 @@ it("lists only native R saves and keeps preview private and read-only", async ()
 
 it("publishes three slots atomically, preserving every companion and old revision", async () => {
   const originalRevision = await original();
+  await saves.revisions.protect(users[0]?.id ?? "", originalRevision.id, false, true);
   const files = [1, 2, 3].map((slot) => edit(`R${slot}.GRP`, slot * 123));
   const result = await request(originalRevision.id, { files }, true);
   expect(result.statusCode).toBe(201);
@@ -152,11 +153,12 @@ it("admits only one writer and does not merge conflicting saves", async () => {
   const winner = results.find(({ statusCode }) => statusCode === 201);
   const bytes = Buffer.from(await saves.file(users[0]?.id ?? "", winner?.json().id, "R1.GRP"));
   expect([12, 34]).toContain(bytes.readInt16LE(38));
-  expect(await saves.revisions.history(users[0]?.id ?? "", revision.profileId)).toHaveLength(2);
+  expect(await saves.revisions.history(users[0]?.id ?? "", revision.profileId)).toHaveLength(1);
 });
 
 it("publishes an expanded bag order atomically and rejects a competing draft", async () => {
   const revision = await original();
+  await saves.revisions.protect(users[0]?.id ?? "", revision.id, false, true);
   const batches = [];
   for (const quantity of [5, 9]) {
     const preview = await request(revision.id, {

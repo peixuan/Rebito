@@ -163,7 +163,8 @@ async function stop() {
     integerPixels.value = true;
   }
 }
-async function save(automatic = false, keepPaused = false) {
+async function save(mode: "manual" | "automatic" | "backup" = "manual", keepPaused = false) {
+  const automatic = mode === "automatic";
   const current = handle;
   if (!current || !ready.value || busy.value || pendingSync.value || conflict.value) return false;
   return perform(async () => {
@@ -187,7 +188,13 @@ async function save(automatic = false, keepPaused = false) {
       const progress = await current.capture();
       if (automatic) resumeCapturedGame();
       if (progress && (!automatic || (await nativeProgressChanged(progress, runningRevision)))) {
-        const revision = await publishProgress(props.profileId, props.game.id, base, progress);
+        const revision = await publishProgress(
+          props.profileId,
+          props.game.id,
+          base,
+          progress,
+          mode === "backup",
+        );
         base = revision.id;
         runningRevision = revision;
         if (
@@ -199,7 +206,9 @@ async function save(automatic = false, keepPaused = false) {
           snapshotSession.acceptCapture(captureTicket, revision.id);
         emit("saved");
         synchronizedAt.value = Date.now();
-        notice.value = automatic ? message("player.autosaved") : message("player.saved");
+        notice.value = message(
+          mode === "backup" ? "history.backedUp" : automatic ? "player.autosaved" : "player.saved",
+        );
       } else if (!automatic) notice.value = message("player.unchanged");
       if (!automatic) resumeCapturedGame();
     } catch (cause) {
@@ -282,7 +291,8 @@ async function publishEdit(revisionId: string, files: string[], publish: () => P
     return revision;
   } catch (cause) {
     if (current.snapshot && !prepared) snapshotSession.invalidate();
-    if (cause instanceof ApiError && cause.status === 409) markConflict();
+    // A competing DOS save may already have retired the revision we were editing.
+    if (cause instanceof ApiError && (cause.status === 409 || cause.status === 404)) markConflict();
     else if (resume && !current.snapshot) {
       current.resume();
       paused.value = false;
@@ -377,7 +387,7 @@ onMounted(() => {
       !conflict.value &&
       !error.value
     )
-      void save(true);
+      void save("automatic");
   }, 30_000);
 });
 onBeforeUnmount(() => {
@@ -425,7 +435,7 @@ defineExpose({
           :title="t('player.captureEditHelp')"
           size="small"
           :disabled="!ready || busy || pendingSync || conflict || editorDirty"
-          @click="save(false, true)"
+          @click="save('manual', true)"
         />
         <Button
           :label="t('player.save')"
@@ -433,6 +443,14 @@ defineExpose({
           :disabled="!ready || pendingSync || conflict || (game.system !== 'dos' && editorDirty)"
           :loading="busy"
           @click="save()"
+        />
+        <Button
+          v-if="game.system === 'dos'"
+          :label="t('history.backupGame')"
+          severity="secondary"
+          size="small"
+          :disabled="!ready || busy || pendingSync || conflict || stopping || workspaceBusy"
+          @click="save('backup')"
         />
         <Button
           v-if="conflict"

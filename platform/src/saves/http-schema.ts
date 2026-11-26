@@ -23,6 +23,7 @@ export const uploadMetadata = {
     kind: { enum: ["game-save", "snapshot", "filesystem"] },
     releaseId: profileBody.properties.releaseId,
     baseRevision,
+    backup: { type: "boolean" },
     runtime: {
       type: "object",
       required: ["adapter", "core", "version"],
