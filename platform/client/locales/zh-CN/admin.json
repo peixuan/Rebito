@@ -45,5 +45,14 @@
   "admin.removedSaves": "已移除随包存档：{files}。",
   "admin.firmwareRegion": "当前 BIOS 地区：{region}。默认保留；可选用公共库中的 BIOS，以现有光盘发布新版本，旧版进度保留。",
   "admin.usage": "{count} 个版本 · {used} / {maximum}",
-  "admin.editorLabel": "修改器：{editor}"
+  "admin.editorLabel": "修改器：{editor}",
+  "quota.title": "存档空间设置",
+  "quota.site": "全站上限",
+  "quota.account": "每个账号的上限",
+  "quota.capacity": "存档空间（MiB）",
+  "quota.revisions": "存档版本数",
+  "quota.used": "当前已用 {bytes}，共 {count} 个版本。服务器磁盘预留 {reserve}。",
+  "quota.help": "保存后立即生效。超出上限的存档写入将被拒绝。",
+  "quota.changed": "设置已被其他管理员修改，请重新载入后再保存。",
+  "quota.reload": "重新载入设置"
 }

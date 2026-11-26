@@ -39,6 +39,12 @@ This is an early stop, not an OS-enforced reservation: other processes/replicas,
 database growth, backups and host disks backing virtual disks need separate monitoring.
 Filesystem probe failures reject writes rather than bypassing the check.
 
+Administrators can open **Game management → Save storage limits** to change the site
+and account limits without restarting. The first visit uses the environment values;
+saved settings take precedence and persist in the database. The dialog shows site
+usage and the host's free-space reserve. The reserve is configured on the host and
+also protects game uploads.
+
 ## Administrator access
 
 `INITIAL_ADMIN_EMAIL` and `INITIAL_ADMIN_PASSWORD` optionally create the initial

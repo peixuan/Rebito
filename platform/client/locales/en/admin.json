@@ -45,5 +45,14 @@
   "admin.removedSaves": "Removed bundled saves: {files}.",
   "admin.firmwareRegion": "Current BIOS region: {region}. Keep it by default, or select the shared BIOS to publish a new release using the stored disc. Existing progress stays on the original release.",
   "admin.usage": "{count} release · {used} / {maximum} | {count} releases · {used} / {maximum}",
-  "admin.editorLabel": "Editor: {editor}"
+  "admin.editorLabel": "Editor: {editor}",
+  "quota.title": "Save storage limits",
+  "quota.site": "Site limits",
+  "quota.account": "Per-account limits",
+  "quota.capacity": "Storage (MiB)",
+  "quota.revisions": "Save versions",
+  "quota.used": "In use: {bytes} across {count} versions. Host disk reserve: {reserve}.",
+  "quota.help": "New limits take effect immediately. Saves that exceed a limit are refused.",
+  "quota.changed": "Another administrator updated the limits. Reload them before saving.",
+  "quota.reload": "Reload limits"
 }

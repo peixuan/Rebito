@@ -15,6 +15,7 @@ import type { describeConfiguration } from "../src/library/configuration.ts";
 import type { DeletionPreview } from "../src/library/deletion-records.ts";
 import { type DisplayText, message } from "../src/shared/messages.ts";
 import AdminFirmware from "./AdminFirmware.vue";
+import AdminSaveQuotas from "./AdminSaveQuotas.vue";
 import { api, errorText } from "./api.ts";
 import { formatBytes as size } from "./format-bytes.ts";
 import GameDeletion from "./GameDeletion.vue";
@@ -276,6 +277,7 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
     <div class="toolbar">
       <Button :label="t('library.back')" variant="text" @click="emit('back')" />
       <h1>{{ t("admin.title") }}</h1>
+      <AdminSaveQuotas :disabled="busy" />
       <Button :label="t('admin.refresh')" variant="text" :disabled="busy" @click="refresh" />
     </div>
     <p class="muted">{{ t("admin.description") }}</p>
