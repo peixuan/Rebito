@@ -27,6 +27,20 @@ test("keeps disabled features discoverable and bilingual drafts intact in the co
   const editor = page.getByRole("region", { name: "Save editor", exact: true });
   const modules = editor.getByRole("navigation", { name: "Editor modules" });
   await expect(modules.getByRole("button")).toHaveCount(8);
+  await expect(
+    modules.getByRole("group", { name: "Strategy map" }).getByRole("button"),
+  ).toHaveCount(5);
+  const battlefield = modules.getByRole("group", { name: "Battlefield" });
+  await expect(battlefield.getByRole("button")).toHaveCount(2);
+  await expect(battlefield.getByText("Capture again during battle.", { exact: true })).toHaveCount(
+    1,
+  );
+  await expect(
+    battlefield.getByRole("button", { name: "City reserves" }),
+  ).toHaveAccessibleDescription(/Capture again during battle/);
+  await expect(
+    modules.getByRole("group", { name: "Officer registration" }).getByRole("button"),
+  ).toHaveCount(1);
   for (const name of ["Battle", "City reserves", "New officer creation defaults"])
     await expect(modules.getByRole("button", { name, exact: true })).toBeDisabled();
   const queue = editor.getByLabel("Heavy warships: months remaining", { exact: true });
@@ -44,6 +58,11 @@ test("keeps disabled features discoverable and bilingual drafts intact in the co
     .filter({ has: page.getByText("Officer 2", { exact: true }) })
     .click();
   await expect(editor.getByLabel("Strength", { exact: true })).toBeDisabled();
+  const fieldLinks = editor
+    .getByRole("navigation", { name: "Jump to editor section" })
+    .getByRole("link");
+  await expect(fieldLinks.first()).toHaveText("Officer");
+  await expect(editor.getByRole("group", { name: "Base abilities Read-only" })).toBeVisible();
   await editor.getByLabel("Morale", { exact: true }).fill("99");
   await editor.getByLabel("Morale", { exact: true }).press("Tab");
   await page.getByLabel("Language").selectOption("zh-CN");
@@ -57,7 +76,8 @@ test("keeps disabled features discoverable and bilingual drafts intact in the co
   await expect(translated.getByLabel(chinese("san3.taskJoin"), { exact: true })).toBeDisabled();
   for (const width of [1280, 768, 390]) {
     await page.setViewportSize({ width, height: 900 });
-    await translated.screenshot({ path: test.info().outputPath(`editor-${width}.png`) });
+    await translated.evaluate((element) => element.scrollIntoView({ block: "start" }));
+    await page.screenshot({ path: test.info().outputPath(`editor-${width}.png`) });
     expect(
       await translated.evaluate((element) => element.scrollWidth <= element.clientWidth + 1),
     ).toBe(true);

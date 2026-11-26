@@ -40,6 +40,12 @@ in Phantasy Star IV are distinct from editable base values. Draft preview includ
 every edited file and slot. See the [editor handoff](../../platform/EDITORS.md#working-on-the-editor-workspace)
 for the five adapters, their data boundaries and the matching browser fixtures.
 
+The Mega CD SAN3 editor shows all eight modules grouped by strategy, battle or
+officer registration. Unavailable modules share the reason within each phase.
+Editable sections precede read-only references for the selected record. The layout
+regression covers phone, tablet and desktop widths, switching languages with a
+draft, and writing the edited city and officer back to the paused PicoDrive core.
+
 Players can remove a whole profile from the library, including an empty profile or
 one whose game data cannot be opened. Confirmation names the profile and counts
 protected revisions. Concurrent saves or protection changes invalidate that

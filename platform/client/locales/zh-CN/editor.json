@@ -1,4 +1,6 @@
 {
+  "editor.readOnlySection": "只读",
+  "editor.unavailableSection": "当前不可用",
   "editor.eiketsudenTitle": "三国志英杰传（DOS 原版）",
   "editor.eiketsudenDescription": "适用于繁体中文 DOS 原版。请成对同步 MSAVE0–4.R3S 和对应的 ESAVE0–4.R3S。先在游戏中存档并同步，修改后再读取该存档；修改不会直接改变游戏内存，未结束的战斗也不会自动成为原生存档。",
   "editor.san3Title": "三国志 III（Mega-CD）",

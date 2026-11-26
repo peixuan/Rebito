@@ -1,4 +1,7 @@
 {
+  "san3.phase.strategy": "战略大地图",
+  "san3.phase.battle": "战场",
+  "san3.phase.registration": "新武将登记",
   "san3.navigation.cities": "资源、经济、军备、委任与造船",
   "san3.navigation.officers": "能力、军队、仕官、移动、任务与个人宝物",
   "san3.navigation.custom": "姓名、能力、登记与登场年份",

@@ -57,6 +57,8 @@ export interface EditorView {
     id: string;
     label: DisplayText;
     description?: DisplayText;
+    /** Related modules share a gameplay phase in the navigation. */
+    phase?: DisplayText;
     /** Discoverable even when this capture cannot provide the module's fields. */
     unavailableReason?: DisplayText;
   }[];

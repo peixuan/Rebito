@@ -18,6 +18,7 @@ import {
   resolveEditorFields,
 } from "./controls/editor-fields.ts";
 import FieldGrid from "./controls/FieldGrid.vue";
+import ModuleNavigation from "./controls/ModuleNavigation.vue";
 import RecordTable from "./controls/RecordTable.vue";
 import TextFields from "./controls/TextFields.vue";
 import { localize, t, translate } from "./i18n.ts";
@@ -30,6 +31,9 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{ saved: [revision: Revision]; dirty: [value: boolean] }>();
 const view = ref<EditorResponse | null>(null);
+const activeModule = computed(() =>
+  view.value?.modules.find((entry) => entry.id === view.value?.module),
+);
 const base = ref(props.revisionId);
 const running = ref(0);
 const busy = computed(() => running.value > 0 || props.workspaceBusy);
@@ -314,29 +318,12 @@ onBeforeUnmount(() => {
     }}</Message>
     <template v-if="view">
       <p class="editor-guidance">{{ translate(view.instructions) }}</p>
-      <nav
-        class="editor-tabs"
-        :class="{ 'module-catalog': view.modules.some((entry) => entry.description) }"
-        :aria-label="t('editor.modules')"
-      >
-        <div v-for="module in view.modules" :key="module.id" class="module-entry">
-          <Button
-            :label="translate(module.label)"
-            size="small"
-            :severity="module.id === view.module ? 'primary' : 'secondary'"
-            :aria-pressed="module.id === view.module"
-            :aria-describedby="module.description ? `module-description-${module.id}` : undefined"
-            :disabled="navigationLocked || Boolean(module.unavailableReason)"
-            @click="perform(() => navigate({ module: module.id }))"
-          />
-          <small v-if="module.description" :id="`module-description-${module.id}`">
-            {{ translate(module.description) }}
-            <span v-if="module.unavailableReason" class="module-reason">{{
-              translate(module.unavailableReason)
-            }}</span>
-          </small>
-        </div>
-      </nav>
+      <ModuleNavigation
+        :modules="view.modules"
+        :current="view.module"
+        :disabled="navigationLocked"
+        @select="perform(() => navigate({ module: $event }))"
+      />
       <div class="editor-content" :class="{ 'has-records': view.records.length > 1 }">
         <KeepAlive>
           <RecordTable
@@ -354,6 +341,9 @@ onBeforeUnmount(() => {
           <h4>
             {{ translate(view.records.find((record) => record.id === view?.selected)?.label) }}
           </h4>
+          <p v-if="activeModule?.description" class="record-summary">
+            {{ translate(activeModule.description) }}
+          </p>
           <div class="editor-actions">
             <EditorBatchControls
               v-if="view.batchKeys"
@@ -393,6 +383,7 @@ onBeforeUnmount(() => {
             :key="`${view.file}:${view.slot}:${view.selected}`"
             :fields="fields"
             :unavailable="view.unavailableFields ?? []"
+            :prioritize-editable="Boolean(activeModule?.phase)"
             :group-order="view.fieldGroupOrder ?? []"
             :disabled="editingLocked"
             @change="change"
@@ -478,44 +469,12 @@ onBeforeUnmount(() => {
   margin: 8px 0;
   font-size: 12px;
 }
-.editor-tabs,
 .editor-actions,
 .editor-footer {
   display: flex;
   gap: 7px;
   flex-wrap: wrap;
   align-items: center;
-}
-.editor-tabs {
-  margin: 10px 0 14px;
-}
-.editor-tabs:not(.module-catalog) {
-  padding: 6px;
-  gap: 4px;
-  border-radius: 8px;
-  background: var(--p-content-hover-background);
-}
-.editor-tabs:not(.module-catalog) button[aria-pressed="false"] {
-  background: transparent;
-  border-color: transparent;
-}
-.module-catalog {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  align-items: start;
-}
-.module-catalog .module-entry {
-  display: grid;
-  gap: 4px;
-}
-.module-entry small {
-  font-size: 11px;
-  line-height: 1.4;
-  color: var(--p-text-muted-color);
-}
-.module-reason {
-  display: block;
-  font-weight: 600;
 }
 .editor-content {
   display: grid;
@@ -538,6 +497,11 @@ onBeforeUnmount(() => {
   margin: 0 0 8px;
   overflow-wrap: anywhere;
   font-size: 16px;
+}
+.record-summary {
+  margin: -4px 0 8px;
+  font-size: 12px;
+  color: var(--p-text-muted-color);
 }
 .editor-actions {
   margin: 0 0 12px;
@@ -568,11 +532,6 @@ onBeforeUnmount(() => {
   }
   .editor-content > :first-child:not(.record-detail) {
     position: static;
-  }
-}
-@media (max-width: 600px) {
-  .module-catalog {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 </style>

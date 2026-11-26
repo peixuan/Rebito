@@ -1,4 +1,7 @@
 {
+  "san3.phase.strategy": "Strategy map",
+  "san3.phase.battle": "Battlefield",
+  "san3.phase.registration": "Officer registration",
   "san3.navigation.cities": "Resources, economy, equipment, administration and shipbuilding",
   "san3.navigation.officers": "Abilities, armies, service, movement, tasks and personal treasures",
   "san3.navigation.custom": "Names, abilities, registration and scheduled appearance",

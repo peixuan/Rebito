@@ -10,6 +10,7 @@ const props = defineProps<{
   fields: EditorField[];
   unavailable?: EditorUnavailableField[];
   groupOrder?: DisplayText[];
+  prioritizeEditable?: boolean;
   disabled?: boolean;
 }>();
 const emit = defineEmits<{
@@ -18,8 +19,8 @@ const emit = defineEmits<{
   pending: [key: string, value: boolean];
 }>();
 const prefix = useId();
-const groups = computed(() =>
-  fieldSections(props.fields, props.unavailable ?? [], props.groupOrder ?? []).map(
+const groups = computed(() => {
+  const sections = fieldSections(props.fields, props.unavailable ?? [], props.groupOrder ?? []).map(
     (group, index) => {
       const id = `${prefix}-section-${index}`;
       const notes = [...group.notes].map(
@@ -28,14 +29,20 @@ const groups = computed(() =>
       const blocks = [...group.blocks.values()];
       return {
         ...group,
+        editable: blocks.some((block) => block.fields.some((field) => !field.readonly)),
         id,
         blocks,
         repeated: blocks.some((block) => block.label),
         notes: new Map(notes),
       };
     },
-  ),
-);
+  );
+  if (!props.prioritizeEditable) return sections;
+  return [
+    ...sections.filter((section) => section.editable),
+    ...sections.filter((section) => !section.editable),
+  ];
+});
 </script>
 
 <template>
@@ -44,9 +51,14 @@ const groups = computed(() =>
       translate(group.label)
     }}</a>
   </nav>
-  <div class="field-grid" :class="{ organized: groupOrder?.length && groups.length > 3 }">
+  <div class="field-grid" :class="{ 'phase-fields': prioritizeEditable }">
     <fieldset v-for="group in groups" :id="group.id" :key="group.id" tabindex="-1">
-      <legend>{{ translate(group.label) }}</legend>
+      <legend>
+        {{ translate(group.label) }}
+        <small v-if="prioritizeEditable && !group.editable" class="section-state">
+          {{ t(group.blocks.length ? "editor.readOnlySection" : "editor.unavailableSection") }}
+        </small>
+      </legend>
       <div :class="{ 'slot-grid': group.repeated }">
         <div
           v-for="block in group.blocks"
@@ -74,14 +86,16 @@ const groups = computed(() =>
           </div>
         </div>
       </div>
-      <div v-for="field in group.unavailable" :key="field.id" class="field-row unavailable-field">
-        <label :for="`unavailable-${field.id}`">{{ translate(field.label) }}</label>
-        <input
-          :id="`unavailable-${field.id}`"
-          value="—"
-          disabled
-          :aria-describedby="group.notes.get(textIdentity(field.reason))?.id"
-        >
+      <div v-if="group.unavailable.length" class="field-block unavailable-block">
+        <div v-for="field in group.unavailable" :key="field.id" class="field-row unavailable-field">
+          <label :for="`unavailable-${field.id}`">{{ translate(field.label) }}</label>
+          <input
+            :id="`unavailable-${field.id}`"
+            value="—"
+            disabled
+            :aria-describedby="group.notes.get(textIdentity(field.reason))?.id"
+          >
+        </div>
       </div>
       <div v-if="group.notes.size" class="field-notes">
         <p v-for="note in group.notes.values()" :id="note.id" :key="note.id" class="field-help">
@@ -164,29 +178,22 @@ legend {
 .slot-label {
   font-size: 12px;
 }
-.organized .field-block {
-  display: block;
+.phase-fields .field-row:not(.choice) {
+  flex-basis: 7.5rem;
 }
-.organized .field-row {
-  grid-template-columns: minmax(5.5rem, 1fr) minmax(0, 1fr);
-  align-items: center;
-  gap: 8px;
-  margin: 5px 0;
+.phase-fields .unavailable-block {
+  margin-top: 6px;
+}
+.section-state {
+  margin-inline-start: 4px;
+  font-weight: 400;
+  color: var(--p-text-muted-color);
 }
 .field-help {
   margin: 4px 0;
   color: var(--p-text-muted-color);
   font-size: 11px;
   line-height: 1.4;
-}
-.organized {
-  display: block;
-  columns: 2 18rem;
-}
-.organized fieldset {
-  break-inside: avoid;
-  margin-bottom: 12px;
-  scroll-margin-top: 12px;
 }
 .field-index {
   display: flex;
