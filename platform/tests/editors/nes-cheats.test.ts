@@ -59,6 +59,21 @@ describe("FCEUmm RAM", () => {
     expect(() => readNesRam(snapshot)).toThrow();
   });
 
+  it("handles the writer's uncounted empty mapper record on Sachen boards", () => {
+    const chunk = cpu(data);
+    const snapshot = state(chunk, Buffer.of(0x10, 0, 0, 0, 0));
+    snapshot.writeUInt32LE(chunk.length, 20);
+    expect(readNesRam(snapshot)).toEqual(new Uint8Array(ram));
+    const footer = 32 + chunk.length;
+    for (const offset of [footer, footer + 1]) {
+      const malformed = Buffer.from(snapshot);
+      malformed[offset] = 1;
+      expect(() => readNesRam(malformed)).toThrow();
+    }
+    snapshot.writeUInt32LE(chunk.length - 1, 20);
+    expect(() => readNesRam(snapshot)).toThrow();
+  });
+
   it("rejects unsupported core formats and lengths", () => {
     for (const offset of [16, 20, 24, 33]) {
       const snapshot = state(cpu(data));

@@ -29,7 +29,9 @@ contents are insufficient to identify a particular translation.
 
 The bridge requires the pinned FCEUmm fingerprint. It copies CPU RAM from the
 FCS state in the RetroArch container and rejects unknown versions, ambiguous
-records and invalid lengths. FCEUmm applies zero-page codes periodically. Other
+records and invalid lengths. Boards with no extra state can end with an empty
+mapper record outside the declared FCS body. Dancing Blocks and Magic Mathematic
+exercised this writer behavior. FCEUmm applies zero-page codes periodically. Other
 raw codes can change what the CPU reads while captured RAM holds a different
 value. Test a named effect in the game as well as reading back its address.
 See the upstream [state writer](https://github.com/EmulatorJS/libretro-fceumm/blob/d9d7e141274d07186b6a871ca2919b6f13cfb2f9/src/state.c)

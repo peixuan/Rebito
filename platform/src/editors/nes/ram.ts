@@ -9,20 +9,27 @@ const invalid = () => new MessageError(message("editor.invalidSave"));
 export function readNesRam(snapshot: Uint8Array): Uint8Array {
   const { offset, size } = retroArchMemoryRegion(snapshot, invalid);
   const data = new DataView(snapshot.buffer, snapshot.byteOffset + offset, size);
+  if (size < 16 || data.getUint32(0) !== 0x464353ff || data.getUint32(8, true) !== 9813)
+    throw invalid();
+  const bodyEnd = 16 + data.getUint32(4, true);
+  // The writer emits the empty mapper chunk header but excludes its five bytes
+  // from the FCS body length when the board registers no extra state.
   if (
-    size < 16 ||
-    data.getUint32(0) !== 0x464353ff ||
-    data.getUint32(4, true) !== size - 16 ||
-    data.getUint32(8, true) !== 9813
+    bodyEnd !== size &&
+    !(
+      bodyEnd + 5 === size &&
+      data.getUint8(bodyEnd) === 0x10 &&
+      data.getUint32(bodyEnd + 1, true) === 0
+    )
   )
     throw invalid();
   let ram: Uint8Array | undefined;
   let foundCpu = false;
-  for (let chunk = 16; chunk < size; ) {
-    if (chunk + 5 > size) throw invalid();
+  for (let chunk = 16; chunk < bodyEnd; ) {
+    if (chunk + 5 > bodyEnd) throw invalid();
     const start = chunk + 5;
     const end = start + data.getUint32(chunk + 1, true);
-    if (end > size) throw invalid();
+    if (end > bodyEnd) throw invalid();
     if (data.getUint8(chunk) === 1) {
       if (foundCpu) throw invalid();
       foundCpu = true;
