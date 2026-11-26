@@ -1,4 +1,6 @@
+import { nesCheatRuntime } from "../../src/editors/nes/ram.ts";
 import { MessageError, message } from "../../src/shared/messages.ts";
+import { createNesCheats } from "../nes-cheats/runtime.ts";
 import { loadScript, loadStyle } from "./assets.ts";
 import { type ConsoleControls, consoleControls } from "./console-controls.ts";
 import { guardConsolePlayback } from "./console-guard.ts";
@@ -26,6 +28,8 @@ interface Emulator extends ConsoleControls {
       unmount(path: string): void;
     };
     getState(): Uint8Array;
+    setCheat(index: number, enabled: boolean, code: string): void;
+    resetCheat(): void;
     loadSaveFiles(): void;
     restart(): void;
     setVariable(name: string, value: string): void;
@@ -97,6 +101,7 @@ export async function startConsole(launch: RuntimeLaunch): Promise<RuntimeHandle
     disableLocalStorage: true,
     buttonOpts: {
       // The workspace owns pause/resume and revision-aware restarts.
+      ...(launch.game.system === "nes" ? { cheat: false } : {}),
       playPause: false,
       restart: false,
       quickSave: false,
@@ -169,6 +174,9 @@ export async function startConsole(launch: RuntimeLaunch): Promise<RuntimeHandle
   }
   return {
     controls: bindings.controls,
+    ...(launch.game.system === "nes" && runtime.version === nesCheatRuntime
+      ? { nesCheats: createNesCheats(emulator.gameManager, launch.game.sha256) }
+      : {}),
     touch: new TouchInput(
       [4, 5, 6, 7],
       bindings.buttons.filter(

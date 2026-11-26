@@ -2,6 +2,7 @@ import type { ProgressKind, RuntimeIdentity } from "../../src/domain/artifacts.t
 import type { Game } from "../../src/library/catalog.ts";
 import type { DisplayText } from "../../src/shared/messages.ts";
 import type { Locale } from "../locale-preference.ts";
+import type { NesCheats } from "../nes-cheats/runtime.ts";
 import type { RuntimeSnapshotAccess } from "./snapshot-edit.ts";
 import type { TouchInput } from "./touch-input.ts";
 
@@ -39,6 +40,7 @@ export interface RuntimeControls {
   configure(): void;
 }
 export interface RuntimeHandle {
+  nesCheats?: NesCheats;
   touch?: TouchInput;
   /** Explicit user handoff only; background resume must not steal editor focus. */
   focus?(): void;

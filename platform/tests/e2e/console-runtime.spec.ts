@@ -95,6 +95,34 @@ for (const variant of [
     }
     try {
       await start(null);
+      const hasCheats = await page.evaluate(() =>
+        Boolean((window as RuntimeWindow & { testHandle?: RuntimeHandle }).testHandle?.nesCheats),
+      );
+      expect(hasCheats).toBe(system === "NES");
+      if (system === "NES" && hasBattery) {
+        for (const value of [0x53, 0xa6]) {
+          await page.evaluate((byte) => {
+            const port = (window as RuntimeWindow & { testHandle?: RuntimeHandle }).testHandle
+              ?.nesCheats;
+            port?.setCodes([`00FE:${byte.toString(16)}`]);
+          }, value);
+          await expect
+            .poll(() =>
+              page.evaluate(
+                () =>
+                  (
+                    window as RuntimeWindow & { testHandle?: RuntimeHandle }
+                  ).testHandle?.nesCheats?.readRam()[0xfe],
+              ),
+            )
+            .toBe(value);
+        }
+        await page.evaluate(() =>
+          (
+            window as RuntimeWindow & { testHandle?: RuntimeHandle }
+          ).testHandle?.nesCheats?.setCodes([]),
+        );
+      }
       const bindings = await page.evaluate(() => {
         let bindings: RuntimeControl[] = [];
         const controls = (window as RuntimeWindow & { testHandle?: RuntimeHandle }).testHandle

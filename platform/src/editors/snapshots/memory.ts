@@ -21,7 +21,7 @@ function label(bytes: Uint8Array, offset: number, size: number) {
 }
 
 /** RetroArch 6dd4353 RASTATE v1; sizes exclude each block's eight-byte padding. */
-function coreRegion(bytes: Uint8Array): Region {
+export function retroArchMemoryRegion(bytes: Uint8Array): Region {
   if (
     bytes.length < 24 ||
     bytes.length > 64 * 1024 * 1024 ||
@@ -94,7 +94,7 @@ export function openSnapshotMemory(
   domain: MemoryDomain = "main",
 ): SnapshotMemory {
   const original = new Uint8Array(snapshot);
-  const memory = coreRegion(original);
+  const memory = retroArchMemoryRegion(original);
   let region: Region;
   if (core === "genesis_plus_gx") {
     if (
