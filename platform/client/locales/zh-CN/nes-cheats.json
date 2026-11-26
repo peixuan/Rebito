@@ -36,5 +36,12 @@
   "nesCheats.target": "地址 {address} 的目标值",
   "nesCheats.hold": "启用数值规则",
   "nesCheats.invalidSearch": "请输入该格式范围内的整数，再取样查找。",
-  "nesCheats.memoryRule": "内存 {address}"
+  "nesCheats.memoryRule": "内存 {address}",
+  "nesCheats.verified": "此版本已验证的修改项",
+  "nesCheats.noPresets": "这个版本还没有已验证的预设。可以直接输入代码，或在下方查找数值。",
+  "nesCheats.simonHealth": "西蒙体力",
+  "nesCheats.rockHealth": "洛克人体力",
+  "nesCheats.stamina": "耐力",
+  "nesCheats.p1Health": "一号玩家体力",
+  "nesCheats.reserveLives": "一号玩家备用命数"
 }

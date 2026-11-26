@@ -4,8 +4,10 @@ import InputText from "primevue/inputtext";
 import Message from "primevue/message";
 import { ref } from "vue";
 import { normalizeNesCode } from "../../src/editors/nes/codes.ts";
+import { type NesPreset, nesPresetsFor } from "../../src/editors/nes/presets.ts";
 import { type DisplayText, displayMessage, message } from "../../src/shared/messages.ts";
 import { t, translate } from "../i18n.ts";
+import NesPresetControls from "./NesPresetControls.vue";
 import NesRamSearch from "./NesRamSearch.vue";
 import { activeNesCodes, type NesRule } from "./rules.ts";
 import type { NesCheats } from "./runtime.ts";
@@ -44,6 +46,13 @@ function addCodes(codes: string[], label: DisplayText) {
   }
   return apply([...next.values()]);
 }
+function applyPreset(preset: NesPreset, code: string) {
+  const next = rules.value.filter(
+    (rule) =>
+      rule.code !== code && (typeof rule.name === "string" || rule.name.messageId !== preset.label),
+  );
+  apply([...next, { name: message(preset.label), code, enabled: true }]);
+}
 function toggle(rule: NesRule, event: Event) {
   const checkbox = event.currentTarget as HTMLInputElement;
   const next = rules.value.map((item) =>
@@ -63,6 +72,11 @@ function submit() {
   <details class="nes-cheats">
     <summary>{{ t("nesCheats.title") }}</summary>
     <p class="muted">{{ t("nesCheats.scope") }}</p>
+    <NesPresetControls
+      :presets="nesPresetsFor(port.romSha256)"
+      :disabled="disabled"
+      @apply="applyPreset"
+    />
     <fieldset :disabled="disabled">
       <legend>{{ t("nesCheats.codes") }}</legend>
       <form class="toolbar" @submit.prevent="submit">
