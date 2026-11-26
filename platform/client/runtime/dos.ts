@@ -4,6 +4,7 @@ import { loadScript, loadStyle } from "./assets.ts";
 import { runtimeIdentity } from "./identity.ts";
 import { pixelScale } from "./pixel-scale.ts";
 import { saveFileAccess } from "./save-files.ts";
+import { TouchInput } from "./touch-input.ts";
 import type { RuntimeFile, RuntimeHandle, RuntimeLaunch } from "./types.ts";
 
 interface FsNode {
@@ -11,6 +12,7 @@ interface FsNode {
   nodes: FsNode[] | null;
 }
 interface CommandInterface {
+  sendKeyEvent(code: number, pressed: boolean): void;
   pause(): void;
   resume(): void;
   persist(onlyChanges: boolean): Promise<Uint8Array<ArrayBuffer> | null>;
@@ -111,6 +113,17 @@ export async function startDos(
   }
   return {
     readNativeFiles,
+    // js-dos uses GLFW key codes for both physical and on-screen keyboards.
+    touch: new TouchInput(
+      [265, 264, 263, 262],
+      [
+        { code: 257, label: "Enter" },
+        { code: 256, label: "Esc" },
+        { code: 32, label: message("touch.space") },
+        { code: 341, label: "Ctrl" },
+      ],
+      (code, pressed) => ci.sendKeyEvent(code, pressed),
+    ),
     files: saveFileAccess(launch.game.saveFiles, {
       list: async () => paths((await ci.fsTree()).nodes ?? []),
       read: (path) => ci.fsReadFile(path),

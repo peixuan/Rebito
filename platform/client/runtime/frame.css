@@ -19,4 +19,8 @@ body,
   left: var(--pixel-left) !important;
   top: var(--pixel-top) !important;
 }
+/* The workspace supplies the pad beside the embedded canvas. Preserve the native fullscreen pad. */
+html:not(:has(:fullscreen)) #runtime .ejs_virtualGamepad_parent {
+  display: none !important;
+}
 /* biome-ignore-end lint/complexity/noImportantStyles: End the upstream canvas overrides. */

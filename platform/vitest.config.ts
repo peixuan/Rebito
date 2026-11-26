@@ -12,6 +12,7 @@ export default defineConfig({
         "client/locale-preference.ts",
         "client/runtime/console-locale.ts",
         "client/runtime/console-controls.ts",
+        "client/runtime/touch-input.ts",
         "client/runtime/progress.ts",
         "client/runtime/save-files.ts",
         "client/runtime/live-edit.ts",

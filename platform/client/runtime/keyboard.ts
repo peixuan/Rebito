@@ -31,8 +31,17 @@ export function withRuntimeKeyboard(element: HTMLElement, handle: RuntimeHandle)
   return {
     ...handle,
     focus,
+    pause() {
+      handle.touch?.clear();
+      handle.pause();
+    },
+    capture() {
+      handle.touch?.clear();
+      return handle.capture();
+    },
     async stop() {
       // A rejected stop may leave a playable runtime; retain its keyboard handling.
+      handle.touch?.clear();
       await handle.stop();
       element.removeEventListener("keydown", preventNavigation, true);
       element.removeEventListener("keyup", preventNavigation, true);

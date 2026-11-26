@@ -46,13 +46,16 @@ export function consoleControls(
   const rows = [
     ...emulator.controlMenu.querySelectorAll<HTMLElement>('.ejs_control_bar[data-index="0"]'),
   ].filter((row) => Number(row.dataset.id) < 24);
+  const buttons = rows.map((row) => ({
+    code: Number(row.dataset.id),
+    label: localizedLabels.get(row.dataset.label ?? "") ?? row.dataset.label ?? "",
+  }));
   function read(): RuntimeControl[] {
-    return rows.map((row) => {
-      const label = row.dataset.label ?? "";
-      const code = emulator.controls[0]?.[Number(row.dataset.id)]?.value;
+    return buttons.map(({ code: index, label }) => {
+      const code = emulator.controls[0]?.[index]?.value;
       const key = code ? emulator.keyMap[code] : undefined;
       return {
-        button: localizedLabels.get(label) ?? label,
+        button: label,
         key: key ? (keys[key.toLowerCase()] ?? key.toUpperCase()) : message("controls.unassigned"),
       };
     });
@@ -78,6 +81,7 @@ export function consoleControls(
   };
   return {
     controls,
+    buttons,
     dispose() {
       listeners.clear();
       emulator.checkGamepadInputs = refresh;

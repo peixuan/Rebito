@@ -15,7 +15,9 @@ import { createProgressRecovery } from "./runtime/progress-recovery.ts";
 import { nativeProgressChanged, publishProgress } from "./runtime/progress-sync.ts";
 import { prepareSnapshotEdit } from "./runtime/snapshot-edit.ts";
 import { SnapshotEditSession } from "./runtime/snapshot-edit-session.ts";
+import type { TouchInput } from "./runtime/touch-input.ts";
 import type { RuntimeControls, RuntimeHandle, RuntimeWindow } from "./runtime/types.ts";
+import TouchDeck from "./TouchDeck.vue";
 
 const props = defineProps<{
   game: Game;
@@ -33,6 +35,7 @@ const emit = defineEmits<{
 const frame = ref<HTMLIFrameElement | null>(null);
 const active = ref(false);
 const ready = ref(false);
+const touch = shallowRef<TouchInput | null>(null);
 const controls = shallowRef<RuntimeControls | null>(null);
 const busy = ref(false);
 const stopping = ref(false);
@@ -135,6 +138,7 @@ async function boot() {
         return;
       }
       handle = started;
+      touch.value = started.touch ?? null;
       controls.value = started.controls ?? null;
       ready.value = true;
       // Loading can finish after the user has focused another control; respect that choice.
@@ -153,6 +157,7 @@ async function stop() {
   snapshotSession.invalidate();
   const current = handle;
   handle = null;
+  touch.value = null;
   controls.value = null;
   recoverProgress = null;
   conflict.value = false;
@@ -526,14 +531,19 @@ defineExpose({
       @configure="frame?.scrollIntoView({ block: 'nearest' })"
     />
     <p v-if="ready && game.system === 'dos'" class="muted">{{ t("player.dosControls") }}</p>
-    <iframe
+    <TouchDeck
       v-if="active"
-      ref="frame"
-      class="player-frame"
-      src="/runtime.html"
-      :title="t('player.frame')"
-      allow="autoplay; gamepad; fullscreen"
-      @load="boot"
-    />
+      :input="touch"
+      :disabled="!ready || paused || conflict || stopping || pendingSync"
+    >
+      <iframe
+        ref="frame"
+        class="player-frame"
+        src="/runtime.html"
+        :title="t('player.frame')"
+        allow="autoplay; gamepad; fullscreen"
+        @load="boot"
+      />
+    </TouchDeck>
   </section>
 </template>

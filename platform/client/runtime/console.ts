@@ -11,6 +11,7 @@ import {
 } from "./console-state-loader.ts";
 import { consoleSystems } from "./console-systems.ts";
 import { runtimeIdentity } from "./identity.ts";
+import { TouchInput } from "./touch-input.ts";
 import type { RuntimeFile, RuntimeHandle, RuntimeLaunch, RuntimeProgress } from "./types.ts";
 
 interface Emulator extends ConsoleControls {
@@ -166,6 +167,13 @@ export async function startConsole(launch: RuntimeLaunch): Promise<RuntimeHandle
   }
   return {
     controls: bindings.controls,
+    touch: new TouchInput(
+      [4, 5, 6, 7],
+      bindings.buttons.filter(
+        ({ code }) => (code < 4 || code >= 8) && !(launch.game.system === "nes" && code >= 10),
+      ),
+      (code, down) => emulator.gameManager.simulateInput(0, code, down ? 1 : 0),
+    ),
     pause: playback.pause,
     resume: playback.resume,
     capture: async () => {

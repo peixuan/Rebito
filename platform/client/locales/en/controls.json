@@ -1,4 +1,6 @@
 {
+  "touch.controller": "Touch controller",
+  "touch.space": "Space",
   "controls.enterNumber": "Enter a number.",
   "controls.up": "Up",
   "controls.down": "Down",

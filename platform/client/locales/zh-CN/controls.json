@@ -1,4 +1,6 @@
 {
+  "touch.controller": "触屏手柄",
+  "touch.space": "空格",
   "controls.enterNumber": "请输入数字。",
   "controls.up": "上",
   "controls.down": "下",
