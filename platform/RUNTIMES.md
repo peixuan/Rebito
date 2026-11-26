@@ -97,10 +97,15 @@ entrypoint, retains the five-second cleanup and removes its file on stop. This
 does not weaken changed-byte/native-save readback, alter snapshot identities or
 republish a failed edit; unconfirmed loads still remain paused for explicit retry.
 
+### Controls
+
 The touch controller starts collapsed under the embedded game. The directional
 pad accepts diagonals and multiple simultaneous contacts. Its buttons send player
 one's native controller indices or DOS key events through the running adapter.
 Releasing, cancelling, hiding, pausing or leaving clears held touch input.
+DOS also offers letters, digits, punctuation, navigation and F1–F12. Tap Shift,
+Ctrl or Alt to apply it to the next key; combinations work with one hand. The
+keyboard and controller share the same game and only one is expanded at a time.
 
 The player shows an expanded keyboard-to-controller guide for player one after
 startup. The optional `RuntimeControls` capability keeps the page independent of

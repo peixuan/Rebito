@@ -1,4 +1,10 @@
 {
+  "touch.keyboard": "DOS 键盘",
+  "touch.letters": "字母",
+  "touch.symbols": "数字 / 符号",
+  "touch.function": "功能键",
+  "touch.backspace": "退格",
+  "touch.nextKey": "作用于下一键",
   "touch.controller": "触屏手柄",
   "touch.space": "空格",
   "controls.enterNumber": "请输入数字。",

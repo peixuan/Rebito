@@ -1,6 +1,16 @@
 # Platform work status
 
-Updated: 2026-11-25 (Asia/Shanghai).
+Updated: 2026-11-26 (Asia/Shanghai).
+
+## Touch input
+
+The player offers a collapsed controller and a DOS keyboard next to the game.
+Bindings, hold/release handling and emulator-specific input belong in the client
+runtime. Keep touch input out of save formats and the server. See
+[runtime controls](../../platform/RUNTIMES.md#controls) and the
+[touch browser tests](../../platform/tests/e2e/touch-controller.spec.ts).
+These tests exercise a real NES frame and a typed DOS command with touch-enabled
+Chromium at phone and tablet sizes. Physical iOS and Android devices remain untested.
 
 ## Save limits and DOS backups
 

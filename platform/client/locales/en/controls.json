@@ -1,4 +1,10 @@
 {
+  "touch.keyboard": "DOS keyboard",
+  "touch.letters": "ABC",
+  "touch.symbols": "123 / #",
+  "touch.function": "F1–F12",
+  "touch.backspace": "Backspace",
+  "touch.nextKey": "Apply to next key",
   "touch.controller": "Touch controller",
   "touch.space": "Space",
   "controls.enterNumber": "Enter a number.",

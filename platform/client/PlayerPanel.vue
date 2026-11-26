@@ -534,6 +534,7 @@ defineExpose({
     <TouchDeck
       v-if="active"
       :input="touch"
+      :keyboard="game.system === 'dos'"
       :disabled="!ready || paused || conflict || stopping || pendingSync"
     >
       <iframe

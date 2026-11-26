@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
+import DosTouchKeyboard from "./DosTouchKeyboard.vue";
 import { t, translate } from "./i18n.ts";
 import type { TouchInput } from "./runtime/touch-input.ts";
 
-const props = defineProps<{ input: TouchInput | null; disabled: boolean }>();
-const open = ref(false);
+const props = defineProps<{ input: TouchInput | null; disabled: boolean; keyboard: boolean }>();
+const mode = ref<"controller" | "keyboard" | null>(null);
+const modifiers = ref<number[]>([]);
 const pad = ref<HTMLElement>();
 const held = shallowRef(new Set<number>());
 const arrows = [
@@ -17,19 +19,30 @@ let accessibleContact = -1;
 function clear() {
   props.input?.clear();
   held.value = new Set();
+  modifiers.value = [];
 }
 watch(
   () => props.input,
   (_, previous) => {
     previous?.clear();
-    open.value = false;
+    mode.value = null;
     clear();
   },
 );
-watch([open, () => props.disabled], clear, { flush: "sync" });
+watch([mode, () => props.disabled], clear, { flush: "sync" });
 function update(id: number, keys: number[] | null) {
   props.input?.update(id, keys);
   held.value = props.input?.held() ?? new Set();
+}
+function chord(code: number) {
+  const keys = [...modifiers.value, code];
+  modifiers.value = [];
+  return keys;
+}
+function toggleModifier(code: number) {
+  modifiers.value = modifiers.value.includes(code)
+    ? modifiers.value.filter((key) => key !== code)
+    : [...modifiers.value, code];
 }
 function slide(event: PointerEvent) {
   const el = pad.value;
@@ -57,7 +70,7 @@ function press(event: PointerEvent) {
   if (!target) return;
   event.preventDefault();
   target.setPointerCapture(event.pointerId);
-  update(event.pointerId, isPad ? [] : [Number(target.dataset.code)]);
+  update(event.pointerId, isPad ? [] : chord(Number(target.dataset.code)));
   if (isPad) slide(event);
 }
 function release(event: PointerEvent) {
@@ -69,7 +82,7 @@ function activate(event: MouseEvent) {
   if (!button || !props.input) return;
   const id = accessibleContact--;
   const input = props.input;
-  update(id, [Number(button.dataset.code)]);
+  update(id, chord(Number(button.dataset.code)));
   // Give a screen-reader or keyboard activation one observable emulator frame.
   setTimeout(() => {
     if (input.tracks(id)) update(id, null);
@@ -92,17 +105,32 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="play-surface" :class="{ expanded: open }">
+  <div class="play-surface" :class="{ expanded: mode }">
     <slot />
     <div v-if="input" class="deck">
-      <button class="deck-toggle" type="button" :aria-expanded="open" @click="open = !open">
+      <button
+        class="deck-toggle"
+        type="button"
+        :aria-expanded="mode === 'controller'"
+        @click="mode = mode === 'controller' ? null : 'controller'"
+      >
         {{ t("touch.controller") }}
-        <span aria-hidden="true">{{ open ? "▴" : "▾" }}</span>
+        <span aria-hidden="true">{{ mode === "controller" ? "▴" : "▾" }}</span>
+      </button>
+      <button
+        v-if="keyboard"
+        class="deck-toggle"
+        type="button"
+        :aria-expanded="mode === 'keyboard'"
+        @click="mode = mode === 'keyboard' ? null : 'keyboard'"
+      >
+        {{ t("touch.keyboard") }}
+        <span aria-hidden="true">{{ mode === "keyboard" ? "▴" : "▾" }}</span>
       </button>
       <fieldset
-        v-if="open"
+        v-if="mode"
         class="keys"
-        :aria-label="t('touch.controller')"
+        :aria-label="t(mode === 'keyboard' ? 'touch.keyboard' : 'touch.controller')"
         @pointerdown="press"
         @pointermove="slide"
         @pointerup="release"
@@ -110,33 +138,44 @@ onBeforeUnmount(() => {
         @lostpointercapture="release"
         @contextmenu.prevent
       >
-        <div ref="pad" class="dpad" :class="{ disabled }">
-          <button
-            v-for="[ i, label, arrow ] in arrows"
-            :key="label"
-            type="button"
-            :disabled="disabled"
-            @click="activate"
-            :data-code="input.directions[i]"
-            :data-held="held.has(input.directions[i])"
-            :aria-label="t(label)"
-          >
-            {{ arrow }}
-          </button>
-        </div>
-        <div class="actions">
-          <button
-            v-for="key in input.buttons"
-            :key="key.code"
-            type="button"
-            :disabled="disabled"
-            :data-held="held.has(key.code)"
-            @click="activate"
-            :data-code="key.code"
-          >
-            {{ translate(key.label) }}
-          </button>
-        </div>
+        <DosTouchKeyboard
+          v-if="mode === 'keyboard'"
+          :held="held"
+          :disabled="disabled"
+          :modifiers="modifiers"
+          @activate="activate"
+          @modifier="toggleModifier"
+          @clear="clear"
+        />
+        <template v-else>
+          <div ref="pad" class="dpad" :class="{ disabled }">
+            <button
+              v-for="[ i, label, arrow ] in arrows"
+              :key="label"
+              type="button"
+              :disabled="disabled"
+              @click="activate"
+              :data-code="input.directions[i]"
+              :data-held="held.has(input.directions[i])"
+              :aria-label="t(label)"
+            >
+              {{ arrow }}
+            </button>
+          </div>
+          <div class="actions">
+            <button
+              v-for="key in input.buttons"
+              :key="key.code"
+              type="button"
+              :disabled="disabled"
+              :data-held="held.has(key.code)"
+              @click="activate"
+              :data-code="key.code"
+            >
+              {{ translate(key.label) }}
+            </button>
+          </div>
+        </template>
       </fieldset>
     </div>
   </div>
@@ -170,6 +209,9 @@ button:focus-visible {
   padding: 0 12px;
   min-height: 44px;
   font-weight: 600;
+}
+.deck-toggle + .deck-toggle {
+  margin-inline-start: 4px;
 }
 .deck-toggle span {
   margin-inline-start: 6px;
