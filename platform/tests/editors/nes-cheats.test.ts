@@ -84,6 +84,13 @@ describe("NES codes", () => {
     "a".repeat(34),
   ])("rejects %s", (code) => expect(normalizeNesCode(code)).toBeNull());
 
+  it("converts basic Action Replay codes to the same validated CPU address", () => {
+    expect(normalizeNesCode("0000fe09")).toBe("00FE:09");
+    expect(normalizeNesCode("0007c507")).toBe("07C5:07");
+    for (const code of ["0100FE09", "002000FF", "000800FF", "01??65C0"])
+      expect(normalizeNesCode(code)).toBeNull();
+  });
+
   it("restores the previous rules after a partial installation fails", () => {
     const installed: string[] = [];
     const core = {

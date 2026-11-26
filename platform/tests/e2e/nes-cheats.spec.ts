@@ -18,7 +18,7 @@ test("manages session-only cheats in the NES player", async ({ page }) => {
   await page.locator("summary").filter({ hasText: "NES cheats" }).click({ timeout: 30000 });
   const panel = page.getByRole("group", { name: "Cheat codes" });
   const input = panel.getByLabel("Code", { exact: true });
-  await input.fill("00FE:09");
+  await input.fill("0000FE09");
   await panel.getByLabel("Label (optional)").fill("My counter");
   await panel.getByRole("button", { name: "Apply code" }).click();
   const enabled = panel.getByRole("checkbox", { name: /My counter/ });
@@ -37,7 +37,7 @@ test("manages session-only cheats in the NES player", async ({ page }) => {
     name: "own.cht",
     mimeType: "text/plain",
     buffer: Buffer.from(
-      'cheats = 1\ncheat0_desc = "Word value"\ncheat0_code = "00FA:07+00FB:01"\ncheat0_enable = true',
+      'cheats = 1\ncheat0_desc = "Word value"\ncheat0_code = "0000FA07+00FB:01"\ncheat0_enable = true',
     ),
   });
   await expect(files.getByRole("status")).toContainText("1 supported");

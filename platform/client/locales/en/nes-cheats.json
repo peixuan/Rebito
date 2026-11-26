@@ -6,7 +6,7 @@
   "nesCheats.code": "Code",
   "nesCheats.name": "Label (optional)",
   "nesCheats.enable": "Apply code",
-  "nesCheats.formats": "Enter one 6- or 8-letter Game Genie code, or a hexadecimal address and value such as 00FE:09. A code can override what the game reads while the stored byte stays the same.",
+  "nesCheats.formats": "Enter a 6- or 8-letter Game Genie code, a raw code (00FE:09), or basic Action Replay (0000FE09). A code can override what the game reads while the stored byte stays the same.",
   "nesCheats.remove": "Remove",
   "nesCheats.removeCode": "Remove {code}",
   "nesCheats.limit": "Keep at most 32 rules in this session.",

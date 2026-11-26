@@ -9,8 +9,10 @@ contents are insufficient to identify a particular translation.
 
 - A verified preset accepts a decimal target or a named choice. Apply it in the scene where the
   value is meaningful. Adjusting the same preset replaces its earlier rule.
-- Enter a single six- or eight-letter Game Genie code or a hexadecimal raw
-  code such as `00FE:09`. Each session accepts up to 32 rules. Uncheck a rule
+- Enter a six- or eight-letter Game Genie code, a raw code such as `00FE:09`
+  or a basic Pro Action Replay code such as `0000FE09`. The latter converts
+  to the same address and value and obeys the same limits. Each session accepts
+  up to 32 rules. Uncheck a rule
   to disable it. Changes that have already happened in-game can persist.
 - Search the 2 KiB of CPU RAM for a byte, an unaligned little-endian word or
   two packed decimal digits. Take the first sample, change something in the

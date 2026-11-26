@@ -6,7 +6,7 @@
   "nesCheats.code": "代码",
   "nesCheats.name": "备注（选填）",
   "nesCheats.enable": "应用代码",
-  "nesCheats.formats": "可输入一条 6 位或 8 位的 Game Genie 字母代码，也可输入十六进制地址与数值，如 00FE:09。部分代码会改变游戏读取到的数值，底层存储的字节仍可能保持原值。",
+  "nesCheats.formats": "可填 6 或 8 位字母的 Game Genie 代码、原始代码（00FE:09）或基础 Action Replay 代码（0000FE09）。有些规则会改变游戏读到的值，内存中的原值仍会保留。",
   "nesCheats.remove": "移除",
   "nesCheats.removeCode": "移除 {code}",
   "nesCheats.limit": "每次游戏最多可保留 32 条规则。",
