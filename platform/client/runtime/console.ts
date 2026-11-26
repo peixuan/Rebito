@@ -15,6 +15,7 @@ import { TouchInput } from "./touch-input.ts";
 import type { RuntimeFile, RuntimeHandle, RuntimeLaunch, RuntimeProgress } from "./types.ts";
 
 interface Emulator extends ConsoleControls {
+  menu: { close(): void };
   pause(dontUpdate?: boolean): void;
   play(dontUpdate?: boolean): void;
   on(event: string, callback: () => void): void;
@@ -149,6 +150,7 @@ export async function startConsole(launch: RuntimeLaunch): Promise<RuntimeHandle
       })().catch(reject);
     });
   });
+  if (window.matchMedia("(pointer: coarse)").matches) emulator.menu.close();
   const bindings = consoleControls(emulator, localization.langJson);
   const playback = guardConsolePlayback(emulator);
   async function capture(): Promise<RuntimeProgress> {

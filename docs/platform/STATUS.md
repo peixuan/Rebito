@@ -9,8 +9,11 @@ Bindings, hold/release handling and emulator-specific input belong in the client
 runtime. Keep touch input out of save formats and the server. See
 [runtime controls](../../platform/RUNTIMES.md#controls) and the
 [touch browser tests](../../platform/tests/e2e/touch-controller.spec.ts).
-These tests exercise a real NES frame and a typed DOS command with touch-enabled
-Chromium at phone and tablet sizes. Physical iOS and Android devices remain untested.
+Touch-enabled Chromium exercises a real NES frame, an original-layout six-button
+Mega Drive pad on a 320-pixel phone and a DOS command entered entirely on screen.
+The pad stays beside the image in short landscape windows. Local acceptance passed
+933 unit/database tests and all 97 browser tests with Chromium's sandbox enabled.
+Physical iOS and Android devices remain untested.
 
 ## Save limits and DOS backups
 

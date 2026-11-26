@@ -41,6 +41,7 @@ for (const [index, name] of [
   "library",
   "other",
   "player",
+  "touch",
   "history",
   "history-pages",
   "history-runtime",

@@ -8,6 +8,7 @@ import type { RuntimeControl, RuntimeControls } from "./runtime/types.ts";
 const props = defineProps<{ controls: RuntimeControls }>();
 const emit = defineEmits<{ configure: [] }>();
 const bindings = ref<RuntimeControl[]>([]);
+const showGuide = !window.matchMedia("(pointer: coarse)").matches;
 watch(
   () => props.controls,
   (controls, _, onCleanup) => {
@@ -23,25 +24,27 @@ watch(
 
 <template>
   <section class="player-controls" :aria-label="t('controls.title')">
-    <div class="toolbar">
-      <strong>{{ t("controls.playerOne") }}</strong>
-      <span class="muted">{{ t("controls.focusHelp") }}</span>
-      <Button
-        :label="t('controls.configure')"
-        size="small"
-        severity="secondary"
-        @click="
-          controls.configure();
-          emit('configure');
-        "
-      />
-    </div>
-    <ul>
-      <li v-for="binding in bindings" :key="textIdentity(binding.button)">
-        <kbd>{{ translate(binding.key) }}</kbd><span aria-hidden="true">→</span>
-        {{ translate(binding.button) }}
-      </li>
-    </ul>
+    <details :open="showGuide">
+      <summary>{{ t("controls.playerOne") }}</summary>
+      <div class="toolbar">
+        <span class="muted">{{ t("controls.focusHelp") }}</span>
+        <Button
+          :label="t('controls.configure')"
+          size="small"
+          severity="secondary"
+          @click="
+            controls.configure();
+            emit('configure');
+          "
+        />
+      </div>
+      <ul>
+        <li v-for="binding in bindings" :key="textIdentity(binding.button)">
+          <kbd>{{ translate(binding.key) }}</kbd><span aria-hidden="true">→</span>
+          {{ translate(binding.button) }}
+        </li>
+      </ul>
+    </details>
   </section>
 </template>
 
@@ -51,6 +54,11 @@ watch(
   padding-top: 10px;
   border-top: 1px solid var(--p-content-border-color);
   font-size: 12px;
+}
+summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding-block: 6px;
 }
 ul {
   display: flex;

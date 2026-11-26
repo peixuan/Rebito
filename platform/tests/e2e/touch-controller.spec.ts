@@ -5,7 +5,7 @@ import { useSession } from "./session.ts";
 test.use({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 844 } });
 
 async function start(page: Page, title: RegExp) {
-  await useSession(page.context(), "player");
+  await useSession(page.context(), "touch");
   await page.goto("/");
   await page.getByRole("button", { name: title }).click();
   const name = `Touch ${randomUUID()}`;
@@ -67,12 +67,62 @@ test("plays a real NES with two thumbs and releases cancelled contacts", async (
       ),
     )
     .toBe(true);
+  const right = pad.getByRole("button", { name: "Right", exact: true });
+  const rightPoint = await point(right, 1);
+  await cdp.send("Input.dispatchTouchEvent", {
+    type: "touchMove",
+    touchPoints: [{ ...first, x: rightPoint.x }, second],
+  });
+  await expect(up).toHaveAttribute("data-held", "true");
+  await expect(right).toHaveAttribute("data-held", "true");
+  await expect(action).toHaveAttribute("data-held", "true");
   await cdp.send("Input.dispatchTouchEvent", { type: "touchCancel", touchPoints: [] });
   await expect(pad.locator('[data-held="true"]')).toHaveCount(0);
   await page.getByRole("button", { name: "Pause game" }).click();
   await expect(action).toBeDisabled();
   await toggle.tap();
   await expect(pad).toBeHidden();
+  await page.getByRole("button", { name: "Stop game" }).click();
+});
+
+test("fits a six-button Sega pad in the original row order on a small phone", async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.setViewportSize({ width: 320, height: 700 });
+  await start(page, /\bMD runtime test/);
+  const toggle = page.getByRole("button", { name: "Touch controller" });
+  await expect(toggle).toBeVisible({ timeout: 30_000 });
+  await expect(page.frameLocator("iframe").locator(".ejs_menu_bar")).toHaveClass(
+    /ejs_menu_bar_hidden/,
+  );
+  const guide = page.getByRole("region", { name: "Keyboard and controller buttons" });
+  await expect(guide.getByRole("list")).toBeHidden();
+  await toggle.tap();
+  const pad = page.getByRole("group", { name: "Touch controller" });
+  const position = async (name: string) => {
+    const box = await pad.getByRole("button", { name, exact: true }).boundingBox();
+    if (!box) throw new Error(`Missing Sega button ${name}`);
+    expect(box.width).toBeGreaterThanOrEqual(44);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    return box;
+  };
+  const [a, b, c, x, y, z] = await Promise.all([
+    position("A"),
+    position("B"),
+    position("C"),
+    position("X"),
+    position("Y"),
+    position("Z"),
+  ]);
+  expect(a.y).toBe(b.y);
+  expect(b.y).toBe(c.y);
+  expect(a.x).toBeLessThan(b.x);
+  expect(b.x).toBeLessThan(c.x);
+  expect([x.x, y.x, z.x]).toEqual([a.x, b.x, c.x]);
+  expect(x.y).toBeLessThan(a.y);
+  const right = await position("Right");
+  expect(right.x + right.width).toBeLessThanOrEqual(x.x);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await expect(page.getByRole("button", { name: "DOS keyboard" })).toHaveCount(0);
   await page.getByRole("button", { name: "Stop game" }).click();
 });
 

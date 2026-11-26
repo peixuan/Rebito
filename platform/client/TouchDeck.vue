@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, shallowRef, watch } from "vue";
+import type { GameSystem } from "../src/domain/systems.ts";
+import type { DisplayText } from "../src/shared/messages.ts";
 import DosTouchKeyboard from "./DosTouchKeyboard.vue";
 import { t, translate } from "./i18n.ts";
 import type { TouchInput } from "./runtime/touch-input.ts";
 
-const props = defineProps<{ input: TouchInput | null; disabled: boolean; keyboard: boolean }>();
+const props = defineProps<{ input: TouchInput | null; disabled: boolean; system: GameSystem }>();
 const mode = ref<"controller" | "keyboard" | null>(null);
 const modifiers = ref<number[]>([]);
 const pad = ref<HTMLElement>();
@@ -15,6 +17,25 @@ const arrows = [
   [2, "controls.left", "←"],
   [3, "controls.right", "→"],
 ] as const;
+function legend(label: DisplayText) {
+  if (typeof label !== "string") {
+    switch (label.messageId) {
+      case "controls.mode":
+        return "MODE";
+      case "controls.select":
+        return "SELECT";
+      case "controls.start":
+        return "START";
+      case "controls.buttonOneStart":
+        return "1 / START";
+      case "controls.buttonOne":
+        return "1";
+      case "controls.buttonTwo":
+        return "2";
+    }
+  }
+  return translate(label);
+}
 let accessibleContact = -1;
 function clear() {
   props.input?.clear();
@@ -118,7 +139,7 @@ onBeforeUnmount(() => {
         <span aria-hidden="true">{{ mode === "controller" ? "▴" : "▾" }}</span>
       </button>
       <button
-        v-if="keyboard"
+        v-if="system === 'dos'"
         class="deck-toggle"
         type="button"
         :aria-expanded="mode === 'keyboard'"
@@ -162,7 +183,7 @@ onBeforeUnmount(() => {
               {{ arrow }}
             </button>
           </div>
-          <div class="actions">
+          <div class="actions" :data-system="system">
             <button
               v-for="key in input.buttons"
               :key="key.code"
@@ -171,8 +192,10 @@ onBeforeUnmount(() => {
               :data-held="held.has(key.code)"
               @click="activate"
               :data-code="key.code"
+              :aria-label="translate(key.label)"
+              :style="{ gridArea: `k${key.code}` }"
             >
-              {{ translate(key.label) }}
+              {{ legend(key.label) }}
             </button>
           </div>
         </template>
@@ -190,6 +213,7 @@ onBeforeUnmount(() => {
   margin: 0 auto;
 }
 .deck {
+  container-type: inline-size;
   padding: 4px 0;
   color: var(--p-text-color);
 }
@@ -266,11 +290,10 @@ button[data-held="true"] {
   grid-area: 2 / 3;
 }
 .actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-end;
+  display: grid;
   gap: 4px;
-  max-width: 19rem;
+  justify-items: stretch;
+  grid-auto-columns: minmax(44px, auto);
 }
 .actions button {
   min-width: 44px;
@@ -278,14 +301,74 @@ button[data-held="true"] {
   padding: 4px 8px;
   font-weight: 600;
 }
+/* Area numbers are the native pad indices (DOS uses its key codes). */
+.actions[data-system="dos"] {
+  grid-template-areas: "k256 k257" "k341 k32";
+}
+.actions:is([data-system="nes"], [data-system="gb"]) {
+  grid-template-areas: "k0 k8" "k2 k3";
+}
+.actions[data-system="gba"] {
+  grid-template-areas: "k10 k11" "k0 k8" "k2 k3";
+}
+.actions[data-system="snes"] {
+  grid-template-areas: "k10 . k11" ". k9 ." "k1 . k8" ". k0 ." "k2 k2 k3";
+}
+.actions:is([data-system="md"], [data-system="segacd"]) {
+  grid-template-areas: "k10 k9 k11" "k1 k0 k8" "k2 k3 k3";
+}
+.actions[data-system="sms"] {
+  grid-template-areas: "k0 k8";
+}
+.actions[data-system="gg"] {
+  grid-template-areas: "k0 k8" "k3 k3";
+}
+.actions:not([data-system="dos"]) button {
+  border-radius: 24px;
+}
+.actions button:is([data-code="2"], [data-code="3"]) {
+  font-size: 11px;
+  letter-spacing: 0.025em;
+  border-radius: 8px;
+}
+.dpad::before {
+  content: "";
+  grid-area: 2 / 2;
+  place-self: center;
+  width: 9px;
+  aspect-ratio: 1;
+  background: var(--p-text-muted-color);
+  border-radius: 50%;
+  pointer-events: none;
+}
+@container (max-width: 310px) {
+  .keys:has(.actions) {
+    padding-inline: 2px;
+    gap: 4px;
+  }
+  .keys .actions button {
+    padding-inline: 3px;
+  }
+}
+@container (max-width: 281px) {
+  .keys:has(.actions:is([data-system="md"], [data-system="segacd"], [data-system="snes"])) {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
 button:disabled,
 .dpad.disabled {
   opacity: 0.55;
 }
+@media (max-width: 380px) {
+  .play-surface {
+    margin-inline: -14px;
+  }
+}
 @media (orientation: landscape) and (max-height: 540px) and (min-width: 620px) {
   .expanded {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(280px, 36%);
+    grid-template-columns: minmax(0, 1fr) minmax(290px, 38%);
     align-items: center;
     gap: 8px;
   }
