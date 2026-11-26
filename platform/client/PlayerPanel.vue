@@ -25,7 +25,11 @@ const props = defineProps<{
   editorDirty: boolean;
   workspaceBusy: boolean;
 }>();
-const emit = defineEmits<{ saved: []; recovered: [profile: Profile] }>();
+const emit = defineEmits<{
+  saved: [revision: Revision];
+  refresh: [];
+  recovered: [profile: Profile];
+}>();
 const frame = ref<HTMLIFrameElement | null>(null);
 const active = ref(false);
 const ready = ref(false);
@@ -204,7 +208,7 @@ async function save(mode: "manual" | "automatic" | "backup" = "manual", keepPaus
           (changedHead === undefined || changedHead === base)
         )
           snapshotSession.acceptCapture(captureTicket, revision.id);
-        emit("saved");
+        emit("saved", revision);
         synchronizedAt.value = Date.now();
         notice.value = message(
           mode === "backup" ? "history.backedUp" : automatic ? "player.autosaved" : "player.saved",
@@ -359,7 +363,7 @@ async function discardLocal() {
   if (busy.value || !window.confirm(t("player.discardConfirm"))) return;
   await perform(async () => {
     await stop();
-    emit("saved");
+    emit("refresh");
     notice.value = message("player.cloudRetained");
   });
 }

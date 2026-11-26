@@ -20,7 +20,9 @@ const revisions = ref<Revision[]>([]);
 const head = ref(props.profile.headId);
 const files = ref<File[]>([]);
 const input = ref<HTMLInputElement | null>(null);
-const busy = ref(false);
+const operations = ref(0);
+const busy = computed(() => operations.value > 0);
+let refreshSequence = 0;
 const historyBusy = ref(false);
 const error = ref<DisplayText>("");
 const notice = ref<DisplayText>("");
@@ -33,18 +35,31 @@ const cloudEditLocked = computed(
       Boolean(editorDirty.value || player.value?.pendingSync || player.value?.busy)),
 );
 async function refresh() {
-  revisions.value = await api<Revision[]>(`profiles/${props.profile.id}/revisions`);
-  const profiles = await api<Profile[]>("profiles");
+  const sequence = ++refreshSequence;
+  const [history, profiles] = await Promise.all([
+    api<Revision[]>(`profiles/${props.profile.id}/revisions`),
+    api<Profile[]>("profiles"),
+  ]);
+  if (sequence !== refreshSequence) return;
+  revisions.value = history;
   head.value = profiles.find((profile) => profile.id === props.profile.id)?.headId ?? null;
   emit("changed");
 }
-function edited(revision: Revision) {
+function published(revision: Revision) {
   head.value = revision.id;
-  revisions.value = [revision, ...revisions.value.filter((entry) => entry.id !== revision.id)];
+  // The superseded ordinary DOS revision is already gone when the receipt arrives.
+  revisions.value = [
+    revision,
+    ...revisions.value.filter(
+      (entry) =>
+        entry.id !== revision.id &&
+        (props.game.system !== "dos" || entry.protected || entry.id !== revision.parentId),
+    ),
+  ];
   void perform(refresh);
 }
 async function perform(action: () => Promise<void>) {
-  busy.value = true;
+  operations.value++;
   error.value = "";
   notice.value = "";
   try {
@@ -52,7 +67,7 @@ async function perform(action: () => Promise<void>) {
   } catch (cause) {
     error.value = errorText(cause);
   } finally {
-    busy.value = false;
+    operations.value--;
   }
 }
 async function refreshWorkspace() {
@@ -146,7 +161,8 @@ onMounted(() => perform(refresh));
       :workspace-busy="busy"
       :base-revision="head"
       :revision="revisions.find((revision) => revision.id === head) ?? null"
-      @saved="perform(refresh)"
+      @saved="published"
+      @refresh="perform(refresh)"
       @recovered="emit('recovered', $event)"
     />
     <EditorPanel
@@ -156,7 +172,7 @@ onMounted(() => perform(refresh));
       :capture-required="Boolean(player?.captureRequired)"
       :publish="publishEdit"
       @dirty="editorDirty = $event"
-      @saved="edited"
+      @saved="published"
     />
     <section class="profile-panel">
       <h3>{{ t("saves.import") }}</h3>

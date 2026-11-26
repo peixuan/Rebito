@@ -13,7 +13,9 @@ test("waits for the published cloud head before restarting after a delayed histo
     release = resolve;
   });
   let waiting = false;
-  await page.route("**/api/profiles", async (route) => {
+  const historyRoute = "**/api/profiles/*/revisions";
+  await page.route(historyRoute, async (route) => {
+    if (route.request().method() !== "GET") return route.continue();
     const response = await route.fetch();
     waiting = true;
     await barrier;
@@ -25,9 +27,14 @@ test("waits for the published cloud head before restarting after a delayed histo
     await expect(start).toBeVisible();
     await expect.poll(() => waiting).toBe(true);
     await expect(start).toBeDisabled();
+    const link = page.getByRole("link", { name: "SAVE.DAT", exact: true });
+    await expect(link).toHaveCount(1);
+    const href = await link.getAttribute("href");
+    if (!href) throw new Error("Missing published file during refresh");
+    expect(await (await page.request.get(href)).text()).toBe("SECOND\r\n");
     release();
     await expect(start).toBeEnabled();
-    await page.unroute("**/api/profiles");
+    await page.unroute(historyRoute);
     await start.click();
     await expect(page.getByRole("button", { name: "Pause game", exact: true })).toBeEnabled();
     const game = page.getByRole("region", { name: "Game window", exact: true });

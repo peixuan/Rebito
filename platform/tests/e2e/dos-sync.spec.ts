@@ -111,9 +111,10 @@ test("synchronizes live DOS saves and editor updates without restarting the runt
   // Publish edits through the backend, then replace only the native file in place.
   await money.fill("777");
   await money.press("Tab");
-  const versionsBeforeEdit = await page
-    .getByRole("link", { name: "KOUKAI2.DAT", exact: true })
-    .count();
+  const saveLink = page.getByRole("link", { name: "KOUKAI2.DAT", exact: true });
+  await expect(saveLink).toHaveCount(1);
+  const beforeEdit = await saveLink.getAttribute("href");
+  if (!beforeEdit) throw new Error("Missing DOS working save");
   await editor.getByLabel("File to edit").click();
   await page.getByRole("option", { name: "slots/SECOND.DAT", exact: true }).click();
   await expect(money).toHaveValue("42");
@@ -128,9 +129,9 @@ test("synchronizes live DOS saves and editor updates without restarting the runt
   await expect(game.getByRole("button", { name: "Pause game", exact: true })).toBeEnabled();
   await expectFile(777);
   await expectFile(778, "slots/SECOND.DAT");
-  await expect(page.getByRole("link", { name: "KOUKAI2.DAT", exact: true })).toHaveCount(
-    versionsBeforeEdit + 1,
-  );
+  await expect(saveLink).toHaveCount(1);
+  await expect(saveLink).not.toHaveAttribute("href", beforeEdit);
+  expect((await page.request.get(beforeEdit)).status()).toBe(404);
   await expectFile(123, "FIRST.DAT");
   await expectFile(456, "NEXT.DAT");
   expect(await downloaded()).toEqual(Buffer.from(dosEditorSave(777)));
@@ -220,7 +221,8 @@ test("synchronizes live DOS saves and editor updates without restarting the runt
   await expect(money).toHaveValue("456");
 
   const versions = page.getByRole("link", { name: "KOUKAI2.DAT", exact: true });
-  const count = await versions.count();
+  const lastWorkingSave = await versions.getAttribute("href");
+  if (!lastWorkingSave) throw new Error("Missing DOS save before failed synchronization");
   await page.route("**/api/profiles/*/revisions", async (route) => {
     if (route.request().method() === "POST")
       await route.fulfill({
@@ -233,13 +235,14 @@ test("synchronizes live DOS saves and editor updates without restarting the runt
   await refresh.click();
   await expect(game.getByRole("alert")).toBeVisible();
   await expect(game.getByRole("button", { name: "Resume game", exact: true })).toBeEnabled();
-  await expect(versions).toHaveCount(count);
+  await expect(versions).toHaveAttribute("href", lastWorkingSave);
   await game.getByRole("button", { name: "Stop game", exact: true }).click();
   await expect(game.getByRole("alert")).toBeVisible();
   await expect(page.frameLocator("iframe").locator("canvas")).toBeVisible();
   await page.unroute("**/api/profiles/*/revisions");
   await game.getByRole("button", { name: "Stop game", exact: true }).click();
-  await expect(versions).toHaveCount(count + 1);
+  await expect(versions).toHaveCount(1);
+  await expect(versions).not.toHaveAttribute("href", lastWorkingSave);
   await expect(game.getByRole("alert")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Start game", exact: true })).toBeVisible();
   expect(await downloaded()).toEqual(Buffer.from(dosEditorSave(456)));
