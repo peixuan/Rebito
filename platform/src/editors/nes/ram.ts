@@ -1,5 +1,5 @@
 import { MessageError, message } from "../../shared/messages.ts";
-import { retroArchMemoryRegion } from "../snapshots/memory.ts";
+import { retroArchMemoryRegion } from "../../shared/retroarch-state.ts";
 
 export const nesRamSize = 0x800;
 export const nesCheatRuntime = "4968117d922665bf79a612eeb3691b88709f404804a7387e5e765bdf757e6d1c";
@@ -7,7 +7,7 @@ const invalid = () => new MessageError(message("editor.invalidSave"));
 
 /** Read the CPU RAM record in the pinned FCEUmm FCS state. Other chunks are mapper-specific. */
 export function readNesRam(snapshot: Uint8Array): Uint8Array {
-  const { offset, size } = retroArchMemoryRegion(snapshot);
+  const { offset, size } = retroArchMemoryRegion(snapshot, invalid);
   const data = new DataView(snapshot.buffer, snapshot.byteOffset + offset, size);
   if (
     size < 16 ||

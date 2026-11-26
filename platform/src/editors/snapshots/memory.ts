@@ -1,12 +1,13 @@
 import { message } from "../../shared/messages.ts";
+import {
+  retroArchMemoryRegion,
+  type SnapshotRegion,
+  snapshotTag,
+} from "../../shared/retroarch-state.ts";
 import { EditorError } from "../types.ts";
 
 export type SnapshotCore = "genesis_plus_gx" | "picodrive";
 export type MemoryDomain = "main" | "program" | "word" | "backup";
-interface Region {
-  offset: number;
-  size: number;
-}
 export interface SnapshotMemory {
   /** Game byte order, independent of the core's word-swapped storage. */
   readonly bytes: Uint8Array;
@@ -15,39 +16,6 @@ export interface SnapshotMemory {
 }
 
 const invalid = () => new EditorError("invalid_save", message("editor.invalidSave"));
-const text = new TextDecoder();
-function label(bytes: Uint8Array, offset: number, size: number) {
-  return text.decode(bytes.subarray(offset, offset + size));
-}
-
-/** RetroArch 6dd4353 RASTATE v1; sizes exclude each block's eight-byte padding. */
-export function retroArchMemoryRegion(bytes: Uint8Array): Region {
-  if (
-    bytes.length < 24 ||
-    bytes.length > 64 * 1024 * 1024 ||
-    label(bytes, 0, 7) !== "RASTATE" ||
-    bytes[7] !== 1
-  )
-    throw invalid();
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-  const seen = new Set<string>();
-  let memory: Region | undefined;
-  for (let offset = 8; offset + 8 <= bytes.length; ) {
-    const tag = label(bytes, offset, 4);
-    const size = view.getUint32(offset + 4, true);
-    const next = offset + 8 + Math.ceil(size / 8) * 8;
-    if (seen.has(tag) || seen.size >= 128 || next > bytes.length) throw invalid();
-    seen.add(tag);
-    if (tag === "END ") {
-      if (size || next !== bytes.length || !memory) throw invalid();
-      return memory;
-    }
-    if (tag === "MEM ") memory = { offset: offset + 8, size };
-    offset = next;
-  }
-  throw invalid();
-}
-
 const cdRegions = {
   main: { id: 2, size: 0x10000 },
   program: { id: 13, size: 0x80000 },
@@ -56,15 +24,15 @@ const cdRegions = {
 } as const;
 
 /** PicoDrive 3cf1e26 CD states reserve trailing capacity for optional 32X state. */
-function cdRegion(bytes: Uint8Array, memory: Region, domain: MemoryDomain): Region {
+function cdRegion(bytes: Uint8Array, memory: SnapshotRegion, domain: MemoryDomain): SnapshotRegion {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   if (
     memory.size !== 1_560_538 ||
-    label(bytes, memory.offset, 8) !== "PicoSEXT" ||
+    snapshotTag(bytes, memory.offset, 8) !== "PicoSEXT" ||
     view.getUint32(memory.offset + 8, true) !== 0x191
   )
     throw invalid();
-  const chunks = new Map<number, Region>();
+  const chunks = new Map<number, SnapshotRegion>();
   const end = memory.offset + memory.size;
   for (let offset = memory.offset + 12; offset + 5 <= end; ) {
     const id = bytes[offset] ?? 0;
@@ -94,13 +62,13 @@ export function openSnapshotMemory(
   domain: MemoryDomain = "main",
 ): SnapshotMemory {
   const original = new Uint8Array(snapshot);
-  const memory = retroArchMemoryRegion(original);
-  let region: Region;
+  const memory = retroArchMemoryRegion(original, invalid);
+  let region: SnapshotRegion;
   if (core === "genesis_plus_gx") {
     if (
       domain !== "main" ||
       memory.size !== 0xfd000 ||
-      label(original, memory.offset, 16) !== "GENPLUS-GX 1.7.6"
+      snapshotTag(original, memory.offset, 16) !== "GENPLUS-GX 1.7.6"
     )
       throw invalid();
     region = { offset: memory.offset + 16, size: 0x10000 };
