@@ -7,7 +7,7 @@ contents are insufficient to identify a particular translation.
 
 ## Playing with rules
 
-- A verified preset accepts a decimal target. Apply it in the scene where the
+- A verified preset accepts a decimal target or a named choice. Apply it in the scene where the
   value is meaningful. Adjusting the same preset replaces its earlier rule.
 - Enter a single six- or eight-letter Game Genie code or a hexadecimal raw
   code such as `00FE:09`. Each session accepts up to 32 rules. Uncheck a rule
@@ -39,13 +39,25 @@ and check the in-game result. Repeat for every translation. Keep ROMs, saves
 and captures outside the repository. Commit the release digest, bounded
 setting, translations and tests.
 
-| Game | In-game observation |
-| --- | --- |
-| Castlevania | Simon's HP bar in stage 1 shortened at 16 and filled at 64. Displayed HP followed actual HP. |
-| Mega Man | The vertical HP bar in Cut Man's stage changed between 8 and 28. |
-| Adventure Island | The first area's stamina bar changed between 4 and 15 on both the Justin and Nokoh editions. |
+| Game             | In-game observation                                                                                |
+| ---------------- | -------------------------------------------------------------------------------------------------- |
+| Castlevania      | Simon's HP bar in stage 1 shortened at 16 and filled at 64. Displayed HP followed actual HP.       |
+| Mega Man         | The vertical HP bar in Cut Man's stage changed between 8 and 28.                                   |
+| Adventure Island | The first area's stamina bar changed between 4 and 15 on both the Justin and Nokoh editions.       |
 | Double Dragon II | In the first street P1's health bar followed the read override in the Xingkong and Ayuan editions. |
-| Contra | P1's reserve-life icons changed in the first jungle stage when the counter changed from 1 to 8. |
+| Contra           | P1's reserve-life icons changed in the first jungle stage when the counter changed from 1 to 8.    |
+
+Additional verified settings include Mario's small and large sprites in world
+1-1, Kirby's on-screen lives in Vegetable Valley, P1's reserve ships in Life
+Force, and Little Mac's health bar against Glass Joe. In Ninja Gaiden, starting
+stage 1-1 at 4 and 16 HP produces the corresponding health bars. Battle City's
+first-stage HUD counts reserve tanks, one fewer than the total including the
+tank in play. Two independently tested Chinese Contra editions also change
+their reserve-life icons in the first jungle stage. Both Rescue Rangers games
+display health as hearts but use different address/value encodings. Blaster
+Master's tank power gauge in area 1 dropped at 24 and filled at 255. In
+Metroid's starting area, energy displayed 60 and 80 when the tens value
+was set to 6 and 8. This preset was verified before collecting energy tanks.
 
 Reference material includes the [Mega Man disassembly](https://www.bisqwit.iki.fi/jutut/megamansource/),
 [Castlevania field observations](https://tasvideos.org/UserFiles/Info/638218293535388156),

@@ -51,5 +51,16 @@
   "nesCheats.chooseCode": "Choose a rule",
   "nesCheats.fileStats": "{available} supported entries · {skipped} skipped. Choose a rule to apply it.",
   "nesCheats.invalidFile": "Select a valid RetroArch cheat file up to 256 KiB.",
-  "nesCheats.wrongCartridge": "This file was exported for a different cartridge version."
+  "nesCheats.wrongCartridge": "This file was exported for a different cartridge version.",
+  "nesCheats.ryuHealth": "Ryu's health",
+  "nesCheats.totalTanks": "Player 1 tanks (including current)",
+  "nesCheats.macHealth": "Little Mac's health",
+  "nesCheats.healthHearts": "Player 1 hearts",
+  "nesCheats.twoHearts": "2 hearts",
+  "nesCheats.threeHearts": "3 hearts",
+  "nesCheats.marioSize": "Mario's size",
+  "nesCheats.large": "Large",
+  "nesCheats.small": "Small",
+  "nesCheats.tankPower": "Tank power",
+  "nesCheats.startingEnergy": "Starting energy (tens)"
 }

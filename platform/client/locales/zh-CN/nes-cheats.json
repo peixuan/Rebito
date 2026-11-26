@@ -51,5 +51,16 @@
   "nesCheats.chooseCode": "选择规则",
   "nesCheats.fileStats": "可用 {available} 项，跳过 {skipped} 项。选定规则后可手动启用。",
   "nesCheats.invalidFile": "请选择有效的 RetroArch 金手指文件，最大 256 KiB。",
-  "nesCheats.wrongCartridge": "这个文件对应另一个游戏版本。"
+  "nesCheats.wrongCartridge": "这个文件对应另一个游戏版本。",
+  "nesCheats.ryuHealth": "隼龙体力",
+  "nesCheats.totalTanks": "一号玩家坦克总数（含当前坦克）",
+  "nesCheats.macHealth": "小麦克体力",
+  "nesCheats.healthHearts": "一号玩家爱心数",
+  "nesCheats.twoHearts": "2 颗心",
+  "nesCheats.threeHearts": "3 颗心",
+  "nesCheats.marioSize": "马里奥体型",
+  "nesCheats.large": "大个子",
+  "nesCheats.small": "小个子",
+  "nesCheats.tankPower": "战车能量",
+  "nesCheats.startingEnergy": "初始能量（以十为单位）"
 }

@@ -7,7 +7,9 @@ import { t } from "../i18n.ts";
 const props = defineProps<{ presets: readonly NesPreset[]; disabled: boolean }>();
 const emit = defineEmits<{ apply: [preset: NesPreset, code: string] }>();
 const values = ref<Record<string, number | "">>(
-  Object.fromEntries(props.presets.map((preset) => [preset.label, preset.max])),
+  Object.fromEntries(
+    props.presets.map((preset) => [preset.label, preset.choices?.[0]?.value ?? preset.max]),
+  ),
 );
 function submit(preset: NesPreset) {
   const value = values.value[preset.label];
@@ -33,7 +35,13 @@ function submit(preset: NesPreset) {
     >
       <label
         >{{ t(preset.label) }}
+        <select v-if="preset.choices" v-model.number="values[preset.label]">
+          <option v-for="choice in preset.choices" :key="choice.value" :value="choice.value">
+            {{ t(choice.label) }}
+          </option>
+        </select>
         <input
+          v-else
           v-model.number="values[preset.label]"
           type="number"
           step="1"
@@ -42,7 +50,7 @@ function submit(preset: NesPreset) {
           required
         >
       </label>
-      <span class="muted">{{ preset.min }}–{{ preset.max }}</span>
+      <span v-if="!preset.choices" class="muted">{{ preset.min }}–{{ preset.max }}</span>
       <Button type="submit" size="small" :label="t('nesCheats.hold')" />
     </form>
   </fieldset>
@@ -57,6 +65,7 @@ fieldset {
 legend {
   font-weight: 600;
 }
+select,
 input {
   width: 5rem;
   margin-inline: 0.45rem;

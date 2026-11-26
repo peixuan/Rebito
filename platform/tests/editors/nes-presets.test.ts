@@ -9,8 +9,18 @@ it("binds a preset to full release bytes independently of the title or runtime R
   expect(nesPresetCode(health, 64)).toBe("0045:40");
   expect(() => nesPresetCode(health, 65)).toThrow();
   expect(() => nesPresetCode(health, 1.5)).toThrow();
-  for (const other of [hash.slice(1), hash.slice(0, -1) + "3", "Castlevania", "constructor"])
+  for (const other of [hash.slice(1), `${hash.slice(0, -1)}3`, "Castlevania", "constructor"])
     expect(nesPresetsFor(other)).toEqual([]);
+});
+
+it("rejects unverified intermediate bytes in a choice-based setting", () => {
+  const [hearts] = nesPresetsFor(
+    "b903a9706220881b94b4d24d8fa64620332a870c1590cb827cef8e71ee05e21d",
+  );
+  if (!hearts) throw new Error("Missing translated cartridge");
+  expect(nesPresetCode(hearts, 24)).toBe("0210:18");
+  expect(nesPresetCode(hearts, 8)).toBe("0210:08");
+  expect(() => nesPresetCode(hearts, 9)).toThrow();
 });
 
 it("shares verified layouts only between independently tested editions", () => {
