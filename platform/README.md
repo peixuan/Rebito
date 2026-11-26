@@ -27,6 +27,8 @@ revision checks. The Koukai2 editor provides eight modules, compact bounded inpu
 sortable tables and multi-slot edits. The original DOS Heroes of Jin Yong editor
 adds characters, learned martial arts and inventory/silver, with three native save
 files and unchanged companion files; see [editor verification](EDITORS.md).
+The [NES live editor](NES-CHEATS.md) offers cartridge-specific presets, RAM
+search, Game Genie codes and portable RetroArch cheat files from the player.
 Console snapshots retain emulator state and native battery saves when available;
 games without battery saves can use snapshots. A runtime upgrade may require
 importing a native save instead of loading an old snapshot. Back up before upgrades.

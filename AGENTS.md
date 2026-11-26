@@ -67,7 +67,10 @@ because an upstream documentation page lists a feature.
 - Administrators choose game/editor associations; do not gate them on game hashes.
   Validate save structure and edits at use time, preserve unknown bytes and do not
   claim that structural checks prove compatibility with every game edition.
-- Keep each editor in `platform/src/editors/<game>/` with central adapter metadata.
+- Keep each save editor in `platform/src/editors/<game>/` with central adapter metadata.
+  The [NES live editor](platform/NES-CHEATS.md) uses a browser capability and a
+  whole-ROM release digest. Verify named effects in gameplay for every supported
+  translation. A successful RAM readback alone cannot establish a game's layout.
 - Authorize every private resource on the server and publish revisions atomically.
 - Retry save admission failures with the original capture and base revision only.
   Never blindly retry uncertain publication results or rebase a stale upload.

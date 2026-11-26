@@ -1,6 +1,30 @@
 # Platform work status
 
-Updated: 2026-11-26 (Asia/Shanghai).
+Updated: 2026-11-27 (Asia/Shanghai).
+
+## NES live cheats
+
+The NES player can apply session rules, search its 2 KiB of CPU RAM and import
+or export local RetroArch cheat lists. Keep UI code in `platform/client/nes-cheats`
+and cartridge parsing and presets in `platform/src/editors/nes`. The capability
+is scoped to one running cartridge and the pinned FCEUmm build. See the
+[NES editor guide](../../platform/NES-CHEATS.md) for adding verified releases.
+
+Local acceptance exercised uploads, gameplay edits, saving and resuming on
+20 exact releases. Nineteen used built-in presets across 15 games. Dragon
+Warrior used a portable two-byte gold rule that changed the displayed balance
+to 500 and 1,000 in the castle. The committed tests use original homebrew
+fixtures, including conditional and unconditional Game Genie reads.
+
+An extended local boot survey covered 12,514 distinct cartridge files.
+It exposed an empty mapper record on two Sachen titles. Both now return the
+correct RAM and pass the two-value readback. Boot evidence alone does not
+establish a game-specific effect or complete playability. Keep game files,
+captured states and private collection reports out of Git.
+
+The milestone passed 977 unit and database tests, 98 full-suite browser
+scenarios and the additional Game Genie cartridge regression. The 20 local
+release checks ran through the player with Chromium's sandbox enabled.
 
 ## Touch input
 
