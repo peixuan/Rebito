@@ -3,13 +3,13 @@ import Button from "primevue/button";
 import InputText from "primevue/inputtext";
 import Message from "primevue/message";
 import { ref } from "vue";
-import { normalizeNesCode } from "../../src/editors/nes/codes.ts";
 import { type NesPreset, nesPresetsFor } from "../../src/editors/nes/presets.ts";
 import { type DisplayText, displayMessage, message } from "../../src/shared/messages.ts";
 import { t, translate } from "../i18n.ts";
+import NesCheatFiles from "./NesCheatFiles.vue";
 import NesPresetControls from "./NesPresetControls.vue";
 import NesRamSearch from "./NesRamSearch.vue";
-import { activeNesCodes, type NesRule } from "./rules.ts";
+import { activeNesCodes, type NesRule, nesCodeGroup } from "./rules.ts";
 import type { NesCheats } from "./runtime.ts";
 
 const props = defineProps<{ port: NesCheats; disabled: boolean }>();
@@ -31,20 +31,19 @@ function apply(next: NesRule[]) {
   }
 }
 function addCodes(codes: string[], label: DisplayText) {
-  const next = new Map(rules.value.map((rule) => [rule.code, rule]));
-  for (const code of codes) {
-    const normalized = normalizeNesCode(code);
-    if (!normalized) {
-      error.value = message("nesCheats.invalidCode");
-      return false;
-    }
-    next.set(normalized, {
-      name: next.get(normalized)?.name || label,
-      code: normalized,
-      enabled: true,
-    });
+  const group = nesCodeGroup(codes.join("+"));
+  if (!group) {
+    error.value = message("nesCheats.invalidCode");
+    return false;
   }
-  return apply([...next.values()]);
+  const code = group.join("+");
+  const existing = rules.value.find((rule) => rule.code === code);
+  const rule = { name: existing?.name || label, code, enabled: true };
+  return apply(
+    existing
+      ? rules.value.map((item) => (item === existing ? rule : item))
+      : [...rules.value, rule],
+  );
 }
 function applyPreset(preset: NesPreset, code: string) {
   const next = rules.value.filter(
@@ -119,6 +118,7 @@ function submit() {
     </fieldset>
     <Message v-if="error" severity="error" role="alert">{{ translate(error) }}</Message>
     <NesRamSearch :port="port" :disabled="disabled" @add="addCodes" />
+    <NesCheatFiles :sha256="port.romSha256" :rules="rules" :disabled="disabled" @add="addCodes" />
   </details>
 </template>
 

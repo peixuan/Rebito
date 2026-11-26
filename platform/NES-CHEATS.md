@@ -16,6 +16,10 @@ contents are insufficient to identify a particular translation.
   two packed decimal digits. Take the first sample, change something in the
   game, then refine the matches. Each refinement compares the last two explicit
   samples. Selecting a word applies both bytes together.
+- Open a local RetroArch `.cht` file to search its emulator-handled entries.
+  Select a rule to enable it. Combined codes toggle as one group. Unsupported
+  handlers and partially supported groups are counted and skipped. Exported
+  lists carry the current cartridge digest and reopen with every rule inactive.
 - Use the normal player controls to save progress. Rule activation creates no
   save revision. Stored progress reflects the data the game or core writes.
 

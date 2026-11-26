@@ -32,6 +32,23 @@ test("manages session-only cheats in the NES player", async ({ page }) => {
   await panel.getByRole("button", { name: "Remove 00FE:09" }).click();
   await expect(enabled).toHaveCount(0);
 
+  const files = page.getByRole("group", { name: "Cheat files" });
+  await files.getByLabel("Open a RetroArch .cht file").setInputFiles({
+    name: "own.cht",
+    mimeType: "text/plain",
+    buffer: Buffer.from(
+      'cheats = 1\ncheat0_desc = "Word value"\ncheat0_code = "00FA:07+00FB:01"\ncheat0_enable = true',
+    ),
+  });
+  await expect(files.getByRole("status")).toContainText("1 supported");
+  await expect(panel.getByRole("checkbox")).toHaveCount(0);
+  await files.getByLabel("Choose a rule").selectOption("00FA:07+00FB:01");
+  await files.getByRole("button", { name: "Apply code" }).click();
+  await expect(panel.getByRole("checkbox", { name: /Word value/ })).toBeChecked();
+  const download = page.waitForEvent("download");
+  await files.getByRole("button", { name: "Export session rules" }).click();
+  expect((await download).suggestedFilename()).toMatch(/^nes-[a-f0-9]{12}\.cht$/);
+
   const search = page.getByRole("group", { name: "Find a value in RAM" });
   await search.getByLabel("Value in game").fill("9");
   await search.getByRole("button", { name: "Start search" }).click();

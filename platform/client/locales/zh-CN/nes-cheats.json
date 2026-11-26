@@ -43,5 +43,13 @@
   "nesCheats.rockHealth": "洛克人体力",
   "nesCheats.stamina": "耐力",
   "nesCheats.p1Health": "一号玩家体力",
-  "nesCheats.reserveLives": "一号玩家备用命数"
+  "nesCheats.reserveLives": "一号玩家备用命数",
+  "nesCheats.files": "金手指文件",
+  "nesCheats.openFile": "打开 RetroArch .cht 文件",
+  "nesCheats.export": "导出本次规则",
+  "nesCheats.filterCodes": "搜索文件中的规则",
+  "nesCheats.chooseCode": "选择规则",
+  "nesCheats.fileStats": "可用 {available} 项，跳过 {skipped} 项。选定规则后可手动启用。",
+  "nesCheats.invalidFile": "请选择有效的 RetroArch 金手指文件，最大 256 KiB。",
+  "nesCheats.wrongCartridge": "这个文件对应另一个游戏版本。"
 }

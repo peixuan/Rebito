@@ -11,6 +11,14 @@ it("preserves order and permits inactive alternatives", () => {
     "SXIOPO",
   ]);
 });
+it("toggles both bytes of a word together and retains shared codes in other enabled groups", () => {
+  const word = rule("01FE:32+01FF:54");
+  expect(activeNesCodes([word, rule("01FE:32")])).toEqual(["01FE:32", "01FF:54"]);
+  expect(activeNesCodes([{ ...word, enabled: false }, rule("01FE:32")])).toEqual(["01FE:32"]);
+  expect(() => activeNesCodes([word, rule("01FF:42")])).toThrow();
+  expect(() => activeNesCodes([rule("01FE:32+")])).toThrow();
+});
+
 it("rejects malformed codes, duplicates, overlapping active addresses and oversized lists", () => {
   for (const rules of [
     [rule("not a code", false)],

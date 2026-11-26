@@ -43,5 +43,13 @@
   "nesCheats.rockHealth": "Mega Man's health",
   "nesCheats.stamina": "Stamina",
   "nesCheats.p1Health": "Player 1 health",
-  "nesCheats.reserveLives": "Player 1 reserve lives"
+  "nesCheats.reserveLives": "Player 1 reserve lives",
+  "nesCheats.files": "Cheat files",
+  "nesCheats.openFile": "Open a RetroArch .cht file",
+  "nesCheats.export": "Export session rules",
+  "nesCheats.filterCodes": "Find a rule",
+  "nesCheats.chooseCode": "Choose a rule",
+  "nesCheats.fileStats": "{available} supported entries · {skipped} skipped. Choose a rule to apply it.",
+  "nesCheats.invalidFile": "Select a valid RetroArch cheat file up to 256 KiB.",
+  "nesCheats.wrongCartridge": "This file was exported for a different cartridge version."
 }
