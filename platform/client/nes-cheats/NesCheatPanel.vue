@@ -6,6 +6,7 @@ import { ref } from "vue";
 import { normalizeNesCode } from "../../src/editors/nes/codes.ts";
 import { type DisplayText, displayMessage, message } from "../../src/shared/messages.ts";
 import { t, translate } from "../i18n.ts";
+import NesRamSearch from "./NesRamSearch.vue";
 import { activeNesCodes, type NesRule } from "./rules.ts";
 import type { NesCheats } from "./runtime.ts";
 
@@ -27,18 +28,21 @@ function apply(next: NesRule[]) {
     return false;
   }
 }
-function addCode(code: string, label: DisplayText) {
-  const normalized = normalizeNesCode(code);
-  if (!normalized) {
-    error.value = message("nesCheats.invalidCode");
-    return false;
+function addCodes(codes: string[], label: DisplayText) {
+  const next = new Map(rules.value.map((rule) => [rule.code, rule]));
+  for (const code of codes) {
+    const normalized = normalizeNesCode(code);
+    if (!normalized) {
+      error.value = message("nesCheats.invalidCode");
+      return false;
+    }
+    next.set(normalized, {
+      name: next.get(normalized)?.name || label,
+      code: normalized,
+      enabled: true,
+    });
   }
-  const existing = rules.value.find((rule) => rule.code === normalized);
-  return apply(
-    existing
-      ? rules.value.map((rule) => (rule === existing ? { ...rule, enabled: true } : rule))
-      : [...rules.value, { name: label, code: normalized, enabled: true }],
-  );
+  return apply([...next.values()]);
 }
 function toggle(rule: NesRule, event: Event) {
   const checkbox = event.currentTarget as HTMLInputElement;
@@ -48,7 +52,7 @@ function toggle(rule: NesRule, event: Event) {
   if (!apply(next)) checkbox.checked = rule.enabled;
 }
 function submit() {
-  if (addCode(input.value, name.value.trim())) {
+  if (addCodes([input.value], name.value.trim())) {
     input.value = "";
     name.value = "";
   }
@@ -100,6 +104,7 @@ function submit() {
       </ul>
     </fieldset>
     <Message v-if="error" severity="error" role="alert">{{ translate(error) }}</Message>
+    <NesRamSearch :port="port" :disabled="disabled" @add="addCodes" />
   </details>
 </template>
 

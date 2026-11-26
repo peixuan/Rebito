@@ -31,4 +31,22 @@ test("manages session-only cheats in the NES player", async ({ page }) => {
   await expect(enabled).not.toBeChecked();
   await panel.getByRole("button", { name: "Remove 00FE:09" }).click();
   await expect(enabled).toHaveCount(0);
+
+  const search = page.getByRole("group", { name: "Find a value in RAM" });
+  await search.getByLabel("Value in game").fill("9");
+  await search.getByRole("button", { name: "Start search" }).click();
+  const match = search.getByRole("button", { name: "00FE · 9", exact: true });
+  await match.click();
+  await search.getByLabel("New value at 00FE").fill("42");
+  await search.getByRole("button", { name: "Apply value" }).click();
+  await expect(panel.getByRole("checkbox", { name: /00FE:2A/ })).toBeChecked();
+  await search.getByLabel("Value in game").fill("42");
+  await expect(async () => {
+    // Keep the original candidate set until the core's next frame has run.
+    await search.getByRole("button", { name: "New search", exact: true }).click();
+    await search.getByRole("button", { name: "Start search" }).click();
+    await expect(search.getByRole("button", { name: "00FE · 42", exact: true })).toBeVisible({
+      timeout: 500,
+    });
+  }).toPass({ timeout: 5000 });
 });
