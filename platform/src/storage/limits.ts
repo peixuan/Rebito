@@ -1,15 +1,19 @@
 import type { Pool } from "pg";
 import { z } from "zod";
 
-export const storageLimitSchema = z.strictObject({
-  profiles: z.number().int().min(1).max(10_000).default(100),
-  revisions: z.number().int().min(1).max(1_000_000).default(2000),
+export const accountQuotaSchema = z.strictObject({
+  profiles: z.number().int().min(1).max(10_000),
+  revisions: z.number().int().min(1).max(1_000_000),
   bytes: z
     .number()
     .int()
     .min(1)
-    .max(1024 ** 4)
-    .default(2 * 1024 ** 3),
+    .max(1024 ** 4),
+});
+export const storageLimitSchema = z.strictObject({
+  profiles: accountQuotaSchema.shape.profiles.default(100),
+  revisions: accountQuotaSchema.shape.revisions.default(2000),
+  bytes: accountQuotaSchema.shape.bytes.default(2 * 1024 ** 3),
 });
 export type StorageLimits = Readonly<z.infer<typeof storageLimitSchema>>;
 export interface StorageUsage {

@@ -19,6 +19,11 @@ Headers restrict scripts and connections to this origin and enable browser
 cross-origin isolation for WASM cores. Runtime assets must be self-hosted and
 compatible with these headers; do not disable the policy to use an unpinned CDN.
 
+Administrators can read `GET /api/admin/save-quotas` for effective account/site
+limits, site usage and the host disk reserve. POST the complete `account`, `site`
+and last observed `version` to the same path to update the limits. A stale
+version returns 409. Updates persist in PostgreSQL and apply across replicas.
+
 ## Saves
 
 | Method and path                        | Behavior                                        |

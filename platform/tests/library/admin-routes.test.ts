@@ -536,3 +536,36 @@ it("rejects Sega model/header mismatches before publishing and cleans staged fil
   expect(await readdir(join(directory, "library"))).toEqual(before);
   expect(await readdir(join(directory, "library", ".uploads"))).toEqual([]);
 });
+
+it("limits quota configuration to administrators and rejects stale or partial updates", async () => {
+  const url = "/api/admin/save-quotas";
+  const get = (cookie: string) => app.inject({ url, headers: { cookie } });
+  expect((await get("")).statusCode).toBe(401);
+  expect((await get(player)).statusCode).toBe(403);
+  const initial = (await get(admin)).json().settings;
+  const save = (payload: object, cookie = admin, site = origin) =>
+    app.inject({
+      method: "POST",
+      url,
+      headers: { origin: site, cookie },
+      payload,
+    });
+  expect((await save(initial, player)).statusCode).toBe(403);
+  expect((await save(initial, admin, "https://example.invalid")).statusCode).toBe(403);
+  expect((await save({ ...initial, account: {} })).statusCode).toBe(400);
+  expect((await save({ ...initial, site: { bytes: 0, revisions: 10 } })).statusCode).toBe(400);
+  const changed = {
+    ...initial,
+    account: { ...initial.account, profiles: 43 },
+    site: { bytes: 123456, revisions: 55 },
+  };
+  const response = await save(changed);
+  expect(response.statusCode).toBe(200);
+  expect(response.json().settings).toEqual({ ...changed, version: initial.version + 1 });
+  expect((await save(initial)).statusCode).toBe(409);
+  const usage = await app.inject({ url: "/api/storage", headers: { cookie: player } });
+  expect(usage.json().limits.profiles).toBe(43);
+  expect((await save({ ...initial, version: response.json().settings.version })).statusCode).toBe(
+    200,
+  );
+});

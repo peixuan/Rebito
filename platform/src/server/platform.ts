@@ -17,6 +17,7 @@ import { registerFirmware } from "../library/firmware-routes.ts";
 import { reclaimDeletion } from "../library/reclamation.ts";
 import { registerLibrary } from "../library/routes.ts";
 import { registerHistory } from "../saves/history-routes.ts";
+import { registerSaveQuotas } from "../saves/quota-routes.ts";
 import { registerSaves } from "../saves/routes.ts";
 import { SaveService } from "../saves/service.ts";
 import { guardStorageRoutes, StorageActivity } from "../storage/activity.ts";
@@ -83,6 +84,7 @@ async function createServices(config: ServerConfig, database: Pool, activity: St
   privateApi(app, auth, config.origin, async (scope) => {
     guardStorageRoutes(scope, activity);
     registerLibrary(scope, library, database);
+    registerSaveQuotas(scope, config, database);
     await registerSaves(scope, saves, library, database);
     registerHistory(scope, database, config.dataDirectory, config.storageLimits);
     registerGameAdministration(scope, config, library, () => assertNoPendingDeletion(database));

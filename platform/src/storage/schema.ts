@@ -1,4 +1,5 @@
 import type { Pool } from "pg";
+import { quotaSettingsMigration } from "./quota-settings.ts";
 import { siteQuotaMigration } from "./site-quota.ts";
 
 const initialSchema = `
@@ -79,6 +80,8 @@ export async function migrateStorage(database: Pool): Promise<void> {
     }
     const siteQuota = await client.query("SELECT version FROM schema_versions WHERE version = 5");
     if (siteQuota.rowCount === 0) await client.query(siteQuotaMigration);
+    const settings = await client.query("SELECT version FROM schema_versions WHERE version = 6");
+    if (!settings.rowCount) await client.query(quotaSettingsMigration);
     await client.query("COMMIT");
   } catch (error) {
     await client.query("ROLLBACK");

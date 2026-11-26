@@ -3,6 +3,7 @@ import type { Pool } from "pg";
 import { assertProgressManifest, type ProgressManifest } from "../domain/artifacts.ts";
 import type { BlobRef } from "./blobs.ts";
 import type { StorageLimits } from "./limits.ts";
+import { quotaSettings } from "./quota-settings.ts";
 import { referencedBlobs } from "./references.ts";
 import { type HistoryEntry, planHistory } from "./retention-policy.ts";
 import { ProgressError } from "./revisions.ts";
@@ -44,7 +45,8 @@ export async function historyPlan(
     assertProgressManifest(row.manifest);
     return { ...row, bytes: row.manifest.artifacts.reduce((sum, file) => sum + file.size, 0) };
   });
-  const removed = planHistory(rows, limits, Date.now(), Boolean(profileId)).filter(
+  const { account } = await quotaSettings(database, limits);
+  const removed = planHistory(rows, account, Date.now(), Boolean(profileId)).filter(
     (row) => !profileId || row.profileId === profileId,
   );
   const candidates = new Map<string, BlobRef>();

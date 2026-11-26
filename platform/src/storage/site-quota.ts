@@ -1,9 +1,16 @@
 import type { Pool } from "pg";
 
-export interface SiteSaveLimits {
-  readonly bytes: number;
-  readonly revisions: number;
-}
+import { z } from "zod";
+
+export const siteLimitSchema = z.strictObject({
+  bytes: z
+    .number()
+    .int()
+    .min(1)
+    .max(1024 ** 4),
+  revisions: z.number().int().min(1).max(10_000_000),
+});
+export type SiteSaveLimits = Readonly<z.infer<typeof siteLimitSchema>>;
 
 export const defaultSiteLimits: SiteSaveLimits = { bytes: 10 * 1024 ** 3, revisions: 10_000 };
 

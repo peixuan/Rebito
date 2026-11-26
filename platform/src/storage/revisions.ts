@@ -6,6 +6,7 @@ import {
   type ProgressManifest,
 } from "../domain/artifacts.ts";
 import { type StorageLimits, storageLimitSchema, storageUsage } from "./limits.ts";
+import { quotaSettings } from "./quota-settings.ts";
 import { defaultSiteLimits, type SiteSaveLimits, siteUsage } from "./site-quota.ts";
 
 export interface Profile {
@@ -63,7 +64,8 @@ export class RevisionRepository {
       throw new Error("Invalid profile");
     }
     return this.transaction(owner, async (client) => {
-      if ((await storageUsage(client, owner)).profiles >= this.limits.profiles)
+      const { account } = await quotaSettings(client, this.limits, this.siteLimits);
+      if ((await storageUsage(client, owner)).profiles >= account.profiles)
         throw new ProgressError("quota_exceeded");
       const result = await client.query<Profile>(
         `INSERT INTO profiles(id, owner_id, release_id, name) VALUES ($1, $2, $3, $4)
@@ -75,13 +77,15 @@ export class RevisionRepository {
   }
 
   async usage(owner: string) {
-    return { used: await storageUsage(this.database, owner), limits: this.limits };
+    const { account } = await quotaSettings(this.database, this.limits, this.siteLimits);
+    return { used: await storageUsage(this.database, owner), limits: account };
   }
 
   async assertCapacity(owner: string, manifest: ProgressManifest) {
-    const bytes = await this.assertOwnerCapacity(this.database, owner, manifest);
+    const { account, site } = await quotaSettings(this.database, this.limits, this.siteLimits);
+    const bytes = await this.assertOwnerCapacity(this.database, owner, manifest, account);
     const used = await siteUsage(this.database);
-    if (used.bytes + bytes > this.siteLimits.bytes || used.revisions >= this.siteLimits.revisions)
+    if (used.bytes + bytes > site.bytes || used.revisions >= site.revisions)
       throw new ProgressError("site_quota_exceeded");
   }
 
@@ -89,10 +93,11 @@ export class RevisionRepository {
     database: Pick<Pool, "query">,
     owner: string,
     manifest: ProgressManifest,
+    limits: StorageLimits,
   ) {
     const used = await storageUsage(database, owner);
     const bytes = manifest.artifacts.reduce((total, artifact) => total + artifact.size, 0);
-    if (used.revisions >= this.limits.revisions || used.bytes + bytes > this.limits.bytes)
+    if (used.revisions >= limits.revisions || used.bytes + bytes > limits.bytes)
       throw new ProgressError("quota_exceeded");
     return bytes;
   }
@@ -189,7 +194,8 @@ export class RevisionRepository {
       if (!profile) throw new ProgressError("not_found");
       if (profile.headId !== base) throw new ProgressError("conflict");
       if (profile.releaseId !== manifest.releaseId) throw new ProgressError("release_mismatch");
-      await this.assertOwnerCapacity(client, owner, manifest);
+      const { account, site } = await quotaSettings(client, this.limits, this.siteLimits);
+      await this.assertOwnerCapacity(client, owner, manifest, account);
       const id = randomUUID();
       const result = await client.query<Revision>(
         `INSERT INTO revisions AS r(id, profile_id, parent_id, source, manifest)
@@ -197,7 +203,7 @@ export class RevisionRepository {
         [id, profileId, base, source, JSON.stringify(manifest)],
       );
       const used = await siteUsage(client);
-      if (used.bytes > this.siteLimits.bytes || used.revisions > this.siteLimits.revisions)
+      if (used.bytes > site.bytes || used.revisions > site.revisions)
         throw new ProgressError("site_quota_exceeded");
       await client.query("DELETE FROM history_cleanup WHERE sha256 = ANY($1::text[])", [
         manifest.artifacts.map((artifact) => artifact.sha256),
