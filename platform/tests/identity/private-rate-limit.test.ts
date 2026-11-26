@@ -50,11 +50,13 @@ afterAll(async () => {
   if (directory) await rm(directory, { recursive: true, force: true });
 });
 
-it("shares the real private API limit across library routes without blocking other users", async () => {
+it("shares the private API limit across library and quota routes without blocking other users", async () => {
   const routes = [
     { method: "GET", url: "/api/games" },
     { method: "GET", url: "/api/admin/deletions" },
     { method: "POST", url: "/api/admin/games" },
+    { method: "GET", url: "/api/admin/save-quotas" },
+    { method: "POST", url: "/api/admin/save-quotas" },
   ] as const;
   for (const route of routes) {
     expect((await app.inject(route)).statusCode).toBe(401);
@@ -65,10 +67,12 @@ it("shares the real private API limit across library routes without blocking oth
   }
 
   // Exercise the production limit and real database/authentication hooks, not mocks.
+  const reads = routes.filter((route) => route.method === "GET");
   for (let index = 0; index < 240; index++) {
+    const route = reads[index % reads.length];
+    if (!route) throw new Error("Missing private read route");
     const response = await app.inject({
-      method: "GET",
-      url: index % 2 ? "/api/games" : "/api/admin/deletions",
+      ...route,
       headers: { cookie: cookies.admin },
     });
     expect(response.statusCode).toBe(200);
@@ -86,7 +90,7 @@ it("shares the real private API limit across library routes without blocking oth
   }
   const other = await app.inject({
     method: "GET",
-    url: "/api/admin/deletions",
+    url: "/api/admin/save-quotas",
     headers: { cookie: cookies.other },
   });
   expect(other.statusCode).toBe(200);
