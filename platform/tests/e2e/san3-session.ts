@@ -6,6 +6,7 @@ import { openSnapshotMemory } from "../../src/editors/snapshots/memory.ts";
 import type { Game } from "../../src/library/catalog.ts";
 import type { Profile, Revision } from "../../src/storage/revisions.ts";
 import { discArchive, discBios, discTrack } from "../library/segacd-fixtures.ts";
+import { centerPixel } from "./console-pixel.ts";
 import { useSession } from "./session.ts";
 
 type SerializedProgress = Omit<RuntimeProgress, "files"> & {
@@ -62,26 +63,40 @@ export async function prepareSan3Editor(
   const profile: Profile = await created.json();
 
   await page.goto("/runtime.html");
-  const captured = await page.evaluate(
-    async ({ game, profile }): Promise<SerializedProgress> => {
+  const runtime = await page.evaluateHandle(
+    async ({ game, profile }): Promise<RuntimeHandle> => {
       const host = window as RuntimeWindow;
       if (!host.retroRuntime) throw new Error("Missing runtime host");
-      const handle: RuntimeHandle = await host.retroRuntime.start({
+      return host.retroRuntime.start({
         game,
         profileId: profile.id,
         gameBytes: new Uint8Array(await (await fetch(`/api/games/${game.id}/asset`)).arrayBuffer()),
         progress: null,
       });
+    },
+    { game, profile },
+  );
+  let captured: SerializedProgress;
+  try {
+    // The test firmware writes both RAM-cart sentinels before displaying its blue frame.
+    await expect
+      .poll(async () => (await centerPixel(page.locator("canvas")))[2])
+      .toBeGreaterThan(150);
+    captured = await runtime.evaluate(async (handle): Promise<SerializedProgress> => {
       const progress = await handle.capture();
-      await handle.stop();
       if (progress?.kind !== "snapshot") throw new Error("Missing CD state");
       return {
         ...progress,
         files: progress.files.map((file) => ({ ...file, bytes: [...file.bytes] })),
       };
-    },
-    { game, profile },
-  );
+    });
+  } finally {
+    await runtime.evaluate((handle) => handle.stop());
+    await runtime.dispose();
+  }
+  const native = captured.files.find((file) => file.name === "save.srm");
+  expect(native?.bytes[0x2000]).toBe(0x42);
+  expect(native?.bytes[0x11fff]).toBe(0x55);
   const stateName = "__runtime/state.bin";
   const state = captured.files.find((file) => file.name === stateName);
   if (!state) throw new Error("Missing captured state");
