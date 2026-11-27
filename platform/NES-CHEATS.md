@@ -47,6 +47,17 @@ and check the in-game result. Repeat for every translation. Keep ROMs, saves
 and captures outside the repository. Commit the release digest, bounded
 setting, translations and tests.
 
+The built-in choice catalog covers 138 release digests across 136 games, with
+139 settings and 278 choices. Three other verified releases retain their
+adjustable controls. A game upload automatically gains the applicable controls
+when its exact cartridge matches. A playable release alone does not qualify.
+
+Add choices to `src/editors/nes/catalog-data.ts` under `onTitle` if a new game
+must read the value, or `inGame` for immediate changes. One setting may contain
+several codes joined by `+`; keep the whole group for each choice. Add labels
+to both locale catalogs. Store only independently verified code/value facts
+and original labels. Never bundle a third-party cheat collection or game image.
+
 | Game             | In-game observation                                                                                |
 | ---------------- | -------------------------------------------------------------------------------------------------- |
 | Castlevania      | Simon's HP bar in stage 1 shortened at 16 and filled at 64. Displayed HP followed actual HP.       |

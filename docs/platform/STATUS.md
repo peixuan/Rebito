@@ -35,11 +35,21 @@ with a release using its default medium illustration.
 
 ## NES live cheats
 
-The NES player can apply session rules, search its 2 KiB of CPU RAM and import
-or export local RetroArch cheat lists. Keep UI code in `platform/client/nes-cheats`
+The NES player matches its built-in choices to the running cartridge. The
+catalog covers 138 verified releases (136 games), with 139 settings and 278
+choices. Three further releases use the original adjustable controls. Starting
+values carry a title-screen hint; switching choices applies the complete code
+group together. Manual codes, the 2 KiB RAM search and local RetroArch file
+import/export are available under **Custom codes and tools**.
+Keep UI code in `platform/client/nes-cheats`
 and cartridge parsing and presets in `platform/src/editors/nes`. The capability
 is scoped to one running cartridge and the pinned FCEUmm build. See the
 [NES editor guide](../../platform/NES-CHEATS.md) for adding verified releases.
+
+The catalog acceptance run booted all 138 matched cartridges in FCEUmm,
+checked visible frames and advancing state, and applied and cleared all 278
+choices. In the mobile-width player, Mitsume ga Tooru's health selector
+changed the live RAM value from 2 to 6 and back with the file tools closed.
 
 Local acceptance exercised uploads, gameplay edits, saving and resuming on
 20 exact releases. Nineteen used built-in presets across 15 games. Dragon
