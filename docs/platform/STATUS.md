@@ -2,6 +2,26 @@
 
 Updated: 2026-11-27 (Asia/Shanghai).
 
+## Library and site appearance
+
+The same Vue application serves phones, tablets and desktops. The site header
+and shared theme tokens control day and night views across accounts, the library,
+the player workspace, editors and game management. A manual theme choice
+persists in the browser. Keep a single selected profile form when changing
+layout so resizing the window preserves an unfinished name.
+
+The library prioritizes personal playthroughs and recent additions. Search and
+platform filters cover the entire catalog. Administrators can attach an image
+to a published release independently of its game file and saves. Keep artwork
+inside the existing data volume and include it in deletion previews. See the
+[library guide](../../platform/LIBRARY.md#release-artwork) for limits and the
+[cover API](../../platform/API.md#game-covers) for authentication and conflict handling.
+
+The browser regressions for cover publication, slow transfers, paging, theme
+persistence and responsive profile selection live in `library-covers.spec.ts`
+and `library-shelf.spec.ts`. Verify both views with a real stored image and
+with a release using its default medium illustration.
+
 ## NES live cheats
 
 The NES player can apply session rules, search its 2 KiB of CPU RAM and import
