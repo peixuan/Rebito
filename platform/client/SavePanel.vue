@@ -126,14 +126,14 @@ onMounted(() => perform(refresh));
 
 <template>
   <section :aria-label="t('saves.workspace')">
-    <div class="toolbar">
+    <div class="toolbar page-tools">
       <Button
         :label="t('library.back')"
         variant="text"
         :disabled="busy || historyBusy || editorDirty"
         @click="back"
       />
-      <h2>{{ game.title }} · {{ profile.name }}</h2>
+      <h1>{{ game.title }} <span class="playthrough-name">· {{ profile.name }}</span></h1>
       <Button
         :label="player?.active ? t('saves.synchronize') : t('saves.refresh')"
         :title="player?.active ? t('saves.synchronizeHelp') : undefined"
@@ -174,37 +174,64 @@ onMounted(() => perform(refresh));
       @dirty="editorDirty = $event"
       @saved="published"
     />
-    <section class="profile-panel">
-      <h3>{{ t("saves.import") }}</h3>
-      <p class="muted">{{ t("saves.importHelp") }}</p>
-      <p v-if="game.system !== 'dos'" class="muted">{{ t("saves.consoleImportHelp") }}</p>
-      <form class="toolbar" @submit.prevent="upload">
-        <input
-          ref="input"
-          type="file"
-          :multiple="game.system === 'dos'"
-          :aria-label="t('saves.files')"
-          :disabled="busy || cloudEditLocked"
-          @change="selectFiles"
-        >
-        <Button
-          type="submit"
-          :label="t('saves.upload')"
-          size="small"
-          :loading="busy"
-          :disabled="busy || !files.length || cloudEditLocked"
-        />
-      </form>
-    </section>
-    <HistoryPanel
-      :dos="game.system === 'dos'"
-      :profile-id="profile.id"
-      :revisions="revisions"
-      :head="head"
-      :disabled="busy || cloudEditLocked"
-      @restore="restore"
-      @changed="perform(refresh)"
-      @busy="historyBusy = $event"
-    />
+    <div class="save-management">
+      <section class="profile-panel">
+        <h3>{{ t("saves.import") }}</h3>
+        <p class="muted">{{ t("saves.importHelp") }}</p>
+        <p v-if="game.system !== 'dos'" class="muted">{{ t("saves.consoleImportHelp") }}</p>
+        <form class="toolbar" @submit.prevent="upload">
+          <input
+            ref="input"
+            type="file"
+            :multiple="game.system === 'dos'"
+            :aria-label="t('saves.files')"
+            :disabled="busy || cloudEditLocked"
+            @change="selectFiles"
+          >
+          <Button
+            type="submit"
+            :label="t('saves.upload')"
+            size="small"
+            :loading="busy"
+            :disabled="busy || !files.length || cloudEditLocked"
+          />
+        </form>
+      </section>
+      <HistoryPanel
+        :dos="game.system === 'dos'"
+        :profile-id="profile.id"
+        :revisions="revisions"
+        :head="head"
+        :disabled="busy || cloudEditLocked"
+        @restore="restore"
+        @changed="perform(refresh)"
+        @busy="historyBusy = $event"
+      />
+    </div>
   </section>
 </template>
+
+<style scoped>
+.playthrough-name {
+  font:
+    500 0.8em / 1.3 system-ui,
+    sans-serif;
+  color: var(--muted);
+}
+.save-management {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  margin-top: 16px;
+}
+.save-management > .profile-panel {
+  min-width: 0;
+  margin-top: 0;
+}
+@media (min-width: 960px) {
+  .save-management {
+    grid-template-columns: minmax(17rem, 1fr) minmax(0, 2fr);
+  }
+}
+</style>

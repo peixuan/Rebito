@@ -109,6 +109,7 @@ onBeforeUnmount(() => {
             <span class="user-name">{{ user.name }}</span>
           </summary>
           <div class="account-popover">
+            <strong class="account-name">{{ user.name }}</strong>
             <button
               v-if="user.admin && !administration"
               class="mobile-admin"
@@ -227,7 +228,7 @@ onBeforeUnmount(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 14ch;
+  max-width: 24ch;
 }
 .signed-in {
   white-space: nowrap;
@@ -239,10 +240,19 @@ onBeforeUnmount(() => {
   border: 1px solid var(--edge);
   padding: 4px;
   min-width: 135px;
+  width: max-content;
+  max-width: min(260px, calc(100vw - 24px));
   position: absolute;
   top: 100%;
   right: 0;
   z-index: 5;
+}
+.account-name {
+  display: block;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--edge);
+  color: var(--ink);
+  overflow-wrap: anywhere;
 }
 .account-popover button {
   display: block;

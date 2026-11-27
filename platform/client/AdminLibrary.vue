@@ -282,7 +282,7 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
 
 <template>
   <section class="admin-manager" :aria-label="t('admin.title')">
-    <div class="toolbar">
+    <div class="toolbar page-tools">
       <Button :label="t('library.back')" variant="text" @click="emit('back')" />
       <h1>{{ t("admin.title") }}</h1>
       <AdminSaveQuotas :disabled="busy" />

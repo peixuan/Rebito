@@ -22,6 +22,9 @@ test("keeps the selected playthrough and theme when the shelf changes layout", a
   await page.reload();
   await expect(page.getByRole("button", { name: "Day view" })).toBeVisible();
   await page.locator(".user-menu summary").click();
+  await expect(
+    page.locator(".account-popover").getByText("library", { exact: true }),
+  ).toBeVisible();
   await expect(page.getByRole("button", { name: "Sign out" })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(page.locator(".user-menu summary")).toBeFocused();

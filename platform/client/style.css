@@ -68,6 +68,7 @@ h1 {
   padding: 32px;
   background: var(--paper);
   border: 1px solid var(--edge);
+  border-top: 2px solid var(--accent);
   border-radius: 4px;
 }
 .muted {
@@ -93,6 +94,21 @@ h1 {
 .toolbar h2 {
   margin: 0;
   margin-right: auto;
+}
+.page-tools {
+  gap: 6px 12px;
+  border-bottom: 1px solid var(--edge);
+  padding-bottom: 10px;
+}
+.page-tools h1 {
+  overflow-wrap: anywhere;
+  font-size: clamp(22px, 2.4vw, 30px);
+}
+@media (max-width: 600px) {
+  .page-tools h1 {
+    flex-basis: 100%;
+    order: -1;
+  }
 }
 .storage-summary {
   display: grid;
