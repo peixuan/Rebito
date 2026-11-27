@@ -213,9 +213,9 @@ onMounted(() => perform(refresh));
 
 <style scoped>
 .playthrough-name {
-  font:
-    500 0.8em / 1.3 system-ui,
-    sans-serif;
+  font-size: 0.8em;
+  font-weight: 500;
+  line-height: 1.3;
   color: var(--muted);
 }
 .save-management {

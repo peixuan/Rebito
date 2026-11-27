@@ -9,6 +9,8 @@ and shared theme tokens control day and night views across accounts, the library
 the player workspace, editors and game management. A manual theme choice
 persists in the browser. Keep a single selected profile form when changing
 layout so resizing the window preserves an unfinished name.
+The home link stacks the English and Chinese site names at the same type size and weight.
+The interface uses the system sans-serif family for headings, controls and usage figures.
 
 The game screen shares the workspace with a keyboard guide on wide displays.
 Narrow displays keep the screen and touch controls together above the guide.

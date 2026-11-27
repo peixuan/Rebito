@@ -68,11 +68,9 @@ const emit = defineEmits<{
   grid-column: 1 / -1;
 }
 .profile-panel h2 {
-  font:
-    600 clamp(17px, 1.4vw, 19px) / 1.35 Georgia,
-    "Songti SC",
-    "SimSun",
-    serif;
+  font-size: clamp(17px, 1.4vw, 19px);
+  font-weight: 600;
+  line-height: 1.35;
   overflow-wrap: anywhere;
   margin: 0 0 14px;
 }
