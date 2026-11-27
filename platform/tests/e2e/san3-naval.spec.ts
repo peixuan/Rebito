@@ -3,7 +3,7 @@ import { San3BattleDocument } from "../../src/editors/san3/battle.ts";
 import { san3Layout } from "../../src/editors/san3/document.ts";
 import { openSnapshotMemory } from "../../src/editors/snapshots/memory.ts";
 import { san3BattleFixture } from "../editors/san3-battle-fixture.ts";
-import { prepareSan3Editor } from "./san3-session.ts";
+import { startSan3Session } from "./san3-session.ts";
 
 test("exchanges naval equipment atomically and writes battle stats into the paused core", async ({
   page,
@@ -16,11 +16,7 @@ test("exchanges naval equipment atomically and writes battle stats into the paus
   program[san3Layout.cities.offset + 21] = 0x80;
   program[san3Layout.cities.offset + 43] = 0;
   program[san3Layout.cities.offset + 44] = 3;
-  const { game, history } = await prepareSan3Editor(page, program, "SAN3 naval fixture");
-  await page.goto("/");
-  await page.getByRole("button", { name: game.title }).click();
-  await page.getByRole("button", { name: "Open profile", exact: true }).click();
-  await page.getByRole("button", { name: "Start game", exact: true }).click();
+  const { history } = await startSan3Session(page, program, "SAN3 naval fixture");
   await page.getByRole("button", { name: "Capture for editing", exact: true }).click();
   const editor = page.getByRole("region", { name: "Save editor", exact: true });
   await expect(editor.getByLabel("Remaining mobility", { exact: true })).toBeEnabled();

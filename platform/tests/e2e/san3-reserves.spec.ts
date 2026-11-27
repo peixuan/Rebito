@@ -3,21 +3,13 @@ import { San3BattleDocument } from "../../src/editors/san3/battle.ts";
 import { inspectSan3BattleReserves } from "../../src/editors/san3/battle-reserves.ts";
 import { openSnapshotMemory } from "../../src/editors/snapshots/memory.ts";
 import { san3ReserveFixture } from "../editors/san3-reserve-fixture.ts";
-import { prepareSan3Editor } from "./san3-session.ts";
+import { startSan3Session } from "./san3-session.ts";
 
 test("preserves reserve eligibility drafts across battle views and writes them back", async ({
   page,
 }) => {
   test.setTimeout(90_000);
-  const { game, history } = await prepareSan3Editor(
-    page,
-    san3ReserveFixture(),
-    "SAN3 reserves fixture",
-  );
-  await page.goto("/");
-  await page.getByRole("button", { name: game.title }).click();
-  await page.getByRole("button", { name: "Open profile", exact: true }).click();
-  await page.getByRole("button", { name: "Start game", exact: true }).click();
+  const { history } = await startSan3Session(page, san3ReserveFixture(), "SAN3 reserves fixture");
   await page.getByRole("button", { name: "Capture for editing", exact: true }).click();
   const editor = page.getByRole("region", { name: "Save editor", exact: true });
   await expect(editor.getByLabel("Remaining mobility", { exact: true })).toBeEnabled();

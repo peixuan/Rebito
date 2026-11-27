@@ -6,7 +6,7 @@ import {
   san3GovernanceFixture,
 } from "../editors/san3-governance-fixture.ts";
 import { chinese } from "./locales.ts";
-import { prepareSan3Editor } from "./san3-session.ts";
+import { startSan3Session } from "./san3-session.ts";
 
 test("keeps disabled features discoverable and bilingual drafts intact in the compact layout", async ({
   page,
@@ -14,15 +14,7 @@ test("keeps disabled features discoverable and bilingual drafts intact in the co
   test.setTimeout(90_000);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  const { game, history } = await prepareSan3Editor(
-    page,
-    san3GovernanceFixture(),
-    "SAN3 layout fixture",
-  );
-  await page.goto("/");
-  await page.getByRole("button", { name: game.title }).click();
-  await page.getByRole("button", { name: "Open profile", exact: true }).click();
-  await page.getByRole("button", { name: "Start game", exact: true }).click();
+  const { history } = await startSan3Session(page, san3GovernanceFixture(), "SAN3 layout fixture");
   await page.getByRole("button", { name: "Capture for editing", exact: true }).click();
   const editor = page.getByRole("region", { name: "Save editor", exact: true });
   const modules = editor.getByRole("navigation", { name: "Editor modules" });

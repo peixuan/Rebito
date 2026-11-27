@@ -4,7 +4,7 @@ import { San3PresetDocument, san3PresetLayout } from "../../src/editors/san3/pre
 import { openSnapshotMemory } from "../../src/editors/snapshots/memory.ts";
 import { san3GovernanceFixture } from "../editors/san3-governance-fixture.ts";
 import { chinese } from "./locales.ts";
-import { prepareSan3Editor } from "./san3-session.ts";
+import { startSan3Session } from "./san3-session.ts";
 
 test("switches to registration and writes bilingual creation defaults into the running core", async ({
   page,
@@ -12,15 +12,11 @@ test("switches to registration and writes bilingual creation defaults into the r
   test.setTimeout(90_000);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  const { game, history, publishMemory } = await prepareSan3Editor(
+  const { history, publishMemory } = await startSan3Session(
     page,
     san3GovernanceFixture(),
     "SAN3 creation defaults fixture",
   );
-  await page.goto("/");
-  await page.getByRole("button", { name: game.title }).click();
-  await page.getByRole("button", { name: "Open profile", exact: true }).click();
-  await page.getByRole("button", { name: "Start game", exact: true }).click();
   const capture = page.getByRole("button", { name: "Capture for editing", exact: true });
   await capture.click();
   const editor = page.getByRole("region", { name: "Save editor", exact: true });

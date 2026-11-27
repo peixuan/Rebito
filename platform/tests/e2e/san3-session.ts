@@ -13,8 +13,8 @@ type SerializedProgress = Omit<RuntimeProgress, "files"> & {
   files: { name: string; bytes: number[] }[];
 };
 
-/** Real core container with synthetic program RAM; never a proprietary game fixture. */
-export async function prepareSan3Editor(
+/** Start the editor's game session with synthetic program RAM in a real core snapshot. */
+export async function startSan3Session(
   page: Page,
   program: Uint8Array,
   title = "SAN3 strategic editor fixture",
@@ -133,5 +133,11 @@ export async function prepareSan3Editor(
     ).toBe(201);
   }
   await publishMemory(program);
-  return { game, profile, history, publishMemory };
+  await page.goto("/");
+  await page.getByLabel("Search games").fill(game.title);
+  const titleText = page.getByText(game.title, { exact: true });
+  await page.locator(".shelf-game").filter({ has: titleText }).click();
+  await page.getByRole("button", { name: "Open profile", exact: true }).click();
+  await page.getByRole("button", { name: "Start game", exact: true }).click();
+  return { profile, history, publishMemory };
 }

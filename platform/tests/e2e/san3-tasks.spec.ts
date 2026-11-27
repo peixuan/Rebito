@@ -4,19 +4,11 @@ import { San3Document } from "../../src/editors/san3/document.ts";
 import { openSnapshotMemory } from "../../src/editors/snapshots/memory.ts";
 import { san3GovernanceFixture } from "../editors/san3-governance-fixture.ts";
 import { chinese } from "./locales.ts";
-import { prepareSan3Editor } from "./san3-session.ts";
+import { startSan3Session } from "./san3-session.ts";
 
 test("assembles task controls locally and applies a paused memory assignment", async ({ page }) => {
   test.setTimeout(90_000);
-  const { game, history } = await prepareSan3Editor(
-    page,
-    san3GovernanceFixture(),
-    "SAN3 task fixture",
-  );
-  await page.goto("/");
-  await page.getByRole("button", { name: game.title }).click();
-  await page.getByRole("button", { name: "Open profile", exact: true }).click();
-  await page.getByRole("button", { name: "Start game", exact: true }).click();
+  const { history } = await startSan3Session(page, san3GovernanceFixture(), "SAN3 task fixture");
   await page.getByRole("button", { name: "Capture for editing", exact: true }).click();
   const editor = page.getByRole("region", { name: "Save editor", exact: true });
   await expect(editor.getByLabel("Population", { exact: true })).toBeEnabled();

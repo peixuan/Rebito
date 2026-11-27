@@ -5,7 +5,7 @@ import { openSnapshotMemory } from "../../src/editors/snapshots/memory.ts";
 import { san3BattleFixture } from "../editors/san3-battle-fixture.ts";
 import { san3NameFixture } from "../editors/san3-name-fixture.ts";
 import { chinese } from "./locales.ts";
-import { prepareSan3Editor } from "./san3-session.ts";
+import { startSan3Session } from "./san3-session.ts";
 
 /** Synthetic strategic records only; the original fixture firmware never executes game commands. */
 function strategicMemory() {
@@ -64,12 +64,8 @@ test("edits bilingual Mega-CD strategic drafts and verifies the running PicoDriv
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   const memory = strategicMemory();
-  const { game, history, publishMemory } = await prepareSan3Editor(page, memory);
+  const { history, publishMemory } = await startSan3Session(page, memory);
 
-  await page.goto("/");
-  await page.getByRole("button", { name: game.title }).click();
-  await page.getByRole("button", { name: "Open profile", exact: true }).click();
-  await page.getByRole("button", { name: "Start game", exact: true }).click();
   const capture = page.getByRole("button", { name: "Capture for editing", exact: true });
   await expect(capture).toBeEnabled({ timeout: 30_000 });
   const editor = page.getByRole("region", { name: "Save editor", exact: true });

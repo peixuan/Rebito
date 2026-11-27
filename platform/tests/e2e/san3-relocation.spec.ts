@@ -4,22 +4,18 @@ import { inspectSan3Lists } from "../../src/editors/san3/relocation.ts";
 import { openSnapshotMemory } from "../../src/editors/snapshots/memory.ts";
 import { san3GovernanceFixture } from "../editors/san3-governance-fixture.ts";
 import { chinese } from "./locales.ts";
-import { prepareSan3Editor } from "./san3-session.ts";
+import { startSan3Session } from "./san3-session.ts";
 
 test("offers valid leader moves and applies a reviewed multi-officer relocation", async ({
   page,
 }) => {
   test.setTimeout(90_000);
-  const { game, history } = await prepareSan3Editor(
+  const { history } = await startSan3Session(
     page,
     san3GovernanceFixture(),
     "SAN3 relocation fixture",
     0x5e,
   );
-  await page.goto("/");
-  await page.getByRole("button", { name: game.title }).click();
-  await page.getByRole("button", { name: "Open profile", exact: true }).click();
-  await page.getByRole("button", { name: "Start game", exact: true }).click();
   await page.getByRole("button", { name: "Capture for editing", exact: true }).click();
   const editor = page.getByRole("region", { name: "Save editor", exact: true });
   await expect(editor.getByLabel("Population", { exact: true })).toBeEnabled();

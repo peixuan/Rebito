@@ -4,7 +4,7 @@ import { inspectSan3Governance } from "../../src/editors/san3/governance-core.ts
 import { openSnapshotMemory } from "../../src/editors/snapshots/memory.ts";
 import { san3AppearanceFixture } from "../editors/san3-appearance-fixture.ts";
 import { chinese } from "./locales.ts";
-import { prepareSan3Editor } from "./san3-session.ts";
+import { startSan3Session } from "./san3-session.ts";
 
 test("registers a filled custom officer and schedules appearances with canonical paused edits", async ({
   page,
@@ -16,11 +16,7 @@ test("registers a filled custom officer and schedules appearances with canonical
   const officer = san3Layout.officers.offset + 542 * 30;
   program.fill(0, officer, officer + 30);
   program[officer + 12] = 255;
-  const { game, history } = await prepareSan3Editor(page, program, "SAN3 custom placement fixture");
-  await page.goto("/");
-  await page.getByRole("button", { name: game.title }).click();
-  await page.getByRole("button", { name: "Open profile", exact: true }).click();
-  await page.getByRole("button", { name: "Start game", exact: true }).click();
+  const { history } = await startSan3Session(page, program, "SAN3 custom placement fixture");
   const capture = page.getByRole("button", { name: "Capture for editing", exact: true });
   await capture.click();
   const editor = page.getByRole("region", { name: "Save editor", exact: true });

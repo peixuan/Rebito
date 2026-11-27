@@ -6,7 +6,7 @@ import {
   san3GovernanceFixture,
 } from "../editors/san3-governance-fixture.ts";
 import { chinese } from "./locales.ts";
-import { prepareSan3Editor } from "./san3-session.ts";
+import { startSan3Session } from "./san3-session.ts";
 
 test("copies personal treasures and seven books without changing global ownership", async ({
   page,
@@ -18,15 +18,7 @@ test("copies personal treasures and seven books without changing global ownershi
   for (let item = 1; item < 13; item++)
     data.setUint16(san3TreasureLayout.owners + item * 2, item === 4 ? 6 : 65535);
   data.setUint16(officer(6) + 4, 1 << 4);
-  const { game, history } = await prepareSan3Editor(
-    page,
-    program,
-    "SAN3 personal treasure fixture",
-  );
-  await page.goto("/");
-  await page.getByRole("button", { name: game.title }).click();
-  await page.getByRole("button", { name: "Open profile", exact: true }).click();
-  await page.getByRole("button", { name: "Start game", exact: true }).click();
+  const { history } = await startSan3Session(page, program, "SAN3 personal treasure fixture");
   await page.getByRole("button", { name: "Capture for editing", exact: true }).click();
   const editor = page.getByRole("region", { name: "Save editor", exact: true });
   await expect(editor.getByLabel("Population", { exact: true })).toBeEnabled();

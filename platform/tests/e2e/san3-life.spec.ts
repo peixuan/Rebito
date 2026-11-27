@@ -5,7 +5,7 @@ import { san3TreasureLayout } from "../../src/editors/san3/treasures.ts";
 import { openSnapshotMemory } from "../../src/editors/snapshots/memory.ts";
 import { governanceOfficer, san3GovernanceFixture } from "../editors/san3-governance-fixture.ts";
 import { chinese } from "./locales.ts";
-import { prepareSan3Editor } from "./san3-session.ts";
+import { startSan3Session } from "./san3-session.ts";
 
 test("retires an officer with inheritance and revives in the chosen city", async ({ page }) => {
   test.setTimeout(120_000);
@@ -16,11 +16,7 @@ test("retires an officer with inheritance and revives in the chosen city", async
   data.setUint16(san3Layout.historical.offset + 2 * 30, 1);
   data.setUint16(san3TreasureLayout.owners + 2, 2);
   data.setUint16(governanceOfficer(2) + 4, 2);
-  const { game, history } = await prepareSan3Editor(page, program, "SAN3 life fixture");
-  await page.goto("/");
-  await page.getByRole("button", { name: game.title }).click();
-  await page.getByRole("button", { name: "Open profile", exact: true }).click();
-  await page.getByRole("button", { name: "Start game", exact: true }).click();
+  const { history } = await startSan3Session(page, program, "SAN3 life fixture");
   const capture = page.getByRole("button", { name: "Capture for editing", exact: true });
   await capture.click();
   const editor = page.getByRole("region", { name: "Save editor", exact: true });

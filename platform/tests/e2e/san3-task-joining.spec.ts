@@ -8,7 +8,7 @@ import {
   san3GovernanceFixture,
 } from "../editors/san3-governance-fixture.ts";
 import { chinese } from "./locales.ts";
-import { prepareSan3Editor } from "./san3-session.ts";
+import { startSan3Session } from "./san3-session.ts";
 
 test("joins an existing task with stable preview, cancellation and paused writeback", async ({
   page,
@@ -23,11 +23,7 @@ test("joins an existing task with stable preview, cancellation and paused writeb
     program[officer(index) + 27] = 0x24;
     data.setUint16(officer(index) + 28, 0x1218);
   }
-  const { game, history } = await prepareSan3Editor(page, program, "SAN3 task joining fixture");
-  await page.goto("/");
-  await page.getByRole("button", { name: game.title }).click();
-  await page.getByRole("button", { name: "Open profile", exact: true }).click();
-  await page.getByRole("button", { name: "Start game", exact: true }).click();
+  const { history } = await startSan3Session(page, program, "SAN3 task joining fixture");
   const capture = page.getByRole("button", { name: "Capture for editing", exact: true });
   await capture.click();
   const editor = page.getByRole("region", { name: "Save editor", exact: true });
