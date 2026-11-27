@@ -1,4 +1,26 @@
 import { expect, test } from "@playwright/test";
+import { chinese } from "./locales.ts";
+
+test("presents both site names on separate lines in the home link", async ({ page }) => {
+  await page.goto("/");
+  const chineseName = chinese("app.chineseName");
+  const brand = page
+    .getByRole("banner")
+    .getByRole("link", { name: `Rebito ${chineseName}`, exact: true });
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    const english = brand.getByText("Rebito", { exact: true });
+    const chineseLabel = brand.getByText(chineseName, { exact: true });
+    await expect(brand).toBeVisible();
+    const upper = await english.boundingBox();
+    const lower = await chineseLabel.boundingBox();
+    if (!upper || !lower) throw new Error("Missing site name");
+    expect(upper.y + upper.height).toBeLessThanOrEqual(lower.y);
+    expect(await chineseLabel.evaluate((el) => getComputedStyle(el).fontSize)).toBe(
+      await english.evaluate((el) => getComputedStyle(el).fontSize),
+    );
+  }
+});
 
 test("registers, retains a session, reports a bad password and logs out", async ({
   page,

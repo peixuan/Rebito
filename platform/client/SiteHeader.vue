@@ -64,13 +64,14 @@ onBeforeUnmount(() => {
       <a
         class="brand"
         href="/"
-        :aria-label="t('app.brand')"
         @click.prevent="
           close();
           emit('home');
         "
-        >Rebito <span>{{ t("app.chineseName") }}</span></a
       >
+        <span lang="en">Rebito</span>
+        <span lang="zh-CN">{{ t("app.chineseName") }}</span>
+      </a>
       <div class="river-strip"><CreekMark /></div>
       <div class="header-tools account-actions">
         <button
@@ -155,20 +156,15 @@ onBeforeUnmount(() => {
 }
 .brand {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 2px;
   color: var(--ink);
   white-space: nowrap;
   text-decoration: none;
-  font:
-    600 34px / 1 Georgia,
-    serif;
-}
-.brand span {
-  padding-inline-start: 10px;
-  border-inline-start: 1px solid var(--edge);
-  font-size: 16px;
-  font-weight: 400;
+  font-size: 25px;
+  font-weight: 600;
+  line-height: 1.08;
 }
 .river-strip {
   height: 100%;
@@ -272,12 +268,7 @@ onBeforeUnmount(() => {
     gap: 6px;
   }
   .brand {
-    font-size: 23px;
-    gap: 4px;
-  }
-  .brand span {
-    font-size: 12px;
-    padding-inline-start: 4px;
+    font-size: 19px;
   }
   .river-strip {
     width: min(10vw, 60px);
