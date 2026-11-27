@@ -21,6 +21,8 @@ to a published release independently of its game file and saves. Keep artwork
 inside the existing data volume and include it in deletion previews. See the
 [library guide](../../platform/LIBRARY.md#release-artwork) for limits and the
 [cover API](../../platform/API.md#game-covers) for authentication and conflict handling.
+Resolve cover paths from catalog release IDs. Compare the version and read the
+image through one open file. Cover requests share the private API's account limit.
 
 The browser regressions for cover publication, slow transfers, paging, theme
 persistence and responsive profile selection live in `library-covers.spec.ts`

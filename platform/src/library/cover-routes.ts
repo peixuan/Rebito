@@ -1,4 +1,3 @@
-import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import type { FastifyInstance } from "fastify";
 import type { Pool } from "pg";
@@ -8,7 +7,7 @@ import { message } from "../shared/messages.ts";
 import { ProgressError } from "../storage/revisions.ts";
 import type { LocalLibrary } from "./catalog.ts";
 import { coverChange, coverPng } from "./cover-image.ts";
-import { coverInfo, coverName, replaceCover } from "./covers.ts";
+import { readCover, replaceCover } from "./covers.ts";
 import { assertNoPendingDeletion, pendingDeletions } from "./deletion-records.ts";
 import { withLibraryLock } from "./transaction.ts";
 import { LibraryError } from "./upload-settings.ts";
@@ -23,18 +22,13 @@ export function registerCovers(
   app.get<{ Params: { id: string; version: string } }>(
     "/api/games/:id/cover/:version",
     async (request, reply) => {
-      const { id, version } = request.params;
       await library.refresh();
-      if (
-        !library.get(id) ||
-        (await pendingDeletions(database)).some((job) => job.release_id === id) ||
-        (await coverInfo(directory, id))?.version !== version
-      )
+      const game = library.get(request.params.id);
+      if (!game || (await pendingDeletions(database)).some((job) => job.release_id === game.id))
         throw new ProgressError("not_found");
-      return reply
-        .type("image/png")
-        .header("cache-control", "private, no-store")
-        .send(await readFile(join(directory, coverName(id))));
+      const bytes = await readCover(directory, game.id, request.params.version);
+      if (!bytes) throw new ProgressError("not_found");
+      return reply.type("image/png").header("cache-control", "private, no-store").send(bytes);
     },
   );
   app.post<{ Params: { id: string } }>(
@@ -50,13 +44,13 @@ export function registerCovers(
       await assertNoPendingDeletion(database);
       return withLibraryLock(directory, async () => {
         await library.refresh();
-        const id = request.params.id;
-        if (!library.get(id)) throw new ProgressError("not_found");
+        const game = library.get(request.params.id);
+        if (!game) throw new ProgressError("not_found");
         const { image, expected } = change.data;
         return {
           cover: await replaceCover(
             directory,
-            id,
+            game.id,
             expected,
             image ? coverPng(image) : null,
             config.minimumFreeBytes,

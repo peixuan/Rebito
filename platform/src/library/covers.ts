@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { type BigIntStats, constants } from "node:fs";
 import { lstat, mkdir, open, readdir, rename, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { message } from "../shared/messages.ts";
@@ -9,13 +10,32 @@ import { LibraryError } from "./upload-settings.ts";
 
 export const coverBudget = 32 * 1024 ** 2;
 export function coverName(id: string) {
+  if (!/^[a-z0-9]+-[0-9a-f]{64}$/.test(id)) throw new Error("Invalid cover release ID");
   return `covers/${id}.png`;
+}
+function metadata(stat: BigIntStats) {
+  if (!stat.isFile()) throw new Error("Invalid cover file");
+  return { version: [stat.ino, stat.mtimeNs, stat.size].join("-"), size: Number(stat.size) };
 }
 export async function coverInfo(directory: string, id: string) {
   try {
-    const stat = await lstat(join(directory, coverName(id)), { bigint: true });
-    if (!stat.isFile()) throw new Error("Invalid cover file");
-    return { version: [stat.ino, stat.mtimeNs, stat.size].join("-"), size: Number(stat.size) };
+    return metadata(await lstat(join(directory, coverName(id)), { bigint: true }));
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+    throw error;
+  }
+}
+/** Validate and read the same file even when a new image replaces its directory entry. */
+export async function readCover(directory: string, id: string, version: string) {
+  const path = join(directory, coverName(id));
+  try {
+    const file = await open(path, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0));
+    try {
+      if (metadata(await file.stat({ bigint: true })).version !== version) return null;
+      return await file.readFile();
+    } finally {
+      await file.close();
+    }
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
     throw error;

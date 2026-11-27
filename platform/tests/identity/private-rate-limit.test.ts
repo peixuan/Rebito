@@ -51,8 +51,11 @@ afterAll(async () => {
 });
 
 it("shares the private API limit across library and quota routes without blocking other users", async () => {
+  const cover = "/api/games/missing/cover/missing";
   const routes = [
     { method: "GET", url: "/api/games" },
+    { method: "GET", url: cover },
+    { method: "POST", url: "/api/admin/games/missing/cover" },
     { method: "GET", url: "/api/admin/deletions" },
     { method: "POST", url: "/api/admin/games" },
     { method: "GET", url: "/api/admin/save-quotas" },
@@ -75,7 +78,7 @@ it("shares the private API limit across library and quota routes without blockin
       ...route,
       headers: { cookie: cookies.admin },
     });
-    expect(response.statusCode).toBe(200);
+    expect(response.statusCode).toBe(route.url === cover ? 404 : 200);
     expect(response.headers["x-ratelimit-limit"]).toBe("240");
     expect(Number(response.headers["x-ratelimit-remaining"])).toBe(239 - index);
   }

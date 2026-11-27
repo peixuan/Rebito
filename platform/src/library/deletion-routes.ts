@@ -5,7 +5,7 @@ import { z } from "zod";
 import { requireAdministrator } from "../identity/administrator.ts";
 import type { ServerConfig } from "../server/config.ts";
 import { message } from "../shared/messages.ts";
-import type { LocalLibrary } from "./catalog.ts";
+import { type LocalLibrary, releaseId } from "./catalog.ts";
 import { findEntry } from "./configuration.ts";
 import { coverInfo } from "./covers.ts";
 import {
@@ -31,6 +31,7 @@ export function registerDeletions(
   database: Pool,
 ) {
   const options = { onRequest: requireAdministrator(config), config: { exclusiveStorage: true } };
+  const directory = join(config.dataDirectory, "library");
   app.get("/api/admin/deletions", { onRequest: requireAdministrator(config) }, async () =>
     (await pendingDeletions(database)).map(({ preview }) => preview),
   );
@@ -39,18 +40,11 @@ export function registerDeletions(
       (job) => job.release_id === request.params.id,
     );
     if (pending) return { ...pending.preview, pending: true };
-    return withCatalog(
-      join(config.dataDirectory, "library"),
-      async (catalog) =>
-        (
-          await deletionImpact(
-            database,
-            catalog,
-            findEntry(catalog, request.params.id),
-            await coverInfo(join(config.dataDirectory, "library"), request.params.id),
-          )
-        ).preview,
-    );
+    return withCatalog(directory, async (catalog) => {
+      const entry = findEntry(catalog, request.params.id);
+      const cover = await coverInfo(directory, releaseId(entry));
+      return (await deletionImpact(database, catalog, entry, cover)).preview;
+    });
   });
   app.post<{ Params: { id: string } }>(
     "/api/admin/games/:id/deletion",
@@ -70,15 +64,11 @@ export function registerDeletions(
           throw new LibraryError(message("library.cleanupConfirmation"), 409);
       } else {
         await assertNoPendingDeletion(database);
-        job = await withCatalog(join(config.dataDirectory, "library"), async (catalog) =>
-          beginDeletion(
-            database,
-            catalog,
-            findEntry(catalog, request.params.id),
-            parsed.data,
-            await coverInfo(join(config.dataDirectory, "library"), request.params.id),
-          ),
-        );
+        job = await withCatalog(directory, async (catalog) => {
+          const entry = findEntry(catalog, request.params.id);
+          const cover = await coverInfo(directory, releaseId(entry));
+          return beginDeletion(database, catalog, entry, parsed.data, cover);
+        });
       }
       try {
         const result = await reclaimDeletion(database, config.dataDirectory, job);

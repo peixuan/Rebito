@@ -4,7 +4,13 @@ import { join } from "node:path";
 import { inflateSync } from "node:zlib";
 import { afterEach, beforeEach, expect, it } from "vitest";
 import { coverPng } from "../../src/library/cover-image.ts";
-import { coverBudget, coverInfo, coverName, replaceCover } from "../../src/library/covers.ts";
+import {
+  coverBudget,
+  coverInfo,
+  coverName,
+  readCover,
+  replaceCover,
+} from "../../src/library/covers.ts";
 
 const id = `nes-${"a".repeat(64)}`;
 let dir: string;
@@ -40,4 +46,14 @@ it("preserves the previous image when the artwork budget or disk reserve is full
   expect((await coverInfo(dir, id))?.version).toBe(version);
   await replaceCover(dir, id, version, null, 0);
   expect(await readdir(join(dir, "covers"))).toEqual([]);
+});
+
+it("serves only the requested cover revision for a well-formed release ID", async () => {
+  expect(() => coverName("not-a-release")).toThrow("Invalid cover release ID");
+  await expect(readCover(dir, id, "absent")).resolves.toBeNull();
+  const first = await replaceCover(dir, id, null, Buffer.of(1), 0);
+  const second = await replaceCover(dir, id, first, Buffer.of(2, 3), 0);
+  if (!first || !second) throw new Error("Missing persisted cover versions");
+  expect(await readCover(dir, id, first)).toBeNull();
+  expect(await readCover(dir, id, second)).toEqual(Buffer.of(2, 3));
 });
