@@ -169,8 +169,121 @@ export const onTitle: NesCatalog = {
   "07d9e57e35184667c7b89e30857a44c5c404b48332ad12e66be91100eccd4f5e": {
     ryuHealth: { "4": "0065:04", "16": "0065:10" },
   },
+  // Jackie Chan's Action Kung Fu
+  c80aa46a75492037212c8dbbbd1787195bcf2f3082491515057f216f4f0092df: {
+    jackieHealth: { points2: "0702:02", points6: "0702:06" },
+  },
+  // Bubble Bobble
+  fc521e891d074369d67579fd56617460b9c9949dec67cc4a37d46b4e4bb09d29: {
+    reserveLives: { display1: "002E:02", display7: "002E:08" },
+  },
   // Mitsume ga Tooru
   "545f33d21ef9804b114d837455fed456fbd6652e76cb520e6458b416426db5c1": {
     sharakuHealth: { bars2: "007A:02", bars6: "007A:06" },
+  },
+  // Don Doko Don
+  "0ee152d2d754bfe2b381fa8e14252cee4b5f5388daabbe0c05ebde3bae75ee38": {
+    reserveLives: { display1: "0060:02", display7: "0060:08" },
+  },
+  // Kickle Cubicle
+  "3c01f1eb1d9adedabb1082b16bef9d987f629741a4146d5a7617d9aea8f391a0": {
+    lifeIcons: { less: "00B6:02", more: "00B6:08" },
+  },
+  // Super Contra
+  "95328473d961b1c897683c5ba9b1a4322959637bb3494e9f7012daca958a875e": {
+    reserveLives: { less: "0053:01", more: "0053:08" },
+  },
+  // Galaga - Demons of Death
+  ca9c86ea827d4bf16eb974123827b272d6cb57c97b3f4aef5b23f6308d53ebee: {
+    p1Aircraft: { totalShips1: "0485:01+0487:01", totalShips6: "0485:06+0487:06" },
+  },
+  // Pac-Man
+  "4c6217b1a55586aecaf106059098447f444a7623000556fced05f9ae3ba1dea8": {
+    extraLives: { low: "0067:02", high: "0067:05" },
+  },
+  // Bubble Bobble Part 2
+  "4ca9b852ca31435cb3c22501dc73013dcbee1681846cecbc8f3e0fc743690a60": {
+    remainingLives: { lives2: "0479:02", lives8: "0479:08" },
+  },
+  // Donkey Kong Classics
+  "1136453809e5681318b8115ad23b7f769a7ada1f8648090fc006c39cfe80da61": {
+    donkeyKongLives: { lives1: "PETANA", lives6: "TETANA" },
+  },
+  // Ivan Ironman Stewart's Super Off-Road
+  "9df35978b97053c8209b5933d37a6879206cd0106b68b60b4f104efe755a117d": {
+    p1Cars: { vehicles2: "075D:02", vehicles3: "075D:03" },
+  },
+  // Donkey Kong
+  "6060e087239ed301916e59a56b3756c25eb5552c4b8bb76a9b22fb1906383803": {
+    startLives: { lives1: "0055:01", lives6: "0055:06" },
+  },
+  // Donkey Kong Jr.
+  c25a69a55cce7d6a0f7f6c13bfab5877ee478c5b782e3c0dffba90cee722a176: {
+    startLives: { lives1: "004C:01", lives6: "004C:06" },
+  },
+  // Donkey Kong 3
+  e634f845dea830c63984effc320b9bc335e9cea2757b2ec8f70727b0d94103b3: {
+    startLives: { lives1: "0090:01", lives6: "0090:06" },
+  },
+  // Balloon Fight
+  "7df17a818ee64910f5da7eb9d3e0b86f848628f032071e63424eeab62fb99cd4": {
+    extraLives: { icons1: "0041:01", icons5: "0041:05" },
+  },
+  // Arkanoid
+  "4b6453aff34c2b2834b6a1fad061ba4aad4f674d504a97c07e78a370c434bc12": {
+    sparePaddles: { noPaddles: "000D:01", paddles5: "000D:06" },
+  },
+  // Contra Force
+  d8fb504e56490420c1b98fbf19b741e159a9a0a6fad4cb1c9459413a482dc1e8: {
+    beansLives: { reserveLives1: "00B6:02", reserveLives7: "00B6:08" },
+  },
+  // Circus Charlie
+  "63d4eff21f6c3c7df0f702cf8149e1761742f7d2dd9b19df66b43f1554e81aab": {
+    extraLives: { icons2: "0060:02", icons6: "0060:06" },
+  },
+  f0bbb29e5947b5198dc759fc2bf213df50eba693313dc110e9a817bb73127a9a: {
+    remainingLives: { lives2: "002B:02", lives8: "002B:08" },
+  },
+  "3d4a1de8f3c9714fe73fd6ffe92e7c67d2275a9ce7c1c0124d7a6c2b9b9b2e24": {
+    firstShipLives: { "02": "0056:02", "08": "0056:08" },
+  },
+  "902914c1489a143b54743da230e0ff023a2df7fd18025575d4130185e4f53dfe": {
+    reserveAircraft: { planes2: "0432:02", planes6: "0432:06" },
+  },
+  "97470309393c1d921e45b0251fb78c7f21cd8ed9e2a11df7e0fae2cf7e197890": {
+    heroLives: { lives2: "0070:02", lives8: "0070:08" },
+  },
+  // Rush'n Attack
+  "82760ba9d2552ea50f428f73ba08fd91644a098f4c59911216fb5746e8e34a50": {
+    reserveLives: { low: "0022:02", high: "0022:08" },
+  },
+  // B-Wings
+  "40ab99e6c8aec2741503b7e69d2597fbff518ece062f78a1b028b5fac3b6b9ae": {
+    shipLives: { lives2: "053E:02", lives8: "053E:08" },
+  },
+  "948d9d72c912945d9a5e7ecd36cd765ca5a3535b091d8aa12a2b17ec890d118b": {
+    spareShips: { "02": "0056:02", "08": "0056:08" },
+  },
+  "66c1d43238b2d868ae4ac3f31d3109aa909740987f47563f8d8bd4064a02c3e8": {
+    seiyaHealth: { longLife: "05CF:08", shortLife: "05CF:20" },
+  },
+  "5ed66bb855d9ba84b4bd30c41c6a75ac9f1a68482d9471b8428905c2ce295235": {
+    startingP1Lives: { low: "AAISPL", high: "IAISPL" },
+  },
+  // Ghosts 'N Goblins
+  fbd02d2c92b623e23b08cd56c4a1960cbe2d3a24314a7a086a9e5688e1decd08: {
+    startingLives: { lives1: "PAEKPTLA", lives6: "TAEKPTLA" },
+  },
+  // Kung-Fu Heroes
+  "58b49cf83a18bc563ed50b06339d17a6f6768dd555860d6f4f68a2b7a71af9a6": {
+    reserveLives: { "02": "04D0:02", "08": "04D0:08" },
+  },
+  // Super Mario Bros 2
+  "9f73e5a91857ff58024769fb299bf8c2404dd9b7e4e0cb26cb7f346df05409da": {
+    extraLives: { reserveLives1: "04ED:02", reserveLives7: "04ED:08" },
+  },
+  // Dig Dug II
+  "0e13c03fa6370f898691b33f08309cbc0efa7152b634ec18d210c37143cbdeca": {
+    reserveCharacters: { low: "02C9:02", high: "02C9:06" },
   },
 };
