@@ -73,6 +73,5 @@ watch(() => props.refreshKey, refresh, { immediate: true });
     <p v-else-if="nearingLimit" class="storage-note storage-warning" role="alert">
       {{ t("storage.warning") }}
     </p>
-    <p v-else class="storage-note">{{ t("storage.help") }}</p>
   </aside>
 </template>
