@@ -10,6 +10,7 @@ import type { DisplayText } from "../src/shared/messages.ts";
 import type { Profile } from "../src/storage/revisions.ts";
 import { api, errorText } from "./api.ts";
 import GameCover from "./GameCover.vue";
+import GameProfiles from "./GameProfiles.vue";
 import { t, translate } from "./i18n.ts";
 import ProfileDeletion from "./ProfileDeletion.vue";
 
@@ -134,48 +135,15 @@ onMounted(refresh);
       @close="deletion = undefined"
       @deleted="deleted"
     />
-    <section v-if="selected" class="profile-panel" :aria-label="t('library.profiles')">
-      <h3>{{ t("library.profileTitle", { title: selected.title }) }}</h3>
-      <p class="muted">{{ t("library.profileHelp") }}</p>
-      <div v-for="profile in gameProfiles" :key="profile.id" class="profile-row">
-        <span class="profile-name">{{ profile.name }}</span>
-        <Button
-          :label="t('library.openProfile')"
-          size="small"
-          severity="secondary"
-          @click="emit('open', selected, profile)"
-        />
-        <Button
-          :label="t('library.deleteProfile')"
-          variant="text"
-          severity="danger"
-          size="small"
-          @click="deletion = profile"
-        />
-      </div>
-      <form class="toolbar" @submit.prevent="createProfile">
-        <InputText
-          v-model="profileName"
-          :aria-label="t('library.profileName')"
-          :placeholder="t('library.profileExample')"
-          maxlength="80"
-          required
-        />
-        <Button
-          type="submit"
-          :label="t('library.createProfile')"
-          size="small"
-          :loading="busy"
-          :disabled="!profileName.trim()"
-        />
-      </form>
-    </section>
+    <GameProfiles
+      v-if="selected"
+      :game="selected"
+      v-model:name="profileName"
+      :profiles="gameProfiles"
+      :busy="busy"
+      @open="(game, profile) => emit('open', game, profile)"
+      @remove="deletion = $event"
+      @create="createProfile"
+    />
   </section>
 </template>
-
-<style scoped>
-.profile-name {
-  margin-inline-end: auto;
-  overflow-wrap: anywhere;
-}
-</style>
