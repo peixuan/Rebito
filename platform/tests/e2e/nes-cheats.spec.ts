@@ -1,8 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { expect, test } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
+import type { RuntimeHost } from "../../client/runtime/types.ts";
 import { useSession } from "./session.ts";
 
-test("manages session-only cheats in the NES player", async ({ page }) => {
+async function openTrainer(page: Page) {
   await useSession(page.context(), "console");
   await page.goto("/");
   await page.getByRole("button", { name: /\bNES runtime test/ }).click();
@@ -15,7 +16,52 @@ test("manages session-only cheats in the NES player", async ({ page }) => {
     .getByRole("button", { name: "Open profile" })
     .click();
   await page.getByRole("button", { name: "Start game" }).click();
-  const cheats = page.getByRole("region", { name: "NES cheats" });
+  return page.getByRole("region", { name: "NES cheats" });
+}
+
+test("switches built-in choices and recognizes the same code entered manually", async ({
+  page,
+}) => {
+  // Test the UI with a known digest at the cartridge port. CI ships only our homebrew ROM.
+  await page.addInitScript(() => {
+    if (location.pathname !== "/runtime.html") return;
+    let host: RuntimeHost;
+    Object.defineProperty(window, "retroRuntime", {
+      get: () => host,
+      set(runtime: RuntimeHost) {
+        host = {
+          async start(launch) {
+            const handle = await runtime.start(launch);
+            if (!handle.nesCheats) throw new Error("Missing NES port");
+            return {
+              ...handle,
+              nesCheats: {
+                ...handle.nesCheats,
+                romSha256: "545f33d21ef9804b114d837455fed456fbd6652e76cb520e6458b416426db5c1",
+              },
+            };
+          },
+        };
+      },
+    });
+  });
+  const cheats = await openTrainer(page);
+  const choice = cheats.getByRole("combobox", { name: "Sharaku’s health" });
+  await expect(choice).toBeVisible({ timeout: 30000 });
+  await expect(choice).toHaveValue("");
+  await expect(cheats.locator('input[type="file"]')).toBeHidden();
+  await choice.selectOption({ label: "2 bars" });
+  await cheats.getByText("Custom codes and tools", { exact: true }).click();
+  await cheats.getByLabel("Code", { exact: true }).fill("007A:06");
+  await cheats.getByRole("button", { name: "Apply code", exact: true }).click();
+  await expect(choice).toHaveValue("007A:06");
+  await expect(cheats.getByRole("checkbox")).toHaveCount(1);
+  await choice.selectOption({ label: "Off" });
+  await expect(cheats.getByRole("checkbox")).toHaveCount(0);
+});
+
+test("manages session-only cheats in the NES player", async ({ page }) => {
+  const cheats = await openTrainer(page);
   await expect(
     cheats.getByText("This cartridge has no verified presets yet.", { exact: false }),
   ).toBeVisible({ timeout: 30000 });

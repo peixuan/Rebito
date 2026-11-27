@@ -40,6 +40,10 @@ function addCodes(codes: string[], label: DisplayText) {
     return false;
   }
   const code = group.join("+");
+  const preset = settings.value.find((setting) =>
+    setting.choices.some((item) => item.code === code),
+  );
+  if (preset) return apply(selectNesPreset(rules.value, preset.label, code));
   const existing = rules.value.find((rule) => rule.code === code);
   const rule = { ...existing, name: existing?.name || label, code, enabled: true };
   return apply(
