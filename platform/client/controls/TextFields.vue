@@ -46,6 +46,6 @@ const emit = defineEmits<{ change: [key: string, value: string] }>();
   width: 12rem;
 }
 .text-fields small {
-  color: #627386;
+  color: var(--muted);
 }
 </style>

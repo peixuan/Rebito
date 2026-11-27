@@ -1,11 +1,42 @@
+/* Paper and ink are shared by the library, account, workspace and editors. */
+:root {
+  color-scheme: light;
+  --page: #faf9f6;
+  --paper: #fffefa;
+  --ink: #203449;
+  --muted: #536579;
+  --edge: #ccd3d6;
+  --accent: #264f7a;
+  --selected: #e3edf4;
+  --mat: #eef0ef;
+  --warning: #89520b;
+  --danger: #a62c26;
+}
+:root.dark {
+  color-scheme: dark;
+  --page: #18232f;
+  --paper: #1e2b3b;
+  --ink: #edf1f7;
+  --muted: #b3c1d0;
+  --edge: #425567;
+  --accent: #b3cef0;
+  --selected: #2c4157;
+  --mat: #293849;
+  --warning: #efc28d;
+  --danger: #ffaea0;
+}
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 * {
   box-sizing: border-box;
 }
 body {
   margin: 0;
-  background: #f3f5f7;
-  color: #233041;
-  font-family: system-ui, "Microsoft YaHei", sans-serif;
+  background: var(--page);
+  color: var(--ink);
+  font-family: "Segoe UI", system-ui, "Microsoft YaHei", sans-serif;
   font-size: 14px;
 }
 button,
@@ -17,6 +48,15 @@ h1 {
   font-size: 22px;
   letter-spacing: -0.5px;
 }
+.workspace h1,
+.workspace h2,
+.workspace h3 {
+  color: var(--ink);
+}
+.workspace h1 {
+  font-family: Georgia, "Songti SC", "SimSun", serif;
+  font-weight: 600;
+}
 .app-header {
   min-height: 60px;
   padding: 0 28px;
@@ -24,11 +64,11 @@ h1 {
   gap: 14px;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #dfe5eb;
-  background: white;
+  border-bottom: 1px solid var(--edge);
+  background: var(--paper);
 }
 .brand {
-  color: #1e293b;
+  color: var(--ink);
   text-decoration: none;
   font-size: 19px;
   font-weight: 700;
@@ -36,7 +76,7 @@ h1 {
 .brand span {
   display: block;
   margin-top: 3px;
-  color: #627386;
+  color: var(--muted);
   font-size: 11px;
   font-weight: 400;
 }
@@ -45,28 +85,28 @@ h1 {
   gap: 14px;
   align-items: center;
 }
+.eyebrow {
+  margin: 0 0 18px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
 .workspace {
-  max-width: 1280px;
+  max-width: 1440px;
   margin: auto;
-  padding: 20px 24px;
+  padding: 22px clamp(12px, 3vw, 48px);
 }
 .account-panel {
   max-width: 410px;
   margin: 8vh auto;
   padding: 32px;
-  background: white;
-  border: 1px solid #dfe5eb;
-  border-radius: 12px;
-}
-.eyebrow {
-  margin: 0 0 18px;
-  color: #475569;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 2px;
+  background: var(--paper);
+  border: 1px solid var(--edge);
+  border-radius: 4px;
 }
 .muted {
-  color: #627386;
+  color: var(--muted);
   line-height: 1.6;
 }
 .account-form {
@@ -96,9 +136,9 @@ h1 {
   display: inline-block;
   padding: 3px 9px;
   vertical-align: middle;
-  background: #e7ecf2;
+  background: var(--mat);
   border-radius: 20px;
-  color: #526276;
+  color: var(--muted);
   font-size: 12px;
   letter-spacing: 0;
 }
@@ -108,9 +148,9 @@ h1 {
   gap: 6px 28px;
   margin-bottom: 20px;
   padding: 12px 16px;
-  background: #fff;
-  border: 1px solid #dfe5eb;
-  border-radius: 10px;
+  background: var(--paper);
+  border: 1px solid var(--edge);
+  border-radius: 4px;
 }
 .storage-item {
   align-self: center;
@@ -134,27 +174,27 @@ h1 {
   height: 5px;
 }
 .storage-item meter::-webkit-meter-bar {
-  background: #e7ecf2;
+  background: var(--mat);
   border: 0;
 }
 .storage-item meter::-webkit-meter-optimum-value {
-  background: #64748b;
+  background: var(--accent);
 }
 .storage-item meter::-webkit-meter-suboptimum-value,
 .storage-item meter::-webkit-meter-even-less-good-value {
   background: #b7791f;
 }
 .storage-item meter::-moz-meter-bar {
-  background: #64748b;
+  background: var(--accent);
 }
 .storage-note {
   grid-column: 1 / -1;
   margin: 0;
-  color: #627386;
+  color: var(--muted);
   font-size: 11px;
 }
 .storage-warning {
-  color: #925b12;
+  color: var(--warning);
 }
 .game-grid {
   display: grid;
@@ -168,18 +208,17 @@ h1 {
   text-align: left;
   cursor: pointer;
   color: inherit;
-  background: white;
-  border: 1px solid #dfe5eb;
-  border-radius: 10px;
+  background: var(--paper);
+  border: 1px solid var(--edge);
+  border-radius: 4px;
 }
 .game-card:hover,
 .game-card[aria-pressed="true"] {
-  border-color: #7188a7;
-  background: #f8faff;
-  box-shadow: 0 2px 8px #2330410a;
+  border-color: var(--accent);
+  background: var(--selected);
 }
 .game-card:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--accent);
   outline-offset: 3px;
 }
 .game-card strong {
@@ -189,17 +228,17 @@ h1 {
   justify-self: start;
   padding: 3px 7px;
   border-radius: 4px;
-  background: #edf1f6;
-  color: #475569;
+  background: var(--mat);
+  color: var(--muted);
   font-size: 11px;
   font-weight: 700;
 }
 .profile-panel {
   margin-top: 16px;
   padding: 16px;
-  background: white;
-  border: 1px solid #dfe5eb;
-  border-radius: 10px;
+  background: var(--paper);
+  border: 1px solid var(--edge);
+  border-radius: 4px;
 }
 .profile-panel h3 {
   margin-top: 0;
@@ -212,13 +251,13 @@ h1 {
   align-items: center;
   gap: 12px;
   padding: 10px 0;
-  border-bottom: 1px solid #edf0f3;
+  border-bottom: 1px solid var(--edge);
 }
 .profile-row:last-of-type {
   margin-bottom: 12px;
 }
 .revision-row a {
-  color: #1d4ed8;
+  color: var(--accent);
   overflow-wrap: anywhere;
 }
 input[type="file"] {

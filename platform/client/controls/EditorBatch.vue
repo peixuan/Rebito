@@ -66,6 +66,6 @@ watch(
 .batch-controls small {
   flex-basis: 100%;
   font-size: 11px;
-  color: #627386;
+  color: var(--muted);
 }
 </style>

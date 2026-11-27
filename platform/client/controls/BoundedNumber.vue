@@ -90,12 +90,12 @@ function commit() {
 small {
   max-width: 15rem;
   font-size: 11px;
-  color: #627386;
+  color: var(--muted);
 }
 small:empty {
   display: none;
 }
 .input-error {
-  color: #b42318;
+  color: var(--danger);
 }
 </style>
