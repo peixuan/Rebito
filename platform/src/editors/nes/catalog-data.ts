@@ -63,6 +63,97 @@ export const inGame: NesCatalog = {
   a7ecd04c70fff7ca3f0cd7e262377097305a30c9b5bfa27d7341f454e252be17: {
     walletGold: { "500": "00BC:F4+00BD:01", "1000": "00BC:E8+00BD:03" },
   },
+  // Adventure Island II
+  "8359c98f279ebb9ffa2f6a584d9b13e8714f25213aa9bd177db76bd9df1e017b": {
+    healthGauge: { bars4: "07D3:04", bars15: "07D3:0F" },
+  },
+  // Adventure Island 3
+  "339c363d4d926fb0a9efe59547c417b27b0b081bbab28a36be62f8ab75552c41": {
+    lives: { lives2: "0394:02", lives8: "0394:08" },
+  },
+  // Ninja Gaiden II - The Dark Sword of Chaos
+  c37ed34f46cc443447ec52e341451fce41d44ba22a9f19b2ac37046642dd3933: {
+    ryuHealth: { bars4: "0080:04", bars16: "0080:10" },
+  },
+  // Ninja Gaiden III - The Ancient Ship of Doom
+  d24b3cd86b785b3b9c10164d6299e26a33208ab6e4bb6d989acde38dc0ab6f36: {
+    ryuHealth: { bars4: "00A7:04", bars16: "00A7:10" },
+  },
+  // Journey to Silius
+  "2f08b05e88eb3c051bc4e77004e6cdde1db1ea79afa457fb2ca7571e341e1732": {
+    heroHealth: { lowHealth: "00B0:03", highHealth: "00B0:0F" },
+  },
+  // Duck Tales
+  c7419d5c1b4a78ff427e8d7beac13f9b006f813aec56092a92485e1185283367: {
+    remainingLives: { lives2: "0219:02", lives8: "0219:08" },
+  },
+  // Super Mario Bros. 3
+  "6ea0777ca520ba7ad7b0ea0f6452140d59aa0b1dffe5045cb1e8020dde10c267": {
+    marioLives: { lives3: "0736:03", lives8: "0736:08" },
+  },
+  // Kirby's Adventure
+  "4e1942d306b7dc86f5390c9bf1e484837928c533ca687d69b49724596e0506e2": {
+    kirbyLives: { lives2: "0599:02", lives8: "0599:08" },
+  },
+  // Gradius
+  "8d53f30b5198f6630edb0192b4fc8f7aea754cb95d42b979a785cd5647ab52b7": {
+    reserveShips: { planes1: "0020:01", planes6: "0020:06" },
+  },
+  // Legend of Zelda, The
+  "826d578a7ef3e28a3513ad0e77416e7f5fabd2de5d96c32d77f595add2c25f44": {
+    rupees: { count16: "066D:10", count80: "066D:50" },
+  },
+  // Duck Tales 2
+  "6400b8dedbb6273f5ea01b68c61453f7cf5cab64ea2a0f57d4d31dd4b983187b": {
+    remainingLives: { lives2: "00CE:02", lives8: "00CE:08" },
+  },
+  // Kid Icarus
+  e65129430c559fb7950ed2893c189ea923f238edf307892058cd5e7205be47be: {
+    peteHealth: { lowHealth: "00A6:05", highHealth: "00A6:18" },
+  },
+  // Crystalis
+  "14ba6d1d117e4560bbd31635d70cee2d704d4c596ada83bde07e525907ad357e": {
+    levelAndStats: { levels2: "0421:02", levels8: "0421:08" },
+  },
+  // Gun Nac
+  ea8cad6c8d7679afa9069037a9166690a0d17ec148cded02efd47e4815acd0cb: {
+    bombsF: { count1: "018F:01", count7: "018F:07" },
+  },
+  // Final Fantasy
+  d360beeee19a69d1c92d02292167c57f2d3ca8405b79101fc8c2f39dea549667: {
+    partyGold: { "500 G": "601C:F4+601D:01", "1200 G": "601C:B0+601D:04" },
+  },
+  // Bomberman
+  "8daf7eeddc2fad75ecfa8d3dac494fd8442528e707ee4b49e95bb4f082094cc2": {
+    stageCountdown: { "64": "0093:40", "133": "0093:85" },
+  },
+  // City Connection
+  "221c4ad082a56639524090efee23b12f300e26182391e9e29a4e1a0a9d25b22a": {
+    carsLeft: { vehicles1: "00A2:01", vehicles6: "00A2:06" },
+  },
+  // Fire Emblem - Ankoku Ryuu to Hikari no Tsurugi
+  "2f12b3097d041e1742634ff9affd7fc33f518f9d26b80ad5d78a62a740b8241a": {
+    marthHealth: { "8/24 HP": "6A93:08+6A94:18", "16/24 HP": "6A93:10+6A94:18" },
+  },
+  // Dragon Warrior III
+  "7c965051ffa461969df7d7b56d6ce03a8c85eb485ebdfa65a716269087dbf969": {
+    partyGold: { gold25: "07BC:19+07BD:00+07BE:00", gold125: "07BC:7D+07BD:00+07BE:00" },
+  },
+  // Dragon Warrior II
+  "114f70f42e55a39e730b201c7876d2e97fa99611200ae6a812659f3a0efce49e": {
+    partyGold: { gold25: "0624:19+0625:00", gold125: "0624:7D+0625:00" },
+  },
+  f5f9704507473659bd3a570fe572c5a21ced0649af1d2a606bf61aced4c32607: {
+    p1Health: { lowHealth: "03B4:10", highHealth: "03B4:50" },
+  },
+  // Nekketsu Kakutou Densetsu
+  d05987fcf1678ea30b88fc1982abf39d3e4c444c3b0bbc302981e26d2e78c755: {
+    teamHealth: { low: "04C3:18+04C2:18", high: "04C3:A0+04C2:A0" },
+  },
+  // Darkwing Duck
+  b7fff97f34d7142765685c6505ad54285cfd7e847e6943bc53e432c4f25fa49c: {
+    characterHealth: { lowHealth: "05B6:11+05B4:10", highHealth: "05B6:81+05B4:80" },
+  },
 };
 
 export const onTitle: NesCatalog = {
