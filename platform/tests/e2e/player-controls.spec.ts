@@ -26,6 +26,13 @@ test("shows live controller bindings, supports remapping and resets them on rest
   await page.getByRole("button", { name: "Start game" }).click();
   const guide = page.getByRole("region", { name: "Keyboard and controller buttons" });
   await expect(guide).toBeVisible({ timeout: 30_000 });
+  const screen = page.locator(".player-frame");
+  await page.evaluate(() => window.scrollTo(0, 0));
+  const desktop = await screen.boundingBox();
+  const sidebar = await guide.boundingBox();
+  if (!desktop || !sidebar) throw new Error("Missing player layout");
+  expect(desktop.y + desktop.height).toBeLessThanOrEqual(await page.evaluate(() => innerHeight));
+  expect(desktop.x + desktop.width).toBeLessThanOrEqual(sidebar.x);
   const aKey = guide
     .getByRole("listitem")
     .filter({ hasText: /→\s*A\s*$/ })
@@ -84,6 +91,12 @@ test("shows live controller bindings, supports remapping and resets them on rest
   await settings.getByText("Close", { exact: true }).click();
   await page.setViewportSize({ width: 390, height: 844 });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  const phone = await screen.boundingBox();
+  const below = await guide.boundingBox();
+  if (!phone || !below) throw new Error("Missing mobile player layout");
+  expect(phone.y + phone.height).toBeLessThanOrEqual(below.y);
+  await page.getByRole("button", { name: "Night view" }).click();
+  await expect(aKey).toHaveText("B");
   await expect(guide.getByRole("listitem")).toHaveCount(10);
   await page.getByRole("button", { name: "Stop game" }).click();
   await expect(guide).toHaveCount(0);

@@ -10,6 +10,11 @@ the player workspace, editors and game management. A manual theme choice
 persists in the browser. Keep a single selected profile form when changing
 layout so resizing the window preserves an unfinished name.
 
+The game screen shares the workspace with a keyboard guide on wide displays.
+Narrow displays keep the screen and touch controls together above the guide.
+The player controls regression checks both layouts with a running cartridge
+and a remapped key, including a theme change during play.
+
 The library prioritizes personal playthroughs and recent additions. Search and
 platform filters cover the entire catalog. Administrators can attach an image
 to a published release independently of its game file and saves. Keep artwork

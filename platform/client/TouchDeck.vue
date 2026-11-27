@@ -10,6 +10,9 @@ const props = defineProps<{ input: TouchInput | null; disabled: boolean; system:
 const mode = ref<"controller" | "keyboard" | null>(null);
 const modifiers = ref<number[]>([]);
 const pad = ref<HTMLElement>();
+const surface = ref<HTMLElement>();
+let layoutObserver: ResizeObserver | undefined;
+let pendingFit = 0;
 const held = shallowRef(new Set<number>());
 const arrows = [
   [0, "controls.up", "↑"],
@@ -112,12 +115,27 @@ function activate(event: MouseEvent) {
 function visibility() {
   if (document.hidden) clear();
 }
+function fitScreen() {
+  if (!surface.value) return;
+  // Measure the header, wrapped profile title and any save notices above the game.
+  // Document coordinates keep the frame size stable when the player scrolls.
+  const top = Math.ceil(surface.value.getBoundingClientRect().top + window.scrollY);
+  surface.value.style.setProperty("--screen-top", `${top}px`);
+}
 onMounted(() => {
+  fitScreen();
+  layoutObserver = new ResizeObserver(() => {
+    cancelAnimationFrame(pendingFit);
+    pendingFit = requestAnimationFrame(fitScreen);
+  });
+  layoutObserver.observe(document.body);
   window.addEventListener("blur", clear);
   window.addEventListener("pagehide", clear);
   document.addEventListener("visibilitychange", visibility);
 });
 onBeforeUnmount(() => {
+  layoutObserver?.disconnect();
+  cancelAnimationFrame(pendingFit);
   clear();
   window.removeEventListener("blur", clear);
   window.removeEventListener("pagehide", clear);
@@ -126,8 +144,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="play-surface" :class="{ expanded: mode }">
-    <slot />
+  <div ref="surface" class="play-surface" :class="{ expanded: mode }">
+    <div class="screen-mat"><slot /></div>
     <div v-if="input" class="deck">
       <button
         class="deck-toggle"
@@ -206,11 +224,21 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .play-surface {
-  max-width: 960px;
-  margin: 16px auto 0;
+  min-width: 0;
+}
+.screen-mat {
+  display: grid;
+  place-items: center;
+  background: #111;
 }
 .play-surface :deep(.player-frame) {
+  width: min(100%, 960px);
   margin: 0 auto;
+}
+@media (min-width: 760px) and (min-height: 500px) {
+  .play-surface :deep(.player-frame) {
+    width: min(100%, 960px, max(320px, calc((100svh - var(--screen-top) - 12px) * 4 / 3)));
+  }
 }
 .deck {
   container-type: inline-size;

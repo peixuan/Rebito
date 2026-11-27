@@ -50,9 +50,6 @@ watch(
 
 <style scoped>
 .player-controls {
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid var(--p-content-border-color);
   font-size: 12px;
 }
 summary {

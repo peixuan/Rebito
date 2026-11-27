@@ -424,8 +424,8 @@ defineExpose({
 </script>
 
 <template>
-  <section class="profile-panel" :aria-label="t('player.window')">
-    <div class="toolbar">
+  <section class="profile-panel player-panel" :aria-label="t('player.window')">
+    <div class="toolbar player-actions">
       <Button
         v-if="!active"
         :label="t('player.start')"
@@ -519,38 +519,42 @@ defineExpose({
           @click="stopAndSave"
         />
       </template>
-      <span v-if="relativeMouse" class="muted">{{ t("player.mouseHelp") }}</span>
-      <span class="muted">{{
-        game.system === "dos" ? t("player.dosSyncHelp") : t("player.consoleSyncHelp")
-      }}</span>
-      <span v-if="synchronizedAt" class="muted">{{
-        t("player.lastSync", { time: formatDate(synchronizedAt, true) })
-      }}</span>
     </div>
     <Message v-if="error" severity="error" role="alert">{{ translate(error) }}</Message>
     <Message v-if="notice" severity="success" role="status">{{ translate(notice) }}</Message>
     <p v-if="active && !ready && !error" role="status">{{ t("player.starting") }}</p>
-    <PlayerControls
-      v-if="controls"
-      :controls="controls"
-      @configure="frame?.scrollIntoView({ block: 'nearest' })"
-    />
-    <p v-if="ready && game.system === 'dos'" class="muted">{{ t("player.dosControls") }}</p>
-    <TouchDeck
-      v-if="active"
-      :input="touch"
-      :system="game.system"
-      :disabled="!ready || paused || conflict || stopping || pendingSync"
-    >
-      <iframe
-        ref="frame"
-        class="player-frame"
-        src="/runtime.html"
-        :title="t('player.frame')"
-        allow="autoplay; gamepad; fullscreen"
-        @load="boot"
-      />
-    </TouchDeck>
+    <div class="play-layout" :class="{ playing: active }">
+      <TouchDeck
+        v-if="active"
+        :input="touch"
+        :system="game.system"
+        :disabled="!ready || paused || conflict || stopping || pendingSync"
+      >
+        <iframe
+          ref="frame"
+          class="player-frame"
+          src="/runtime.html"
+          :title="t('player.frame')"
+          allow="autoplay; gamepad; fullscreen"
+          @load="boot"
+        />
+      </TouchDeck>
+      <aside class="play-guide">
+        <PlayerControls
+          v-if="controls"
+          :controls="controls"
+          @configure="frame?.scrollIntoView({ block: 'nearest' })"
+        />
+        <p v-if="ready && game.system === 'dos'" class="muted">{{ t("player.dosControls") }}</p>
+        <p v-if="relativeMouse" class="muted">{{ t("player.mouseHelp") }}</p>
+        <p class="muted">
+          {{ game.system === "dos" ? t("player.dosSyncHelp") : t("player.consoleSyncHelp") }}
+        </p>
+        <p v-if="synchronizedAt" class="muted">
+          {{ t("player.lastSync", { time: formatDate(synchronizedAt, true) }) }}
+        </p>
+      </aside>
+    </div>
     <NesCheatPanel
       v-if="nesCheats"
       :key="profileId + nesCheats.romSha256"
@@ -559,3 +563,39 @@ defineExpose({
     />
   </section>
 </template>
+
+<style scoped>
+.player-panel {
+  border-top: 2px solid var(--accent);
+}
+.player-actions {
+  gap: 6px;
+}
+.player-actions [aria-pressed="true"] {
+  box-shadow: inset 0 -2px var(--accent);
+}
+.play-layout {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+.playing .play-guide {
+  min-width: 0;
+  padding: 10px 12px;
+  background: var(--mat);
+  border-inline-start: 2px solid var(--edge);
+}
+.play-guide p {
+  margin: 6px 0 0;
+  font-size: 12px;
+}
+.play-guide > :first-child {
+  margin-top: 0;
+}
+@media (min-width: 1000px) {
+  .play-layout.playing {
+    grid-template-columns: minmax(0, 1fr) minmax(195px, 23%);
+    align-items: start;
+  }
+}
+</style>
