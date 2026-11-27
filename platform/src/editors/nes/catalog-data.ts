@@ -169,9 +169,49 @@ export const onTitle: NesCatalog = {
   "07d9e57e35184667c7b89e30857a44c5c404b48332ad12e66be91100eccd4f5e": {
     ryuHealth: { "4": "0065:04", "16": "0065:10" },
   },
+  // Rockman 3 - Dr. Wily no Saigo!
+  "96b09c90968a2a567f740b28b14cb2db44153cd59e984019a77d08bbdfdd6af0": {
+    rockHealth: { bars7: "00A2:87", bars28: "00A2:9C" },
+  },
+  // Rockman 4 - Aratanaru Yabou!!
+  "29e16c74e35cfe6f014879ad628f36c3e673ca6bc627dbd62413f097e657878b": {
+    rockHealth: { bars7: "00B0:87", bars28: "00B0:9C" },
+  },
+  // Rockman 5 - Blues no Wana!
+  "635a78714dc2e9f94834278b4c92ddf8392bcde1d2b3d918414e671b753f8b10": {
+    rockHealth: { bars7: "00B0:87", bars28: "00B0:9C" },
+  },
+  // Batman
+  e5af9ee5aa1f1b3824a7b542742edf2995e942fd4a04aeaf6c3ca450d5009dbd: {
+    batmanHealth: { lowHealth: "00B7:02", fullHealth: "00B7:08" },
+  },
+  // Teenage Mutant Ninja Turtles II - The Arcade Game
+  "4e21bbb678ca875ed028374f5f2b0fc4be5b9e6b056e41986b5e2ada62aee852": {
+    p1Health: { lowHealth: "0568:09", highHealth: "0568:32" },
+  },
+  // Teenage Mutant Ninja Turtles III - The Manhattan Project
+  "77148be01ea61d6d3f77b4f7afe6c8c5e6040aaf4cdc5563da4ca43d376016ee": {
+    p1Health: { lowHealth: "04F1:07", highHealth: "04F1:26" },
+  },
+  // Little Nemo - The Dream Master
+  "32167ae7079fb45c3032589c4819ac44e196017a2fe9f9ef63b5a3ff1099d136": {
+    nemoHealth: { bars1: "05D0:01", bars3: "05D0:03" },
+  },
+  // Mighty Final Fight
+  "6bea7c6d4be51103da5e45c1ce7fce4706bd07fbed2ecb5cf24d86710f0e0b98": {
+    heroHealth: { lowHealth: "003A:08", highHealth: "003A:2D" },
+  },
   // Jackie Chan's Action Kung Fu
   c80aa46a75492037212c8dbbbd1787195bcf2f3082491515057f216f4f0092df: {
     jackieHealth: { points2: "0702:02", points6: "0702:06" },
+  },
+  // Moon Crystal
+  "7c71fb060ee6cb53b8b07bbea2445be05ffed48a48571244f5ac5fa4277ab13a": {
+    heroHealth: { hearts1: "05F0:01", fullHearts: "05F0:05" },
+  },
+  // Shatterhand
+  "8afaa5e4cdf76989b5b337828163500e80bf184590a34ec150a73aa544cff78d": {
+    heroHealth: { lowHealth: "05C5:02", highHealth: "05C5:08" },
   },
   // Bubble Bobble
   fc521e891d074369d67579fd56617460b9c9949dec67cc4a37d46b4e4bb09d29: {
@@ -181,13 +221,45 @@ export const onTitle: NesCatalog = {
   "545f33d21ef9804b114d837455fed456fbd6652e76cb520e6458b416426db5c1": {
     sharakuHealth: { bars2: "007A:02", bars6: "007A:06" },
   },
+  // Rockman 2 - Dr. Wily no Nazo
+  "06d1afbdc085b13197cc6283a9d1c12be1f8ade550d26e5ea87dcf6121ecc001": {
+    rockHealth: { bars8: "06C0:08", bars28: "06C0:1C" },
+  },
+  // Rockman 6 - Shijou Saidai no Tatakai!!
+  "08edf143d44199151177e5241241172eabb6d1880103714b321215e0f0ae351b": {
+    rockHealth: { lowHealth: "03E5:06", highHealth: "03E5:1B" },
+  },
   // Don Doko Don
   "0ee152d2d754bfe2b381fa8e14252cee4b5f5388daabbe0c05ebde3bae75ee38": {
     reserveLives: { display1: "0060:02", display7: "0060:08" },
   },
+  // Castlevania III - Dracula's Curse
+  "1c7b2ed2c1fb5839a6764006aa476f5c9d48f99465b6141980f3a5af1dfec0d6": {
+    heroHealth: { lowHealth: "003C:10", fullHealth: "003C:40" },
+  },
+  // Hammerin' Harry
+  "33406ecbc6863c07f8cbca1b635fcd440352d63cf1e5335016e3ce9d0335c84c": {
+    genHealth: { bars1: "04FE:01", bars4: "04FE:04" },
+  },
   // Kickle Cubicle
   "3c01f1eb1d9adedabb1082b16bef9d987f629741a4146d5a7617d9aea8f391a0": {
     lifeIcons: { less: "00B6:02", more: "00B6:08" },
+  },
+  // Panic Restaurant
+  "99217ddbc24db03d3859d9f457b809620c87a3e1a4c2311806d3b2423100465f": {
+    chefHealth: { hearts1: "00D7:01", fullHearts: "00D7:03" },
+  },
+  // Guardian Legend, The
+  "5dd3fc3140066c3574b69557d3ebfe08fb0d110eaf8e309634ab1398eb0857b7": {
+    shipShield: { lowShield: "0048:0C", highShield: "0048:3C" },
+  },
+  // Getsufuu Maden
+  "889f2db8bba0243196cf6f9b2cd2cdceb3ec1d6330d30f7e30654f00fff30cc7": {
+    fumaHealth: { lowHealth: "07D3:10", fullHealth: "07D3:40" },
+  },
+  // Kage
+  "0d73c110b71dd5f71da0adfdae988da195f0c954505257eb4ef2717894e073cb": {
+    p1Health: { lowHealth: "06F0:03", fullHealth: "06F0:10" },
   },
   // Super Contra
   "95328473d961b1c897683c5ba9b1a4322959637bb3494e9f7012daca958a875e": {
@@ -197,13 +269,33 @@ export const onTitle: NesCatalog = {
   ca9c86ea827d4bf16eb974123827b272d6cb57c97b3f4aef5b23f6308d53ebee: {
     p1Aircraft: { totalShips1: "0485:01+0487:01", totalShips6: "0485:06+0487:06" },
   },
+  // New York Nyankies
+  "157f25982d192ab43a890767381e5bf80739a366272c95eed89c0f40a10cc18b": {
+    heroHealth: { hearts1: "0423:02", hearts5: "0423:0A" },
+  },
   // Pac-Man
   "4c6217b1a55586aecaf106059098447f444a7623000556fced05f9ae3ba1dea8": {
     extraLives: { low: "0067:02", high: "0067:05" },
   },
+  // Little Samson
+  bfada8ebac4d4daf033749d4448cdfa034a6bed108af7552f69025cff2d8bf1c: {
+    boyHealth: { lowHealth: "0097:02", highHealth: "0097:08" },
+  },
+  // Monster in My Pocket
+  f488f7d423b9d5dbb5e3680389cd885970e0fb6d6abf34a341b6a7204052bede: {
+    p1Health: { bars1: "0716:01", bars5: "0716:05" },
+  },
+  // Kabuki - Quantum Fighter
+  "7ae1073a04d3563ab98c9674f061385ab33db6a6644ea09617d2d49f746d7895": {
+    characterHealth: { bars3: "068C:03", bars13: "068C:0D" },
+  },
   // Bubble Bobble Part 2
   "4ca9b852ca31435cb3c22501dc73013dcbee1681846cecbc8f3e0fc743690a60": {
     remainingLives: { lives2: "0479:02", lives8: "0479:08" },
+  },
+  // Power Blade 2
+  "17ff0f30e6e6023995cae1f8a2c67d22fe680f65d37f2724dbb55116d8516bca": {
+    playerHealth: { shortHealth: "049A:04", longHealth: "049A:10" },
   },
   // Donkey Kong Classics
   "1136453809e5681318b8115ad23b7f769a7ada1f8648090fc006c39cfe80da61": {
@@ -233,6 +325,14 @@ export const onTitle: NesCatalog = {
   "4b6453aff34c2b2834b6a1fad061ba4aad4f674d504a97c07e78a370c434bc12": {
     sparePaddles: { noPaddles: "000D:01", paddles5: "000D:06" },
   },
+  // Final Fantasy III
+  f0e28c7fe08c204975b71f3e1f7f6313f286921e6627b3a3d5b124016be7377f: {
+    startingPartyHealth: { startingHp75: "LKSUELAX", startingHp150: "VOSUELAZ" },
+  },
+  // Double Dragon III - The Sacred Stones
+  "32c2fabc09666a3d22af2849d0889c3301930228ade2f1e7151bf676d16d6a6e": {
+    billyHealth: { shortHealth: "ZXEPXGGS", longHealth: "GVEPXGGI" },
+  },
   // Contra Force
   d8fb504e56490420c1b98fbf19b741e159a9a0a6fad4cb1c9459413a482dc1e8: {
     beansLives: { reserveLives1: "00B6:02", reserveLives7: "00B6:08" },
@@ -240,6 +340,10 @@ export const onTitle: NesCatalog = {
   // Circus Charlie
   "63d4eff21f6c3c7df0f702cf8149e1761742f7d2dd9b19df66b43f1554e81aab": {
     extraLives: { icons2: "0060:02", icons6: "0060:06" },
+  },
+  // Kung Fu
+  ba57badd19db565481c5d9d7f86bfa0a919725a9661144d69925f501c9a0f4a1: {
+    playerHealth: { shortHp: "04A6:08", longHp: "04A6:2C" },
   },
   f0bbb29e5947b5198dc759fc2bf213df50eba693313dc110e9a817bb73127a9a: {
     remainingLives: { lives2: "002B:02", lives8: "002B:08" },
@@ -253,9 +357,36 @@ export const onTitle: NesCatalog = {
   "97470309393c1d921e45b0251fb78c7f21cd8ed9e2a11df7e0fae2cf7e197890": {
     heroLives: { lives2: "0070:02", lives8: "0070:08" },
   },
+  // Castlevania II - Simon's Quest
+  f045d72683d3156555eccbb56090888f03a15e5b25e59db49dca7a87330472d3: {
+    simonHealth: { lowHealth: "0080:10", highHealth: "0080:40" },
+  },
+  // Nekketsu Koukou Dodgeball Bu
+  eea6b7857b7729b36b3fe6e22257eb10daa40ff8b21dd54c571b5e4f6a273b69: {
+    firstPlayerHealth: { shortHealth: "058B:1E", longHealth: "058B:D2" },
+  },
+  // Downtown Special - Kunio-kun no Jidaigeki Dayo Zenin Shuugou!
+  f5b7d00e965bd57371344138203b43033d2e2972ab901658699c41c15310485c: {
+    p1Health: { low: "7A00:10", high: "7A00:37" },
+  },
+  // Choujikuu Yousai - Macross
+  "6b6922c025518bf23f9849270244f1c8aad1a85068c613d811387a1a9ef0196a": {
+    shipEnergy: { lowEnergy: "00EB:08", highEnergy: "00EB:30" },
+  },
   // Rush'n Attack
   "82760ba9d2552ea50f428f73ba08fd91644a098f4c59911216fb5746e8e34a50": {
     reserveLives: { low: "0022:02", high: "0022:08" },
+  },
+  f3a0c00f66f723ad10434046a898888e8320d4aec5e68b239b5538f1e676b487: {
+    mickeyHealth: { lowHealth: "00A1:06", highHealth: "00A1:18" },
+  },
+  // Adventure Island 4
+  "9de123f61454cc7a9ce133d68c85047b717dc864c7eb954a714a7dd8effea6f2": {
+    healthAndMax: { hearts1: "0085:04+0086:04", hearts8: "0085:20+0086:20" },
+  },
+  // Teenage Mutant Ninja Turtles
+  dc9acc00f081ffc396ec4c8477904e1a5046c242081ebadabef3503ee0d99628: {
+    leoHealth: { shortHp: "0077:20", longHp: "0077:70" },
   },
   // B-Wings
   "40ab99e6c8aec2741503b7e69d2597fbff518ece062f78a1b028b5fac3b6b9ae": {
@@ -263,6 +394,10 @@ export const onTitle: NesCatalog = {
   },
   "948d9d72c912945d9a5e7ecd36cd765ca5a3535b091d8aa12a2b17ec890d118b": {
     spareShips: { "02": "0056:02", "08": "0056:08" },
+  },
+  // KICKMAST
+  "4505d791f12354935a388428906808a2ef48f92e322ee27a2f3ad55706cac3e5": {
+    heroHealth: { shortHp: "06B9:08", longHp: "06B9:30" },
   },
   "66c1d43238b2d868ae4ac3f31d3109aa909740987f47563f8d8bd4064a02c3e8": {
     seiyaHealth: { longLife: "05CF:08", shortLife: "05CF:20" },
@@ -274,6 +409,10 @@ export const onTitle: NesCatalog = {
   fbd02d2c92b623e23b08cd56c4a1960cbe2d3a24314a7a086a9e5688e1decd08: {
     startingLives: { lives1: "PAEKPTLA", lives6: "TAEKPTLA" },
   },
+  // Ganbare Goemon! - Karakuri Douchuu
+  e9d91b075a930ed84c2fccbf9bcde78e2c7018c6b10499e21d012dca8b020320: {
+    goemonHealth: { low: "0040:10", high: "0040:50" },
+  },
   // Kung-Fu Heroes
   "58b49cf83a18bc563ed50b06339d17a6f6768dd555860d6f4f68a2b7a71af9a6": {
     reserveLives: { "02": "04D0:02", "08": "04D0:08" },
@@ -281,6 +420,15 @@ export const onTitle: NesCatalog = {
   // Super Mario Bros 2
   "9f73e5a91857ff58024769fb299bf8c2404dd9b7e4e0cb26cb7f346df05409da": {
     extraLives: { reserveLives1: "04ED:02", reserveLives7: "04ED:08" },
+  },
+  "64c88bf4edf10febc910fad6e53bd364a9966aacc1b69466159d413db00ceb20": {
+    bonkHealth: { lowHealth: "0444:02", highHealth: "0444:06" },
+  },
+  "9e803a5ae8b4b05deae7a3d161a5f3522678e895c512d10121d354f9a6d58cfd": {
+    heroHealth: { low: "06EB:08", high: "06EB:30" },
+  },
+  cda7ed3029597e7f110927ba2cb0939c6111094ed4b6fcadb49d37763a302b9d: {
+    heroHealth: { bars2: "0335:02", bars6: "0335:06" },
   },
   // Dig Dug II
   "0e13c03fa6370f898691b33f08309cbc0efa7152b634ec18d210c37143cbdeca": {
