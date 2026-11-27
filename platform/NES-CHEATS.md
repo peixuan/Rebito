@@ -7,8 +7,12 @@ contents are insufficient to identify a particular translation.
 
 ## Playing with rules
 
-- A verified preset accepts a decimal target or a named choice. Apply it in the scene where the
-  value is meaningful. Adjusting the same preset replaces its earlier rule.
+- Start the cartridge and choose a value under **Verified for this cartridge**.
+  Switching a value replaces its whole code group. **Off** removes that rule.
+  For starting values, make the selection at the title screen before starting
+  a new game. Turning a rule off does not rewind changes already made in game.
+- **Custom codes and tools** includes the RAM search, optional local files and
+  any previously verified adjustable ranges for this cartridge.
 - Enter a six- or eight-letter Game Genie code, a raw code such as `00FE:09`
   or a basic Pro Action Replay code such as `0000FE09`. The latter converts
   to the same address and value and obeys the same limits. Each session accepts

@@ -5,6 +5,14 @@ export interface NesRule {
   name: DisplayText;
   code: string;
   enabled: boolean;
+  preset?: string;
+}
+
+/** Replace all parts of one preset in the same core update, including when switching tiers. */
+export function selectNesPreset(rules: readonly NesRule[], preset: string, code: string) {
+  const next = rules.filter((rule) => rule.preset !== preset && rule.code !== code);
+  if (code) next.push({ preset, name: message(preset), code, enabled: true });
+  return next;
 }
 
 /** A word lock or a multi-part Game Genie entry must switch all its codes together. */

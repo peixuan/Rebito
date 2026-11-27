@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { activeNesCodes } from "../../client/nes-cheats/rules.ts";
+import { activeNesCodes, selectNesPreset } from "../../client/nes-cheats/rules.ts";
 
 function rule(code: string, enabled = true) {
   return { name: "", code, enabled };
@@ -10,6 +10,16 @@ it("preserves order and permits inactive alternatives", () => {
     "00FE:19",
     "SXIOPO",
   ]);
+});
+
+it("switches and clears only the selected preset and preserves the previous set on conflicts", () => {
+  const other = rule("007A:02");
+  const first = selectNesPreset([other], "gold", "0010:01+0011:02");
+  const second = selectNesPreset(first, "gold", "0010:09+0011:04");
+  expect(activeNesCodes(second)).toEqual(["007A:02", "0010:09", "0011:04"]);
+  expect(selectNesPreset(second, "gold", "")).toEqual([other]);
+  expect(() => activeNesCodes(selectNesPreset(second, "gold", "007A:06"))).toThrow();
+  expect(activeNesCodes(first)).toEqual(["007A:02", "0010:01", "0011:02"]);
 });
 it("toggles both bytes of a word together and retains shared codes in other enabled groups", () => {
   const word = rule("01FE:32+01FF:54");

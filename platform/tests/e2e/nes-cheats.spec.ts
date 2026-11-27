@@ -15,7 +15,12 @@ test("manages session-only cheats in the NES player", async ({ page }) => {
     .getByRole("button", { name: "Open profile" })
     .click();
   await page.getByRole("button", { name: "Start game" }).click();
-  await page.locator("summary").filter({ hasText: "NES cheats" }).click({ timeout: 30000 });
+  const cheats = page.getByRole("region", { name: "NES cheats" });
+  await expect(
+    cheats.getByText("This cartridge has no verified presets yet.", { exact: false }),
+  ).toBeVisible({ timeout: 30000 });
+  await expect(cheats.locator('input[type="file"]')).toBeHidden();
+  await cheats.getByText("Custom codes and tools", { exact: true }).click();
   const panel = page.getByRole("group", { name: "Cheat codes" });
   const input = panel.getByLabel("Code", { exact: true });
   await input.fill("0000FE09");
