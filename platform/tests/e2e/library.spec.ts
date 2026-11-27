@@ -51,7 +51,11 @@ test("creates personal progress, imports bytes, restores history and isolates ac
   await page.getByRole("button", { name: "Open profile" }).click();
   await expect(page.getByRole("link", { name: "save.srm" })).toHaveCount(3);
 
-  const second = await browser.newContext({ baseURL: "http://localhost:4317" });
+  const second = await browser.newContext({
+    baseURL: "http://localhost:4317",
+    viewport: { width: 390, height: 844 },
+    hasTouch: true,
+  });
   try {
     await useSession(second, "other");
     const other = await second.newPage();
@@ -64,12 +68,17 @@ test("creates personal progress, imports bytes, restores history and isolates ac
     expect((await second.request.get(`/api/profiles/${id}/deletion`)).status()).toBe(404);
     await other.getByLabel("Profile name").fill("Mistaken playthrough");
     await other.getByRole("button", { name: "Create profile" }).click();
-    await other.getByRole("button", { name: "Delete profile" }).click();
+    const remove = other.getByRole("button", { name: "Delete profile “Mistaken playthrough”" });
+    await expect(remove).toHaveText("×");
+    const target = await remove.boundingBox();
+    expect(target?.width).toBeGreaterThanOrEqual(44);
+    expect(target?.height).toBeGreaterThanOrEqual(44);
+    await remove.press("Enter");
     const dialog = other.getByRole("dialog", { name: "Delete profile" });
     await expect(dialog).toContainText("0 saved revisions");
     await dialog.getByRole("button", { name: "Cancel" }).click();
     await expect(other.getByText("Mistaken playthrough", { exact: true })).toBeVisible();
-    await other.getByRole("button", { name: "Delete profile" }).click();
+    await remove.tap();
     await dialog.getByRole("button", { name: "Delete profile" }).click();
     await expect(other.getByRole("meter", { name: "Personal profiles" })).toHaveAttribute(
       "value",

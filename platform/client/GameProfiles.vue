@@ -31,13 +31,15 @@ const emit = defineEmits<{
       >
         {{ profile.name }}
       </button>
-      <Button
-        :label="t('library.deleteProfile')"
-        variant="text"
-        severity="danger"
-        size="small"
+      <button
+        type="button"
+        class="profile-remove"
+        :aria-label="t('library.deleteNamedProfile', { name: profile.name })"
+        :title="t('library.deleteNamedProfile', { name: profile.name })"
         @click="emit('remove', profile)"
-      />
+      >
+        ×
+      </button>
     </div>
     <form class="toolbar" @submit.prevent="emit('create')">
       <InputText
@@ -113,6 +115,28 @@ const emit = defineEmits<{
 }
 .profile-link:hover {
   background: var(--selected);
+}
+.profile-remove {
+  flex: none;
+  width: 30px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--danger);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.profile-remove:is(:hover, :focus-visible) {
+  background: var(--paper);
+}
+@media (any-pointer: coarse) {
+  .profile-remove {
+    width: 44px;
+    height: 44px;
+  }
 }
 .profile-panel form {
   gap: 5px;
