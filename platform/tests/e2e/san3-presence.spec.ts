@@ -16,13 +16,28 @@ test("recruits and introduces officers through coherent service and discovery li
   for (let index = 1; index < 13; index++)
     data.setUint16(san3TreasureLayout.owners + index * 2, 65535);
   for (const index of [2, 11]) data.setUint16(san3Layout.historical.offset + index * 30, 1);
-  const { game, history } = await prepareSan3Editor(page, program, "SAN3 presence fixture");
+  const { game, profile, history } = await prepareSan3Editor(
+    page,
+    program,
+    "SAN3 presence fixture",
+  );
   await page.goto("/");
   await page.getByRole("button", { name: game.title }).click();
   await page.getByRole("button", { name: "Open profile", exact: true }).click();
   await page.getByRole("button", { name: "Start game", exact: true }).click();
-  const capture = page.getByRole("button", { name: "Capture for editing", exact: true });
-  await capture.click();
+  async function capture() {
+    // Controls remain disabled until the running core's capture reaches the account.
+    const [published] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          response.request().method() === "POST" &&
+          new URL(response.url()).pathname === `/api/profiles/${profile.id}/revisions`,
+      ),
+      page.getByRole("button", { name: "Capture for editing", exact: true }).click(),
+    ]);
+    expect(published.status()).toBe(201);
+  }
+  await capture();
   const editor = page.getByRole("region", { name: "Save editor", exact: true });
   await expect(editor.getByLabel("Population", { exact: true })).toBeEnabled();
   await editor.getByRole("button", { name: "Officers", exact: true }).click();
@@ -60,14 +75,14 @@ test("recruits and introduces officers through coherent service and discovery li
   const resigned = await save();
   expect(resigned.officer(2)).toMatchObject({ role: 5, faction: 255, city: 0, soldiers: 0 });
   expect(inspectSan3Lists(resigned).cities[0]?.free).toEqual([2]);
-  await capture.click();
+  await capture();
   await expect(editor.getByLabel("Service and discovery", { exact: true })).toBeEnabled();
   await editor.getByLabel("Service and discovery", { exact: true }).click();
   await page.getByRole("option", { name: "Civil officer", exact: true }).click();
   const recruited = await save();
   expect(recruited.officer(2)).toMatchObject({ role: 4, faction: 0, soldiers: 0, loyalty: 100 });
   expect(inspectSan3Lists(recruited).cities[0]?.serving).toEqual([0, 1, 2]);
-  await capture.click();
+  await capture();
   await expect(editor.getByLabel("Service and discovery", { exact: true })).toBeEnabled();
   await editor.getByRole("checkbox", { name: "Active officers only", exact: true }).uncheck();
   await editor
@@ -89,14 +104,14 @@ test("recruits and introduces officers through coherent service and discovery li
   await page.getByLabel(chinese("app.language")).selectOption("en");
   const hidden = await save();
   expect(inspectSan3Lists(hidden).cities[1]?.hidden).toEqual([11]);
-  await capture.click();
+  await capture();
   await expect(editor.getByLabel("Service and discovery", { exact: true })).toBeEnabled();
   await editor.getByLabel("Service and discovery", { exact: true }).click();
   await page.getByRole("option", { name: "Free officer", exact: true }).click();
   const revealed = await save();
   expect(revealed.officer(11)).toMatchObject({ role: 5, faction: 255, city: 1, soldiers: 0 });
   expect(inspectSan3Lists(revealed).cities[1]).toMatchObject({ free: [11], hidden: [] });
-  await capture.click();
+  await capture();
   await expect(editor.getByLabel("Service and discovery", { exact: true })).toBeEnabled();
   await editor.getByLabel("Service and discovery", { exact: true }).click();
   await page.getByRole("option", { name: "Not yet appeared", exact: true }).click();
@@ -108,7 +123,7 @@ test("recruits and introduces officers through coherent service and discovery li
   expect(withdrawn.officer(11)).toMatchObject({ role: 7, faction: 255, city: 255, soldiers: 0 });
   expect(inspectSan3Lists(withdrawn).membership.has(11)).toBe(false);
   expect(withdrawn.read(withdrawn.offset("officers", 11) + 8, 1) & 16).toBe(0);
-  await capture.click();
+  await capture();
   await expect(editor.getByLabel("Appearance city", { exact: true })).toBeEnabled();
   await editor.getByLabel("Appearance city", { exact: true }).click();
   await page.getByRole("option", { name: "City 3", exact: true }).click();
