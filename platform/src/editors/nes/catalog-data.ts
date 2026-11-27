@@ -221,6 +221,10 @@ export const onTitle: NesCatalog = {
   "545f33d21ef9804b114d837455fed456fbd6652e76cb520e6458b416426db5c1": {
     sharakuHealth: { bars2: "007A:02", bars6: "007A:06" },
   },
+  // Excitebike
+  "7e70ffe8feda7a2da0bfab55b490001302bdbb92faa0562b7d9af5d09341a0f6": {
+    timerSeconds: { seconds18: "0069:12", seconds54: "0069:36" },
+  },
   // Rockman 2 - Dr. Wily no Nazo
   "06d1afbdc085b13197cc6283a9d1c12be1f8ade550d26e5ea87dcf6121ecc001": {
     rockHealth: { bars8: "06C0:08", bars28: "06C0:1C" },
@@ -261,6 +265,10 @@ export const onTitle: NesCatalog = {
   "0d73c110b71dd5f71da0adfdae988da195f0c954505257eb4ef2717894e073cb": {
     p1Health: { lowHealth: "06F0:03", fullHealth: "06F0:10" },
   },
+  // Faxanadu
+  c1872cd357087adb89e446c3eb6189c53b5809c36168fd4b0574559f135c83d7: {
+    goldHighByte: { startingCoins1179648: "0394:12", startingCoins5570560: "0394:55" },
+  },
   // Super Contra
   "95328473d961b1c897683c5ba9b1a4322959637bb3494e9f7012daca958a875e": {
     reserveLives: { less: "0053:01", more: "0053:08" },
@@ -276,6 +284,14 @@ export const onTitle: NesCatalog = {
   // Pac-Man
   "4c6217b1a55586aecaf106059098447f444a7623000556fced05f9ae3ba1dea8": {
     extraLives: { low: "0067:02", high: "0067:05" },
+  },
+  // Jackal
+  "97e0e7d84ce6cca3fd3ec5eabb3fa00252de54f1354156ca2b95b95a39237373": {
+    missionMap: { pillarRuins: "0030:01", woods: "0030:03" },
+  },
+  // Metal Storm
+  "0c38fe5bf1d049b868f4d746cf804b18852ad8b2724c58603bed85e22418c0d6": {
+    missionMap: { machineHall: "0051:01", orangeHall: "0051:03" },
   },
   // Little Samson
   bfada8ebac4d4daf033749d4448cdfa034a6bed108af7552f69025cff2d8bf1c: {
@@ -297,9 +313,21 @@ export const onTitle: NesCatalog = {
   "17ff0f30e6e6023995cae1f8a2c67d22fe680f65d37f2724dbb55116d8516bca": {
     playerHealth: { shortHealth: "049A:04", longHealth: "049A:10" },
   },
+  // R.C. Pro-Am
+  "39ee89848bd54f4220fb90643938d64702eb4bddeb1b58752c0b0e8a0aa8c407": {
+    carSpeed: { "30 MPH": "05DC:1E", "80 MPH": "05DC:50" },
+  },
   // Donkey Kong Classics
   "1136453809e5681318b8115ad23b7f769a7ada1f8648090fc006c39cfe80da61": {
     donkeyKongLives: { lives1: "PETANA", lives6: "TETANA" },
+  },
+  // Fire 'n Ice
+  "1a23c342ab4fee3f65d19c065a5a2279c450fee9af4236ebf2e83daf66d89dfd": {
+    stageSeconds: { seconds12: "0425:12", seconds48: "0425:48" },
+  },
+  // Gyruss
+  da19b5bbe8032acb6e7810e914a8ba1b58d9f35915a491f23d8f2e8dcf12e415: {
+    specialAmmo: { rounds4: "GAKEATPA", rounds7: "AAKEATPE" },
   },
   // Ivan Ironman Stewart's Super Off-Road
   "9df35978b97053c8209b5933d37a6879206cd0106b68b60b4f104efe755a117d": {
@@ -325,6 +353,10 @@ export const onTitle: NesCatalog = {
   "4b6453aff34c2b2834b6a1fad061ba4aad4f674d504a97c07e78a370c434bc12": {
     sparePaddles: { noPaddles: "000D:01", paddles5: "000D:06" },
   },
+  // Final Fantasy I & II
+  "7f9e40ada806156d250803cec9cc6f063e378028a561e0fda018271a578fdd59": {
+    firstGameGold: { "500 Gil": "601C:F4+601D:01", "1200 Gil": "601C:B0+601D:04" },
+  },
   // Final Fantasy III
   f0e28c7fe08c204975b71f3e1f7f6313f286921e6627b3a3d5b124016be7377f: {
     startingPartyHealth: { startingHp75: "LKSUELAX", startingHp150: "VOSUELAZ" },
@@ -341,6 +373,9 @@ export const onTitle: NesCatalog = {
   "63d4eff21f6c3c7df0f702cf8149e1761742f7d2dd9b19df66b43f1554e81aab": {
     extraLives: { icons2: "0060:02", icons6: "0060:06" },
   },
+  e729f46ad94efe255d1a007f01d4faf385d4d2bc58734d178bf343010a642333: {
+    startingMountain: { mountainA: "0059:01", mountainB: "0059:05" },
+  },
   // Kung Fu
   ba57badd19db565481c5d9d7f86bfa0a919725a9661144d69925f501c9a0f4a1: {
     playerHealth: { shortHp: "04A6:08", longHp: "04A6:2C" },
@@ -348,14 +383,31 @@ export const onTitle: NesCatalog = {
   f0bbb29e5947b5198dc759fc2bf213df50eba693313dc110e9a817bb73127a9a: {
     remainingLives: { lives2: "002B:02", lives8: "002B:08" },
   },
+  "02e87d145171bd31aaa259fa03a13609a0290fb0cbc8b15d42ce976ea63acbec": {
+    timerTens: { hold2: "00AA:02", hold8: "00AA:08" },
+  },
   "3d4a1de8f3c9714fe73fd6ffe92e7c67d2275a9ce7c1c0124d7a6c2b9b9b2e24": {
     firstShipLives: { "02": "0056:02", "08": "0056:08" },
   },
   "902914c1489a143b54743da230e0ff023a2df7fd18025575d4130185e4f53dfe": {
     reserveAircraft: { planes2: "0432:02", planes6: "0432:06" },
   },
+  "11d2ad1422291d4c79c788b10c71d45d0cc4b39b90f4b4c481f40aedab3152a9": {
+    underworldMap: { mapA: "006E:01", mapB: "006E:04" },
+  },
   "97470309393c1d921e45b0251fb78c7f21cd8ed9e2a11df7e0fae2cf7e197890": {
     heroLives: { lives2: "0070:02", lives8: "0070:08" },
+  },
+  d52dc8bf1e69067e0e0c8b6885947d2c55521635048ae0958548d5124a8877dc: {
+    enemyWave: { twoFlags: "0059:01", wave6: "0059:05" },
+  },
+  // Dr. Mario
+  c272ed5cf4eb70a5f84506e8f6c7124901f7585d3ba9feb6118e08907da172d1: {
+    virusLevel: { level01: "0316:01", level12: "0316:0C" },
+  },
+  // Pro Wrestling
+  "24c448f953138ab366588f529f7d1fb9f81d0612d27061885e593378653a9d00": {
+    matchMinutes: { minutes2: "0087:02", minutes7: "0087:07" },
   },
   // Castlevania II - Simon's Quest
   f045d72683d3156555eccbb56090888f03a15e5b25e59db49dca7a87330472d3: {
@@ -369,9 +421,38 @@ export const onTitle: NesCatalog = {
   f5b7d00e965bd57371344138203b43033d2e2972ab901658699c41c15310485c: {
     p1Health: { low: "7A00:10", high: "7A00:37" },
   },
+  cb6ba03a20d8f3a34dda69f16895588a87fcfea0e95473da64c92bd2b6635985: {
+    missionMap: { landing: "0039:00", fort: "0039:02" },
+  },
+  // Nekketsu! Street Basket - Ganbare Dunk Heroes
+  "58c194dafb45dfe3cb60c013390a78a130a73c3646b7482684d51d4bb44c7037": {
+    teamScore: { score2: "0166:02", score8: "0166:08" },
+  },
+  // Kunio-kun no Nekketsu Soccer League
+  "0fe4f2092b94efbd4ea84d936402d40350eb9f1f3b672ba4d8982079edd6b5e5": {
+    teamGoals: { goals2: "052E:02", goals6: "052E:06" },
+  },
+  f8d268e2f4791c09444437a657538898f4dcc982e303bd9bc8ab6175bbc4cc94: {
+    startingStage: { mapA: "00A6:01", mapB: "00A6:03" },
+  },
+  // Gimmick!
+  "7c02b97938ae445dcc86af00febf64cacacb991b0cc512e35678343103a846e0": {
+    startingStage: { stage2: "PEETTAAA", stage4: "LEETTAAA" },
+  },
+  // Renegade
+  c2e723665738e8dc088d7b123650aa3951335a94a4a479464458cc80f793cb76: {
+    startingMission: { mission2: "PEXSYYAA", mission4: "LEXSYYAA" },
+  },
   // Choujikuu Yousai - Macross
   "6b6922c025518bf23f9849270244f1c8aad1a85068c613d811387a1a9ef0196a": {
     shipEnergy: { lowEnergy: "00EB:08", highEnergy: "00EB:30" },
+  },
+  bb6029af4dfd6404772dc8c788113ba74d45b52fd8f120ddb7a607c9ecf45922: {
+    fuel: { lowFuel: "00C8:19", highFuel: "00C8:55" },
+  },
+  // Crisis Force
+  e06d6289db58e6d7d3fb8136d30efd724580cea2fd0c308d81814d8c1573ea65: {
+    startingStage: { stage2: "PAOGKLAA", stage4: "LAOGKLAA" },
   },
   // Rush'n Attack
   "82760ba9d2552ea50f428f73ba08fd91644a098f4c59911216fb5746e8e34a50": {
@@ -384,9 +465,19 @@ export const onTitle: NesCatalog = {
   "9de123f61454cc7a9ce133d68c85047b717dc864c7eb954a714a7dd8effea6f2": {
     healthAndMax: { hearts1: "0085:04+0086:04", hearts8: "0085:20+0086:20" },
   },
+  "79e4a3792abca56461b19aa806d3942796a0797d4f64958f421bc77adcfa520f": {
+    highScore: {
+      "222200": "010D:02+010E:02+010F:02+0110:02+0111:02",
+      "888800": "010D:08+010E:08+010F:08+0110:08+0111:08",
+    },
+  },
   // Teenage Mutant Ninja Turtles
   dc9acc00f081ffc396ec4c8477904e1a5046c242081ebadabef3503ee0d99628: {
     leoHealth: { shortHp: "0077:20", longHp: "0077:70" },
+  },
+  // Hinotori - Houou Hen - Gaou no Bouken
+  "981f6fc4796caec49667f07828ef616e43ec0986e47c4ecfabd8c830ab42365b": {
+    startingArea: { riverRuins: "002E:00", redHills: "002E:02" },
   },
   // B-Wings
   "40ab99e6c8aec2741503b7e69d2597fbff518ece062f78a1b028b5fac3b6b9ae": {
@@ -399,11 +490,28 @@ export const onTitle: NesCatalog = {
   "4505d791f12354935a388428906808a2ef48f92e322ee27a2f3ad55706cac3e5": {
     heroHealth: { shortHp: "06B9:08", longHp: "06B9:30" },
   },
+  // 1943 - The Battle of Midway
+  "2fd596ac4563b910a4d0a36d4a3658910fcfa822afd4f78bd62f73552e17ea00": {
+    upgradePoints: { points2: "0347:02", points8: "0347:08" },
+  },
+  "4e048f2dc4ccfc6e71b0e1c86b7a63934de503928d8b785dacdec1dcd55a4d01": {
+    countdownOnes: { hold2: "0077:02", hold8: "0077:08" },
+  },
+  // Lupin Sansei - Pandora no Isan
+  "3318a5f9b1e1b98c03d960ab7f65ba16c8b08c0ec1f074e0377dc07cd00ed2d6": {
+    vestIcons: { "1": "0207:01", "5": "0207:05" },
+  },
+  "1e1722c86d9e58b6c9224a01c790b97250135ce5d21d3d7312ab46beaf0a591f": {
+    stageTime: { "030": "002A:1E", "120": "002A:78" },
+  },
   "66c1d43238b2d868ae4ac3f31d3109aa909740987f47563f8d8bd4064a02c3e8": {
     seiyaHealth: { longLife: "05CF:08", shortLife: "05CF:20" },
   },
   "5ed66bb855d9ba84b4bd30c41c6a75ac9f1a68482d9471b8428905c2ce295235": {
     startingP1Lives: { low: "AAISPL", high: "IAISPL" },
+  },
+  "049270c3a2474b87ed4f38d8399a922e2b5f96add2788fdd24f2705f811fee54": {
+    currentLevel: { levels2: "042D:32+0050:01", levels8: "042D:38+0050:01" },
   },
   // Ghosts 'N Goblins
   fbd02d2c92b623e23b08cd56c4a1960cbe2d3a24314a7a086a9e5688e1decd08: {
