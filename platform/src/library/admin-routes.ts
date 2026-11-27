@@ -10,6 +10,7 @@ import { message } from "../shared/messages.ts";
 import { DiskCapacity } from "../storage/capacity.ts";
 import { verifyBios } from "./bios-verification.ts";
 import type { LocalLibrary } from "./catalog.ts";
+import { withCovers } from "./covers.ts";
 import { prepareDosUpload } from "./dos-upload.ts";
 import { selectFirmware } from "./firmware.ts";
 import { importGame } from "./importer.ts";
@@ -54,7 +55,7 @@ export function registerGameAdministration(
     await library.refresh();
     const games = library.list();
     return {
-      games,
+      games: await withCovers(directory, games),
       editors: listEditors(),
       usedBytes: games.reduce((total, game) => total + game.size, 0),
       maximumBytes: config.maximumLibraryBytes,

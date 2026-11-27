@@ -4,6 +4,7 @@ import type { Pool } from "pg";
 import { removeOwnedFile, syncDirectory } from "../storage/files.ts";
 import { referencedBlobs } from "../storage/references.ts";
 import { releaseId } from "./catalog.ts";
+import { coverName } from "./covers.ts";
 import type { DeletionJob } from "./deletion-records.ts";
 import { withCatalog, writeCatalog } from "./transaction.ts";
 
@@ -24,7 +25,8 @@ export async function reclaimDeletion(
       catalog.games = removed;
       await writeCatalog(libraryDirectory, catalog);
     }
-    let reclaimedBytes = 0;
+    let reclaimedBytes = await removeOwnedFile(libraryDirectory, coverName(job.release_id), remove);
+    if (reclaimedBytes) await syncDirectory(join(libraryDirectory, "covers"));
     if (!catalog.games.some((entry) => entry.file === job.entry.file)) {
       reclaimedBytes += await removeOwnedFile(libraryDirectory, job.entry.file, remove);
       await syncDirectory(libraryDirectory);

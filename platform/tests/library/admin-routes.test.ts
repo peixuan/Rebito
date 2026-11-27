@@ -12,6 +12,7 @@ import { loadConfig } from "../../src/server/config.ts";
 import { createPlatform } from "../../src/server/platform.ts";
 import { message } from "../../src/shared/messages.ts";
 import { testDatabase } from "../database.ts";
+import { nesFixture } from "./nes-fixture.ts";
 import { mdFixture, sega8Fixture, smdFixture } from "./sega-fixtures.ts";
 import { discArchive, discBios, discCue, discTrack } from "./segacd-fixtures.ts";
 
@@ -568,4 +569,54 @@ it("limits quota configuration to administrators and rejects stale or partial up
   expect((await save({ ...initial, version: response.json().settings.version })).statusCode).toBe(
     200,
   );
+});
+
+it("binds bounded covers to a release and reclaims them with the confirmed game", async () => {
+  const bytes = nesFixture();
+  bytes[100] = 91;
+  const game = (
+    await upload({
+      bytes,
+      filename: "cover.nes",
+      metadata: { title: "Cover fixture", system: "nes" },
+    })
+  ).json().game;
+  expect(game).toBeDefined();
+  const url = `/api/admin/games/${game.id}/cover`;
+  const change = (image: unknown, expected: string | null = null, cookie = admin) =>
+    app.inject({ method: "POST", url, headers: { cookie, origin }, payload: { image, expected } });
+  const picture = { width: 1, height: 1, rgba: "/wAA/w==" };
+  expect((await change(picture, null, player)).statusCode).toBe(403);
+  expect((await change({ ...picture, width: 999 })).statusCode).toBe(422);
+  expect((await change({ ...picture, rgba: "AAAA" })).statusCode).toBe(422);
+  const original = await app.inject({
+    url: `/api/admin/games/${game.id}/deletion`,
+    headers: { cookie: admin },
+  });
+  const simultaneous = await Promise.all([change(picture), change(picture)]);
+  expect(simultaneous.map((r) => r.statusCode).sort()).toEqual([200, 409]);
+  const token = simultaneous.find((r) => r.statusCode === 200)?.json().cover;
+  const asset = `/api/games/${game.id}/cover/${token}`;
+  expect((await app.inject(asset)).statusCode).toBe(401);
+  const served = await app.inject({ url: asset, headers: { cookie: player } });
+  expect(served.headers["content-type"]).toBe("image/png");
+  expect(served.rawPayload.subarray(1, 4).toString()).toBe("PNG");
+  const list = await app.inject({ url: "/api/games", headers: { cookie: player } });
+  expect(list.json()).toContainEqual(expect.objectContaining({ id: game.id, cover: token }));
+  const deletionUrl = `/api/admin/games/${game.id}/deletion`;
+  const remove = (token: string) =>
+    app.inject({
+      method: "POST",
+      url: deletionUrl,
+      headers: { cookie: admin, origin },
+      payload: { token, title: game.title, deleteSaves: false },
+    });
+  expect((await remove(original.json().token)).statusCode).toBe(409);
+  const preview = (await app.inject({ url: deletionUrl, headers: { cookie: admin } })).json();
+  expect(preview.reclaimableBytes).toBe(
+    original.json().reclaimableBytes + served.rawPayload.length,
+  );
+  expect((await remove(preview.token)).statusCode).toBe(200);
+  expect((await app.inject({ url: asset, headers: { cookie: player } })).statusCode).toBe(404);
+  expect(await readdir(join(directory, "library", "covers"))).toEqual([]);
 });

@@ -231,3 +231,14 @@ Then import the resulting bundle using the command above. A new-user acceptance
 test must confirm the game can create its own save file without a personalized
 save in the shared bundle. Bundle preparation uses development dependencies on
 the operator's workstation; the deployment image only needs the import command.
+
+## Release artwork
+
+After publishing a game, open its configuration to set or remove a cover.
+The browser fits the full image within 256 × 256 pixels. Only those pixels
+are sent to the server. Covers stay private to signed-in users and belong
+to the exact release. Replacing artwork preserves profiles and game bytes.
+
+Artwork uses a separate 32 MiB budget in `library/covers` and observes the
+configured free-space reserve. The game deletion preview includes the cover
+and its cleanup frees the file. Existing libraries need no migration.

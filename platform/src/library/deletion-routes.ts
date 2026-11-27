@@ -7,6 +7,7 @@ import type { ServerConfig } from "../server/config.ts";
 import { message } from "../shared/messages.ts";
 import type { LocalLibrary } from "./catalog.ts";
 import { findEntry } from "./configuration.ts";
+import { coverInfo } from "./covers.ts";
 import {
   assertNoPendingDeletion,
   beginDeletion,
@@ -41,7 +42,14 @@ export function registerDeletions(
     return withCatalog(
       join(config.dataDirectory, "library"),
       async (catalog) =>
-        (await deletionImpact(database, catalog, findEntry(catalog, request.params.id))).preview,
+        (
+          await deletionImpact(
+            database,
+            catalog,
+            findEntry(catalog, request.params.id),
+            await coverInfo(join(config.dataDirectory, "library"), request.params.id),
+          )
+        ).preview,
     );
   });
   app.post<{ Params: { id: string } }>(
@@ -62,8 +70,14 @@ export function registerDeletions(
           throw new LibraryError(message("library.cleanupConfirmation"), 409);
       } else {
         await assertNoPendingDeletion(database);
-        job = await withCatalog(join(config.dataDirectory, "library"), (catalog) =>
-          beginDeletion(database, catalog, findEntry(catalog, request.params.id), parsed.data),
+        job = await withCatalog(join(config.dataDirectory, "library"), async (catalog) =>
+          beginDeletion(
+            database,
+            catalog,
+            findEntry(catalog, request.params.id),
+            parsed.data,
+            await coverInfo(join(config.dataDirectory, "library"), request.params.id),
+          ),
         );
       }
       try {

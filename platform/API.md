@@ -76,3 +76,15 @@ HTTP 422 with a stable `error` and a user-readable `message`. Bodies reject unkn
 properties and noninteger values. A slot accepts at most 6000 changed fields;
 preview/publication body limits are 512 KiB/1 MiB. Native files are restricted to
 the release's configured save paths. Snapshots cannot be edited in place.
+
+## Game covers
+
+The authenticated game lists include an optional `cover` version. Read
+`GET /api/games/:id/cover/:version` to display its PNG. A removed game or an
+obsolete version returns 404.
+
+Administrators can use `POST /api/admin/games/:id/cover` with `expected` set to
+the version they saw, or null for a release without artwork. Set `image` to
+null to remove it, or supply integer `width`, `height` and base64 `rgba`
+pixels inside `image`. Each side may contain 1–256 pixels. The endpoint
+returns the new version and reports HTTP 409 if the cover changed meanwhile.

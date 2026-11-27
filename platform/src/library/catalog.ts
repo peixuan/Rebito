@@ -55,7 +55,7 @@ const entrySchema = z
   });
 
 export type LibraryEntry = z.infer<typeof entrySchema>;
-export type Game = Readonly<Omit<LibraryEntry, "file"> & { id: string }>;
+export type Game = Readonly<Omit<LibraryEntry, "file"> & { id: string; cover?: string }>;
 export const catalogSchema = z.strictObject({
   version: z.literal(1),
   games: z.array(entrySchema).max(5000),

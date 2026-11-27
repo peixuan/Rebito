@@ -10,6 +10,7 @@ import { registerIdentity } from "../identity/routes.ts";
 import { registerGameAdministration } from "../library/admin-routes.ts";
 import { LocalLibrary } from "../library/catalog.ts";
 import { registerConfiguration } from "../library/configuration-routes.ts";
+import { registerCovers } from "../library/cover-routes.ts";
 import { assertNoPendingDeletion, pendingDeletions } from "../library/deletion-records.ts";
 import { registerDeletions } from "../library/deletion-routes.ts";
 import { seedFirmware } from "../library/firmware.ts";
@@ -83,7 +84,8 @@ async function createServices(config: ServerConfig, database: Pool, activity: St
   registerIdentity(app, auth, config);
   privateApi(app, auth, config.origin, async (scope) => {
     guardStorageRoutes(scope, activity);
-    registerLibrary(scope, library, database);
+    registerLibrary(scope, library, database, join(config.dataDirectory, "library"));
+    registerCovers(scope, config, library, database);
     registerSaveQuotas(scope, config, database);
     await registerSaves(scope, saves, library, database);
     registerHistory(scope, database, config.dataDirectory, config.storageLimits);

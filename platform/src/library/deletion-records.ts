@@ -26,7 +26,12 @@ export interface DeletionJob {
   candidates: BlobRef[];
 }
 
-export async function deletionImpact(database: Database, catalog: Catalog, entry: LibraryEntry) {
+export async function deletionImpact(
+  database: Database,
+  catalog: Catalog,
+  entry: LibraryEntry,
+  cover?: { version: string; size: number } | null,
+) {
   const id = releaseId(entry);
   const profiles = await database.query(
     "SELECT id, owner_id, head_id FROM profiles WHERE release_id=$1 ORDER BY id",
@@ -64,6 +69,7 @@ export async function deletionImpact(database: Database, catalog: Catalog, entry
     revisions: revisions.rows.length,
     saveBytes,
     reclaimableBytes:
+      (cover?.size ?? 0) +
       gameBytes +
       [...candidates].reduce((sum, [hash, size]) => sum + (retained.has(hash) ? 0 : size), 0),
   };
@@ -71,6 +77,7 @@ export async function deletionImpact(database: Database, catalog: Catalog, entry
     .update(
       JSON.stringify({
         entry,
+        cover: cover?.version,
         profiles: profiles.rows,
         revisions: revisions.rows.map((row) => row.id),
         preview,
@@ -102,12 +109,13 @@ export async function beginDeletion(
   catalog: Catalog,
   entry: LibraryEntry,
   confirmation: { token: string; title: string; deleteSaves: boolean },
+  cover?: { version: string; size: number } | null,
 ) {
   const client = await database.connect();
   try {
     await client.query("BEGIN");
     await client.query("LOCK TABLE profiles, revisions IN SHARE ROW EXCLUSIVE MODE");
-    const { preview, candidates } = await deletionImpact(client, catalog, entry);
+    const { preview, candidates } = await deletionImpact(client, catalog, entry, cover);
     if (confirmation.token !== preview.token)
       throw new LibraryError(message("library.deletionConflict"), 409);
     if (confirmation.title !== entry.title || (preview.profiles > 0 && !confirmation.deleteSaves))

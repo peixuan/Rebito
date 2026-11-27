@@ -1,0 +1,5 @@
+{
+  "cover.invalid": "Invalid cover image.",
+  "cover.changed": "The cover changed. Refresh the library and choose the image again.",
+  "cover.full": "Cover storage is full. Remove an unused cover."
+}
