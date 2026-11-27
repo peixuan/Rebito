@@ -28,6 +28,9 @@ test("plays DOS in the workspace and publishes bytes through the cloud revision 
   const pixels = page.getByRole("button", { name: "Integer scaling", exact: true });
   await pixels.click();
   await expect.poll(pixelRatio).toBeGreaterThan(1.4);
+  const frame = await page.locator(".player-frame").boundingBox();
+  if (!frame) throw new Error("Missing DOS screen");
+  expect(frame.y + frame.height).toBeLessThanOrEqual(await page.evaluate(() => innerHeight));
   await pixels.click();
   await expect.poll(pixelRatio).toBe(1);
   // At fractional enlargement, CSS smoothing must not add colors to VGA text.

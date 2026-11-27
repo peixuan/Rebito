@@ -592,7 +592,7 @@ defineExpose({
 .play-guide > :first-child {
   margin-top: 0;
 }
-@media (min-width: 1000px) {
+@media (min-width: 1200px) {
   .play-layout.playing {
     grid-template-columns: minmax(0, 1fr) minmax(195px, 23%);
     align-items: start;

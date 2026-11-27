@@ -12,6 +12,8 @@ layout so resizing the window preserves an unfinished name.
 
 The game screen shares the workspace with a keyboard guide on wide displays.
 Narrow displays keep the screen and touch controls together above the guide.
+At intermediate desktop widths, DOS gets the full row so wider video modes
+can use fractional scaling while the entire screen remains visible.
 The player controls regression checks both layouts with a running cartridge
 and a remapped key, including a theme change during play.
 

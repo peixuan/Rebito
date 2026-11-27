@@ -144,7 +144,11 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="surface" class="play-surface" :class="{ expanded: mode }">
+  <div
+    ref="surface"
+    class="play-surface"
+    :class="{ expanded: mode, 'dos-screen': system === 'dos' }"
+  >
     <div class="screen-mat"><slot /></div>
     <div v-if="input" class="deck">
       <button
@@ -238,6 +242,11 @@ onBeforeUnmount(() => {
 @media (min-width: 760px) and (min-height: 500px) {
   .play-surface :deep(.player-frame) {
     width: min(100%, 960px, max(320px, calc((100svh - var(--screen-top) - 12px) * 4 / 3)));
+  }
+  /* DOS video modes can be wider than 4:3. Its renderer fits the native canvas. */
+  .dos-screen :deep(.player-frame) {
+    width: min(100%, 960px);
+    max-height: max(240px, calc(100svh - var(--screen-top) - 12px));
   }
 }
 .deck {
