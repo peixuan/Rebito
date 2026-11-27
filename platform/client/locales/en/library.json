@@ -73,5 +73,6 @@
   "library.expandedSize": "The expanded game archive exceeds {maximum} MiB.",
   "library.uploadSize": "The upload exceeds {maximum} MiB.",
   "library.profileCount": "{count} personal profile | {count} personal profiles",
-  "library.profileTitle": "{title} · Personal profiles"
+  "library.profileTitle": "{title} · Personal profiles",
+  "library.more": "Show {count} more"
 }

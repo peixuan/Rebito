@@ -4,10 +4,14 @@ import { useSession } from "./session.ts";
 
 test.use({ hasTouch: true, isMobile: true, viewport: { width: 390, height: 844 } });
 
-async function start(page: Page, title: RegExp) {
+async function start(page: Page, title: string) {
   await useSession(page.context(), "touch");
   await page.goto("/");
-  await page.getByRole("button", { name: title }).click();
+  await page.getByLabel("Search games").fill(title);
+  await page
+    .getByRole("button")
+    .filter({ has: page.getByText(title, { exact: true }) })
+    .click();
   const name = `Touch ${randomUUID()}`;
   await page.getByLabel("Profile name").fill(name);
   await page.getByRole("button", { name: "Create profile" }).click();
@@ -20,7 +24,7 @@ async function start(page: Page, title: RegExp) {
 }
 test("plays a real NES with two thumbs and releases cancelled contacts", async ({ page }) => {
   test.setTimeout(60_000);
-  await start(page, /\bNES runtime test/);
+  await start(page, "NES runtime test");
   const toggle = page.getByRole("button", { name: "Touch controller" });
   await expect(toggle).toHaveAttribute("aria-expanded", "false", { timeout: 30_000 });
   await toggle.tap();
@@ -88,7 +92,7 @@ test("plays a real NES with two thumbs and releases cancelled contacts", async (
 test("fits a six-button Sega pad in the original row order on a small phone", async ({ page }) => {
   test.setTimeout(60_000);
   await page.setViewportSize({ width: 320, height: 700 });
-  await start(page, /\bMD runtime test/);
+  await start(page, "MD runtime test");
   const toggle = page.getByRole("button", { name: "Touch controller" });
   await expect(toggle).toBeVisible({ timeout: 30_000 });
   await expect(page.frameLocator("iframe").locator(".ejs_menu_bar")).toHaveClass(
@@ -128,7 +132,7 @@ test("fits a six-button Sega pad in the original row order on a small phone", as
 
 test("types a DOS command entirely by touch and fits phones and tablets", async ({ page }) => {
   test.setTimeout(75_000);
-  await start(page, /DOS live edit test/);
+  await start(page, "DOS live edit test");
   const toggle = page.getByRole("button", { name: "DOS keyboard" });
   await expect(toggle).toHaveAttribute("aria-expanded", "false", { timeout: 30_000 });
   await toggle.tap();

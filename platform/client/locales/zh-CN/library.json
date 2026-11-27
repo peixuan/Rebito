@@ -73,5 +73,6 @@
   "library.expandedSize": "游戏包展开后超过 {maximum} MiB。",
   "library.uploadSize": "上传文件超过 {maximum} MiB。",
   "library.profileCount": "{count} 份个人进度",
-  "library.profileTitle": "{title} · 个人进度"
+  "library.profileTitle": "{title} · 个人进度",
+  "library.more": "再显示 {count} 款"
 }

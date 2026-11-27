@@ -30,6 +30,7 @@ export async function openDosWorkspace(page: Page, name: string, session?: strin
     expect(registered.ok()).toBe(true);
   }
   await page.goto("/");
+  await page.getByLabel("Search games").fill("DOS save test");
   await page.getByRole("button", { name: /DOS save test/ }).click();
   await page.getByLabel("Profile name").fill(name);
   await page.getByRole("button", { name: "Create profile", exact: true }).click();
