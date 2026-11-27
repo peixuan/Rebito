@@ -1,5 +1,12 @@
 {
   "cover.invalid": "封面图片无效。",
   "cover.changed": "封面已经变更，请刷新游戏库后重新选择图片。",
-  "cover.full": "封面空间已满，请先移除不用的封面。"
+  "cover.full": "封面空间已满，请先移除不用的封面。",
+  "cover.title": "游戏封面",
+  "cover.choose": "选择封面",
+  "cover.help": "支持 JPEG、PNG、WebP，最大 12 MiB。保留完整构图。",
+  "cover.remove": "移除封面",
+  "cover.save": "保存封面",
+  "cover.saved": "封面已保存。",
+  "cover.cancel": "取消封面修改"
 }

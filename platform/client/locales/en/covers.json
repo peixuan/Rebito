@@ -1,5 +1,12 @@
 {
   "cover.invalid": "Invalid cover image.",
   "cover.changed": "The cover changed. Refresh the library and choose the image again.",
-  "cover.full": "Cover storage is full. Remove an unused cover."
+  "cover.full": "Cover storage is full. Remove an unused cover.",
+  "cover.title": "Cover",
+  "cover.choose": "Choose a cover",
+  "cover.help": "JPEG, PNG or WebP, up to 12 MiB. The full image fits inside the cover.",
+  "cover.remove": "Remove cover",
+  "cover.save": "Save cover",
+  "cover.saved": "Cover saved.",
+  "cover.cancel": "Cancel cover change"
 }

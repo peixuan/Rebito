@@ -9,6 +9,7 @@ import type { Game } from "../src/library/catalog.ts";
 import type { DisplayText } from "../src/shared/messages.ts";
 import type { Profile } from "../src/storage/revisions.ts";
 import { api, errorText } from "./api.ts";
+import GameCover from "./GameCover.vue";
 import { t, translate } from "./i18n.ts";
 import ProfileDeletion from "./ProfileDeletion.vue";
 
@@ -111,6 +112,10 @@ onMounted(refresh);
         :aria-pressed="selected?.id === game.id"
         @click="choose(game)"
       >
+        <GameCover
+          :system="game.system"
+          :src="game.cover ? `/api/games/${game.id}/cover/${game.cover}` : undefined"
+        />
         <span class="platform-tag">{{
           systems.find((entry) => entry.value === game.system)?.label
         }}</span>

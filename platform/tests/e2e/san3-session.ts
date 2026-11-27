@@ -49,6 +49,7 @@ export async function prepareSan3Editor(
   await page.getByRole("button", { name: "Game management", exact: true }).click();
   await page.getByLabel("Search published games").fill(game.title);
   await page.getByRole("button", { name: "Edit configuration", exact: true }).click();
+  await expect(page.getByRole("group", { name: "Cover", exact: true })).toHaveCount(1);
   await page.getByLabel("Save editor", { exact: true }).click();
   await page
     .getByRole("option", { name: "Romance of the Three Kingdoms III (Mega-CD)", exact: true })

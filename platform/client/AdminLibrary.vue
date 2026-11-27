@@ -17,7 +17,9 @@ import { type DisplayText, message } from "../src/shared/messages.ts";
 import AdminFirmware from "./AdminFirmware.vue";
 import AdminSaveQuotas from "./AdminSaveQuotas.vue";
 import { api, errorText } from "./api.ts";
+import EditCover from "./EditCover.vue";
 import { formatBytes as size } from "./format-bytes.ts";
+import GameCover from "./GameCover.vue";
 import GameDeletion from "./GameDeletion.vue";
 import { localize, t, translate } from "./i18n.ts";
 import { inspectDosArchive } from "./library-archive.ts";
@@ -57,6 +59,10 @@ const query = ref("");
 const deleting = ref<string | null>(null);
 const pending = ref<DeletionPreview[]>([]);
 const editing = ref<{ id: string; token: string } | null>(null);
+const coverPanel = ref<InstanceType<typeof EditCover>>();
+const selectedCoverGame = computed(() =>
+  catalog.value?.games.find((game) => game.id === editing.value?.id),
+);
 const initialDraft = ref("");
 const legacyConfiguration = ref(false);
 const draft = () =>
@@ -136,7 +142,7 @@ function resetFile() {
   if (input.value) input.value.value = "";
 }
 async function publish() {
-  if ((!file.value && !editing.value) || busy.value) return;
+  if ((!file.value && !editing.value) || busy.value || coverPanel.value?.dirty) return;
   busy.value = true;
   error.value = "";
   notice.value = "";
@@ -256,10 +262,12 @@ function leave() {
     error.value = message("admin.processingConfiguration");
     return false;
   }
-  return !dirty.value || window.confirm(t("admin.discardConfiguration"));
+  return (
+    !(dirty.value || coverPanel.value?.dirty) || window.confirm(t("admin.discardConfiguration"))
+  );
 }
 function beforeUnload(event: BeforeUnloadEvent) {
-  if (busy.value || dirty.value) {
+  if (busy.value || dirty.value || coverPanel.value?.dirty) {
     event.preventDefault();
     event.returnValue = "";
   }
@@ -306,6 +314,15 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
             @click="cancelEdit"
           />
         </div>
+        <EditCover
+          v-if="selectedCoverGame"
+          :key="selectedCoverGame.id"
+          ref="coverPanel"
+          :game="selectedCoverGame"
+          :disabled="busy"
+          @busy="busy = $event"
+          @changed="refresh"
+        />
         <p v-if="editing" class="muted">{{ t("admin.reuseHelp") }}</p>
         <label for="admin-title"
           >{{ t("admin.gameTitle")
@@ -431,7 +448,10 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
           :label="busy ? t('common.processing') : editing ? t('admin.save') : t('admin.publish')"
           :loading="busy"
           :disabled="
-            (!file && !editing) || !title.trim() || (!editing && system === 'dos' && !executable)
+            coverPanel?.dirty ||
+            (!file && !editing) ||
+            !title.trim() ||
+            (!editing && system === 'dos' && !executable)
           "
         />
       </form>
@@ -480,7 +500,12 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
           <template #empty>{{ t("admin.noMatches") }}</template>
           <Column field="title" :header="t('library.game')" sortable>
             <template #body="{ data }">
-              <div>{{ data.title }}</div>
+              <div class="catalog-title">
+                <GameCover
+                  :system="data.system"
+                  :src="data.cover ? `/api/games/${data.id}/cover/${data.cover}` : undefined"
+                /><span>{{ data.title }}</span>
+              </div>
               <small v-if="data.editor" class="muted">
                 {{
                   t("admin.editorLabel", {
@@ -534,6 +559,15 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
 </template>
 
 <style scoped>
+.catalog-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.catalog-title .game-cover {
+  width: 48px;
+  flex: none;
+}
 .admin-manager {
   overflow-wrap: anywhere;
 }
@@ -596,7 +630,7 @@ onBeforeUnmount(() => window.removeEventListener("beforeunload", beforeUnload));
 }
 @media (max-width: 900px) {
   .admin-layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 </style>
