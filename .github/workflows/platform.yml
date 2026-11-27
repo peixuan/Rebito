@@ -57,7 +57,8 @@ jobs:
 
   application:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    # The serial browser suite alone takes about 24 minutes on a hosted runner.
+    timeout-minutes: ${{ matrix.node == '24' && 35 || 25 }}
     services:
       postgres:
         image: public.ecr.aws/docker/library/postgres:18.7-bookworm@sha256:ece55f7868da684e400f82f1030a050718adbdd65c23aa500c486f6e2950dc0f
