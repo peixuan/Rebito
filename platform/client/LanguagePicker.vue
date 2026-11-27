@@ -26,12 +26,19 @@ watchEffect(() => {
 <style scoped>
 .language-picker {
   max-width: 10rem;
-  margin-left: auto;
-  padding: 6px 8px;
+  min-width: 0;
+  padding: 5px;
   border: 1px solid var(--p-form-field-border-color);
   border-radius: var(--p-form-field-border-radius);
   background: var(--p-form-field-background);
   color: var(--p-form-field-color);
   font: inherit;
+}
+@media (max-width: 700px) {
+  .language-picker {
+    max-width: 6em;
+    padding: 4px 0;
+    font-size: 12px;
+  }
 }
 </style>

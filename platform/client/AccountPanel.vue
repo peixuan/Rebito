@@ -49,7 +49,6 @@ async function oidc() {
 
 <template>
   <section class="account-panel" aria-labelledby="account-title">
-    <p class="eyebrow">REBITO</p>
     <h1 id="account-title">
       {{ registering ? t("account.createTitle") : t("account.loginTitle") }}
     </h1>

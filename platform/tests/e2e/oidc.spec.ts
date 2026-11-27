@@ -70,6 +70,7 @@ test("uses a real OIDC code exchange and keeps provider users' progress isolated
     data: { name: "Blocked", email: "blocked@example.test", password: "blocked-registration-123" },
   });
   expect(signup.ok()).toBe(false);
+  await page.locator(".user-menu summary").click();
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(page.getByRole("heading", { name: "Sign in to your library" })).toBeVisible();
   expect((await page.request.get("/api/profiles")).status()).toBe(401);

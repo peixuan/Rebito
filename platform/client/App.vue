@@ -8,7 +8,7 @@ import type { Profile } from "../src/storage/revisions.ts";
 import AccountPanel from "./AccountPanel.vue";
 import { api, errorText, type Session } from "./api.ts";
 import { t, translate } from "./i18n.ts";
-import LanguagePicker from "./LanguagePicker.vue";
+import SiteHeader from "./SiteHeader.vue";
 import StorageUsage from "./StorageUsage.vue";
 
 const AdminLibrary = defineAsyncComponent(() => import("./AdminLibrary.vue"));
@@ -63,29 +63,14 @@ onMounted(refresh);
 </script>
 
 <template>
-  <header class="app-header">
-    <a class="brand" href="/" @click.prevent="home"
-      >{{ t("app.brand") }}<span>{{ t("app.tagline") }}</span></a
-    >
-    <LanguagePicker />
-    <div v-if="session?.user" class="account-actions">
-      <span>{{ session.user.name }}</span>
-      <Button
-        v-if="session.user.admin && !administration"
-        :label="t('admin.title')"
-        variant="text"
-        size="small"
-        @click="manageGames"
-      />
-      <Button
-        :label="t('account.logout')"
-        severity="secondary"
-        size="small"
-        :loading="leaving"
-        @click="logout"
-      />
-    </div>
-  </header>
+  <SiteHeader
+    :user="session?.user ?? null"
+    :administration="administration"
+    :leaving="leaving"
+    @home="home"
+    @manage="manageGames"
+    @logout="logout"
+  />
   <main class="workspace">
     <Message v-if="error" severity="error" role="alert"
       >{{ translate(error)
@@ -98,7 +83,6 @@ onMounted(refresh);
       @authenticated="refresh"
     />
     <section v-else-if="session?.user" :aria-label="t('app.workspace')">
-      <StorageUsage v-if="!administration" :key="session.user.id" :refresh-key="storageVersion" />
       <AdminLibrary v-if="administration && session.user.admin" ref="adminPanel" @back="home" />
       <SavePanel
         ref="savePanel"
@@ -119,6 +103,7 @@ onMounted(refresh);
         @changed="storageVersion++"
         @open="(game, profile) => (workspace = { game, profile })"
       />
+      <StorageUsage v-if="!administration" :key="session.user.id" :refresh-key="storageVersion" />
     </section>
   </main>
 </template>

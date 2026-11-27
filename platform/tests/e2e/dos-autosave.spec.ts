@@ -40,6 +40,7 @@ test("keeps a disk-full exit alive, warns on navigation and synchronizes before 
         })
       : route.continue(),
   );
+  await page.locator(".user-menu summary").click();
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(
     page.getByRole("region", { name: "Game window", exact: true }).getByRole("alert"),
@@ -62,6 +63,7 @@ test("keeps a disk-full exit alive, warns on navigation and synchronizes before 
     )
       uploaded = true;
   });
+  await page.locator(".user-menu summary").click();
   await page.getByRole("button", { name: "Sign out", exact: true }).click();
   await expect(page.getByLabel("Email", { exact: true })).toBeVisible();
   expect(uploaded).toBe(true);

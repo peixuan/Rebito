@@ -37,6 +37,7 @@ test("shows capacity warnings and stale refresh errors without blocking navigati
   await page.getByRole("button", { name: "Refresh usage" }).click();
   await expect(summary.getByRole("meter", { name: "Save storage" })).toHaveAttribute("value", "0");
   await expect(summary.getByRole("alert")).toHaveCount(0);
+  await page.locator(".user-menu summary").click();
   await page.getByRole("button", { name: "Sign out" }).click();
   await expect(summary).toHaveCount(0);
 });

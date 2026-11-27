@@ -57,41 +57,6 @@ h1 {
   font-family: Georgia, "Songti SC", "SimSun", serif;
   font-weight: 600;
 }
-.app-header {
-  min-height: 60px;
-  padding: 0 28px;
-  display: flex;
-  gap: 14px;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--edge);
-  background: var(--paper);
-}
-.brand {
-  color: var(--ink);
-  text-decoration: none;
-  font-size: 19px;
-  font-weight: 700;
-}
-.brand span {
-  display: block;
-  margin-top: 3px;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 400;
-}
-.account-actions {
-  display: flex;
-  gap: 14px;
-  align-items: center;
-}
-.eyebrow {
-  margin: 0 0 18px;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 2px;
-}
 .workspace {
   max-width: 1440px;
   margin: auto;
@@ -284,11 +249,6 @@ input[type="file"] {
   }
   .workspace {
     padding: 16px;
-  }
-  .app-header {
-    padding: 10px 16px;
-    flex-wrap: wrap;
-    gap: 8px;
   }
   .account-panel {
     margin: 30px auto;

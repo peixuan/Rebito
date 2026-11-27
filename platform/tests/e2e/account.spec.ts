@@ -15,6 +15,7 @@ test("registers, retains a session, reports a bad password and logs out", async 
   await expect(page.locator(".account-actions")).toContainText("Browser tester");
   await page.reload();
   await expect(page.locator(".account-actions")).toContainText("Browser tester");
+  await page.locator(".user-menu summary").click();
   await page.getByRole("button", { name: "Sign out" }).click();
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill("incorrect-password-123");
