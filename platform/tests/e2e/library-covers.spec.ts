@@ -32,10 +32,13 @@ test("publishes and removes a version cover from game management", async ({ page
     await route.continue();
   });
   const card = page.getByRole("button").filter({ has: title });
+  const artwork = card.locator(".game-cover");
+  const platform = card.getByText("FC", { exact: true });
   try {
     await page.getByRole("button", { name: "Back to library" }).click();
     await page.getByLabel("Search games").fill("NES runtime test");
-    await expect(card.locator("svg")).toBeVisible();
+    await expect(artwork.locator("svg")).toBeVisible();
+    await expect(platform).toBeVisible();
   } finally {
     resume();
   }
@@ -45,7 +48,19 @@ test("publishes and removes a version cover from game management", async ({ page
       picture.evaluate((node: HTMLImageElement) => [node.naturalWidth, node.naturalHeight]),
     )
     .toEqual([2, 1]);
-  await expect(card.locator("svg")).toHaveCount(0);
+  await expect(artwork.locator("svg")).toHaveCount(0);
+  for (const width of [320, 1280]) {
+    await page.setViewportSize({ width, height: 800 });
+    const frame = await artwork.boundingBox();
+    const badge = await platform.boundingBox();
+    if (!frame || !badge) throw new Error("Missing cover or platform");
+    const top = badge.y - frame.y;
+    const right = frame.x + frame.width - (badge.x + badge.width);
+    expect(top).toBeGreaterThanOrEqual(0);
+    expect(top).toBeLessThan(frame.height / 4);
+    expect(right).toBeGreaterThanOrEqual(0);
+    expect(right).toBeLessThan(frame.width / 4);
+  }
   await page.getByRole("button", { name: "Game management" }).click();
   await page.getByLabel("Search published games").fill("NES runtime test");
   await row.getByRole("button", { name: "Edit configuration" }).click();

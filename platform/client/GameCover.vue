@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { type GameSystem, gameSystems } from "../src/domain/systems.ts";
+import type { GameSystem } from "../src/domain/systems.ts";
 
 const props = defineProps<{ system: GameSystem; src?: string | undefined }>();
 const failed = ref<string>();
@@ -62,16 +62,6 @@ const kind = computed(() =>
           <path d="M41 91h108m-104 7h100m-6-51h10m-10 7h10m-10 7h10" />
         </g>
       </g>
-      <text
-        v-if="kind !== 'disc'"
-        x="96"
-        :y="kind === 'disk' ? 99 : kind === 'handheld' ? 77 : 66"
-        text-anchor="middle"
-        fill="currentColor"
-        :transform="'rotate(-8 96 66)'"
-      >
-        {{ gameSystems[system].shortLabel }}
-      </text>
     </svg>
   </span>
 </template>
@@ -117,10 +107,6 @@ const kind = computed(() =>
 }
 .label {
   fill: #faf7ee;
-}
-text {
-  font: 600 10px / 1 monospace;
-  letter-spacing: 0.08em;
 }
 :global(.dark .game-cover[data-medium] svg) {
   background: #28394a;

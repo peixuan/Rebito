@@ -182,11 +182,19 @@ onBeforeUnmount(() => columns.removeEventListener("change", syncLayout));
               :system="game.system"
               :src="game.cover ? `/api/games/${game.id}/cover/${game.cover}` : undefined"
             />
-            <strong>{{ game.title }}</strong>
-            <small
-              >{{ gameSystems[game.system].shortLabel }}
-              · {{ t("library.profileCount", { count: counts.get(game.id) ?? 0 }) }}</small
-            >
+            <span class="shelf-caption">
+              <strong>{{ game.title }}</strong>
+              <small :title="t('library.profileCount', { count: counts.get(game.id) ?? 0 })">
+                <svg viewBox="0 0 16 16" role="img">
+                  <title>
+                    {{ t("library.profileCount", { count: counts.get(game.id) ?? 0 }) }}
+                  </title>
+                  <path d="M2 4h4l1.5 1.5H14v7H2z" />
+                </svg>
+                <span aria-hidden="true">{{ counts.get(game.id) ?? 0 }}</span>
+              </small>
+            </span>
+            <span class="shelf-platform">{{ gameSystems[game.system].shortLabel }}</span>
           </button>
           <Teleport v-if="selected?.id === game.id" :to="dock ?? 'body'" :disabled="!wide || !dock">
             <GameProfiles

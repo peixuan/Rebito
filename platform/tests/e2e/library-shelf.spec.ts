@@ -51,7 +51,9 @@ test("keeps a visible game selected when clearing a shelf search resets paginati
   const cards = page.locator(".shelf-game");
   await expect(cards).toHaveCount(24);
   await expect(cards.first()).toContainText("Cartridge 3");
+  await expect(cards.first()).toHaveAccessibleName(/1 personal profile\b/);
   await expect(cards.nth(1)).toContainText("Cartridge 26");
+  await expect(cards.nth(1)).toHaveAccessibleName(/0 personal profiles\b/);
   await page.getByRole("button", { name: "Show 2 more" }).click();
   await expect(cards).toHaveCount(26);
   const search = page.getByLabel("Search games");

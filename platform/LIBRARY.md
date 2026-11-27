@@ -10,7 +10,9 @@ below remains available for operator-prepared releases.
 
 The shelf lists games with your playthroughs first. Within each group, recent
 additions appear first. Search covers the whole library, including titles beyond
-the first 24. Choose a cover to see your profiles, then select a profile name
+the first 24. Each cover shows the platform in its upper right corner. The folder
+count beside the title shows how many personal profiles you have for that game.
+Choose a cover to see your profiles, then select a profile name
 to enter its workspace. On phones the profiles appear below the selected row.
 
 Create a metadata JSON file, for example:
